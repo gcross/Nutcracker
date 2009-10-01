@@ -1,5 +1,5 @@
 #@+leo-ver=4-thin
-#@+node:gcross.20090930124443.1284:@thin chain_contractors.py
+#@+node:gcross.20090930124443.1284:@thin contractors.py
 #@@language Python
 
 #@<< Import needed modules >>
@@ -399,8 +399,6 @@ class ChainContractorForExpectations(ChainContractorBase):
 
         acceptable_indices_of_eigenvalues = filter(is_acceptable,sorted_indices_of_eigenvalues)
         if len(acceptable_indices_of_eigenvalues) == 0:
-            print eigenvalues
-            print eigenvectors
             raise ConvergenceError, "All eigenvectors had near-vanishing normals, eigenvalues with large imaginary parts, or NaNs and/or infs."
 
     #@+at
@@ -632,5 +630,5 @@ if __name__ == '__main__':
     unittest.main()
 #@-node:gcross.20090930134608.1315:Unit Tests
 #@-others
-#@-node:gcross.20090930124443.1284:@thin chain_contractors.py
+#@-node:gcross.20090930124443.1284:@thin contractors.py
 #@-leo

@@ -12,9 +12,14 @@
 <v t="gcross.20090930124443.1231" str_leo_pos="1"><vh>@chapters</vh></v>
 <v t="gcross.20090930134608.1330"><vh>@thin paulis.py</vh></v>
 <v t="gcross.20090930124443.1265"><vh>@thin utils.py</vh></v>
-<v t="gcross.20090930124443.1284"><vh>@thin chain_contractors.py</vh></v>
+<v t="gcross.20090930124443.1284"><vh>@thin contractors.py</vh></v>
+<v t="gcross.20090930213318.1310"><vh>Transverse Ising Model</vh>
+<v t="gcross.20090930212235.1299"><vh>@thin simulate-TI.py</vh></v>
+<v t="gcross.20090930213318.1312"><vh>@thin compute-TI-spectrum.py</vh></v>
+</v>
 </vnodes>
 <tnodes>
 <t tx="gcross.20090930124443.1231" str_leo_pos="1"></t>
+<t tx="gcross.20090930213318.1310"></t>
 </tnodes>
 </leo_file>
