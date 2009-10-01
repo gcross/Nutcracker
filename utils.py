@@ -267,6 +267,37 @@ def normalize(matrix,index):
         return dot(new_matrix,X).reshape(old_shape).transpose(old_indices)
 
 #@-node:gcross.20090930134608.1296:normalize
+#@+node:gcross.20091001102811.4021:normalize_and_return_inverse_normalizer
+def normalize_and_return_inverse_normalizer(matrix,index):
+    new_indices = range(matrix.ndim)
+    del new_indices[index]
+    new_indices.append(index)
+
+    old_shape = list(matrix.shape)
+    del old_shape[index]
+    new_shape = (prod(old_shape),matrix.shape[index])
+    old_shape.append(matrix.shape[index])
+
+    new_matrix = matrix.transpose(new_indices).reshape(new_shape)
+
+    old_indices = range(matrix.ndim-1)
+    old_indices.insert(index,matrix.ndim-1)
+
+    try:
+        u, s, v = svd(new_matrix,full_matrices=0)    
+        return dot(u,v).reshape(old_shape).transpose(old_indices), dot(v.transpose().conj()*s,v)
+    except LinAlgError:
+        M = dot(new_matrix.conj().transpose(),new_matrix)
+
+        vals, U = eigh(M)
+        vals[vals<0] = 0
+
+        dvals = sqrt(vals)
+        nonzero_dvals = dvals!=0
+        dvals[nonzero_dvals] = 1.0/dvals[nonzero_dvals]
+
+        return dot(new_matrix,dot(U*dvals,U.conj().transpose())).reshape(old_shape).transpose(old_indices), dot(U*vals,U.conj().transpose())
+#@-node:gcross.20091001102811.4021:normalize_and_return_inverse_normalizer
 #@+node:gcross.20091001102811.4003:compute_normalizer_and_inverse
 def compute_normalizer_and_inverse(matrix,index):
     new_indices = range(matrix.ndim)
@@ -411,6 +442,22 @@ if __name__ == '__main__':
         #@-node:gcross.20091001102811.4019:testInverse
         #@-others
     #@-node:gcross.20091001102811.4017:compute_normalizer_and_inverse_tests
+    #@+node:gcross.20091001102811.4024:normalize_and_return_inverse_normalizer_tests
+    class normalize_and_return_inverse_normalizer_tests(unittest.TestCase):
+        #@    @+others
+        #@+node:gcross.20091001102811.4027:testMethodAgreement
+        @with_checker
+        def testMethodAgreement(self,number_of_dimensions=irange(2,4),size=irange(2,5)):
+            index_to_normalize = randint(0,number_of_dimensions-1)
+            tensor = crand(*(size,)*number_of_dimensions)
+            normalized_tensor_1 = normalize(tensor,index_to_normalize)
+            normalizer, inverse_normalizer_1 = compute_normalizer_and_inverse(tensor,index_to_normalize)
+            normalized_tensor_2, inverse_normalizer_2 = normalize_and_return_inverse_normalizer(tensor,index_to_normalize)
+            self.assertTrue(allclose(normalized_tensor_1,normalized_tensor_2))
+            self.assertTrue(allclose(inverse_normalizer_1,inverse_normalizer_1))
+        #@-node:gcross.20091001102811.4027:testMethodAgreement
+        #@-others
+    #@-node:gcross.20091001102811.4024:normalize_and_return_inverse_normalizer_tests
     #@-others
     unittest.main()
 #@-node:gcross.20090930124443.1275:Unit Tests
