@@ -232,6 +232,8 @@ def multiply_tensor_by_matrix_at_index(tensor,matrix,index):
     return tensordot(tensor,matrix,(index,0)).transpose(tensor_new_indices)
 #@nonl
 #@-node:gcross.20090930134608.1298:multiply_tensor_by_matrix_at_index
+#@-node:gcross.20090930134608.1299:Utility functions
+#@+node:gcross.20091001102811.1311:Normalization
 #@+node:gcross.20090930134608.1296:normalize
 def normalize(matrix,index):
     new_indices = range(matrix.ndim)
@@ -265,7 +267,41 @@ def normalize(matrix,index):
         return dot(new_matrix,X).reshape(old_shape).transpose(old_indices)
 
 #@-node:gcross.20090930134608.1296:normalize
-#@-node:gcross.20090930134608.1299:Utility functions
+#@+node:gcross.20091001102811.4003:compute_normalizer
+def compute_normalizer(matrix,index):
+    new_indices = range(matrix.ndim)
+    del new_indices[index]
+    new_indices.append(index)
+
+    size_of_normalization_dimension = matrix.shape[index]
+
+    old_shape = list(matrix.shape)
+    del old_shape[index]
+    new_shape = (prod(old_shape),size_of_normalization_dimension)
+    old_shape.append(size_of_normalization_dimension)
+
+    new_matrix = matrix.transpose(new_indices).reshape(new_shape)
+
+    old_indices = range(matrix.ndim-1)
+    old_indices.insert(index,matrix.ndim-1)
+
+    try:
+        u, s, v = svd(new_matrix,full_matrices=0)
+        return dot(v.transpose().conj()*(1/s),v)
+    except LinAlgError:
+        M = dot(new_matrix.conj().transpose(),new_matrix)
+
+        vals, U = eigh(M)
+        vals[vals<0] = 0
+
+        dvals = sqrt(vals)
+        nonzero_dvals = dvals!=0
+        dvals[nonzero_dvals] = 1.0/dvals[nonzero_dvals]
+        X = dot(U*dvals,U.conj().transpose())
+
+        return X
+#@-node:gcross.20091001102811.4003:compute_normalizer
+#@-node:gcross.20091001102811.1311:Normalization
 #@+node:gcross.20090930124443.1275:Unit Tests
 if __name__ == '__main__':
     import unittest
@@ -352,6 +388,15 @@ if __name__ == '__main__':
             should_be_identity = tensordot(normalized_tensor.conj(),normalized_tensor,(indices_to_sum_over,)*2)
             self.assertTrue(allclose(identity(size),should_be_identity))
         #@-node:gcross.20090930134608.1305:testCorrectness
+        #@+node:gcross.20091001102811.4004:testMethodAgreement
+        @with_checker
+        def testMethodAgreement(self,number_of_dimensions=irange(2,4),size=irange(2,5)):
+            index_to_normalize = randint(0,number_of_dimensions-1)
+            tensor = crand(*(size,)*number_of_dimensions)
+            normalized_tensor_1 = normalize(tensor,index_to_normalize)
+            normalized_tensor_2 = multiply_tensor_by_matrix_at_index(tensor,compute_normalizer(tensor,index_to_normalize),index_to_normalize)
+            self.assertTrue(allclose(normalized_tensor_1,normalized_tensor_2))
+        #@-node:gcross.20091001102811.4004:testMethodAgreement
         #@-others
     #@-node:gcross.20090930134608.1303:normalize_tests
     #@-others
