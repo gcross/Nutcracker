@@ -189,8 +189,8 @@ partially_contract_overlap = make_contractor_from_implicit_joins([
 #@-node:gcross.20090930124443.1294:Functions
 #@+node:gcross.20090930124443.1293:Classes
 #@+others
-#@+node:gcross.20090930124443.1295:ChainContractorForExpectations
-class ChainContractorForExpectations(object):
+#@+node:gcross.20090930134608.1341:ChainContractorBase
+class ChainContractorBase(object):
     #@    @+others
     #@+node:gcross.20090930134608.1289:__slots__
     __slots__ = [
@@ -200,18 +200,8 @@ class ChainContractorForExpectations(object):
         "number_of_sites","current_site_number"
     ]
     #@-node:gcross.20090930134608.1289:__slots__
-    #@+node:gcross.20090930134608.1273:__init__
-    def __init__(self,initial_left_boundary,initial_right_boundary,initial_state_site_tensors,operator_site_tensors):
-        self.initialize(initial_left_boundary,initial_right_boundary,len(initial_state_site_tensors))
-        assert(self.number_of_sites == len(operator_site_tensors))
-        for i in xrange(self.number_of_sites-1,0,-1):
-            self.operator_site_tensor = operator_site_tensors[i]
-            self.push_right_boundary()
-            self.right_boundary = self.contract_into_right_boundary(initial_state_site_tensors[i].conj(),initial_state_site_tensors[i])
-        self.operator_site_tensor = operator_site_tensors[0]
-    #@-node:gcross.20090930134608.1273:__init__
-    #@+node:gcross.20090930134608.1323:initialize
-    def initialize(self,initial_left_boundary,initial_right_boundary,number_of_sites):
+    #@+node:gcross.20090930134608.1323:__init__
+    def __init__(self,initial_left_boundary,initial_right_boundary,number_of_sites):
         self.left_boundary = initial_left_boundary
         self.right_boundary = initial_right_boundary
         self.number_of_sites = number_of_sites
@@ -220,7 +210,7 @@ class ChainContractorForExpectations(object):
         self.left_operator_stack = []
         self.right_boundary_stack = []
         self.right_operator_stack = []
-    #@-node:gcross.20090930134608.1323:initialize
+    #@-node:gcross.20090930134608.1323:__init__
     #@+node:gcross.20090930134608.1263:push_XXX_boundary
     def push_left_boundary(self):
         self.left_boundary_stack.append(self.left_boundary)
@@ -252,6 +242,25 @@ class ChainContractorForExpectations(object):
         self.left_boundary = self.contract_into_left_boundary(state_site_tensor_conjugated,state_site_tensor)
         self.pop_right_boundary()
     #@-node:gcross.20090930134608.1270:contract_and_move_XXX
+    #@+node:gcross.20090930134608.1331:fully_contract_with_state_site_tensor
+    def fully_contract_with_state_site_tensor(self,state_site_tensor_conjugated,state_site_tensor):
+        return inner(self.partially_contract_with_state_site_tensor(state_site_tensor).ravel(),state_site_tensor_conjugated.ravel())
+    #@-node:gcross.20090930134608.1331:fully_contract_with_state_site_tensor
+    #@-others
+#@-node:gcross.20090930134608.1341:ChainContractorBase
+#@+node:gcross.20090930124443.1295:ChainContractorForExpectations
+class ChainContractorForExpectations(ChainContractorBase):
+    #@    @+others
+    #@+node:gcross.20090930134608.1273:__init__
+    def __init__(self,initial_left_boundary,initial_right_boundary,initial_state_site_tensors,operator_site_tensors):
+        ChainContractorBase.__init__(self,initial_left_boundary,initial_right_boundary,len(initial_state_site_tensors))
+        assert(self.number_of_sites == len(operator_site_tensors))
+        for i in xrange(self.number_of_sites-1,0,-1):
+            self.operator_site_tensor = operator_site_tensors[i]
+            self.push_right_boundary()
+            self.right_boundary = self.contract_into_right_boundary(initial_state_site_tensors[i].conj(),initial_state_site_tensors[i])
+        self.operator_site_tensor = operator_site_tensors[0]
+    #@-node:gcross.20090930134608.1273:__init__
     #@+node:gcross.20090930134608.1274:contract_into_XXX_boundary
     def contract_into_left_boundary(self,state_site_tensor_conjugated,state_site_tensor):
         return \
@@ -271,10 +280,6 @@ class ChainContractorForExpectations(object):
                 state_site_tensor
             )
     #@-node:gcross.20090930134608.1274:contract_into_XXX_boundary
-    #@+node:gcross.20090930134608.1331:fully_contract_with_state_site_tensor
-    def fully_contract_with_state_site_tensor(self,state_site_tensor_conjugated,state_site_tensor):
-        return inner(self.partially_contract_with_state_site_tensor(state_site_tensor).ravel(),state_site_tensor_conjugated.ravel())
-    #@-node:gcross.20090930134608.1331:fully_contract_with_state_site_tensor
     #@+node:gcross.20090930134608.1338:partially_contract_with_state_site_tensor
     def partially_contract_with_state_site_tensor(self,state_site_tensor):
         return \
@@ -289,11 +294,11 @@ class ChainContractorForExpectations(object):
     #@-others
 #@-node:gcross.20090930124443.1295:ChainContractorForExpectations
 #@+node:gcross.20090930134608.1292:ChainContractorForOverlaps
-class ChainContractorForOverlaps(ChainContractorForExpectations):
+class ChainContractorForOverlaps(ChainContractorBase):
     #@    @+others
     #@+node:gcross.20090930134608.1294:__init__
     def __init__(self,initial_left_boundary,initial_right_boundary,initial_state_A_site_tensors,initial_state_B_site_tensors):
-        self.initialize(initial_left_boundary,initial_right_boundary,len(initial_state_A_site_tensors))
+        ChainContractorBase.__init__(self,initial_left_boundary,initial_right_boundary,len(initial_state_A_site_tensors))
         self.operator_site_tensor = None
         self.right_operator_stack = [None]*(self.number_of_sites-1)
         for i in xrange(self.number_of_sites-1,0,-1):
