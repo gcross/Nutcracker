@@ -20,15 +20,15 @@ from numpy import inner
 # S* = state site tensor (conjugated)
 # O = operator site tensor
 # 
-# /-1-S*-21
-# |   |
-# |   32
-# |   |
-# L-2-O--22
-# |   |
-# |   42
-# |   |
-# \-3-S--23
+# /-1--S*-21
+# |    |
+# |    32
+# |    |
+# L-2--O--22
+# |    |
+# |    42
+# |    |
+# \-3--S--23
 # 
 #@-at
 #@@c
@@ -51,11 +51,11 @@ contract_site_expectation_into_left_boundary = make_contractor_from_implicit_joi
 # A* = state A site tensor (conjugated)
 # B = state B site tensor
 # 
-# /-1-A*-21
-# |   |
-# L   2
-# |   |
-# \-3-B--23
+# /-1--A*-21
+# |    |
+# L    2
+# |    |
+# \-3--B--23
 # 
 #@-at
 #@@c
@@ -77,15 +77,15 @@ contract_site_overlap_into_left_boundary = make_contractor_from_implicit_joins([
 # S* = state site tensor (conjugated)
 # O = operator site tensor
 # 
-# 1-S*-21-\
-#   |     |
-#   32    |
-#   |     |
-# 2-O--22-R
-#   |     |
-#   42    |
-#   |     |
-# 3-S--23-/
+# 1--S*-21-\
+#    |     |
+#    32    |
+#    |     |
+# 2--O--22-R
+#    |     |
+#    42    |
+#    |     |
+# 3--S--23-/
 # 
 #@-at
 #@@c
@@ -108,11 +108,11 @@ contract_site_expectation_into_right_boundary = make_contractor_from_implicit_jo
 # A* = state A site tensor (conjugated)
 # B = state B site tensor
 # 
-# 1-A*-21-\
-#   |     |
-#   2     R
-#   |     |
-# 3-B--23-/
+# 1--A*-21-\
+#    |     |
+#    2     R
+#    |     |
+# 3--B--23-/
 # 
 #@-at
 #@@c
@@ -126,6 +126,65 @@ contract_site_overlap_into_right_boundary = make_contractor_from_implicit_joins(
     3,
 ])
 #@-node:gcross.20090930124443.1292:Absorb site contraction into right boundary
+#@+node:gcross.20090930134608.1334:Partial contraction for expectation
+#@+at
+# 
+# L = left boundary
+# R = left boundary
+# S = state site tensor
+# O = operator site tensor
+# 
+# /-1-   -21-\
+# |    |     |
+# |    32    |
+# |    |     |
+# L-2--O--22-R
+# |    |     |
+# |    42    |
+# |    |     |
+# \-3--S--23-/
+# 
+#@-at
+#@@c
+
+partially_contract_expectation = make_contractor_from_implicit_joins([
+    [42,3,23],     # state site tensor
+    [32,42,2,22],  # operator site tensor
+    [1,2,3],       # left boundary tensor
+    [21,22,23],    # right boundary tensor
+],[
+    32,
+    1,
+    21,
+])
+#@-node:gcross.20090930134608.1334:Partial contraction for expectation
+#@+node:gcross.20090930134608.1336:Partial contraction for overlap
+#@+at
+# 
+# L = left boundary
+# R = left boundary
+# S = state site tensor
+# O = operator site tensor
+# 
+# /-1-   -21-\
+# |    |     |
+# |    42    |
+# |    |     |
+# \-3--S--23-/
+# 
+#@-at
+#@@c
+
+partially_contract_overlap = make_contractor_from_implicit_joins([
+    [42,3,23],     # state site tensor
+    [1,3],       # left boundary tensor
+    [21,23],    # right boundary tensor
+],[
+    42,
+    1,
+    21,
+])
+#@-node:gcross.20090930134608.1336:Partial contraction for overlap
 #@-node:gcross.20090930124443.1285:Contractors
 #@-node:gcross.20090930124443.1294:Functions
 #@+node:gcross.20090930124443.1293:Classes
@@ -214,8 +273,19 @@ class ChainContractorForExpectations(object):
     #@-node:gcross.20090930134608.1274:contract_into_XXX_boundary
     #@+node:gcross.20090930134608.1331:fully_contract_with_state_site_tensor
     def fully_contract_with_state_site_tensor(self,state_site_tensor_conjugated,state_site_tensor):
-        return inner(self.left_boundary.ravel(),self.contract_into_right_boundary(state_site_tensor_conjugated,state_site_tensor).ravel())
+        return inner(self.partially_contract_with_state_site_tensor(state_site_tensor).ravel(),state_site_tensor_conjugated.ravel())
     #@-node:gcross.20090930134608.1331:fully_contract_with_state_site_tensor
+    #@+node:gcross.20090930134608.1338:partially_contract_with_state_site_tensor
+    def partially_contract_with_state_site_tensor(self,state_site_tensor):
+        return \
+            partially_contract_expectation(
+                state_site_tensor,
+                self.operator_site_tensor,
+                self.left_boundary,
+                self.right_boundary
+            )
+
+    #@-node:gcross.20090930134608.1338:partially_contract_with_state_site_tensor
     #@-others
 #@-node:gcross.20090930124443.1295:ChainContractorForExpectations
 #@+node:gcross.20090930134608.1292:ChainContractorForOverlaps
@@ -247,6 +317,15 @@ class ChainContractorForOverlaps(ChainContractorForExpectations):
                 state_B_site_tensor
             )
     #@-node:gcross.20090930134608.1291:contract_into_XXX_boundary
+    #@+node:gcross.20090930134608.1340:partially_contract_with_state_site_tensor
+    def partially_contract_with_state_site_tensor(self,state_site_tensor):
+        return \
+            partially_contract_expectation(
+                state_site_tensor,
+                self.left_boundary,
+                self.right_boundary
+            )
+    #@-node:gcross.20090930134608.1340:partially_contract_with_state_site_tensor
     #@-others
 #@-node:gcross.20090930134608.1292:ChainContractorForOverlaps
 #@-others
