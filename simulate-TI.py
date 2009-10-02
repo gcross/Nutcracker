@@ -4,7 +4,7 @@
 
 #@<< Import needed modules >>
 #@+node:gcross.20090930201628.1301:<< Import needed modules >>
-from utils import crand, normalize
+from utils import crand, normalize, create_normalized_state_site_tensors
 from contractors import *
 from numpy import array, zeros, multiply, identity
 from paulis import *
@@ -42,6 +42,7 @@ def optimize(site_number,normalization_index,move_function):
     current_energy = new_energy
 
     normalized_site_tensor = normalize(new_site_tensor,normalization_index)
+    normalize_state_site_tensors[site_number] = normalized_site_tensor
 
     move_function(normalized_site_tensor.conj(),normalized_site_tensor)
 #@-node:gcross.20090930201628.1306:optimize
@@ -79,12 +80,10 @@ operator_site_tensors = [operator_site_tensor] * number_of_sites
 #@+node:gcross.20090930201628.1304:<< Initialize system >>
 physical_dimension = 2
 
-initial_left_boundary = multiply.outer(identity(bandwidth_dimension),left_operator_boundary).transpose(0,2,1)
-initial_right_boundary = multiply.outer(identity(bandwidth_dimension),right_operator_boundary).transpose(0,2,1)
+state_site_tensors = create_normalized_state_site_tensors(physical_dimension,bandwidth_dimension,number_of_sites)
+normalize_state_site_tensors = [None]*number_of_sites
 
-state_site_tensors = [normalize(crand(physical_dimension,bandwidth_dimension,bandwidth_dimension),1) for _ in xrange(number_of_sites)]
-
-chain = ChainContractorForExpectations(initial_left_boundary,initial_right_boundary,state_site_tensors,operator_site_tensors)
+chain = ChainContractorForExpectations(state_site_tensors,operator_site_tensors,left_operator_boundary,right_operator_boundary)
 
 current_energy = chain.fully_contract_with_state_site_tensor(state_site_tensors[0].conj(),state_site_tensors[0])
 #@-node:gcross.20090930201628.1304:<< Initialize system >>

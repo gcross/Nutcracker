@@ -6,9 +6,11 @@
 #@+node:gcross.20090930134608.1304:<< Import needed modules >>
 import __builtin__
 from scipy.linalg import svd, eigh, LinAlgError
-from numpy import prod, dot, tensordot, multiply
+from numpy import prod, dot, tensordot, multiply, sqrt, identity
 from numpy.random import rand
 from copy import copy
+from itertools import izip, islice
+#@nonl
 #@-node:gcross.20090930134608.1304:<< Import needed modules >>
 #@nl
 
@@ -247,12 +249,14 @@ def normalize(matrix,index):
     old_shape.append(matrix.shape[index])
 
     new_matrix = matrix.transpose(new_indices).reshape(new_shape)
+    if new_matrix.shape[1] > new_matrix.shape[0]:
+        raise ValueError, "There are not enough degrees of freedom available to normalize the tensor."
 
     old_indices = range(matrix.ndim-1)
     old_indices.insert(index,matrix.ndim-1)
 
     try:
-        u, s, v = svd(new_matrix,full_matrices=0)    
+        u, s, v = svd(new_matrix,full_matrices=0)
         return dot(u,v).reshape(old_shape).transpose(old_indices)
     except LinAlgError:
         M = dot(new_matrix.conj().transpose(),new_matrix)
@@ -337,6 +341,8 @@ def compute_all_normalized_tensors(active_site_number,state_site_tensors,normali
     number_of_sites = len(state_site_tensors)
     bandwidth_dimension = state_site_tensors[0].shape[1]
 
+    state_site_tensors = copy(state_site_tensors)
+
     state_site_tensors_normalized_for_right_contraction = copy(normalized_state_site_tensors)
     inverse_normalizer = identity(state_site_tensors[active_site_number].shape[2])
     for i in xrange(active_site_number,0,-1):
@@ -355,11 +361,32 @@ def compute_all_normalized_tensors(active_site_number,state_site_tensors,normali
 
     return state_site_tensors, state_site_tensors_normalized_for_left_contraction, state_site_tensors_normalized_for_right_contraction
 #@-node:gcross.20091001102811.4005:compute_all_normalized_tensors
+#@+node:gcross.20091001102811.4044:create_normalized_state_site_tensors
+def create_normalized_state_site_tensors(physical_dimension,bandwidth_dimension,number_of_sites):
+    bandwidth_dimension_at_site = [1]
+    next_dimension = physical_dimension
+    while next_dimension < bandwidth_dimension:
+        bandwidth_dimension_at_site.append(next_dimension)
+        next_dimension *= physical_dimension
+
+    if len(bandwidth_dimension_at_site)*2 > number_of_sites:
+        raise ValueError, "The supplied bandwidth dimension is too large for the given physical dimension and number of sites."
+
+    bandwidth_dimension_at_site += [bandwidth_dimension]*(number_of_sites-2*len(bandwidth_dimension_at_site)+1) + bandwidth_dimension_at_site[::-1]
+
+    bandwidth_dimension_iterator = izip(bandwidth_dimension_at_site[:-1],bandwidth_dimension_at_site[1:])
+
+    first_left_bandwidth_dimension, first_right_bandwidth_dimension = bandwidth_dimension_iterator.next()
+
+    return [crand(physical_dimension,first_left_bandwidth_dimension,first_right_bandwidth_dimension)] + \
+           [normalize(crand(physical_dimension,left_bandwidth_dimension,right_bandwidth_dimension),1)
+                for (left_bandwidth_dimension,right_bandwidth_dimension) in bandwidth_dimension_iterator]
+#@-node:gcross.20091001102811.4044:create_normalized_state_site_tensors
 #@-node:gcross.20091001102811.1311:Normalization
 #@+node:gcross.20090930124443.1275:Unit Tests
 if __name__ == '__main__':
     import unittest
-    from numpy import allclose, inner, identity
+    from numpy import allclose, inner
     from numpy.random import randint, rand
     from paycheck import *
     #@    @+others
@@ -442,6 +469,24 @@ if __name__ == '__main__':
             should_be_identity = tensordot(normalized_tensor.conj(),normalized_tensor,(indices_to_sum_over,)*2)
             self.assertTrue(allclose(identity(size),should_be_identity))
         #@-node:gcross.20090930134608.1305:testCorrectness
+        #@+node:gcross.20091001172447.1336:testCorrectnessOnRandomShape
+        @with_checker
+        def testCorrectnessOnRandomShape(self,number_of_dimensions=irange(2,6)):
+            index_to_normalize = randint(0,number_of_dimensions-1)
+
+            shape = [randint(1,5) for _ in xrange(number_of_dimensions)]
+            try:
+                normalized_tensor = normalize(crand(*shape),index_to_normalize)
+            except ValueError:
+                self.assertTrue(prod(shape[:index_to_normalize])*prod(shape[index_to_normalize+1:]) < shape[index_to_normalize])
+                return
+
+            indices_to_sum_over = range(number_of_dimensions)
+            del indices_to_sum_over[index_to_normalize]
+            should_be_identity = tensordot(normalized_tensor.conj(),normalized_tensor,(indices_to_sum_over,)*2)
+            self.assertTrue(allclose(identity(normalized_tensor.shape[index_to_normalize]),should_be_identity))
+        #@nonl
+        #@-node:gcross.20091001172447.1336:testCorrectnessOnRandomShape
         #@+node:gcross.20091001102811.4004:testMethodAgreement
         @with_checker
         def testMethodAgreement(self,number_of_dimensions=irange(2,4),size=irange(2,5)):
@@ -487,8 +532,8 @@ if __name__ == '__main__':
         #@    @+others
         #@+node:gcross.20091001102811.4031:testCorrectnessGoingLeft
         @with_checker
-        def testCorrectnessGoingLeft(self,number_of_dimensions=irange(2,4),size=irange(2,5),number_of_sites=irange(2,2)):
-            state_site_tensors = [normalize(crand(2,1,size),2)] + [normalize(crand(2,size,size),2)]*(number_of_sites-2) + [crand(2,size,1)]
+        def testCorrectnessGoingLeft(self,bandwidth_dimension=irange(2,4),number_of_sites=irange(4,6)):
+            state_site_tensors = create_normalized_state_site_tensors(2,bandwidth_dimension,number_of_sites)
             correct_state_tensor = reduce(dot,state_site_tensors).squeeze()
             normalized_state_site_tensors = copy(state_site_tensors)
 
@@ -500,8 +545,8 @@ if __name__ == '__main__':
         #@-node:gcross.20091001102811.4031:testCorrectnessGoingLeft
         #@+node:gcross.20091001102811.4033:testCorrectnessGoingRight
         @with_checker
-        def testCorrectnessGoingRight(self,number_of_dimensions=irange(2,4),size=irange(2,5),number_of_sites=irange(2,6)):
-            state_site_tensors = [crand(2,1,size)] + [normalize(crand(2,size,size),1)]*(number_of_sites-2) + [normalize(crand(2,size,1),1)]
+        def testCorrectnessGoingRight(self,bandwidth_dimension=irange(2,4),number_of_sites=irange(4,6)):
+            state_site_tensors = create_normalized_state_site_tensors(2,bandwidth_dimension,number_of_sites)
             correct_state_tensor = reduce(dot,state_site_tensors).squeeze()
             normalized_state_site_tensors = copy(state_site_tensors)
 
@@ -513,9 +558,9 @@ if __name__ == '__main__':
         #@-node:gcross.20091001102811.4033:testCorrectnessGoingRight
         #@+node:gcross.20091001102811.4035:testCorrectnessBothWays
         @with_checker
-        def testCorrectnessBothWays(self,number_of_dimensions=irange(2,4),size=irange(2,5),number_of_sites=irange(2,6)):
+        def testCorrectnessBothWays(self,bandwidth_dimension=irange(2,4),number_of_sites=irange(4,6)):
             active_site_number = randint(0,number_of_sites-1)
-            state_site_tensors = [crand(2,1,size)] + [crand(2,size,size)]*(number_of_sites-2) + [crand(2,size,1)]
+            state_site_tensors = create_normalized_state_site_tensors(2,bandwidth_dimension,number_of_sites)
             for i in xrange(active_site_number):
                 state_site_tensors[i] = normalize(state_site_tensors[i],2)
             for i in xrange(active_site_number+1,number_of_sites):
@@ -531,6 +576,18 @@ if __name__ == '__main__':
         #@-node:gcross.20091001102811.4035:testCorrectnessBothWays
         #@-others
     #@-node:gcross.20091001102811.4028:compute_all_normalized_tensors_test
+    #@+node:gcross.20091001172447.1333:create_normalized_state_site_tensors
+    class create_normalized_state_site_tensors_tests(unittest.TestCase):
+        #@    @+others
+        #@+node:gcross.20091001172447.1334:testNormalization
+        @with_checker
+        def testNormalization(self,physical_dimension=irange(2,5),bandwidth_dimension=irange(2,4),number_of_sites=irange(4,6)):
+            state_site_tensors = create_normalized_state_site_tensors(physical_dimension,bandwidth_dimension,number_of_sites)
+            for state_site_tensor in state_site_tensors[1:]:
+                self.assertTrue(allclose(identity(state_site_tensor.shape[1]),tensordot(state_site_tensor.conj(),state_site_tensor,((0,2),(0,2)))))
+        #@-node:gcross.20091001172447.1334:testNormalization
+        #@-others
+    #@-node:gcross.20091001172447.1333:create_normalized_state_site_tensors
     #@-others
     unittest.main()
 #@-node:gcross.20090930124443.1275:Unit Tests

@@ -4,8 +4,8 @@
 
 #@<< Import needed modules >>
 #@+node:gcross.20090930134608.1306:<< Import needed modules >>
-from utils import make_contractor_from_implicit_joins
-from numpy import inner, complex128, argsort, real, isfinite
+from utils import make_contractor_from_implicit_joins, compute_all_normalized_tensors
+from numpy import inner, complex128, argsort, real, isfinite, ones, prod, conj
 from scipy.sparse.linalg.eigen.arpack import eigen
 from scipy.sparse.linalg import aslinearoperator
 #@-node:gcross.20090930134608.1306:<< Import needed modules >>
@@ -160,7 +160,7 @@ partially_contract_expectation = make_contractor_from_implicit_joins([
     21,
 ])
 #@-node:gcross.20090930134608.1334:Partial contraction for expectation
-#@+node:gcross.20090930134608.1336:Partial contraction for overlap
+#@+node:gcross.20091001102811.4043:Partial contraction for overlap
 #@+at
 # 
 # L = left boundary
@@ -168,25 +168,25 @@ partially_contract_expectation = make_contractor_from_implicit_joins([
 # S = state site tensor
 # O = operator site tensor
 # 
-# /-1-   -21-\
+# /-1- S*-21-\
 # |    |     |
 # |    42    |
 # |    |     |
-# \-3--S--23-/
+# \-3--  -23-/
 # 
 #@-at
 #@@c
 
 partially_contract_overlap = make_contractor_from_implicit_joins([
-    [42,3,23],     # state site tensor
-    [1,3],       # left boundary tensor
+    [42,1,21],  # state site tensor
+    [1,3],      # left boundary tensor
     [21,23],    # right boundary tensor
 ],[
     42,
-    1,
-    21,
+    3,
+    23,
 ])
-#@-node:gcross.20090930134608.1336:Partial contraction for overlap
+#@-node:gcross.20091001102811.4043:Partial contraction for overlap
 #@+node:gcross.20090930134608.1360:Compute optimization matrix
 #@+at
 # 
@@ -218,6 +218,18 @@ compute_optimization_matrix = make_contractor_from_implicit_joins([
 ])
 #@-node:gcross.20090930134608.1360:Compute optimization matrix
 #@-node:gcross.20090930124443.1285:Contractors
+#@+node:gcross.20091001102811.4045:create_projector_from_ending_simulation_state
+def create_projector_from_ending_simulation_state(
+  old_state_site_tensors,normalized_old_state_site_tensors,
+  initial_new_state_site_tensors,
+  active_site_number=0
+    ):
+    overlap_state_site_tensors, overlap_state_site_tensors_normalized_for_left_contraction, overlap_state_site_tensors_normalized_for_right_contraction = compute_all_normalized_tensors(active_site_number,old_state_site_tensors,normalized_old_state_site_tensors)
+    return ChainContractorForProjector(
+        overlap_state_site_tensors, overlap_state_site_tensors_normalized_for_left_contraction, overlap_state_site_tensors_normalized_for_right_contraction,
+        initial_new_state_site_tensors,
+    )
+#@-node:gcross.20091001102811.4045:create_projector_from_ending_simulation_state
 #@-node:gcross.20090930124443.1294:Functions
 #@+node:gcross.20090930134608.1354:Exceptions
 #@+node:gcross.20090930134608.1356:class ConvergenceError
@@ -240,20 +252,13 @@ class ChainContractorBase(object):
     ]
     #@-node:gcross.20090930134608.1289:__slots__
     #@+node:gcross.20090930134608.1323:__init__
-    def __init__(self,initial_left_boundary,initial_right_boundary,number_of_sites,physical_dimension):
-        self.left_boundary = initial_left_boundary
-        self.right_boundary = initial_right_boundary
+    def __init__(self,number_of_sites):
         self.number_of_sites = number_of_sites
         self.current_site_number = 0
         self.left_boundary_stack = []
         self.left_operator_stack = []
         self.right_boundary_stack = []
         self.right_operator_stack = []
-        self.physical_dimension = physical_dimension
-        bandwidth_dimension = initial_left_boundary.shape[0]
-        self.bandwidth_dimension = bandwidth_dimension
-        self.state_site_vector_size = physical_dimension * bandwidth_dimension**2
-        self.state_site_tensor_shape = (physical_dimension,bandwidth_dimension,bandwidth_dimension)
     #@-node:gcross.20090930134608.1323:__init__
     #@+node:gcross.20090930134608.1263:push_XXX_boundary
     def push_left_boundary(self):
@@ -296,9 +301,11 @@ class ChainContractorBase(object):
 class ChainContractorForExpectations(ChainContractorBase):
     #@    @+others
     #@+node:gcross.20090930134608.1273:__init__
-    def __init__(self,initial_left_boundary,initial_right_boundary,initial_state_site_tensors,operator_site_tensors):
-        ChainContractorBase.__init__(self,initial_left_boundary,initial_right_boundary,len(initial_state_site_tensors),initial_state_site_tensors[0].shape[0])
+    def __init__(self,initial_state_site_tensors,operator_site_tensors,left_operator_boundary,right_operator_boundary):
+        ChainContractorBase.__init__(self,len(initial_state_site_tensors))
         assert(self.number_of_sites == len(operator_site_tensors))
+        self.left_boundary = left_operator_boundary.reshape(1,len(left_operator_boundary),1)
+        self.right_boundary = right_operator_boundary.reshape(1,len(right_operator_boundary),1)
         for i in xrange(self.number_of_sites-1,0,-1):
             self.operator_site_tensor = operator_site_tensors[i]
             self.push_right_boundary()
@@ -336,9 +343,9 @@ class ChainContractorForExpectations(ChainContractorBase):
 
     #@-node:gcross.20090930134608.1338:partially_contract_with_state_site_tensor
     #@+node:gcross.20090930134608.1349:compute_optimized_site_matrix
-    def compute_optimized_state_site_tensor(self,guess=None,iteration_cap=None,tol=0,energy_raise_threshold=1e-10,k=1,ncv=None,sigma_solve=None):
-        n = self.state_site_vector_size
-        state_site_tensor_shape = self.state_site_tensor_shape
+    def compute_optimized_state_site_tensor(self,guess,iteration_cap=None,tol=0,energy_raise_threshold=1e-10,k=1,ncv=None,sigma_solve=None):
+        n = prod(guess.shape)
+        state_site_tensor_shape = guess.shape
         class matrix(object):
             shape = (n,n)
             dtype = complex128
@@ -351,7 +358,7 @@ class ChainContractorForExpectations(ChainContractorBase):
                     matrix,1,
                     which='SR',
                     ncv=ncv,
-                    v0=guess.ravel() if guess is not None else None,
+                    v0=guess.ravel(),
                     maxiter=iteration_cap,
                     tol=tol,
                     return_eigenvectors=True
@@ -416,11 +423,10 @@ class ChainContractorForExpectations(ChainContractorBase):
 
         new_energy = real(eigenvalues[index_of_solution])
 
-        if guess is not None:
-            old_energy = self.fully_contract_with_state_site_tensor(guess.conj(),guess)/inner(guess.conj().ravel(),guess.ravel())
+        old_energy = self.fully_contract_with_state_site_tensor(guess.conj(),guess)/inner(guess.conj().ravel(),guess.ravel())
 
-            if old_energy is not None and real(new_energy) > real(old_energy) and abs(new_energy-old_energy)>energy_raise_threshold and False:
-                raise ConvergenceError, "Only found a solution which *raised* the energy. (%.15f < %.15f)" % (new_energy,old_energy)
+        if old_energy is not None and real(new_energy) > real(old_energy) and abs(new_energy-old_energy)>energy_raise_threshold and False:
+            raise ConvergenceError, "Only found a solution which *raised* the energy. (%.15f < %.15f)" % (new_energy,old_energy)
 
         return state_site_tensor, new_energy
     #@-node:gcross.20090930134608.1349:compute_optimized_site_matrix
@@ -434,13 +440,14 @@ class ChainContractorForExpectations(ChainContractorBase):
 class ChainContractorForOverlaps(ChainContractorBase):
     #@    @+others
     #@+node:gcross.20090930134608.1294:__init__
-    def __init__(self,initial_left_boundary,initial_right_boundary,initial_state_A_site_tensors,initial_state_B_site_tensors):
-        ChainContractorBase.__init__(self,initial_left_boundary,initial_right_boundary,len(initial_state_A_site_tensors),initial_state_A_site_tensors[0].shape[0])
+    def __init__(self,initial_state_A_site_tensors_conjugated,initial_state_B_site_tensors):
+        ChainContractorBase.__init__(self,len(initial_state_A_site_tensors_conjugated))
+        self.left_boundary = self.right_boundary = ones((1,1),dtype=complex128)
         self.operator_site_tensor = None
         self.right_operator_stack = [None]*(self.number_of_sites-1)
         for i in xrange(self.number_of_sites-1,0,-1):
             self.push_right_boundary()
-            self.right_boundary = self.contract_into_right_boundary(initial_state_A_site_tensors[i].conj(),initial_state_B_site_tensors[i])
+            self.right_boundary = self.contract_into_right_boundary(initial_state_A_site_tensors_conjugated[i],initial_state_B_site_tensors[i])
     #@-node:gcross.20090930134608.1294:__init__
     #@+node:gcross.20090930134608.1291:contract_into_XXX_boundary
     def contract_into_left_boundary(self,state_A_site_tensor_conjugated,state_B_site_tensor):
@@ -460,24 +467,60 @@ class ChainContractorForOverlaps(ChainContractorBase):
             )
     #@-node:gcross.20090930134608.1291:contract_into_XXX_boundary
     #@+node:gcross.20090930134608.1340:partially_contract_with_state_site_tensor
-    def partially_contract_with_state_site_tensor(self,state_site_tensor):
+    def partially_contract_with_state_site_tensor(self,state_site_tensor_conjugated):
         return \
-            partially_contract_expectation(
-                state_site_tensor,
+            partially_contract_overlap(
+                state_site_tensor_conjugated,
                 self.left_boundary,
                 self.right_boundary
             )
     #@-node:gcross.20090930134608.1340:partially_contract_with_state_site_tensor
     #@-others
 #@-node:gcross.20090930134608.1292:ChainContractorForOverlaps
+#@+node:gcross.20091001102811.4036:ChainContractorForProjector
+class ChainContractorForProjector(ChainContractorForOverlaps):
+    #@    @+others
+    #@+node:gcross.20091001102811.4038:__init__
+    def __init__(self,
+        overlap_state_site_tensors, overlap_state_site_tensors_normalized_for_left_contraction, overlap_state_site_tensors_normalized_for_right_contraction,
+        initial_state_site_tensors,
+      ):
+        self.overlap_state_site_tensors_conjugated = map(conj,overlap_state_site_tensors)
+        self.overlap_state_site_tensors_normalized_for_left_contraction_conjugated = map(lambda x: x.conj() if x is not None else None, overlap_state_site_tensors_normalized_for_left_contraction)
+        self.overlap_state_site_tensors_normalized_for_right_contraction_conjugated = map(lambda x: x.conj() if x is not None else None, overlap_state_site_tensors_normalized_for_right_contraction)
+
+        ChainContractorForOverlaps.__init__(self,
+            self.overlap_state_site_tensors_normalized_for_right_contraction_conjugated,
+            initial_state_site_tensors
+        )
+    #@-node:gcross.20091001102811.4038:__init__
+    #@+node:gcross.20091001102811.4040:contract_and_move_XXX
+    def contract_and_move_left(self,state_site_tensor):
+        ChainContractorForOverlaps.contract_and_move_left(self,
+            self.overlap_state_site_tensors_normalized_for_right_contraction_conjugated[self.current_site_number],
+            state_site_tensor
+        )
+
+    def contract_and_move_right(self,state_site_tensor):
+        ChainContractorForOverlaps.contract_and_move_right(self,
+            self.overlap_state_site_tensors_normalized_for_left_contraction_conjugated[self.current_site_number],
+            state_site_tensor
+        )
+    #@-node:gcross.20091001102811.4040:contract_and_move_XXX
+    #@+node:gcross.20091001102811.4041:compute_projector
+    def compute_projector(self):
+        return self.partially_contract_with_state_site_tensor(self.overlap_state_site_tensors_conjugated[self.current_site_number])
+    #@-node:gcross.20091001102811.4041:compute_projector
+    #@-others
+#@-node:gcross.20091001102811.4036:ChainContractorForProjector
 #@-others
 #@-node:gcross.20090930124443.1293:Classes
 #@+node:gcross.20090930134608.1315:Unit Tests
 if __name__ == '__main__':
     import unittest
-    from utils import crand, normalize
+    from utils import crand, normalize, create_normalized_state_site_tensors
     from paulis import *
-    from numpy import identity, allclose, array, zeros
+    from numpy import identity, allclose, array, zeros, dot
     from numpy.linalg import norm
     from paycheck import *
     #@    @+others
@@ -486,30 +529,34 @@ if __name__ == '__main__':
         #@    @+others
         #@+node:gcross.20090930134608.1327:testOnNormalizedState
         @with_checker
-        def testOnNormalizedState(self,physical_dimension=irange(2,4),bandwidth_dimension=irange(2,4),number_of_sites=irange(2,6)):
-            initial_left_boundary = initial_right_boundary = identity(bandwidth_dimension).reshape(bandwidth_dimension,1,bandwidth_dimension)
-            initial_site_tensors = [normalize(crand(physical_dimension,bandwidth_dimension,bandwidth_dimension),1) for _ in xrange(number_of_sites)]
+        def testOnNormalizedState(self,physical_dimension=irange(2,4),bandwidth_dimension=irange(2,4),number_of_sites=irange(4,6)):
+            operator_left_boundary = operator_right_boundary = array([1])
+            initial_site_tensors = create_normalized_state_site_tensors(physical_dimension,bandwidth_dimension,number_of_sites)
             operator_site_tensors = [identity(physical_dimension).reshape(physical_dimension,physical_dimension,1,1)]*number_of_sites
-            chain = ChainContractorForExpectations(initial_left_boundary,initial_right_boundary,initial_site_tensors,operator_site_tensors)
-            self.assertTrue(allclose(identity(bandwidth_dimension),chain.left_boundary.squeeze()))
-            self.assertTrue(allclose(identity(bandwidth_dimension),chain.right_boundary.squeeze()))
+            chain = ChainContractorForExpectations(initial_site_tensors,operator_site_tensors,operator_left_boundary,operator_right_boundary)
+
+            def check_boundary(boundary):
+                self.assertTrue(allclose(identity(boundary.shape[0]),boundary.squeeze()) or boundary.size == 1 and boundary.squeeze() == 1)
+
+            def check():
+                check_boundary(chain.left_boundary)
+                check_boundary(chain.right_boundary)
+
+            check()
 
             for initial_site_tensor in initial_site_tensors[:-1]:
                 initial_site_tensor = normalize(initial_site_tensor,2)
                 chain.contract_and_move_right(initial_site_tensor.conj(),initial_site_tensor)
-                self.assertTrue(allclose(identity(bandwidth_dimension),chain.left_boundary.squeeze()))
-                self.assertTrue(allclose(identity(bandwidth_dimension),chain.right_boundary.squeeze()))
+                check()
 
             for initial_site_tensor in initial_site_tensors[-1:0:-1]:
                 chain.contract_and_move_left(initial_site_tensor.conj(),initial_site_tensor)
-                self.assertTrue(allclose(identity(bandwidth_dimension),chain.left_boundary.squeeze()))
-                self.assertTrue(allclose(identity(bandwidth_dimension),chain.right_boundary.squeeze()))
+                check()
+
         #@-node:gcross.20090930134608.1327:testOnNormalizedState
         #@+node:gcross.20090930134608.1329:testOnSpinStateInMagneticXField
         @with_checker
         def testOnSpinStateInMagneticXField(self,number_of_sites=irange(2,6)):
-            initial_left_boundary = array([1,0]).reshape(1,2,1)
-            initial_right_boundary = array([0,1]).reshape(1,2,1)
             initial_site_tensor = array([1,0]).reshape(2,1,1)
             initial_site_tensors = [initial_site_tensor]*number_of_sites
             operator_site_tensor = zeros((2,2,2,2),dtype=int)
@@ -517,7 +564,7 @@ if __name__ == '__main__':
             operator_site_tensor[...,0,1] = X
             operator_site_tensor[...,1,1] = I
             operator_site_tensors = [operator_site_tensor]*number_of_sites
-            chain = ChainContractorForExpectations(initial_left_boundary,initial_right_boundary,initial_site_tensors,operator_site_tensors) 
+            chain = ChainContractorForExpectations(initial_site_tensors,operator_site_tensors,array([1,0]),array([0,1]))
             self.assertEqual(0,chain.fully_contract_with_state_site_tensor(initial_site_tensor,initial_site_tensor))
 
             for i in xrange(number_of_sites-1):
@@ -531,8 +578,6 @@ if __name__ == '__main__':
         #@+node:gcross.20090930134608.1333:testOnSpinStateInMagneticZField
         @with_checker
         def testOnSpinStateInMagneticZField(self,number_of_sites=irange(2,6)):
-            initial_left_boundary = array([1,0]).reshape(1,2,1)
-            initial_right_boundary = array([0,1]).reshape(1,2,1)
             initial_site_tensor = array([1,0]).reshape(2,1,1)
             initial_site_tensors = [initial_site_tensor]*number_of_sites
             operator_site_tensor = zeros((2,2,2,2),dtype=int)
@@ -540,7 +585,7 @@ if __name__ == '__main__':
             operator_site_tensor[...,0,1] = Z
             operator_site_tensor[...,1,1] = I
             operator_site_tensors = [operator_site_tensor]*number_of_sites
-            chain = ChainContractorForExpectations(initial_left_boundary,initial_right_boundary,initial_site_tensors,operator_site_tensors) 
+            chain = ChainContractorForExpectations(initial_site_tensors,operator_site_tensors,array([1,0]),array([0,1]))
             self.assertEqual(number_of_sites,chain.fully_contract_with_state_site_tensor(initial_site_tensor,initial_site_tensor))
 
             for i in xrange(number_of_sites-1):
@@ -552,10 +597,8 @@ if __name__ == '__main__':
                 self.assertEqual(number_of_sites,chain.fully_contract_with_state_site_tensor(initial_site_tensor,initial_site_tensor))
         #@-node:gcross.20090930134608.1333:testOnSpinStateInMagneticZField
         #@+node:gcross.20090930134608.1353:testOptimizerOnSpinState1InMagneticField
-        @with_checker
+        @with_checker(number_of_calls=20)
         def testOptimizerOnSpinState1InMagneticField(self,number_of_sites=irange(2,6)):
-            initial_left_boundary = array([1,0],dtype=complex128).reshape(1,2,1)
-            initial_right_boundary = array([0,1],dtype=complex128).reshape(1,2,1)
             initial_site_tensor = array([0,0,1],dtype=complex128).reshape(3,1,1)
             initial_site_tensors = [initial_site_tensor]*number_of_sites
             operator_site_tensor = zeros((3,3,2,2),dtype=complex128)
@@ -563,10 +606,10 @@ if __name__ == '__main__':
             operator_site_tensor[...,0,1] = array([[1,0,0],[0,0,0],[0,0,-1]],complex128)
             operator_site_tensor[...,1,1] = array(identity(3),dtype=complex128)
             operator_site_tensors = [operator_site_tensor]*number_of_sites
-            chain = ChainContractorForExpectations(initial_left_boundary,initial_right_boundary,initial_site_tensors,operator_site_tensors)
+            chain = ChainContractorForExpectations(initial_site_tensors,operator_site_tensors,array([1,0]),array([0,1]))
 
             def check():
-                new_tensor, new_energy = chain.compute_optimized_state_site_tensor()
+                new_tensor, new_energy = chain.compute_optimized_state_site_tensor(crand(*initial_site_tensor.shape))
                 self.assertAlmostEqual(-number_of_sites,new_energy)
                 self.assertTrue(allclose(abs(new_tensor.ravel())/norm(new_tensor.ravel()),array([0,0,1])))
 
@@ -604,28 +647,96 @@ if __name__ == '__main__':
         #@    @+others
         #@+node:gcross.20090930134608.1317:testOnNormalizedState
         @with_checker
-        def testOnNormalizedState(self,physical_dimension=irange(2,4),bandwidth_dimension=irange(2,4),number_of_sites=irange(2,6)):
-            number_of_sites = 2
-            initial_left_boundary = initial_right_boundary = identity(bandwidth_dimension)
-            initial_site_tensors = [normalize(crand(physical_dimension,bandwidth_dimension,bandwidth_dimension),1) for _ in xrange(number_of_sites)]
-            chain = ChainContractorForOverlaps(initial_left_boundary,initial_right_boundary,initial_site_tensors,initial_site_tensors)
-            self.assertTrue(allclose(identity(bandwidth_dimension),chain.left_boundary))
-            self.assertTrue(allclose(identity(bandwidth_dimension),chain.right_boundary))
+        def testOnNormalizedState(self,physical_dimension=irange(2,4),bandwidth_dimension=irange(2,4),number_of_sites=irange(4,6)):
+            initial_site_tensors = create_normalized_state_site_tensors(physical_dimension,bandwidth_dimension,number_of_sites)
+            chain = ChainContractorForOverlaps(map(conj,initial_site_tensors),initial_site_tensors)
+
+            def check_boundary(boundary):
+                self.assertTrue(allclose(identity(boundary.shape[0]),boundary.squeeze()) or boundary.size == 1 and boundary.squeeze() == 1)
+
+            def check():
+                check_boundary(chain.left_boundary)
+                check_boundary(chain.right_boundary)
+
+            check()
 
             for initial_site_tensor in initial_site_tensors[:-1]:
                 initial_site_tensor = normalize(initial_site_tensor,2)
                 chain.contract_and_move_right(initial_site_tensor.conj(),initial_site_tensor)
-                self.assertTrue(allclose(identity(bandwidth_dimension),chain.left_boundary))
-                self.assertTrue(allclose(identity(bandwidth_dimension),chain.right_boundary))
+                check()
 
             for initial_site_tensor in initial_site_tensors[-1:0:-1]:
                 chain.contract_and_move_left(initial_site_tensor.conj(),initial_site_tensor)
-                self.assertTrue(allclose(identity(bandwidth_dimension),chain.left_boundary))
-                self.assertTrue(allclose(identity(bandwidth_dimension),chain.right_boundary))
+                check()
+
         #@-node:gcross.20090930134608.1317:testOnNormalizedState
         #@-others
     #@nonl
     #@-node:gcross.20090930134608.1316:ChainContractorForOverlapsTests
+    #@+node:gcross.20091001102811.4048:create_projector_from_ending_simulation_state
+    class create_projector_from_ending_simulation_state_tests(unittest.TestCase):
+        #@    @+others
+        #@+node:gcross.20091001172447.1338:testNormalizedState
+        @with_checker
+        def testNormalizedState(self,physical_dimension=irange(2,4),bandwidth_dimension=irange(2,4),number_of_sites=irange(4,6)):
+            state_site_tensors = create_normalized_state_site_tensors(physical_dimension,bandwidth_dimension,number_of_sites)
+
+            correct_value = dot(reduce(dot,state_site_tensors).squeeze().ravel().conj(),reduce(dot,state_site_tensors).squeeze().ravel())
+
+            chain = \
+                create_projector_from_ending_simulation_state(
+                    state_site_tensors,state_site_tensors,
+                    state_site_tensors
+                )
+
+            state_site_tensors, state_site_tensors_normalized_for_left_contraction, state_site_tensors_normalized_for_right_contraction = compute_all_normalized_tensors(0,state_site_tensors,state_site_tensors)
+
+
+            def check(i):
+                self.assertAlmostEqual(correct_value,dot(chain.compute_projector().ravel(),state_site_tensors[i].ravel()))
+
+            check(0)
+
+            for i in xrange(number_of_sites-1):
+                chain.contract_and_move_right(state_site_tensors_normalized_for_left_contraction[i])
+                check(i+1)
+
+            for i in xrange(number_of_sites-1,0,-1):
+                chain.contract_and_move_left(state_site_tensors_normalized_for_right_contraction[i])
+                check(i-1)
+        #@-node:gcross.20091001172447.1338:testNormalizedState
+        #@+node:gcross.20091001102811.4049:testCorrectness
+        @with_checker
+        def testCorrectness(self,physical_dimension=irange(2,4),bandwidth_dimension=irange(2,4),number_of_sites=irange(4,6)):
+            state_A_site_tensors = create_normalized_state_site_tensors(physical_dimension,bandwidth_dimension,number_of_sites)
+            state_B_site_tensors = create_normalized_state_site_tensors(physical_dimension,bandwidth_dimension,number_of_sites)
+
+            correct_value = dot(reduce(dot,state_A_site_tensors).squeeze().ravel().conj(),reduce(dot,state_B_site_tensors).squeeze().ravel())
+
+            chain = \
+                create_projector_from_ending_simulation_state(
+                    state_A_site_tensors,state_A_site_tensors,
+                    state_B_site_tensors
+                )
+
+            state_B_site_tensors, state_B_site_tensors_normalized_for_left_contraction, state_B_site_tensors_normalized_for_right_contraction = compute_all_normalized_tensors(0,state_B_site_tensors,state_B_site_tensors)
+
+
+            def check(i):
+                self.assertAlmostEqual(correct_value,dot(chain.compute_projector().ravel(),state_B_site_tensors[i].ravel()))
+
+            check(0)
+
+            for i in xrange(number_of_sites-1):
+                chain.contract_and_move_right(state_B_site_tensors_normalized_for_left_contraction[i])
+                check(i+1)
+
+            for i in xrange(number_of_sites-1,0,-1):
+                chain.contract_and_move_left(state_B_site_tensors_normalized_for_right_contraction[i])
+                check(i-1)
+        #@-node:gcross.20091001102811.4049:testCorrectness
+        #@-others
+    #@-node:gcross.20091001102811.4048:create_projector_from_ending_simulation_state
     #@-others
     unittest.main()
 #@-node:gcross.20090930134608.1315:Unit Tests
