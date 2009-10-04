@@ -349,7 +349,7 @@ class ChainContractorForExpectations(ChainContractorBase):
                     matrix,1,
                     which='SR',
                     ncv=ncv,
-                    v0=guess.ravel(),
+                    v0=project(guess.ravel().copy()),
                     maxiter=iteration_cap,
                     tol=tol,
                     return_eigenvectors=True
