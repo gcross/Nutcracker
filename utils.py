@@ -356,9 +356,8 @@ def compute_normalized_tensors(unnormalized_tensor,normalized_tensors,index_to_n
     oppositely_normalized_tensors = []
 
     for normalized_tensor in normalized_tensors:
-        oppositely_normalized_tensor, inverse_normalizer = normalize_and_return_inverse_normalizer(unnormalized_tensor,index_to_normalize)
+        oppositely_normalized_tensor, unnormalized_tensor = normalize_and_denormalize(unnormalized_tensor,index_to_normalize,normalized_tensor,index_to_unnormalize)
         oppositely_normalized_tensors.append(oppositely_normalized_tensor)
-        unnormalized_tensor = multiply_tensor_by_matrix_at_index(normalized_tensor,inverse_normalizer.transpose(),index_to_unnormalize)
         unnormalized_tensors.append(unnormalized_tensor)
 
     return oppositely_normalized_tensors, unnormalized_tensors
@@ -401,6 +400,12 @@ def create_normalized_state_site_tensors(physical_dimension,bandwidth_dimension,
            [normalize(crand(physical_dimension,left_bandwidth_dimension,right_bandwidth_dimension),1)
                 for (left_bandwidth_dimension,right_bandwidth_dimension) in bandwidth_dimension_iterator]
 #@-node:gcross.20091001102811.4044:create_normalized_state_site_tensors
+#@+node:gcross.20091004090150.1354:normalize_and_denormalize
+def normalize_and_denormalize(tensor_to_normalize,index_to_normalize,tensor_to_denormalize,index_to_denormalize):
+    normalized_tensor, inverse_normalizer = normalize_and_return_inverse_normalizer(tensor_to_normalize,index_to_normalize)
+    unnormalized_tensor = multiply_tensor_by_matrix_at_index(tensor_to_denormalize,inverse_normalizer.transpose(),index_to_denormalize)
+    return normalized_tensor, unnormalized_tensor
+#@-node:gcross.20091004090150.1354:normalize_and_denormalize
 #@-node:gcross.20091001102811.1311:Normalization
 #@+node:gcross.20090930124443.1275:Unit Tests
 if __name__ == '__main__':
@@ -693,6 +698,23 @@ if __name__ == '__main__':
         #@-node:gcross.20091001172447.1334:testNormalization
         #@-others
     #@-node:gcross.20091001172447.1333:create_normalized_state_site_tensors_tests
+    #@+node:gcross.20091004090150.1355:normalize_and_denormalize_tests
+    class normalize_and_denormalize_tests(unittest.TestCase):
+        #@    @+others
+        #@+node:gcross.20091004090150.1356:testEquivalence
+        @with_checker
+        def testEquivalence(self,number_of_dimensions=irange(2,4),size=irange(2,5)):
+            index_to_normalize = randint(0,number_of_dimensions-1)
+            index_to_denormalize = randint(0,number_of_dimensions-1)
+            tensor_A, tensor_B = crand(2,*(size,)*number_of_dimensions)
+            normalized_tensor_A_1, inverse_normalizer = normalize_and_return_inverse_normalizer(tensor_A,index_to_normalize)
+            unnormalized_tensor_B_1 = multiply_tensor_by_matrix_at_index(tensor_B,inverse_normalizer.transpose(),index_to_denormalize)
+            normalized_tensor_A_2, unnormalized_tensor_B_2 = normalize_and_denormalize(tensor_A,index_to_normalize,tensor_B,index_to_denormalize)
+            self.assertTrue(allclose(normalized_tensor_A_1,normalized_tensor_A_2))
+            self.assertTrue(allclose(unnormalized_tensor_B_1,unnormalized_tensor_B_2))
+        #@-node:gcross.20091004090150.1356:testEquivalence
+        #@-others
+    #@-node:gcross.20091004090150.1355:normalize_and_denormalize_tests
     #@-others
     unittest.main()
 #@-node:gcross.20090930124443.1275:Unit Tests
