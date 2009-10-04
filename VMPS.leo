@@ -17,9 +17,13 @@
 <v t="gcross.20090930212235.1299"><vh>@thin simulate-TI.py</vh></v>
 <v t="gcross.20090930213318.1312"><vh>@thin compute-TI-spectrum.py</vh></v>
 </v>
+<v t="gcross.20091004090150.1371"><vh>Gadget Model</vh>
+<v t="gcross.20091004090150.1364"><vh>@thin simulate-gadget.py</vh></v>
+</v>
 </vnodes>
 <tnodes>
-<t tx="gcross.20090930124443.1231" str_leo_pos="1"></t>
+<t tx="gcross.20090930124443.1231" str_leo_pos="5,1"></t>
 <t tx="gcross.20090930213318.1310"></t>
+<t tx="gcross.20091004090150.1371"></t>
 </tnodes>
 </leo_file>
