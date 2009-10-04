@@ -539,7 +539,7 @@ class ChainProjector(object):
     #@+node:gcross.20091002125713.1377:construct_projector
     def construct_projector(self):
         if len(self.projector_chains) == 0:
-            return lambda x: None
+            return lambda x: x
         else:
             orthogonal_projection_vectors = \
                 qr( # This takes the matrix whose rows are the projection vectors and computes the RQ decomposition,
