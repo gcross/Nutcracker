@@ -4,8 +4,8 @@
 
 #@<< Import needed modules >>
 #@+node:gcross.20090930134608.1306:<< Import needed modules >>
-from utils import make_contractor_from_implicit_joins, compute_all_normalized_tensors, conjugate_lists_where_not_None
-from numpy import inner, complex128, argsort, real, isfinite, ones, prod, conj
+from utils import make_contractor_from_implicit_joins, compute_all_normalized_tensors, conjugate_lists_where_not_None, normalize_and_denormalize
+from numpy import inner, complex128, argsort, real, isfinite, ones, prod, conj, array, dot
 from scipy.sparse.linalg.eigen.arpack import eigen
 from scipy.sparse.linalg import aslinearoperator
 from scipy.linalg import qr
@@ -334,7 +334,7 @@ class ChainContractorForExpectations(ChainContractorBase):
 
     #@-node:gcross.20090930134608.1338:partially_contract_with_state_site_tensor
     #@+node:gcross.20090930134608.1349:compute_optimized_site_matrix
-    def compute_optimized_state_site_tensor(self,guess,iteration_cap=None,tol=0,energy_raise_threshold=1e-10,k=1,ncv=None,sigma_solve=None):
+    def compute_optimized_state_site_tensor(self,guess,project=lambda x: x,iteration_cap=None,tol=0,energy_raise_threshold=1e-10,k=1,ncv=None,sigma_solve=None):
         n = prod(guess.shape)
         state_site_tensor_shape = guess.shape
         class matrix(object):
@@ -342,7 +342,7 @@ class ChainContractorForExpectations(ChainContractorBase):
             dtype = complex128
             @staticmethod
             def matvec(state_site_vector):
-                return self.partially_contract_with_state_site_tensor(state_site_vector.reshape(state_site_tensor_shape)).ravel()
+                return project(self.partially_contract_with_state_site_tensor(project(state_site_vector).reshape(state_site_tensor_shape)).ravel())
         try:
             eigenvalues, eigenvectors = \
                 eigen(
@@ -550,10 +550,11 @@ class ChainProjector(object):
                     econ = True # Don't bother computing a full set of orthogonal vectors, only compute enough to span the same space
                 )[0].transpose()
             orthogonal_projection_vector_pairs = zip(orthogonal_projection_vectors,map(conj,orthogonal_projection_vectors))
-            def project(state_site_tensor_as_vector):
+            def project(state_site_tensor):
+                state_site_tensor_as_vector = state_site_tensor.ravel()
                 for orthogonal_projection_vector, orthogonal_projection_vector_conjugated in orthogonal_projection_vector_pairs:
                     state_site_tensor_as_vector -= dot(orthogonal_projection_vector,state_site_tensor_as_vector)*orthogonal_projection_vector_conjugated
-                return state_site_tensor_as_vector
+                return state_site_tensor_as_vector.reshape(state_site_tensor.shape)
             return project
     #@-node:gcross.20091002125713.1377:construct_projector
     #@+node:gcross.20091002125713.1387:contract_and_move_XXX
@@ -565,6 +566,16 @@ class ChainProjector(object):
         for chain in self.projector_chains:
             chain.contract_and_move_right(state_site_tensor)
     #@-node:gcross.20091002125713.1387:contract_and_move_XXX
+    #@+node:gcross.20091004090150.1353:orthogonalize
+    def orthogonalize(self,state_site_tensors):
+        for i in xrange(len(state_site_tensors)-1):
+            state_site_tensors[i], state_site_tensors[i+1] = normalize_and_denormalize(self.construct_projector()(state_site_tensors[i]),2,state_site_tensors[i+1],1)
+            self.contract_and_move_right(state_site_tensors[i])
+
+        for i in xrange(len(state_site_tensors)-1,0,-1):
+            state_site_tensors[i], state_site_tensors[i-1] = normalize_and_denormalize(self.construct_projector()(state_site_tensors[i]),1,state_site_tensors[i-1],2)
+            self.contract_and_move_left(state_site_tensors[i])
+    #@-node:gcross.20091004090150.1353:orthogonalize
     #@-others
 #@-node:gcross.20091002125713.1355:ChainProjector
 #@-others
@@ -574,7 +585,7 @@ if __name__ == '__main__':
     import unittest
     from utils import crand, normalize, create_normalized_state_site_tensors
     from paulis import *
-    from numpy import identity, allclose, array, zeros, dot
+    from numpy import identity, allclose, zeros
     from numpy.linalg import norm
     from copy import copy
     from paycheck import *
