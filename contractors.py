@@ -390,6 +390,16 @@ class ChainContractorForExpectations(ChainContractorBase):
     # \end{itemize}
     #@-at
     #@@c
+
+        if all(max(abs(eigenvector))<1e-10 for eigenvector in eigenvectors):
+            raise ConvergenceError, "Unable to find a non-vanishing eigenvector."
+
+        if all(not isfinite(eigenvalue) for eigenvalue in eigenvalues):
+            raise ConvergenceError, "All eigenvalues are infinite."
+
+        if all(not isfinite(eigenvector).all() for eigenvector in eigenvectors):
+            raise ConvergenceError, "All eigenvectors are infinite."
+
         def is_acceptable(index):
             evec = eigenvectors[index]
             eval = eigenvalues[index]
