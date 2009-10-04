@@ -4,10 +4,12 @@
 
 #@<< Import needed modules >>
 #@+node:gcross.20090930134608.1306:<< Import needed modules >>
-from utils import make_contractor_from_implicit_joins, compute_all_normalized_tensors
+from utils import make_contractor_from_implicit_joins, compute_all_normalized_tensors, conjugate_lists_where_not_None
 from numpy import inner, complex128, argsort, real, isfinite, ones, prod, conj
 from scipy.sparse.linalg.eigen.arpack import eigen
 from scipy.sparse.linalg import aslinearoperator
+from scipy.linalg import qr
+from itertools import izip
 #@-node:gcross.20090930134608.1306:<< Import needed modules >>
 #@nl
 
@@ -218,18 +220,6 @@ compute_optimization_matrix = make_contractor_from_implicit_joins([
 ])
 #@-node:gcross.20090930134608.1360:Compute optimization matrix
 #@-node:gcross.20090930124443.1285:Contractors
-#@+node:gcross.20091001102811.4045:create_projector_from_ending_simulation_state
-def create_projector_from_ending_simulation_state(
-  old_state_site_tensors,normalized_old_state_site_tensors,
-  initial_new_state_site_tensors,
-  active_site_number=0
-    ):
-    overlap_state_site_tensors, overlap_state_site_tensors_normalized_for_left_contraction, overlap_state_site_tensors_normalized_for_right_contraction = compute_all_normalized_tensors(active_site_number,old_state_site_tensors,normalized_old_state_site_tensors)
-    return ChainContractorForProjector(
-        overlap_state_site_tensors, overlap_state_site_tensors_normalized_for_left_contraction, overlap_state_site_tensors_normalized_for_right_contraction,
-        initial_new_state_site_tensors,
-    )
-#@-node:gcross.20091001102811.4045:create_projector_from_ending_simulation_state
 #@-node:gcross.20090930124443.1294:Functions
 #@+node:gcross.20090930134608.1354:Exceptions
 #@+node:gcross.20090930134608.1356:class ConvergenceError
@@ -239,6 +229,7 @@ class ConvergenceError(Exception):
 #@-node:gcross.20090930134608.1354:Exceptions
 #@+node:gcross.20090930124443.1293:Classes
 #@+others
+#@+node:gcross.20091002125713.1354:chains
 #@+node:gcross.20090930134608.1341:ChainContractorBase
 class ChainContractorBase(object):
     #@    @+others
@@ -482,12 +473,14 @@ class ChainContractorForProjector(ChainContractorForOverlaps):
     #@    @+others
     #@+node:gcross.20091001102811.4038:__init__
     def __init__(self,
-        overlap_state_site_tensors, overlap_state_site_tensors_normalized_for_left_contraction, overlap_state_site_tensors_normalized_for_right_contraction,
         initial_state_site_tensors,
+        overlap_state_site_tensors_conjugated,
+        overlap_state_site_tensors_normalized_for_left_contraction_conjugated,
+        overlap_state_site_tensors_normalized_for_right_contraction_conjugated,
       ):
-        self.overlap_state_site_tensors_conjugated = map(conj,overlap_state_site_tensors)
-        self.overlap_state_site_tensors_normalized_for_left_contraction_conjugated = map(lambda x: x.conj() if x is not None else None, overlap_state_site_tensors_normalized_for_left_contraction)
-        self.overlap_state_site_tensors_normalized_for_right_contraction_conjugated = map(lambda x: x.conj() if x is not None else None, overlap_state_site_tensors_normalized_for_right_contraction)
+        self.overlap_state_site_tensors_conjugated = overlap_state_site_tensors_conjugated
+        self.overlap_state_site_tensors_normalized_for_left_contraction_conjugated = overlap_state_site_tensors_normalized_for_left_contraction_conjugated
+        self.overlap_state_site_tensors_normalized_for_right_contraction_conjugated = overlap_state_site_tensors_normalized_for_right_contraction_conjugated
 
         ChainContractorForOverlaps.__init__(self,
             self.overlap_state_site_tensors_normalized_for_right_contraction_conjugated,
@@ -513,6 +506,67 @@ class ChainContractorForProjector(ChainContractorForOverlaps):
     #@-node:gcross.20091001102811.4041:compute_projector
     #@-others
 #@-node:gcross.20091001102811.4036:ChainContractorForProjector
+#@-node:gcross.20091002125713.1354:chains
+#@+node:gcross.20091002125713.1355:ChainProjector
+class ChainProjector(object):
+    #@    @+others
+    #@+node:gcross.20091002125713.1375:__slots__
+    __slots__ = [
+        "orthogonal_state_information_list",
+        "projector_chains",
+        "current_site_number"
+    ]
+    #@-node:gcross.20091002125713.1375:__slots__
+    #@+node:gcross.20091002125713.1376:__init__
+    def __init__(self):
+        self.orthogonal_state_information_list = []
+        self.projector_chains = []
+        self.current_site_number = 0
+    #@-node:gcross.20091002125713.1376:__init__
+    #@+node:gcross.20091002125713.1379:add_additional_state_to_projector_and_reset_chains_with_new_initial_state
+    def add_additional_state_to_projector_and_reset_chains_with_new_initial_state(self,old_state_site_tensors,initial_new_state_site_tensors,active_site_number=0):
+        overlap_state_information = conjugate_lists_where_not_None(compute_all_normalized_tensors(old_state_site_tensors,active_site_number))
+
+        self.orthogonal_state_information_list.append(overlap_state_information)
+
+        self.projector_chains = [
+            ChainContractorForProjector(initial_new_state_site_tensors,*orthogonal_state_information)
+            for orthogonal_state_information in self.orthogonal_state_information_list
+        ]
+
+        self.current_site_number = 0
+    #@-node:gcross.20091002125713.1379:add_additional_state_to_projector_and_reset_chains_with_new_initial_state
+    #@+node:gcross.20091002125713.1377:construct_projector
+    def construct_projector(self):
+        if len(self.projector_chains) == 0:
+            return lambda x: None
+        else:
+            orthogonal_projection_vectors = \
+                qr( # This takes the matrix whose rows are the projection vectors and computes the RQ decomposition,
+                    # where Q is a new matrix whose rows span the same linear space but are orthogonal.
+                    # (We throw out R because we don't care about it.)
+                    array([projector_chain.compute_projector().ravel() for projector_chain in self.projector_chains]).transpose(),
+                    overwrite_a = True, # We don't need the original matrix anymore, so re-use its memory
+                    econ = True # Don't bother computing a full set of orthogonal vectors, only compute enough to span the same space
+                )[0].transpose()
+            orthogonal_projection_vector_pairs = zip(orthogonal_projection_vectors,map(conj,orthogonal_projection_vectors))
+            def project(state_site_tensor_as_vector):
+                for orthogonal_projection_vector, orthogonal_projection_vector_conjugated in orthogonal_projection_vector_pairs:
+                    state_site_tensor_as_vector -= dot(orthogonal_projection_vector,state_site_tensor_as_vector)*orthogonal_projection_vector_conjugated
+                return state_site_tensor_as_vector
+            return project
+    #@-node:gcross.20091002125713.1377:construct_projector
+    #@+node:gcross.20091002125713.1387:contract_and_move_XXX
+    def contract_and_move_left(self,state_site_tensor):
+        for chain in self.projector_chains:
+            chain.contract_and_move_left(state_site_tensor)
+
+    def contract_and_move_right(self,state_site_tensor):
+        for chain in self.projector_chains:
+            chain.contract_and_move_right(state_site_tensor)
+    #@-node:gcross.20091002125713.1387:contract_and_move_XXX
+    #@-others
+#@-node:gcross.20091002125713.1355:ChainProjector
 #@-others
 #@-node:gcross.20090930124443.1293:Classes
 #@+node:gcross.20090930134608.1315:Unit Tests
@@ -522,6 +576,7 @@ if __name__ == '__main__':
     from paulis import *
     from numpy import identity, allclose, array, zeros, dot
     from numpy.linalg import norm
+    from copy import copy
     from paycheck import *
     #@    @+others
     #@+node:gcross.20090930134608.1326:ChainContractorForExpectationsTests
@@ -673,8 +728,8 @@ if __name__ == '__main__':
         #@-others
     #@nonl
     #@-node:gcross.20090930134608.1316:ChainContractorForOverlapsTests
-    #@+node:gcross.20091001102811.4048:create_projector_from_ending_simulation_state
-    class create_projector_from_ending_simulation_state_tests(unittest.TestCase):
+    #@+node:gcross.20091001102811.4048:ChainContractorForProjectorTests
+    class ChainContractorForProjectorTests(unittest.TestCase):
         #@    @+others
         #@+node:gcross.20091001172447.1338:testNormalizedState
         @with_checker
@@ -683,16 +738,15 @@ if __name__ == '__main__':
 
             correct_value = dot(reduce(dot,state_site_tensors).squeeze().ravel().conj(),reduce(dot,state_site_tensors).squeeze().ravel())
 
-            chain = \
-                create_projector_from_ending_simulation_state(
-                    state_site_tensors,state_site_tensors,
-                    state_site_tensors
-                )
+            chain = ChainContractorForProjector(
+                state_site_tensors,
+                *conjugate_lists_where_not_None(compute_all_normalized_tensors(state_site_tensors))
+            )
 
-            state_site_tensors, state_site_tensors_normalized_for_left_contraction, state_site_tensors_normalized_for_right_contraction = compute_all_normalized_tensors(0,state_site_tensors,state_site_tensors)
-
+            state_site_tensors, state_site_tensors_normalized_for_left_contraction, state_site_tensors_normalized_for_right_contraction = compute_all_normalized_tensors(state_site_tensors)
 
             def check(i):
+                self.assertTrue(allclose(chain.compute_projector(),state_site_tensors[i].conj()))
                 self.assertAlmostEqual(correct_value,dot(chain.compute_projector().ravel(),state_site_tensors[i].ravel()))
 
             check(0)
@@ -713,13 +767,12 @@ if __name__ == '__main__':
 
             correct_value = dot(reduce(dot,state_A_site_tensors).squeeze().ravel().conj(),reduce(dot,state_B_site_tensors).squeeze().ravel())
 
-            chain = \
-                create_projector_from_ending_simulation_state(
-                    state_A_site_tensors,state_A_site_tensors,
-                    state_B_site_tensors
-                )
+            chain = ChainContractorForProjector(
+                state_B_site_tensors,
+                *conjugate_lists_where_not_None(compute_all_normalized_tensors(state_A_site_tensors))
+            )
 
-            state_B_site_tensors, state_B_site_tensors_normalized_for_left_contraction, state_B_site_tensors_normalized_for_right_contraction = compute_all_normalized_tensors(0,state_B_site_tensors,state_B_site_tensors)
+            state_B_site_tensors, state_B_site_tensors_normalized_for_left_contraction, state_B_site_tensors_normalized_for_right_contraction = compute_all_normalized_tensors(state_B_site_tensors)
 
 
             def check(i):
@@ -736,7 +789,78 @@ if __name__ == '__main__':
                 check(i-1)
         #@-node:gcross.20091001102811.4049:testCorrectness
         #@-others
-    #@-node:gcross.20091001102811.4048:create_projector_from_ending_simulation_state
+    #@-node:gcross.20091001102811.4048:ChainContractorForProjectorTests
+    #@+node:gcross.20091002125713.1380:ChainProjectorTests
+    class ChainProjectorTests(unittest.TestCase):
+        #@    @+others
+        #@+node:gcross.20091002125713.1381:testNull
+        def testNull(self):
+            ChainProjector().construct_projector()(None)
+        #@-node:gcross.20091002125713.1381:testNull
+        #@+node:gcross.20091002125713.1385:testSameState
+        @with_checker
+        def testSameState(self,physical_dimension=irange(2,4),bandwidth_dimension=irange(2,4),number_of_sites=irange(4,6)):
+            state_site_tensors = create_normalized_state_site_tensors(physical_dimension,bandwidth_dimension,number_of_sites)
+
+            projector = ChainProjector()
+
+            projector.add_additional_state_to_projector_and_reset_chains_with_new_initial_state(state_site_tensors,state_site_tensors)
+
+            unnormalized_state_site_tensors, state_site_tensors_normalized_for_left_contraction, state_site_tensors_normalized_for_right_contraction = compute_all_normalized_tensors(state_site_tensors)
+
+            def check(i):
+                self.assertTrue(allclose(unnormalized_state_site_tensors[i].conj(),projector.projector_chains[0].compute_projector()))
+                self.assertAlmostEqual(0,norm(projector.construct_projector()(unnormalized_state_site_tensors[i].copy().ravel())))
+
+            check(0)
+
+            for i in xrange(number_of_sites-1):
+                projector.contract_and_move_right(state_site_tensors_normalized_for_left_contraction[i])
+                check(i+1)
+
+            for i in xrange(number_of_sites-1,0,-1):
+                projector.contract_and_move_left(state_site_tensors_normalized_for_right_contraction[i])
+                check(i-1)
+        #@-node:gcross.20091002125713.1385:testSameState
+        #@+node:gcross.20091002195631.1366:testDifferentStates
+        @with_checker
+        def testDifferentStates(self,physical_dimension=irange(2,4),bandwidth_dimension=irange(2,4),number_of_sites=irange(4,6)):
+            state_A_site_tensors = create_normalized_state_site_tensors(physical_dimension,bandwidth_dimension,number_of_sites)
+            state_B_site_tensors = create_normalized_state_site_tensors(physical_dimension,bandwidth_dimension,number_of_sites)
+
+            state_A_as_vector = reduce(dot,state_A_site_tensors).ravel()
+            state_B_as_vector = reduce(dot,state_B_site_tensors).ravel()
+
+            correct_projected_state_vector = state_B_as_vector - dot(state_A_as_vector.conj(),state_B_as_vector)/dot(state_A_as_vector.conj(),state_A_as_vector)*state_A_as_vector
+            self.assertAlmostEqual(0,dot(state_A_as_vector.conj(),correct_projected_state_vector))
+
+            projector = ChainProjector()
+            projector.add_additional_state_to_projector_and_reset_chains_with_new_initial_state(state_A_site_tensors,state_B_site_tensors)
+
+            unnormalized_state_B_site_tensors, state_B_site_tensors_normalized_for_left_contraction, state_B_site_tensors_normalized_for_right_contraction = compute_all_normalized_tensors(state_B_site_tensors)
+
+            def check(i):
+                projected_state_vector = reduce(dot,
+                    state_B_site_tensors_normalized_for_left_contraction[:i]
+                   +[projector.construct_projector()(unnormalized_state_B_site_tensors[i].copy().ravel()).reshape(unnormalized_state_B_site_tensors[i].shape)]
+                   +state_B_site_tensors_normalized_for_right_contraction[i+1:]
+                  ).ravel()
+                self.assertAlmostEqual(0,dot(state_A_as_vector.conj(),projected_state_vector))
+                # I think that this next condition is actually not going to be true in general, even given a correct implementation.
+                #self.assertTrue(allclose(correct_projected_state_vector,projected_state_vector))
+
+            check(0)
+
+            for i in xrange(number_of_sites-1):
+                projector.contract_and_move_right(state_B_site_tensors_normalized_for_left_contraction[i])
+                check(i+1)
+
+            for i in xrange(number_of_sites-1,0,-1):
+                projector.contract_and_move_left(state_B_site_tensors_normalized_for_right_contraction[i])
+                check(i-1)
+        #@-node:gcross.20091002195631.1366:testDifferentStates
+        #@-others
+    #@-node:gcross.20091002125713.1380:ChainProjectorTests
     #@-others
     unittest.main()
 #@-node:gcross.20090930134608.1315:Unit Tests

@@ -8,7 +8,6 @@ import __builtin__
 from scipy.linalg import svd, eigh, LinAlgError
 from numpy import prod, dot, tensordot, multiply, sqrt, identity
 from numpy.random import rand
-from copy import copy
 from itertools import izip, islice
 #@nonl
 #@-node:gcross.20090930134608.1304:<< Import needed modules >>
@@ -235,6 +234,20 @@ def multiply_tensor_by_matrix_at_index(tensor,matrix,index):
     return tensordot(tensor,matrix,(index,0)).transpose(tensor_new_indices)
 #@nonl
 #@-node:gcross.20090930134608.1298:multiply_tensor_by_matrix_at_index
+#@+node:gcross.20091002125713.1388:conjugate_if_not_None
+def conjugate_if_not_None(x):
+    try:
+        return x.conj()
+    except AttributeError:
+        if x is None:
+            return x
+        else:
+            raise
+#@-node:gcross.20091002125713.1388:conjugate_if_not_None
+#@+node:gcross.20091002125713.1390:conjugate_lists_where_not_None
+def conjugate_lists_where_not_None(lists):
+    return map(lambda list: map(conjugate_if_not_None,list),lists)
+#@-node:gcross.20091002125713.1390:conjugate_lists_where_not_None
 #@-node:gcross.20090930134608.1299:Utility functions
 #@+node:gcross.20091001102811.1311:Normalization
 #@+node:gcross.20090930134608.1296:normalize
@@ -336,30 +349,36 @@ def compute_normalizer_and_inverse(matrix,index):
 
         return dot(U*dvals,U.conj().transpose()), dot(U*vals,U.conj().transpose())
 #@-node:gcross.20091001102811.4003:compute_normalizer_and_inverse
+#@+node:gcross.20091002195631.1353:compute_normalized_tensors
+def compute_normalized_tensors(unnormalized_tensor,normalized_tensors,index_to_normalize):
+    index_to_unnormalize = 3-index_to_normalize
+    unnormalized_tensors = []
+    oppositely_normalized_tensors = []
+
+    for normalized_tensor in normalized_tensors:
+        oppositely_normalized_tensor, inverse_normalizer = normalize_and_return_inverse_normalizer(unnormalized_tensor,index_to_normalize)
+        oppositely_normalized_tensors.append(oppositely_normalized_tensor)
+        unnormalized_tensor = multiply_tensor_by_matrix_at_index(normalized_tensor,inverse_normalizer.transpose(),index_to_unnormalize)
+        unnormalized_tensors.append(unnormalized_tensor)
+
+    return oppositely_normalized_tensors, unnormalized_tensors
+#@-node:gcross.20091002195631.1353:compute_normalized_tensors
 #@+node:gcross.20091001102811.4005:compute_all_normalized_tensors
-def compute_all_normalized_tensors(active_site_number,state_site_tensors,normalized_state_site_tensors):
-    number_of_sites = len(state_site_tensors)
-    bandwidth_dimension = state_site_tensors[0].shape[1]
+def compute_all_normalized_tensors(state_site_tensors,active_site_number=0):
+    pivot_tensor = state_site_tensors[active_site_number]
 
-    state_site_tensors = copy(state_site_tensors)
+    state_site_tensors_normalized_for_right_contraction, unnormalized_site_tensors = compute_normalized_tensors(pivot_tensor,reversed(state_site_tensors[:active_site_number]),1)
+    state_site_tensors_normalized_for_right_contraction.append(None)
+    state_site_tensors_normalized_for_right_contraction.reverse()
+    state_site_tensors_normalized_for_right_contraction += state_site_tensors[active_site_number+1:]
+    unnormalized_site_tensors.reverse()
+    unnormalized_site_tensors.append(pivot_tensor)
 
-    state_site_tensors_normalized_for_right_contraction = copy(normalized_state_site_tensors)
-    inverse_normalizer = identity(state_site_tensors[active_site_number].shape[2])
-    for i in xrange(active_site_number,0,-1):
-        state_site_tensors[i] = multiply_tensor_by_matrix_at_index(state_site_tensors[i],inverse_normalizer.transpose(),2)
-        state_site_tensors_normalized_for_right_contraction[i], inverse_normalizer = normalize_and_return_inverse_normalizer(state_site_tensors[i],1)
-    state_site_tensors[0] = multiply_tensor_by_matrix_at_index(state_site_tensors[0],inverse_normalizer.transpose(),2)
-    state_site_tensors_normalized_for_right_contraction[0] = None
+    state_site_tensors_normalized_for_left_contraction = state_site_tensors[:active_site_number]
+    state_site_tensors_normalized_for_left_contraction[len(state_site_tensors_normalized_for_left_contraction):], unnormalized_site_tensors[len(unnormalized_site_tensors):] = compute_normalized_tensors(pivot_tensor,state_site_tensors[active_site_number+1:],2)
+    state_site_tensors_normalized_for_left_contraction.append(None)
 
-    state_site_tensors_normalized_for_left_contraction = copy(normalized_state_site_tensors)
-    inverse_normalizer = identity(state_site_tensors[active_site_number].shape[1])
-    for i in xrange(active_site_number,number_of_sites-1):
-        state_site_tensors[i] = multiply_tensor_by_matrix_at_index(state_site_tensors[i],inverse_normalizer.transpose(),1)
-        state_site_tensors_normalized_for_left_contraction[i], inverse_normalizer = normalize_and_return_inverse_normalizer(state_site_tensors[i],2)
-    state_site_tensors[-1] = multiply_tensor_by_matrix_at_index(state_site_tensors[-1],inverse_normalizer.transpose(),1)
-    state_site_tensors_normalized_for_left_contraction[-1] = None
-
-    return state_site_tensors, state_site_tensors_normalized_for_left_contraction, state_site_tensors_normalized_for_right_contraction
+    return unnormalized_site_tensors, state_site_tensors_normalized_for_left_contraction, state_site_tensors_normalized_for_right_contraction
 #@-node:gcross.20091001102811.4005:compute_all_normalized_tensors
 #@+node:gcross.20091001102811.4044:create_normalized_state_site_tensors
 def create_normalized_state_site_tensors(physical_dimension,bandwidth_dimension,number_of_sites):
@@ -509,6 +528,14 @@ if __name__ == '__main__':
             normalizer, inverse_normalizer = compute_normalizer_and_inverse(tensor,index_to_normalize)
             self.assertTrue(allclose(identity(size),dot(normalizer,inverse_normalizer)))
         #@-node:gcross.20091001102811.4019:testInverse
+        #@+node:gcross.20091002195631.1355:testInverseCancelsNormalizer
+        @with_checker
+        def testInverseCancelsNormalizer(self,number_of_dimensions=irange(2,4),size=irange(2,5)):
+            index_to_normalize = randint(0,number_of_dimensions-1)
+            tensor = crand(*(size,)*number_of_dimensions)
+            normalizer, inverse_normalizer = compute_normalizer_and_inverse(tensor,index_to_normalize)
+            self.assertTrue(allclose(tensor,multiply_tensor_by_matrix_at_index(multiply_tensor_by_matrix_at_index(tensor,normalizer,index_to_normalize),inverse_normalizer,index_to_normalize)))
+        #@-node:gcross.20091002195631.1355:testInverseCancelsNormalizer
         #@-others
     #@-node:gcross.20091001102811.4017:compute_normalizer_and_inverse_tests
     #@+node:gcross.20091001102811.4024:normalize_and_return_inverse_normalizer_tests
@@ -527,38 +554,102 @@ if __name__ == '__main__':
         #@-node:gcross.20091001102811.4027:testMethodAgreement
         #@-others
     #@-node:gcross.20091001102811.4024:normalize_and_return_inverse_normalizer_tests
-    #@+node:gcross.20091001102811.4028:compute_all_normalized_tensors_test
-    class compute_all_normalized_tensors_test(unittest.TestCase):
+    #@+node:gcross.20091002195631.1356:compute_normalized_tensors
+    class compute_normalized_tensors_test(unittest.TestCase):
         #@    @+others
-        #@+node:gcross.20091001102811.4031:testCorrectnessGoingLeft
+        #@+node:gcross.20091002195631.1358:testCorrectnessGoingRight
+        @with_checker
+        def testCorrectnessGoingRight(self,bandwidth_dimension=irange(2,4),number_of_sites=irange(4,6)):
+            state_site_tensors = create_normalized_state_site_tensors(2,bandwidth_dimension,number_of_sites)
+            unnormalized_state_site_tensors = [state_site_tensors[0]]
+            normalized_state_site_tensors = state_site_tensors[1:]
+
+            oppositely_normalized_state_site_tensors, unnormalized_state_site_tensors[1:] = compute_normalized_tensors(state_site_tensors[0],normalized_state_site_tensors,2)
+
+            correct_state_tensor = reduce(dot,state_site_tensors).squeeze()
+
+            for i in xrange(number_of_sites):
+                state_tensor = reduce(dot,oppositely_normalized_state_site_tensors[:i]+[unnormalized_state_site_tensors[i]]+normalized_state_site_tensors[i:]).squeeze()
+                self.assertTrue(allclose(correct_state_tensor,state_tensor))
+        #@-node:gcross.20091002195631.1358:testCorrectnessGoingRight
+        #@+node:gcross.20091002195631.1360:testCorrectnessGoingLeft
         @with_checker
         def testCorrectnessGoingLeft(self,bandwidth_dimension=irange(2,4),number_of_sites=irange(4,6)):
             state_site_tensors = create_normalized_state_site_tensors(2,bandwidth_dimension,number_of_sites)
-            correct_state_tensor = reduce(dot,state_site_tensors).squeeze()
-            normalized_state_site_tensors = copy(state_site_tensors)
+            state_site_tensors.reverse()
+            unnormalized_state_site_tensors = [state_site_tensors[0]]
+            normalized_state_site_tensors = state_site_tensors[1:]
 
-            state_site_tensors, state_site_tensors_normalized_for_left_contraction, state_site_tensors_normalized_for_right_contraction = compute_all_normalized_tensors(number_of_sites-1,state_site_tensors,normalized_state_site_tensors)
+            oppositely_normalized_state_site_tensors, unnormalized_state_site_tensors[1:] = compute_normalized_tensors(state_site_tensors[0],normalized_state_site_tensors,1)
+
+            correct_state_tensor = reduce(dot,reversed(state_site_tensors)).squeeze()
 
             for i in xrange(number_of_sites):
-                state_tensor = reduce(dot,state_site_tensors_normalized_for_left_contraction[:i]+[state_site_tensors[i]]+state_site_tensors_normalized_for_right_contraction[i+1:]).squeeze()
+                state_tensor = reduce(dot,reversed(oppositely_normalized_state_site_tensors[:i]+[unnormalized_state_site_tensors[i]]+normalized_state_site_tensors[i:])).squeeze()
                 self.assertTrue(allclose(correct_state_tensor,state_tensor))
-        #@-node:gcross.20091001102811.4031:testCorrectnessGoingLeft
+        #@-node:gcross.20091002195631.1360:testCorrectnessGoingLeft
+        #@-others
+    #@-node:gcross.20091002195631.1356:compute_normalized_tensors
+    #@+node:gcross.20091001102811.4028:compute_all_normalized_tensors_test
+    class compute_all_normalized_tensors_test(unittest.TestCase):
+        #@    @+others
         #@+node:gcross.20091001102811.4033:testCorrectnessGoingRight
         @with_checker
         def testCorrectnessGoingRight(self,bandwidth_dimension=irange(2,4),number_of_sites=irange(4,6)):
             state_site_tensors = create_normalized_state_site_tensors(2,bandwidth_dimension,number_of_sites)
             correct_state_tensor = reduce(dot,state_site_tensors).squeeze()
-            normalized_state_site_tensors = copy(state_site_tensors)
 
-            state_site_tensors, state_site_tensors_normalized_for_left_contraction, state_site_tensors_normalized_for_right_contraction = compute_all_normalized_tensors(0,state_site_tensors,normalized_state_site_tensors)
+            unnormalized_state_site_tensors, state_site_tensors_normalized_for_left_contraction, state_site_tensors_normalized_for_right_contraction = compute_all_normalized_tensors(state_site_tensors)
+
+            self.assertEqual(len(state_site_tensors),len(unnormalized_state_site_tensors))
+            self.assertEqual(len(state_site_tensors),len(state_site_tensors_normalized_for_left_contraction))
+            self.assertEqual(len(state_site_tensors),len(state_site_tensors_normalized_for_right_contraction))
+
+            self.assertTrue((unnormalized_state_site_tensors[0]==state_site_tensors[0]).all())
 
             for i in xrange(number_of_sites):
-                state_tensor = reduce(dot,state_site_tensors_normalized_for_left_contraction[:i]+[state_site_tensors[i]]+state_site_tensors_normalized_for_right_contraction[i+1:]).squeeze()
+                self.assertEqual(state_site_tensors[i].shape,unnormalized_state_site_tensors[i].shape)
+
+            for i in xrange(number_of_sites-1):
+                self.assertEqual(state_site_tensors[i].shape,state_site_tensors_normalized_for_left_contraction[i].shape)
+
+            for i in xrange(1,number_of_sites):
+                self.assertEqual(state_site_tensors[i].shape,state_site_tensors_normalized_for_right_contraction[i].shape)
+
+            for i in xrange(number_of_sites):
+                state_tensor = reduce(dot,state_site_tensors_normalized_for_left_contraction[:i]+[unnormalized_state_site_tensors[i]]+state_site_tensors_normalized_for_right_contraction[i+1:]).squeeze()
                 self.assertTrue(allclose(correct_state_tensor,state_tensor))
         #@-node:gcross.20091001102811.4033:testCorrectnessGoingRight
-        #@+node:gcross.20091001102811.4035:testCorrectnessBothWays
+        #@+node:gcross.20091002195631.1362:testCorrectnessGoingLeft
         @with_checker
-        def testCorrectnessBothWays(self,bandwidth_dimension=irange(2,4),number_of_sites=irange(4,6)):
+        def testCorrectnessGoingLeft(self,bandwidth_dimension=irange(2,4),number_of_sites=irange(4,6)):
+            state_site_tensors = create_normalized_state_site_tensors(2,bandwidth_dimension,number_of_sites)
+            correct_state_tensor = reduce(dot,state_site_tensors).squeeze()
+
+            unnormalized_state_site_tensors, state_site_tensors_normalized_for_left_contraction, state_site_tensors_normalized_for_right_contraction = compute_all_normalized_tensors(state_site_tensors,number_of_sites-1)
+
+            self.assertEqual(len(state_site_tensors),len(unnormalized_state_site_tensors))
+            self.assertEqual(len(state_site_tensors),len(state_site_tensors_normalized_for_left_contraction))
+            self.assertEqual(len(state_site_tensors),len(state_site_tensors_normalized_for_right_contraction))
+
+            self.assertTrue((unnormalized_state_site_tensors[-1]==state_site_tensors[-1]).all())
+
+            for i in xrange(number_of_sites):
+                self.assertEqual(state_site_tensors[i].shape,unnormalized_state_site_tensors[i].shape)
+
+            for i in xrange(number_of_sites-1):
+                self.assertEqual(state_site_tensors[i].shape,state_site_tensors_normalized_for_left_contraction[i].shape)
+
+            for i in xrange(1,number_of_sites):
+                self.assertEqual(state_site_tensors[i].shape,state_site_tensors_normalized_for_right_contraction[i].shape)
+
+            for i in xrange(number_of_sites):
+                state_tensor = reduce(dot,state_site_tensors_normalized_for_left_contraction[:i]+[unnormalized_state_site_tensors[i]]+state_site_tensors_normalized_for_right_contraction[i+1:]).squeeze()
+                self.assertTrue(allclose(correct_state_tensor,state_tensor))
+        #@-node:gcross.20091002195631.1362:testCorrectnessGoingLeft
+        #@+node:gcross.20091002195631.1364:testCorrectnessGoingBothWays
+        @with_checker
+        def testCorrectnessGoingBothWays(self,bandwidth_dimension=irange(2,4),number_of_sites=irange(4,6)):
             active_site_number = randint(0,number_of_sites-1)
             state_site_tensors = create_normalized_state_site_tensors(2,bandwidth_dimension,number_of_sites)
             for i in xrange(active_site_number):
@@ -566,14 +657,28 @@ if __name__ == '__main__':
             for i in xrange(active_site_number+1,number_of_sites):
                 state_site_tensors[i] = normalize(state_site_tensors[i],1)
             correct_state_tensor = reduce(dot,state_site_tensors).squeeze()
-            normalized_state_site_tensors = copy(state_site_tensors)
 
-            state_site_tensors, state_site_tensors_normalized_for_left_contraction, state_site_tensors_normalized_for_right_contraction = compute_all_normalized_tensors(active_site_number,state_site_tensors,normalized_state_site_tensors)
+            unnormalized_state_site_tensors, state_site_tensors_normalized_for_left_contraction, state_site_tensors_normalized_for_right_contraction = compute_all_normalized_tensors(state_site_tensors,active_site_number)
+
+            self.assertEqual(len(state_site_tensors),len(unnormalized_state_site_tensors))
+            self.assertEqual(len(state_site_tensors),len(state_site_tensors_normalized_for_left_contraction))
+            self.assertEqual(len(state_site_tensors),len(state_site_tensors_normalized_for_right_contraction))
+
+            self.assertTrue((unnormalized_state_site_tensors[active_site_number]==state_site_tensors[active_site_number]).all())
 
             for i in xrange(number_of_sites):
-                state_tensor = reduce(dot,state_site_tensors_normalized_for_left_contraction[:i]+[state_site_tensors[i]]+state_site_tensors_normalized_for_right_contraction[i+1:]).squeeze()
+                self.assertEqual(state_site_tensors[i].shape,unnormalized_state_site_tensors[i].shape)
+
+            for i in xrange(number_of_sites-1):
+                self.assertEqual(state_site_tensors[i].shape,state_site_tensors_normalized_for_left_contraction[i].shape)
+
+            for i in xrange(1,number_of_sites):
+                self.assertEqual(state_site_tensors[i].shape,state_site_tensors_normalized_for_right_contraction[i].shape)
+
+            for i in xrange(number_of_sites):
+                state_tensor = reduce(dot,state_site_tensors_normalized_for_left_contraction[:i]+[unnormalized_state_site_tensors[i]]+state_site_tensors_normalized_for_right_contraction[i+1:]).squeeze()
                 self.assertTrue(allclose(correct_state_tensor,state_tensor))
-        #@-node:gcross.20091001102811.4035:testCorrectnessBothWays
+        #@-node:gcross.20091002195631.1364:testCorrectnessGoingBothWays
         #@-others
     #@-node:gcross.20091001102811.4028:compute_all_normalized_tensors_test
     #@+node:gcross.20091001172447.1333:create_normalized_state_site_tensors
