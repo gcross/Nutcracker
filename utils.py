@@ -681,7 +681,7 @@ if __name__ == '__main__':
         #@-node:gcross.20091002195631.1364:testCorrectnessGoingBothWays
         #@-others
     #@-node:gcross.20091001102811.4028:compute_all_normalized_tensors_test
-    #@+node:gcross.20091001172447.1333:create_normalized_state_site_tensors
+    #@+node:gcross.20091001172447.1333:create_normalized_state_site_tensors_tests
     class create_normalized_state_site_tensors_tests(unittest.TestCase):
         #@    @+others
         #@+node:gcross.20091001172447.1334:testNormalization
@@ -692,7 +692,7 @@ if __name__ == '__main__':
                 self.assertTrue(allclose(identity(state_site_tensor.shape[1]),tensordot(state_site_tensor.conj(),state_site_tensor,((0,2),(0,2)))))
         #@-node:gcross.20091001172447.1334:testNormalization
         #@-others
-    #@-node:gcross.20091001172447.1333:create_normalized_state_site_tensors
+    #@-node:gcross.20091001172447.1333:create_normalized_state_site_tensors_tests
     #@-others
     unittest.main()
 #@-node:gcross.20090930124443.1275:Unit Tests
