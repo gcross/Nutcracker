@@ -12,17 +12,9 @@ from paulis import *
 #@nl
 
 #@+others
-#@+node:gcross.20091009120817.1396:optimize
-from numpy.linalg import norm
-
+#@+node:gcross.20091009120817.1407:optimize
 def optimize(simulation_move_function):
     print "\tOptimizing site {0}...".format(site_number+1)
-
-    site_tensor = simulation.state.active_site_tensor.copy()
-    simulation.projection_chain.construct_projector()(site_tensor)
-    overlap = norm(site_tensor-simulation.state.active_site_tensor)
-    if overlap > 1e-10:
-        print "\t\tStarting overlap =", overlap
 
     try:
         simulation.optimize_active_site()
@@ -31,22 +23,8 @@ def optimize(simulation_move_function):
     except ConvergenceError, e:
         print "\t\tConvergence error, skipping site... [{0}]".format(e)
 
-    site_tensor = simulation.state.active_site_tensor.copy()
-    simulation.projection_chain.construct_projector()(site_tensor)
-    overlap = norm(site_tensor-simulation.state.active_site_tensor)
-    if overlap > 1e-10:
-        print "\t\tEnding overlap =", overlap
-
-    pre_move_state_tensor = simulation.state.to_tensor()
-
     simulation_move_function()
-
-    post_move_state_tensor = simulation.state.to_tensor()
-    move_error = norm(post_move_state_tensor-pre_move_state_tensor)
-
-    if move_error > 1e-10:
-        print "\t\tMove error =", norm(post_move_state_tensor-pre_move_state_tensor)
-#@-node:gcross.20091009120817.1396:optimize
+#@-node:gcross.20091009120817.1407:optimize
 #@-others
 
 #@<< Define parameters >>
