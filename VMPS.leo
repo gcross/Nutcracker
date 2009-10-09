@@ -13,6 +13,7 @@
 <v t="gcross.20090930134608.1330"><vh>@thin paulis.py</vh></v>
 <v t="gcross.20090930124443.1265"><vh>@thin utils.py</vh></v>
 <v t="gcross.20090930124443.1284"><vh>@thin contractors.py</vh></v>
+<v t="gcross.20091008162221.1380"><vh>@thin simulation.py</vh></v>
 <v t="gcross.20090930213318.1310"><vh>Transverse Ising Model</vh>
 <v t="gcross.20090930212235.1299"><vh>@thin simulate-TI.py</vh></v>
 <v t="gcross.20090930213318.1312"><vh>@thin compute-TI-spectrum.py</vh></v>

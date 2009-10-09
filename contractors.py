@@ -292,11 +292,10 @@ class ChainContractorBase(object):
 class ChainContractorForExpectations(ChainContractorBase):
     #@    @+others
     #@+node:gcross.20090930134608.1273:__init__
-    def __init__(self,initial_state_site_tensors,operator_site_tensors,left_operator_boundary,right_operator_boundary):
+    def __init__(self,initial_state_site_tensors,operator_site_tensors):
         ChainContractorBase.__init__(self,len(initial_state_site_tensors))
         assert(self.number_of_sites == len(operator_site_tensors))
-        self.left_boundary = left_operator_boundary.reshape(1,len(left_operator_boundary),1)
-        self.right_boundary = right_operator_boundary.reshape(1,len(right_operator_boundary),1)
+        self.left_boundary = self.right_boundary = ones((1,1,1),dtype=complex128)
         for i in xrange(self.number_of_sites-1,0,-1):
             self.operator_site_tensor = operator_site_tensors[i]
             self.push_right_boundary()
@@ -528,10 +527,23 @@ class ChainProjector(object):
     ]
     #@-node:gcross.20091002125713.1375:__slots__
     #@+node:gcross.20091002125713.1376:__init__
-    def __init__(self):
-        self.orthogonal_state_information_list = []
-        self.projector_chains = []
+    def __init__(self,initial_new_state_site_tensors=None,old_state_site_tensors_list=None):
         self.current_site_number = 0
+
+        if initial_new_state_site_tensors:
+            self.orthogonal_state_information_list = [
+                conjugate_lists_where_not_None(compute_all_normalized_tensors(old_state_site_tensors,0))
+                for old_state_site_tensors in old_state_site_tensors_list
+            ]
+
+            self.projector_chains = [
+                ChainContractorForProjector(initial_new_state_site_tensors,*orthogonal_state_information)
+                for orthogonal_state_information in self.orthogonal_state_information_list
+            ]
+
+        else:
+            self.orthogonal_state_information_list = []
+            self.projector_chains = []
     #@-node:gcross.20091002125713.1376:__init__
     #@+node:gcross.20091002125713.1379:add_additional_state_to_projector_and_reset_chains_with_new_initial_state
     def add_additional_state_to_projector_and_reset_chains_with_new_initial_state(self,old_state_site_tensors,initial_new_state_site_tensors,active_site_number=0):

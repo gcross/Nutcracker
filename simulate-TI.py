@@ -1,111 +1,127 @@
 #@+leo-ver=4-thin
-#@+node:gcross.20090930212235.1299:@thin simulate-TI.py
+#@+node:gcross.20091009120817.1394:@thin simulate-TI.py
 #@@language Python
 
 #@<< Import needed modules >>
-#@+node:gcross.20090930201628.1301:<< Import needed modules >>
-from utils import crand, normalize_and_return_inverse_normalizer, create_normalized_state_site_tensors, multiply_tensor_by_matrix_at_index, normalize_and_denormalize
-from contractors import *
-from numpy import array, zeros, multiply, identity
+#@+node:gcross.20091009120817.1395:<< Import needed modules >>
+from simulation import *
+from contractors import ConvergenceError
+from numpy import array, zeros, multiply, identity, complex128
 from paulis import *
-#@-node:gcross.20090930201628.1301:<< Import needed modules >>
+#@-node:gcross.20091009120817.1395:<< Import needed modules >>
 #@nl
 
 #@+others
-#@+node:gcross.20090930201628.1306:optimize
-def optimize(site_number,next_site_number,normalization_index,chain_move_function,projector_move_function):
+#@+node:gcross.20091009120817.1396:optimize
+from numpy.linalg import norm
+
+def optimize(simulation_move_function):
     print "\tOptimizing site {0}...".format(site_number+1)
-    global current_energy, chain, state_site_tensors
 
-    project = projector.construct_projector()
+    site_tensor = simulation.state.active_site_tensor.copy()
+    simulation.projection_chain.construct_projector()(site_tensor)
+    overlap = norm(site_tensor-simulation.state.active_site_tensor)
+    if overlap > 1e-10:
+        print "\t\tStarting overlap =", overlap
+
     try:
-        new_site_tensor, new_energy = chain.compute_optimized_state_site_tensor(state_site_tensors[site_number],project)
+        simulation.optimize_active_site()
+        print "\t\tEnergy =", simulation.energy
 
-        if new_energy-current_energy > 1e-7:
-            print "\t\tVariational breakdown: {0} > {1}".format(new_energy,current_energy)
-            raise ConvergenceError
-        print "\t\tEnergy =", current_energy
+    except ConvergenceError, e:
+        print "\t\tConvergence error, skipping site... [{0}]".format(e)
 
-    except ConvergenceError:
-        print "\t\tConvergence error, skipping site..."
+    site_tensor = simulation.state.active_site_tensor.copy()
+    simulation.projection_chain.construct_projector()(site_tensor)
+    overlap = norm(site_tensor-simulation.state.active_site_tensor)
+    if overlap > 1e-10:
+        print "\t\tEnding overlap =", overlap
 
-        new_site_tensor = project(state_site_tensors[site_number])
-        new_energy = chain.fully_contract_with_state_site_tensor(new_site_tensor.conj(),new_site_tensor)
+    pre_move_state_tensor = simulation.state.to_tensor()
 
-    current_energy = new_energy
+    simulation_move_function()
 
-    state_site_tensors[site_number], state_site_tensors[next_site_number] = normalize_and_denormalize(new_site_tensor,normalization_index,state_site_tensors[next_site_number],3-normalization_index)
+    post_move_state_tensor = simulation.state.to_tensor()
+    move_error = norm(post_move_state_tensor-pre_move_state_tensor)
 
-    chain_move_function(state_site_tensors[site_number].conj(),state_site_tensors[site_number])
-    projector_move_function(state_site_tensors[site_number])
-#@-node:gcross.20090930201628.1306:optimize
+    if move_error > 1e-10:
+        print "\t\tMove error =", norm(post_move_state_tensor-pre_move_state_tensor)
+#@-node:gcross.20091009120817.1396:optimize
 #@-others
 
 #@<< Define parameters >>
-#@+node:gcross.20090930201628.1302:<< Define parameters >>
+#@+node:gcross.20091009120817.1397:<< Define parameters >>
 number_of_sites = 8
 
-bandwidth_dimension = 6
+bandwidth_dimension = 2
+
+number_of_levels = 3
 
 coupling_strength = 0.5
-
-number_of_sweeps = 3
-
-number_of_levels = 4
-#@-node:gcross.20090930201628.1302:<< Define parameters >>
+#@-node:gcross.20091009120817.1397:<< Define parameters >>
 #@nl
 
 #@<< Define operators >>
-#@+node:gcross.20090930201628.1303:<< Define operators >>
-left_operator_boundary = array([1,0,0])
-right_operator_boundary = array([0,0,1])
+#@+node:gcross.20091009120817.1398:<< Define operators >>
+middle_operator_site_tensor = zeros((2,2,3,3),complex128)
+middle_operator_site_tensor[...,0,0] = I
+middle_operator_site_tensor[...,2,2] = I
+middle_operator_site_tensor[...,0,2] = -Z
+middle_operator_site_tensor[...,0,1] = -coupling_strength * X
+middle_operator_site_tensor[...,1,2] = X
 
-operator_site_tensor = zeros((2,2,3,3),complex128)
-operator_site_tensor[...,0,0] = I
-operator_site_tensor[...,2,2] = I
-operator_site_tensor[...,0,2] = -Z
-operator_site_tensor[...,0,1] = -coupling_strength * X
-operator_site_tensor[...,1,2] = X
+left_operator_site_tensor = middle_operator_site_tensor[...,:1,:]
+right_operator_site_tensor = middle_operator_site_tensor[...,:,-1:]
 
-operator_site_tensors = [operator_site_tensor] * number_of_sites
-#@-node:gcross.20090930201628.1303:<< Define operators >>
+operator_site_tensors = [left_operator_site_tensor] + [middle_operator_site_tensor]*(number_of_sites-2) + [right_operator_site_tensor]
+#@-node:gcross.20091009120817.1398:<< Define operators >>
 #@nl
 
 #@<< Initialize system >>
-#@+node:gcross.20090930201628.1304:<< Initialize system >>
+#@+node:gcross.20091009120817.1399:<< Initialize system >>
 physical_dimension = 2
 
-state_site_tensors = create_normalized_state_site_tensors(physical_dimension,bandwidth_dimension,number_of_sites)
+simulation = Simulation(number_of_sites,physical_dimension,bandwidth_dimension,operator_site_tensors)
 
-chain = ChainContractorForExpectations(state_site_tensors,operator_site_tensors,left_operator_boundary,right_operator_boundary)
-projector = ChainProjector()
-
-current_energy = chain.fully_contract_with_state_site_tensor(state_site_tensors[0].conj(),state_site_tensors[0])
-#@-node:gcross.20090930201628.1304:<< Initialize system >>
+states = []
+#@-node:gcross.20091009120817.1399:<< Initialize system >>
 #@nl
 
 #@<< Run sweeps >>
-#@+node:gcross.20090930201628.1305:<< Run sweeps >>
-print "Initial energy =", current_energy
+#@+node:gcross.20091009120817.1400:<< Run sweeps >>
+energy_levels = []
 
-for level_number in xrange(1,number_of_levels+1):
-    for sweep_number in xrange(1,number_of_sweeps+1):
-        print "Sweep number {0}:".format(sweep_number)
+try:
+    for level_number in xrange(1,number_of_levels+1):
+        sweep_number = 0
+        previous_energy = 1e100
+        while previous_energy-simulation.energy > 1e-7:
+            sweep_number += 1
+            previous_energy = simulation.energy
+            print "Sweep number {0}:".format(sweep_number)
 
-        for site_number in xrange(number_of_sites-1):
-            optimize(site_number,site_number+1,2,chain.contract_and_move_right,projector.contract_and_move_right)
+            for site_number in xrange(number_of_sites-1):
+                optimize(simulation.move_active_site_right)
 
-        for site_number in xrange(number_of_sites-1,0,-1):
-            optimize(site_number,site_number-1,1,chain.contract_and_move_left,projector.contract_and_move_left)
+            for site_number in xrange(number_of_sites-1,0,-1):
+                optimize(simulation.move_active_site_left)
 
-    if level_number < number_of_levels:
-        old_state_site_tensors = state_site_tensors
-        state_site_tensors = create_normalized_state_site_tensors(physical_dimension,bandwidth_dimension,number_of_sites)
-        projector.add_additional_state_to_projector_and_reset_chains_with_new_initial_state(old_state_site_tensors,state_site_tensors)
-        projector.orthogonalize(state_site_tensors)
-        chain = ChainContractorForExpectations(state_site_tensors,operator_site_tensors,left_operator_boundary,right_operator_boundary)
-        current_energy = chain.fully_contract_with_state_site_tensor(state_site_tensors[0].conj(),state_site_tensors[0])
-#@-node:gcross.20090930201628.1305:<< Run sweeps >>
+        print "Level {0} energy = {1}".format(level_number,simulation.energy)
+        energy_levels.append(simulation.energy)
+
+        if level_number < number_of_levels:
+            bandwidth_dimension += 0
+            states.append(simulation.state)
+            simulation.add_state_to_projectors_and_reset(bandwidth_dimension)
+
+except KeyboardInterrupt:
+    pass
+
+print
+print "The energy levels of the system are:"
+for energy_level in energy_levels:
+    print "\t",energy_level
+#@-node:gcross.20091009120817.1400:<< Run sweeps >>
 #@nl
-#@-node:gcross.20090930212235.1299:@thin simulate-TI.py
+#@-node:gcross.20091009120817.1394:@thin simulate-TI.py
 #@-leo
