@@ -248,6 +248,31 @@ def conjugate_if_not_None(x):
 def conjugate_lists_where_not_None(lists):
     return map(lambda list: map(conjugate_if_not_None,list),lists)
 #@-node:gcross.20091002125713.1390:conjugate_lists_where_not_None
+#@+node:gcross.20091009120817.1408:compute_bandwidth_dimension_sequence
+def compute_bandwidth_dimension_sequence(physical_dimension,bandwidth_dimension,number_of_sites):
+    bandwidth_dimension_sequence = [1]
+    next_dimension = physical_dimension
+    while next_dimension < bandwidth_dimension:
+        bandwidth_dimension_sequence.append(next_dimension)
+        next_dimension *= physical_dimension
+
+    if len(bandwidth_dimension_sequence)*2 > number_of_sites:
+        raise ValueError, "The supplied bandwidth dimension is too large for the given physical dimension and number of sites."
+
+    return bandwidth_dimension_sequence + [bandwidth_dimension]*(number_of_sites-2*len(bandwidth_dimension_sequence)+1) + bandwidth_dimension_sequence[::-1]
+#@-node:gcross.20091009120817.1408:compute_bandwidth_dimension_sequence
+#@+node:gcross.20091001102811.4044:create_normalized_state_site_tensors
+def create_normalized_state_site_tensors(physical_dimension,bandwidth_dimension,number_of_sites):
+    bandwidth_dimension_sequence = compute_bandwidth_dimension_sequence(physical_dimension,bandwidth_dimension,number_of_sites)
+
+    bandwidth_dimension_iterator = izip(bandwidth_dimension_sequence[:-1],bandwidth_dimension_sequence[1:])
+
+    first_left_bandwidth_dimension, first_right_bandwidth_dimension = bandwidth_dimension_iterator.next()
+
+    return [crand(physical_dimension,first_left_bandwidth_dimension,first_right_bandwidth_dimension)] + \
+           [normalize(crand(physical_dimension,left_bandwidth_dimension,right_bandwidth_dimension),1)
+                for (left_bandwidth_dimension,right_bandwidth_dimension) in bandwidth_dimension_iterator]
+#@-node:gcross.20091001102811.4044:create_normalized_state_site_tensors
 #@-node:gcross.20090930134608.1299:Utility functions
 #@+node:gcross.20091001102811.1311:Normalization
 #@+node:gcross.20090930134608.1296:normalize
@@ -379,27 +404,6 @@ def compute_all_normalized_tensors(state_site_tensors,active_site_number=0):
 
     return unnormalized_site_tensors, state_site_tensors_normalized_for_left_contraction, state_site_tensors_normalized_for_right_contraction
 #@-node:gcross.20091001102811.4005:compute_all_normalized_tensors
-#@+node:gcross.20091001102811.4044:create_normalized_state_site_tensors
-def create_normalized_state_site_tensors(physical_dimension,bandwidth_dimension,number_of_sites):
-    bandwidth_dimension_at_site = [1]
-    next_dimension = physical_dimension
-    while next_dimension < bandwidth_dimension:
-        bandwidth_dimension_at_site.append(next_dimension)
-        next_dimension *= physical_dimension
-
-    if len(bandwidth_dimension_at_site)*2 > number_of_sites:
-        raise ValueError, "The supplied bandwidth dimension is too large for the given physical dimension and number of sites."
-
-    bandwidth_dimension_at_site += [bandwidth_dimension]*(number_of_sites-2*len(bandwidth_dimension_at_site)+1) + bandwidth_dimension_at_site[::-1]
-
-    bandwidth_dimension_iterator = izip(bandwidth_dimension_at_site[:-1],bandwidth_dimension_at_site[1:])
-
-    first_left_bandwidth_dimension, first_right_bandwidth_dimension = bandwidth_dimension_iterator.next()
-
-    return [crand(physical_dimension,first_left_bandwidth_dimension,first_right_bandwidth_dimension)] + \
-           [normalize(crand(physical_dimension,left_bandwidth_dimension,right_bandwidth_dimension),1)
-                for (left_bandwidth_dimension,right_bandwidth_dimension) in bandwidth_dimension_iterator]
-#@-node:gcross.20091001102811.4044:create_normalized_state_site_tensors
 #@+node:gcross.20091004090150.1354:normalize_and_denormalize
 def normalize_and_denormalize(tensor_to_normalize,index_to_normalize,tensor_to_denormalize,index_to_denormalize):
     normalized_tensor, inverse_normalizer = normalize_and_return_inverse_normalizer(tensor_to_normalize,index_to_normalize)
@@ -715,6 +719,30 @@ if __name__ == '__main__':
         #@-node:gcross.20091004090150.1356:testEquivalence
         #@-others
     #@-node:gcross.20091004090150.1355:normalize_and_denormalize_tests
+    #@+node:gcross.20091009120817.1409:compute_bandwidth_dimension_sequence_tests
+    class compute_bandwidth_dimension_sequence_tests(unittest.TestCase):
+        #@    @+others
+        #@+node:gcross.20091009120817.1410:testValidity
+        @with_checker
+        def testValidity(self,physical_dimension=irange(2,4),bandwidth_dimension=irange(1,8),number_of_sites=irange(10,20)):
+            bandwidth_dimension_sequence = compute_bandwidth_dimension_sequence(physical_dimension,bandwidth_dimension,number_of_sites)
+            for a, b in zip(bandwidth_dimension_sequence[:-1],bandwidth_dimension_sequence[1:]):
+                self.assertTrue(b <= a * physical_dimension)
+        #@-node:gcross.20091009120817.1410:testValidity
+        #@+node:gcross.20091009120817.1412:testException
+        @with_checker
+        def testException(self,physical_dimension=irange(2,4),number_of_sites=irange(4,10)):
+            bandwidth_dimension = physical_dimension**number_of_sites
+
+            try:
+                bandwidth_dimension_sequence = compute_bandwidth_dimension_sequence(physical_dimension,bandwidth_dimension,number_of_sites)
+            except ValueError:
+                return
+
+            self.fail("Did not throw exepction in response to invalid input!")
+        #@-node:gcross.20091009120817.1412:testException
+        #@-others
+    #@-node:gcross.20091009120817.1409:compute_bandwidth_dimension_sequence_tests
     #@-others
     unittest.main()
 #@-node:gcross.20090930124443.1275:Unit Tests
