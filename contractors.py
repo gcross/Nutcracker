@@ -618,10 +618,9 @@ if __name__ == '__main__':
         #@+node:gcross.20090930134608.1327:testOnNormalizedState
         @with_checker
         def testOnNormalizedState(self,physical_dimension=irange(2,4),bandwidth_dimension=irange(2,4),number_of_sites=irange(4,6)):
-            operator_left_boundary = operator_right_boundary = array([1])
             initial_site_tensors = create_normalized_state_site_tensors(physical_dimension,bandwidth_dimension,number_of_sites)
             operator_site_tensors = [identity(physical_dimension).reshape(physical_dimension,physical_dimension,1,1)]*number_of_sites
-            chain = ChainContractorForExpectations(initial_site_tensors,operator_site_tensors,operator_left_boundary,operator_right_boundary)
+            chain = ChainContractorForExpectations(initial_site_tensors,operator_site_tensors)
 
             def check_boundary(boundary):
                 self.assertTrue(allclose(identity(boundary.shape[0]),boundary.squeeze()) or boundary.size == 1 and boundary.squeeze() == 1)
@@ -651,8 +650,8 @@ if __name__ == '__main__':
             operator_site_tensor[...,0,0] = I
             operator_site_tensor[...,0,1] = X
             operator_site_tensor[...,1,1] = I
-            operator_site_tensors = [operator_site_tensor]*number_of_sites
-            chain = ChainContractorForExpectations(initial_site_tensors,operator_site_tensors,array([1,0]),array([0,1]))
+            operator_site_tensors = [operator_site_tensor[...,:1,:]] + [operator_site_tensor]*(number_of_sites-2) + [operator_site_tensor[...,:,-1:]]
+            chain = ChainContractorForExpectations(initial_site_tensors,operator_site_tensors)
             self.assertEqual(0,chain.fully_contract_with_state_site_tensor(initial_site_tensor,initial_site_tensor))
 
             for i in xrange(number_of_sites-1):
@@ -672,8 +671,8 @@ if __name__ == '__main__':
             operator_site_tensor[...,0,0] = I
             operator_site_tensor[...,0,1] = Z
             operator_site_tensor[...,1,1] = I
-            operator_site_tensors = [operator_site_tensor]*number_of_sites
-            chain = ChainContractorForExpectations(initial_site_tensors,operator_site_tensors,array([1,0]),array([0,1]))
+            operator_site_tensors = [operator_site_tensor[...,:1,:]] + [operator_site_tensor]*(number_of_sites-2) + [operator_site_tensor[...,:,-1:]]
+            chain = ChainContractorForExpectations(initial_site_tensors,operator_site_tensors)
             self.assertEqual(number_of_sites,chain.fully_contract_with_state_site_tensor(initial_site_tensor,initial_site_tensor))
 
             for i in xrange(number_of_sites-1):
@@ -693,8 +692,8 @@ if __name__ == '__main__':
             operator_site_tensor[...,0,0] = array(identity(3),dtype=complex128)
             operator_site_tensor[...,0,1] = array([[1,0,0],[0,0,0],[0,0,-1]],complex128)
             operator_site_tensor[...,1,1] = array(identity(3),dtype=complex128)
-            operator_site_tensors = [operator_site_tensor]*number_of_sites
-            chain = ChainContractorForExpectations(initial_site_tensors,operator_site_tensors,array([1,0]),array([0,1]))
+            operator_site_tensors = [operator_site_tensor[...,:1,:]] + [operator_site_tensor]*(number_of_sites-2) + [operator_site_tensor[...,:,-1:]]
+            chain = ChainContractorForExpectations(initial_site_tensors,operator_site_tensors)
 
             def check():
                 new_tensor, new_energy = chain.compute_optimized_state_site_tensor(crand(*initial_site_tensor.shape))
