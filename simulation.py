@@ -4,9 +4,11 @@
 
 #@<< Import needed modules >>
 #@+node:gcross.20091008162221.1400:<< Import needed modules >>
+from numpy import zeros
+from numpy.linalg import norm
+
 from utils import *
 from contractors import *
-from numpy.linalg import norm
 #@-node:gcross.20091008162221.1400:<< Import needed modules >>
 #@nl
 
@@ -168,6 +170,32 @@ class Simulation(object):
     def compute_energy(self):
         return real(self.expectation_chain.fully_contract_with_state_site_tensor(self.state.active_site_tensor.conj(),self.state.active_site_tensor))
     #@-node:gcross.20091008162221.1397:compute_energy
+    #@+node:gcross.20091009120817.4105:increase_bandwidth_dimension_to
+    def increase_bandwidth_dimension_to(self,new_bandwidth_dimension):
+        old_active_site_number = self.active_site_number
+        self.move_active_site_to_leftmost_site()
+
+        physical_dimension = self.physical_dimension
+        bandwidth_dimension_sequence = compute_bandwidth_dimension_sequence(physical_dimension,new_bandwidth_dimension,self.number_of_sites)
+
+        state = self.state
+        for bandwidth_dimension in bandwidth_dimension_sequence[1:-1]:
+            active_site_tensor = state.active_site_tensor
+            current_bandwidth_dimension = active_site_tensor.shape[2]
+            if current_bandwidth_dimension < bandwidth_dimension:
+                new_active_site_tensor = zeros((physical_dimension,active_site_tensor.shape[1],bandwidth_dimension),complex128)
+                new_active_site_tensor[:,:,:current_bandwidth_dimension] = active_site_tensor
+
+                right_of_active_site_tensor = state.tensors_right_of_active_site[-1]
+                new_right_of_active_site_tensor = zeros((physical_dimension,bandwidth_dimension,right_of_active_site_tensor.shape[2]),complex128)
+                new_right_of_active_site_tensor[:,:right_of_active_site_tensor.shape[1],:] = right_of_active_site_tensor
+
+                state.active_site_tensor, state.tensors_right_of_active_site[-1] = normalize_and_denormalize(new_active_site_tensor,2,new_right_of_active_site_tensor,1)
+            self.move_active_site_right()
+
+        while self.active_site_number > old_active_site_number:
+            self.move_active_site_left()
+    #@-node:gcross.20091009120817.4105:increase_bandwidth_dimension_to
     #@-others
 #@-node:gcross.20091008162221.1381:Simulation
 #@-node:gcross.20091008162221.1382:Classes

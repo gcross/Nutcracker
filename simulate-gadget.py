@@ -86,25 +86,34 @@ energy_levels = []
 
 try:
     for level_number in xrange(1,number_of_levels+1):
-        sweep_number = 0
-        previous_energy = 1e100
-        while previous_energy-simulation.energy > 1e-7:
-            sweep_number += 1
-            previous_energy = simulation.energy
-            print "Sweep number {0}:".format(sweep_number)
+        current_bandwidth_dimension = bandwidth_dimension - 1
+        previous_bandwidth_energy = 1e100
+        while previous_bandwidth_energy-simulation.energy > 1e-7:
+            current_bandwidth_dimension += 1
+            if current_bandwidth_dimension > bandwidth_dimension:
+                print "INCREASING BANDWIDTH DIMENSION TO",current_bandwidth_dimension
+                simulation.increase_bandwidth_dimension_to(current_bandwidth_dimension)
+            previous_bandwidth_energy = simulation.energy
 
-            for site_number in xrange(number_of_sites-1):
-                optimize(simulation.move_active_site_right)
+            sweep_number = 0
+            previous_sweep_energy = 1e100
+            while previous_sweep_energy-simulation.energy > 1e-7:
+                sweep_number += 1
+                previous_sweep_energy = simulation.energy
+                print "Level {level_number}, Bandwidth dimension {current_bandwidth_dimension}, Sweep number {sweep_number}:".format(**vars())
 
-            for site_number in xrange(number_of_sites-1,0,-1):
-                optimize(simulation.move_active_site_left)
+                for site_number in xrange(number_of_sites-1):
+                    optimize(simulation.move_active_site_right)
+
+                for site_number in xrange(number_of_sites-1,0,-1):
+                    optimize(simulation.move_active_site_left)
 
         print "Level {0} energy = {1}".format(level_number,simulation.energy)
         energy_levels.append(simulation.energy)
 
         if level_number < number_of_levels:
-            bandwidth_dimension += 4
             simulation.add_state_to_projectors_and_reset(bandwidth_dimension)
+            bandwidth_dimension = 3
 
 except KeyboardInterrupt:
     pass
