@@ -590,13 +590,7 @@ class ChainProjector(object):
     #@-node:gcross.20091002125713.1387:contract_and_move_XXX
     #@+node:gcross.20091004090150.1353:orthogonalize
     def orthogonalize(self,state_site_tensors):
-        for i in xrange(len(state_site_tensors)-1):
-            state_site_tensors[i], state_site_tensors[i+1] = normalize_and_denormalize(self.construct_projector()(state_site_tensors[i]),2,state_site_tensors[i+1],1)
-            self.contract_and_move_right(state_site_tensors[i])
-
-        for i in xrange(len(state_site_tensors)-1,0,-1):
-            state_site_tensors[i], state_site_tensors[i-1] = normalize_and_denormalize(self.construct_projector()(state_site_tensors[i]),1,state_site_tensors[i-1],2)
-            self.contract_and_move_left(state_site_tensors[i])
+        state_site_tensors[0], state_site_tensors[1] = normalize_and_denormalize(self.construct_projector()(state_site_tensors[0]),2,state_site_tensors[1],1)
     #@-node:gcross.20091004090150.1353:orthogonalize
     #@-others
 #@-node:gcross.20091002125713.1355:ChainProjector
