@@ -196,6 +196,11 @@ class Simulation(object):
         while self.active_site_number > old_active_site_number:
             self.move_active_site_left()
     #@-node:gcross.20091009120817.4105:increase_bandwidth_dimension_to
+    #@+node:gcross.20091009120817.4108:restart
+    def restart(self,bandwidth_dimension):
+        self.active_site_number = 0
+        self.reinitialize_chains(bandwidth_dimension)
+    #@-node:gcross.20091009120817.4108:restart
     #@-others
 #@-node:gcross.20091008162221.1381:Simulation
 #@-node:gcross.20091008162221.1382:Classes
