@@ -333,8 +333,9 @@ class ChainContractorForExpectations(ChainContractorBase):
 
     #@-node:gcross.20090930134608.1338:partially_contract_with_state_site_tensor
     #@+node:gcross.20090930134608.1349:compute_optimized_site_matrix
-    def compute_optimized_state_site_tensor(self,guess,project=lambda x: x,iteration_cap=None,tol=0,energy_raise_threshold=1e-10,k=1,ncv=None,sigma_solve=None):
+    def compute_optimized_state_site_tensor(self,guess,project=lambda x: x,iteration_cap=None,tol=0,energy_raise_threshold=1e-10,ncv=None,sigma_solve=None):
         n = prod(guess.shape)
+        k = 1
         state_site_tensor_shape = guess.shape
         class matrix(object):
             shape = (n,n)
@@ -356,7 +357,9 @@ class ChainContractorForExpectations(ChainContractorBase):
         except ValueError, msg:
             raise ConvergenceError, "Problem converging to solution in eigenvalue solver: "+str(msg)
 
-        eigenvectors = eigenvectors.transpose()
+        eigenvalue = eigenvalues[0]
+        eigenvector = eigenvectors[:,0]
+        del eigenvectors
 
     #@+at
     # It's not enough to simply take the eigenvector corresponding to the 
@@ -366,12 +369,7 @@ class ChainContractorForExpectations(ChainContractorBase):
     # of $-\infty$, which generally corresponds to an eigenvector that is very 
     # nearly zero.  Thus, it is important to filter out all of these bogus 
     # solutions before declaring victory.
-    #@-at
-    #@@c
-
-        sorted_indices_of_eigenvalues = argsort(real(eigenvalues))
-
-    #@+at
+    #
     # A solution $\lambda,\vx$ is acceptable iff:
     # 
     # \begin{itemize}
@@ -390,23 +388,14 @@ class ChainContractorForExpectations(ChainContractorBase):
     #@-at
     #@@c
 
-        if all(max(abs(eigenvector))<1e-10 for eigenvector in eigenvectors):
-            raise ConvergenceError, "Unable to find a non-vanishing eigenvector."
+        if max(abs(eigenvector))<1e-10:
+            raise ConvergenceError, "Unable to find an eigenvector."
 
-        if all(not isfinite(eigenvalue) for eigenvalue in eigenvalues):
-            raise ConvergenceError, "All eigenvalues are infinite."
+        if not isfinite(eigenvalue):
+            raise ConvergenceError, "Eigenvalue is infinite."
 
-        if all(not isfinite(eigenvector).all() for eigenvector in eigenvectors):
-            raise ConvergenceError, "All eigenvectors are infinite."
-
-        def is_acceptable(index):
-            evec = eigenvectors[index]
-            eval = eigenvalues[index]
-            return max(abs(evec)) > 1e-10 and isfinite(evec).all() and isfinite(eval)
-
-        acceptable_indices_of_eigenvalues = filter(is_acceptable,sorted_indices_of_eigenvalues)
-        if len(acceptable_indices_of_eigenvalues) == 0:
-            raise ConvergenceError, "All eigenvectors had near-vanishing normals, eigenvalues with large imaginary parts, or NaNs and/or infs."
+        if not isfinite(eigenvector).all():
+            raise ConvergenceError, "Eigenvector is infinite."
 
     #@+at
     # If we've reached this point, then we have at least one solution that 
@@ -418,10 +407,9 @@ class ChainContractorForExpectations(ChainContractorBase):
     #@-at
     #@@c
 
-        index_of_solution = acceptable_indices_of_eigenvalues[0]
-        state_site_tensor = eigenvectors[index_of_solution].reshape(state_site_tensor_shape)
+        state_site_tensor = eigenvector.reshape(state_site_tensor_shape)
 
-        new_energy = real(eigenvalues[index_of_solution])
+        new_energy = real(eigenvalue)
 
         old_energy = self.fully_contract_with_state_site_tensor(guess.conj(),guess)/inner(guess.conj().ravel(),guess.ravel())
 
