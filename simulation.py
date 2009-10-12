@@ -69,9 +69,9 @@ class Simulation(object):
         "number_of_sites",
         "physical_dimension",
         "operator_site_tensors",
-        "old_state_site_tensors_list",
+        "orthogonal_state_information_list",
         "state",
-        "old_state_tensors",
+        "old_state_site_tensors",
         "expectation_chain",
         "projection_chain",
         "active_site_number",
@@ -79,13 +79,13 @@ class Simulation(object):
     ]
     #@-node:gcross.20091008162221.1383:__slots__
     #@+node:gcross.20091008162221.1398:__init__
-    def __init__(self,number_of_sites,physical_dimension,bandwidth_dimension,operator_site_tensors,old_state_site_tensors_list=[]):
+    def __init__(self,number_of_sites,physical_dimension,bandwidth_dimension,operator_site_tensors,orthogonal_state_information_list=[]):
         self.number_of_sites = number_of_sites
         self.active_site_number = 0
         self.physical_dimension = physical_dimension
         self.operator_site_tensors = operator_site_tensors
 
-        self.old_state_site_tensors_list = old_state_site_tensors_list
+        self.orthogonal_state_information_list = orthogonal_state_information_list
         self.reinitialize_chains(bandwidth_dimension)
 
         self.energy = self.compute_energy()
@@ -94,7 +94,7 @@ class Simulation(object):
     def reinitialize_chains(self,bandwidth_dimension):
         state_site_tensors = create_normalized_state_site_tensors(self.physical_dimension,bandwidth_dimension,self.number_of_sites)
 
-        projection_chain = ChainProjector(state_site_tensors,self.old_state_site_tensors_list)
+        projection_chain = ChainProjector(state_site_tensors,self.orthogonal_state_information_list)
         projection_chain.orthogonalize(state_site_tensors)
 
         self.state = TensorChainState.from_list(state_site_tensors)
@@ -164,7 +164,7 @@ class Simulation(object):
     #@+node:gcross.20091008162221.1386:add_old_state_to_projectors_and_reset
     def add_old_state_to_projectors_and_reset(self,new_bandwidth_dimension):
         self.move_active_site_to_leftmost_site()
-        self.old_state_site_tensors_list.append(self.old_state_tensors)
+        self.orthogonal_state_information_list.append(convert_old_state_tensors_to_orthogonal_state_information(self.old_state_site_tensors))
         self.reinitialize_chains(new_bandwidth_dimension)
     #@-node:gcross.20091008162221.1386:add_old_state_to_projectors_and_reset
     #@+node:gcross.20091008162221.1397:compute_energy
@@ -176,7 +176,7 @@ class Simulation(object):
         old_active_site_number = self.active_site_number
         self.move_active_site_to_leftmost_site()
 
-        self.old_state_tensors = self.state.to_list()
+        self.old_state_site_tensors = self.state.to_list()
 
         physical_dimension = self.physical_dimension
         bandwidth_dimension_sequence = compute_bandwidth_dimension_sequence(physical_dimension,new_bandwidth_dimension,self.number_of_sites)

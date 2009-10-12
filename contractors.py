@@ -515,37 +515,21 @@ class ChainProjector(object):
     ]
     #@-node:gcross.20091002125713.1375:__slots__
     #@+node:gcross.20091002125713.1376:__init__
-    def __init__(self,initial_new_state_site_tensors=None,old_state_site_tensors_list=None):
+    def __init__(self,initial_new_state_site_tensors=None,orthogonal_state_information_list=None):
         self.current_site_number = 0
 
         if initial_new_state_site_tensors:
-            self.orthogonal_state_information_list = [
-                conjugate_lists_where_not_None(compute_all_normalized_tensors(old_state_site_tensors,0))
-                for old_state_site_tensors in old_state_site_tensors_list
-            ]
+            self.orthogonal_state_information_list = orthogonal_state_information_list
 
             self.projector_chains = [
                 ChainContractorForProjector(initial_new_state_site_tensors,*orthogonal_state_information)
-                for orthogonal_state_information in self.orthogonal_state_information_list
+                for orthogonal_state_information in orthogonal_state_information_list
             ]
 
         else:
             self.orthogonal_state_information_list = []
             self.projector_chains = []
     #@-node:gcross.20091002125713.1376:__init__
-    #@+node:gcross.20091002125713.1379:add_additional_state_to_projector_and_reset_chains_with_new_initial_state
-    def add_additional_state_to_projector_and_reset_chains_with_new_initial_state(self,old_state_site_tensors,initial_new_state_site_tensors,active_site_number=0):
-        overlap_state_information = conjugate_lists_where_not_None(compute_all_normalized_tensors(old_state_site_tensors,active_site_number))
-
-        self.orthogonal_state_information_list.append(overlap_state_information)
-
-        self.projector_chains = [
-            ChainContractorForProjector(initial_new_state_site_tensors,*orthogonal_state_information)
-            for orthogonal_state_information in self.orthogonal_state_information_list
-        ]
-
-        self.current_site_number = 0
-    #@-node:gcross.20091002125713.1379:add_additional_state_to_projector_and_reset_chains_with_new_initial_state
     #@+node:gcross.20091002125713.1377:construct_projector
     def construct_projector(self):
         if len(self.projector_chains) == 0:

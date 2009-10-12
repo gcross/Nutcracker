@@ -273,6 +273,10 @@ def create_normalized_state_site_tensors(physical_dimension,bandwidth_dimension,
            [normalize(crand(physical_dimension,left_bandwidth_dimension,right_bandwidth_dimension),1)
                 for (left_bandwidth_dimension,right_bandwidth_dimension) in bandwidth_dimension_iterator]
 #@-node:gcross.20091001102811.4044:create_normalized_state_site_tensors
+#@+node:gcross.20091012135649.1409:convert_old_state_tensors_to_orthogonal_state_information
+def convert_old_state_tensors_to_orthogonal_state_information(old_state_site_tensors,active_site_number=0):
+    return conjugate_lists_where_not_None(compute_all_normalized_tensors(old_state_site_tensors,active_site_number))
+#@-node:gcross.20091012135649.1409:convert_old_state_tensors_to_orthogonal_state_information
 #@-node:gcross.20090930134608.1299:Utility functions
 #@+node:gcross.20091001102811.1311:Normalization
 #@+node:gcross.20090930134608.1296:normalize
