@@ -105,7 +105,7 @@ try:
             while previous_bandwidth_energy-simulation.energy > 1e-7:
                 current_bandwidth_dimension += 1
                 if current_bandwidth_dimension > bandwidth_dimension:
-                    simulation.increase_bandwidth_dimension_to(current_bandwidth_dimension)
+                    simulation.save_current_and_increase_bandwidth_dimension_to(current_bandwidth_dimension)
                 previous_bandwidth_energy = simulation.energy
 
                 number_of_sites_skipped_in_a_row = 0
@@ -134,7 +134,7 @@ try:
         energy_levels.append(simulation.energy)
 
         if level_number < number_of_levels:
-            simulation.add_state_to_projectors_and_reset(bandwidth_dimension)
+            simulation.add_old_state_to_projectors_and_reset(bandwidth_dimension)
             bandwidth_dimension = 3
 
 except KeyboardInterrupt:

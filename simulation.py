@@ -71,6 +71,7 @@ class Simulation(object):
         "operator_site_tensors",
         "old_state_site_tensors_list",
         "state",
+        "old_state_tensors",
         "expectation_chain",
         "projection_chain",
         "active_site_number",
@@ -160,20 +161,22 @@ class Simulation(object):
         while self.active_site_number > 0:
             self.move_active_site_left()
     #@-node:gcross.20091008162221.1387:move_active_site_to_leftmost_site
-    #@+node:gcross.20091008162221.1386:add_state_to_projectors_and_reset
-    def add_state_to_projectors_and_reset(self,new_bandwidth_dimension):
+    #@+node:gcross.20091008162221.1386:add_old_state_to_projectors_and_reset
+    def add_old_state_to_projectors_and_reset(self,new_bandwidth_dimension):
         self.move_active_site_to_leftmost_site()
-        self.old_state_site_tensors_list.append(self.state.to_list())
+        self.old_state_site_tensors_list.append(self.old_state_tensors)
         self.reinitialize_chains(new_bandwidth_dimension)
-    #@-node:gcross.20091008162221.1386:add_state_to_projectors_and_reset
+    #@-node:gcross.20091008162221.1386:add_old_state_to_projectors_and_reset
     #@+node:gcross.20091008162221.1397:compute_energy
     def compute_energy(self):
         return real(self.expectation_chain.fully_contract_with_state_site_tensor(self.state.active_site_tensor.conj(),self.state.active_site_tensor))
     #@-node:gcross.20091008162221.1397:compute_energy
-    #@+node:gcross.20091009120817.4105:increase_bandwidth_dimension_to
-    def increase_bandwidth_dimension_to(self,new_bandwidth_dimension):
+    #@+node:gcross.20091009120817.4105:save_current_and_increase_bandwidth_dimension_to
+    def save_current_and_increase_bandwidth_dimension_to(self,new_bandwidth_dimension):
         old_active_site_number = self.active_site_number
         self.move_active_site_to_leftmost_site()
+
+        self.old_state_tensors = self.state.to_list()
 
         physical_dimension = self.physical_dimension
         bandwidth_dimension_sequence = compute_bandwidth_dimension_sequence(physical_dimension,new_bandwidth_dimension,self.number_of_sites)
@@ -195,7 +198,7 @@ class Simulation(object):
 
         while self.active_site_number > old_active_site_number:
             self.move_active_site_left()
-    #@-node:gcross.20091009120817.4105:increase_bandwidth_dimension_to
+    #@-node:gcross.20091009120817.4105:save_current_and_increase_bandwidth_dimension_to
     #@+node:gcross.20091009120817.4108:restart
     def restart(self,bandwidth_dimension):
         self.active_site_number = 0
