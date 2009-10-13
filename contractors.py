@@ -571,7 +571,7 @@ class ChainProjector(object):
 #@+node:gcross.20090930134608.1315:Unit Tests
 if __name__ == '__main__':
     import unittest
-    from utils import crand, normalize, create_normalized_state_site_tensors
+    from utils import crand, normalize, create_normalized_state_site_tensors, convert_old_state_tensors_to_orthogonal_state_information
     from paulis import *
     from numpy import identity, allclose, zeros
     from numpy.linalg import norm
@@ -800,9 +800,7 @@ if __name__ == '__main__':
         def testSameState(self,physical_dimension=irange(2,4),bandwidth_dimension=irange(2,4),number_of_sites=irange(4,6)):
             state_site_tensors = create_normalized_state_site_tensors(physical_dimension,bandwidth_dimension,number_of_sites)
 
-            projector = ChainProjector()
-
-            projector.add_additional_state_to_projector_and_reset_chains_with_new_initial_state(state_site_tensors,state_site_tensors)
+            projector = ChainProjector(state_site_tensors,[convert_old_state_tensors_to_orthogonal_state_information(state_site_tensors)])
 
             unnormalized_state_site_tensors, state_site_tensors_normalized_for_left_contraction, state_site_tensors_normalized_for_right_contraction = compute_all_normalized_tensors(state_site_tensors)
 
@@ -832,20 +830,17 @@ if __name__ == '__main__':
             correct_projected_state_vector = state_B_as_vector - dot(state_A_as_vector.conj(),state_B_as_vector)/dot(state_A_as_vector.conj(),state_A_as_vector)*state_A_as_vector
             self.assertAlmostEqual(0,dot(state_A_as_vector.conj(),correct_projected_state_vector))
 
-            projector = ChainProjector()
-            projector.add_additional_state_to_projector_and_reset_chains_with_new_initial_state(state_A_site_tensors,state_B_site_tensors)
+            projector = ChainProjector(state_B_site_tensors,[convert_old_state_tensors_to_orthogonal_state_information(state_A_site_tensors)])
 
             unnormalized_state_B_site_tensors, state_B_site_tensors_normalized_for_left_contraction, state_B_site_tensors_normalized_for_right_contraction = compute_all_normalized_tensors(state_B_site_tensors)
 
             def check(i):
                 projected_state_vector = reduce(dot,
                     state_B_site_tensors_normalized_for_left_contraction[:i]
-                   +[projector.construct_projector()(unnormalized_state_B_site_tensors[i].copy().ravel()).reshape(unnormalized_state_B_site_tensors[i].shape)]
+                   +[projector.construct_projector()(unnormalized_state_B_site_tensors[i].copy())]
                    +state_B_site_tensors_normalized_for_right_contraction[i+1:]
                   ).ravel()
                 self.assertAlmostEqual(0,dot(state_A_as_vector.conj(),projected_state_vector))
-                # I think that this next condition is actually not going to be true in general, even given a correct implementation.
-                #self.assertTrue(allclose(correct_projected_state_vector,projected_state_vector))
 
             check(0)
 
