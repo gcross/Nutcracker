@@ -207,8 +207,66 @@ class Simulation(object):
     #@-others
 #@-node:gcross.20091008162221.1381:Simulation
 #@-node:gcross.20091008162221.1382:Classes
+#@+node:gcross.20091012135649.1410:Functions
+#@+node:gcross.20091012135649.1411:run_simulation
+def run_simulation(
+  number_of_sites,
+  physical_dimension,
+  starting_bandwidth_dimension,
+  operator_site_tensors,
+  orthogonal_state_information_list=[],
+  sweep_callback=None
+  ):
+    simulation = Simulation(number_of_sites,physical_dimension,starting_bandwidth_dimension,operator_site_tensors,orthogonal_state_information_list)
+
+    def optimize(simulation_move_function):
+        try:
+            simulation.optimize_active_site()
+            optimize.number_of_sites_skipped_in_a_row = 0    
+        except ConvergenceError, e:
+            optimize.number_of_sites_skipped_in_a_row += 1
+            if optimize.number_of_sites_skipped_in_a_row >= number_of_sites:
+                raise
+        simulation_move_function()
+    optimize.number_of_sites_skipped_in_a_row = 0
+
+    bandwidth_dimension = starting_bandwidth_dimension
+
+    sweep_number = 0
+    previous_bandwidth_energy = 1e100
+    while previous_bandwidth_energy-simulation.energy > 1e-7:
+        bandwidth_dimension += 1
+        if bandwidth_dimension > starting_bandwidth_dimension:
+            simulation.save_current_and_increase_bandwidth_dimension_to(bandwidth_dimension)
+        previous_bandwidth_energy = simulation.energy
+
+        number_of_sites_skipped_in_a_row = 0
+        sweep_number = 0
+        previous_sweep_energy = 1e100
+        while previous_sweep_energy-simulation.energy > 1e-7:
+            sweep_number += 1
+            previous_sweep_energy = simulation.energy
+
+            try:
+                for site_number in xrange(number_of_sites-1):
+                    optimize(simulation.move_active_site_right)
+
+                for site_number in xrange(number_of_sites-1,0,-1):
+                    optimize(simulation.move_active_site_left)
+
+                if sweep_callback:
+                    sweep_callback(bandwidth_dimension,sweep_number,simulation.energy)
+            except ConvergenceError:
+                optimize.number_of_sites_skipped_in_a_row = 0
+                sweep_number = 0
+                previous_sweep_energy = 1e100
+                simulation.restart(bandwidth_dimension)
+
+    return simulation.energy, simulation.old_state_site_tensors
+#@-node:gcross.20091012135649.1411:run_simulation
+#@-node:gcross.20091012135649.1410:Functions
 #@-others
 
-__all__ = ["Simulation", "TensorChainState"]
+__all__ = ["run_simulation"]
 #@-node:gcross.20091008162221.1380:@thin simulation.py
 #@-leo

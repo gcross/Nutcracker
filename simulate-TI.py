@@ -1,46 +1,36 @@
 #@+leo-ver=4-thin
-#@+node:gcross.20091009120817.1394:@thin simulate-TI.py
+#@+node:gcross.20091012135649.1417:@thin simulate-TI.py
 #@@language Python
 
 #@<< Import needed modules >>
-#@+node:gcross.20091009120817.1395:<< Import needed modules >>
-from simulation import *
-from contractors import ConvergenceError
-from numpy import array, zeros, multiply, identity, complex128
+#@+node:gcross.20091012135649.1418:<< Import needed modules >>
+from simulation import run_simulation
+from utils import convert_old_state_tensors_to_orthogonal_state_information
+from numpy import array, zeros, identity, complex128
 from paulis import *
-#@-node:gcross.20091009120817.1395:<< Import needed modules >>
+#@-node:gcross.20091012135649.1418:<< Import needed modules >>
 #@nl
 
 #@+others
-#@+node:gcross.20091009120817.1407:optimize
-def optimize(simulation_move_function):
-    print "\tOptimizing site {0}...".format(site_number+1)
-
-    try:
-        simulation.optimize_active_site()
-        print "\t\tEnergy =", simulation.energy
-
-    except ConvergenceError, e:
-        print "\t\tConvergence error, skipping site... [{0}]".format(e)
-
-    simulation_move_function()
-#@-node:gcross.20091009120817.1407:optimize
 #@-others
 
 #@<< Define parameters >>
-#@+node:gcross.20091009120817.1397:<< Define parameters >>
-number_of_sites = 8
+#@+node:gcross.20091012135649.1419:<< Define parameters >>
+number_of_sites = 100
 
 bandwidth_dimension = 2
 
-number_of_levels = 3
+number_of_levels = 4
 
-coupling_strength = 0.5
-#@-node:gcross.20091009120817.1397:<< Define parameters >>
+coupling_strength = 0
+#@nonl
+#@-node:gcross.20091012135649.1419:<< Define parameters >>
 #@nl
 
 #@<< Define operators >>
-#@+node:gcross.20091009120817.1398:<< Define operators >>
+#@+node:gcross.20091012135649.1420:<< Define operators >>
+physical_dimension = 2
+
 middle_operator_site_tensor = zeros((2,2,3,3),complex128)
 middle_operator_site_tensor[...,0,0] = I
 middle_operator_site_tensor[...,2,2] = I
@@ -52,45 +42,42 @@ left_operator_site_tensor = middle_operator_site_tensor[...,:1,:]
 right_operator_site_tensor = middle_operator_site_tensor[...,:,-1:]
 
 operator_site_tensors = [left_operator_site_tensor] + [middle_operator_site_tensor]*(number_of_sites-2) + [right_operator_site_tensor]
-#@-node:gcross.20091009120817.1398:<< Define operators >>
-#@nl
-
-#@<< Initialize system >>
-#@+node:gcross.20091009120817.1399:<< Initialize system >>
-physical_dimension = 2
-
-simulation = Simulation(number_of_sites,physical_dimension,bandwidth_dimension,operator_site_tensors)
-
-states = []
-#@-node:gcross.20091009120817.1399:<< Initialize system >>
+#@-node:gcross.20091012135649.1420:<< Define operators >>
 #@nl
 
 #@<< Run sweeps >>
-#@+node:gcross.20091009120817.1400:<< Run sweeps >>
+#@+node:gcross.20091012135649.1421:<< Run sweeps >>
 energy_levels = []
+orthogonal_state_information_list = []
 
 try:
     for level_number in xrange(1,number_of_levels+1):
-        sweep_number = 0
-        previous_energy = 1e100
-        while previous_energy-simulation.energy > 1e-7:
-            sweep_number += 1
-            previous_energy = simulation.energy
-            print "Sweep number {0}:".format(sweep_number)
+        trial_number = 0
+        previous_trial_energy = 1e100
+        trial_energy = 0
+        while previous_trial_energy-trial_energy > 1e-7:
+            previous_trial_energy = min(previous_trial_energy,trial_energy)
+            trial_number += 1
 
-            for site_number in xrange(number_of_sites-1):
-                optimize(simulation.move_active_site_right)
+            def sweep_callback(bandwidth_dimension,sweep_number,energy,level_number=level_number):
+                print "Level {level_number}, Bandwidth dimension {bandwidth_dimension}, Sweep number {sweep_number}: {energy}".format(**vars())
 
-            for site_number in xrange(number_of_sites-1,0,-1):
-                optimize(simulation.move_active_site_left)
+            trial_energy, trial_state_site_tensors =\
+                run_simulation(
+                    number_of_sites,
+                    physical_dimension,
+                    bandwidth_dimension,
+                    operator_site_tensors,
+                    orthogonal_state_information_list,
+                    sweep_callback
+                )
 
-        print "Level {0} energy = {1}".format(level_number,simulation.energy)
-        energy_levels.append(simulation.energy)
+        print "Level {0} energy = {1}".format(level_number,trial_energy)
+        energy_levels.append(trial_energy)
 
         if level_number < number_of_levels:
-            bandwidth_dimension += 0
-            states.append(simulation.state)
-            simulation.add_state_to_projectors_and_reset(bandwidth_dimension)
+            orthogonal_state_information_list.append(convert_old_state_tensors_to_orthogonal_state_information(trial_state_site_tensors))
+            bandwidth_dimension = 3
 
 except KeyboardInterrupt:
     pass
@@ -99,7 +86,7 @@ print
 print "The energy levels of the system are:"
 for energy_level in energy_levels:
     print "\t",energy_level
-#@-node:gcross.20091009120817.1400:<< Run sweeps >>
+#@-node:gcross.20091012135649.1421:<< Run sweeps >>
 #@nl
-#@-node:gcross.20091009120817.1394:@thin simulate-TI.py
+#@-node:gcross.20091012135649.1417:@thin simulate-TI.py
 #@-leo
