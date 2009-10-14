@@ -62,6 +62,7 @@ class Controller(Referenceable):
             (task,deferred) = self.tasks.pop()
             def return_worker_to_pool(result):
                 self.workers.append(worker)
+                self.distribute_tasks()
                 return result
             worker.callRemote("run",task).addBoth(return_worker_to_pool).chainDeferred(deferred)
     #@-node:gcross.20091013163748.4169:distribute_tasks
