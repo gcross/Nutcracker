@@ -2,9 +2,12 @@
 #@+node:gcross.20091004090150.1364:@thin simulate-gadget.py
 #@@language Python
 
+import warnings
+warnings.simplefilter("ignore",DeprecationWarning)
+
 #@<< Import needed modules >>
 #@+node:gcross.20091004090150.1365:<< Import needed modules >>
-from simulation import run_simulation
+from simulation import compute_level
 from utils import convert_old_state_tensors_to_orthogonal_state_information
 from numpy import array, zeros, identity, complex128
 from paulis import *
@@ -65,34 +68,56 @@ energy_levels = []
 orthogonal_state_information_list = []
 
 try:
-    for level_number in xrange(1,number_of_levels+1):
-        trial_number = 0
-        previous_trial_energy = 1e100
-        trial_energy = 0
-        while previous_trial_energy-trial_energy > 1e-7:
-            previous_trial_energy = min(previous_trial_energy,trial_energy)
-            trial_number += 1
+    level_number = 1
+    while level_number <= number_of_levels:
 
-            def sweep_callback(bandwidth_dimension,sweep_number,energy,level_number=level_number):
-                print "Level {level_number}, Bandwidth dimension {bandwidth_dimension}, Sweep number {sweep_number}: {energy}".format(**vars())
+        def sweep_callback(bandwidth_dimension,sweep_number,energy,level_number=level_number):
+            print "Level {level_number}, Bandwidth dimension {bandwidth_dimension}, Sweep number {sweep_number}: {energy}".format(**vars())
 
+        def trial_callback(trial_energy,lowest_trial_energy,number_of_occurances,number_of_occurances_needed,level_number=level_number):
+            if trial_energy-lowest_trial_energy > 1e-7:
+                print "Level {level_number}, REJECTED: {trial_energy} > {lowest_trial_energy}".format(**vars())
+            elif number_of_occurances_needed > number_of_occurances:
+                print "Level {level_number}, ACCEPTED {trial_energy};  need to see {0} more times.".format(number_of_occurances_needed-number_of_occurances,**vars())
 
-            trial_energy, trial_state_site_tensors =\
-                run_simulation(
-                    number_of_sites,
-                    physical_dimension,
-                    bandwidth_dimension,
-                    operator_site_tensors,
-                    orthogonal_state_information_list,
-                    sweep_callback
-                )
-
-        print "Level {0} energy = {1}".format(level_number,trial_energy)
-        energy_levels.append(trial_energy)
+        energy, state_site_tensors = \
+            compute_level (
+                number_of_sites,
+                physical_dimension,
+                bandwidth_dimension,
+                operator_site_tensors,
+                orthogonal_state_information_list,
+                sweep_callback=sweep_callback,
+                trial_callback=trial_callback,
+            )
+        print "Level {0} energy = {1}".format(level_number,energy)
+        energy_levels.append(energy)
 
         if level_number < number_of_levels:
-            orthogonal_state_information_list.append(convert_old_state_tensors_to_orthogonal_state_information(trial_state_site_tensors))
+            orthogonal_state_information_list.append(convert_old_state_tensors_to_orthogonal_state_information(state_site_tensors))
+
+        def ensure_equal_or_restart(index1,index2):
+            global level_number, energy_levels, orthogonal_state_information_list
+            if abs(energy_levels[index1]-energy_levels[index2]) > 1e-7:
+                print "ERROR:  Lowest two energy levels should be equal;  re-running computation of excited state."
+                if energy_levels[index1] < energy_levels[index2]:
+                    index_to_delete = index2
+                else:
+                    index_to_delete = index1
+                del energy_levels[index_to_delete]
+                del orthogonal_state_information_list[index_to_delete]
+                level_number -= 1
+            else:
+                print "(Levels {0} and {1} are equal, as expected.)".format(index1+1,index2+1)
+
+        if level_number == 2:
             bandwidth_dimension = 3
+            ensure_equal_or_restart(0,1)
+
+        if level_number == 4:
+            ensure_equal_or_restart(2,3)
+
+        level_number += 1
 
 except KeyboardInterrupt:
     pass

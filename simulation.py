@@ -230,7 +230,7 @@ def run_simulation(
         simulation_move_function()
     optimize.number_of_sites_skipped_in_a_row = 0
 
-    bandwidth_dimension = starting_bandwidth_dimension
+    bandwidth_dimension = starting_bandwidth_dimension-1
 
     sweep_number = 0
     previous_bandwidth_energy = 1e100
@@ -245,6 +245,12 @@ def run_simulation(
         previous_sweep_energy = 1e100
         while previous_sweep_energy-simulation.energy > 1e-7:
             sweep_number += 1
+            if sweep_number > 15:
+                optimize.number_of_sites_skipped_in_a_row = 0
+                sweep_number = 0
+                previous_sweep_energy = 1e100
+                simulation.restart(bandwidth_dimension)
+                continue
             previous_sweep_energy = simulation.energy
 
             try:
@@ -264,6 +270,39 @@ def run_simulation(
 
     return simulation.energy, simulation.old_state_site_tensors
 #@-node:gcross.20091012135649.1411:run_simulation
+#@+node:gcross.20091014143858.1489:compute_level
+def compute_level(
+  number_of_sites,
+  physical_dimension,
+  starting_bandwidth_dimension,
+  operator_site_tensors,
+  orthogonal_state_information_list=[],
+  number_of_occurances_needed=3,
+  sweep_callback=None,
+  trial_callback=None,
+  ):
+    lowest_trial_energy = 1e100
+    number_of_occurances = 0
+    while number_of_occurances < number_of_occurances_needed:
+        trial_energy, trial_state_site_tensors =\
+            run_simulation(
+                number_of_sites,
+                physical_dimension,
+                starting_bandwidth_dimension,
+                operator_site_tensors,
+                orthogonal_state_information_list,
+                sweep_callback
+            )
+        if abs(lowest_trial_energy-trial_energy) < 1e-7:
+            number_of_occurances += 1
+        elif lowest_trial_energy-trial_energy > 1e-7:
+            lowest_trial_energy = trial_energy
+            lowest_trial_state_site_tensors = trial_state_site_tensors
+            number_of_occurances = 1
+        if trial_callback:
+            trial_callback(trial_energy,lowest_trial_energy,number_of_occurances,number_of_occurances_needed)
+    return lowest_trial_energy, lowest_trial_state_site_tensors
+#@-node:gcross.20091014143858.1489:compute_level
 #@-node:gcross.20091012135649.1410:Functions
 #@-others
 
