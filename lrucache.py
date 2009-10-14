@@ -270,5 +270,7 @@ if __name__ == '__main__':
     unittest.main()
 #@-node:gcross.20091012171148.1403:Tests
 #@-others
+
+__all__ = ["LRUCache"]
 #@-node:gcross.20091012171148.1392:@thin lrucache.py
 #@-leo
