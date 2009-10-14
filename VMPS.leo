@@ -18,6 +18,7 @@
 <v t="gcross.20091013163748.4164"><vh>@thin controller.py</vh></v>
 <v t="gcross.20091012202301.1605"><vh>@thin trial.py</vh></v>
 <v t="gcross.20091013163748.4180"><vh>@thin simulate.py</vh></v>
+<v t="gcross.20091014124839.1475"><vh>@thin algorithm.py</vh></v>
 <v t="gcross.20091013134215.1452"><vh>@thin models.py</vh></v>
 <v t="gcross.20091012171148.1392"><vh>@thin lrucache.py</vh></v>
 <v t="gcross.20090930213318.1310"><vh>Transverse Ising Model</vh>

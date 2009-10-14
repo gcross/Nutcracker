@@ -13,7 +13,7 @@ from twisted.internet.defer import inlineCallbacks
 from controller import *
 from trial import *
 from models import *
-#@nonl
+from algorithm import *
 #@-node:gcross.20091013163748.4182:<< Import needed modules >>
 #@nl
 
@@ -21,7 +21,7 @@ from models import *
 def main(controller,furl):
     #@    << Main >>
     #@+node:gcross.20091013163748.4181:<< Main >>
-    print "FURL:",furl
+    #print "FURL:",furl
 
     number_of_sites = 10
     physical_dimension = 2
@@ -38,12 +38,15 @@ def main(controller,furl):
 
     spawnWorkerProcess()
     spawnWorkerProcess()
-    spawnWorkerProcess()
-    spawnWorkerProcess()
 
-    result1 = yield controller.add_task(TrialTask(simulation_parameters))
-    result2 = yield controller.add_task(TrialTask(simulation_parameters,[result1.state_fetcher]))
-    result3 = yield controller.add_task(TrialTask(simulation_parameters,[result1.state_fetcher,result2.state_fetcher]))
+    result1 = yield compute_level(controller,simulation_parameters,[],2,2)
+    result2 = yield compute_level(controller,simulation_parameters,[result1.state_fetcher],2,2)
+    #result3 = yield compute_level(controller,simulation_parameters,[result1.state_fetcher,result2.state_fetcher])
+
+    print "Energy levels:"
+    print "\t",result1.energy
+    print "\t",result2.energy
+    #print "\t",result3.energy
 
     reactor.stop()
     #@-node:gcross.20091013163748.4181:<< Main >>
