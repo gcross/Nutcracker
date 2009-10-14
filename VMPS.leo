@@ -14,7 +14,8 @@
 <v t="gcross.20090930124443.1265"><vh>@thin utils.py</vh></v>
 <v t="gcross.20090930124443.1284"><vh>@thin contractors.py</vh></v>
 <v t="gcross.20091008162221.1380"><vh>@thin simulation.py</vh></v>
-<v t="gcross.20091013163748.4164"><vh>@thin grid.py</vh></v>
+<v t="gcross.20091013184459.1473"><vh>@thin worker.py</vh></v>
+<v t="gcross.20091013163748.4164"><vh>@thin controller.py</vh></v>
 <v t="gcross.20091012202301.1605"><vh>@thin trial.py</vh></v>
 <v t="gcross.20091013163748.4180"><vh>@thin simulate.py</vh></v>
 <v t="gcross.20091013134215.1452"><vh>@thin models.py</vh></v>

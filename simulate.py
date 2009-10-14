@@ -7,17 +7,16 @@
 from twisted.internet import reactor
 from twisted.internet.defer import inlineCallbacks
 
-from grid import *
+from controller import *
 from trial import *
 #@-node:gcross.20091013163748.4182:<< Import needed modules >>
 #@nl
 
 @inlineCallbacks
-def main():
+def main(controller,furl):
     #@    << Main >>
     #@+node:gcross.20091013163748.4181:<< Main >>
-    controller, furl = yield startController()
-    worker = yield startWorker(furl)
+    print "FURL:",furl
 
     number_of_sites = 10
     physical_dimension = 2
@@ -61,8 +60,6 @@ def main():
     #@-node:gcross.20091013163748.4181:<< Main >>
     #@nl
 
-
-reactor.callLater(0,main)
-reactor.run()
+becomeControllerAndThenCall(main)
 #@-node:gcross.20091013163748.4180:@thin simulate.py
 #@-leo

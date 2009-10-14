@@ -1,35 +1,31 @@
 #@+leo-ver=4-thin
-#@+node:gcross.20091013163748.4164:@thin grid.py
+#@+node:gcross.20091013163748.4164:@thin controller.py
 #@@language Python
 
 #@<< Import needed modules >>
 #@+node:gcross.20091013163748.4183:<< Import needed modules >>
 from foolscap.api import Tub, Referenceable, Copyable, RemoteCopy
+from twisted.internet import reactor
 from twisted.internet.defer import Deferred, inlineCallbacks, returnValue
 #@-node:gcross.20091013163748.4183:<< Import needed modules >>
 #@nl
 
 #@+others
 #@+node:gcross.20091013163748.4171:Functions
-#@+node:gcross.20091013163748.4172:startController
-@inlineCallbacks
-def startController():
+#@+node:gcross.20091013163748.4172:becomeControllerAndThenCall
+def becomeControllerAndThenCall(function_to_call):
+    global furl
     tub = Tub()
     tub.listenOn("tcp:62343")
     tub.startService()
     controller = Controller()
-    yield tub.setLocationAutomatically()
-    furl = yield tub.registerReference(controller)
-    returnValue((controller,furl))
-#@-node:gcross.20091013163748.4172:startController
-#@+node:gcross.20091013163748.4173:startWorker
-@inlineCallbacks
-def startWorker(furl):
-    tub = Tub()
-    tub.startService()
-    controller = yield tub.getReference(furl)
-    yield controller.callRemote("add_worker",Worker())
-#@-node:gcross.20091013163748.4173:startWorker
+    tub.setLocationAutomatically().addCallback(lambda _: tub.registerReference(controller)).addCallback(lambda furl: function_to_call(controller,furl))
+    reactor.run()
+#@-node:gcross.20091013163748.4172:becomeControllerAndThenCall
+#@+node:gcross.20091013184459.1472:spawnWorkerProcess
+def spawnWorkerProcess():
+    global furl
+#@-node:gcross.20091013184459.1472:spawnWorkerProcess
 #@-node:gcross.20091013163748.4171:Functions
 #@+node:gcross.20091013163748.4165:Classes
 #@+node:gcross.20091013163748.4166:Controller
@@ -48,6 +44,10 @@ class Controller(Referenceable):
         self.workers.append(worker)
         self.distribute_tasks()
     #@-node:gcross.20091013163748.4168:remote_add_worker
+    #@+node:gcross.20091013184459.4169:remote_ping
+    def remote_ping(self):
+        pass
+    #@-node:gcross.20091013184459.4169:remote_ping
     #@+node:gcross.20091013163748.4170:add_task
     def add_task(self,task):
         d = Deferred()
@@ -67,21 +67,9 @@ class Controller(Referenceable):
     #@-node:gcross.20091013163748.4169:distribute_tasks
     #@-others
 #@-node:gcross.20091013163748.4166:Controller
-#@+node:gcross.20091013163748.4174:Worker
-class Worker(Referenceable):
-    #@    @+others
-    #@+node:gcross.20091013163748.4177:__slots__
-    __slots__ = []
-    #@-node:gcross.20091013163748.4177:__slots__
-    #@+node:gcross.20091013163748.4175:remote_run
-    def remote_run(self,task):
-        return task()
-    #@-node:gcross.20091013163748.4175:remote_run
-    #@-others
-#@-node:gcross.20091013163748.4174:Worker
 #@-node:gcross.20091013163748.4165:Classes
 #@-others
 
-__all__ = ["startController","startWorker"]
-#@-node:gcross.20091013163748.4164:@thin grid.py
+__all__ = ["becomeControllerAndThenCall","spawnWorkerProcess"]
+#@-node:gcross.20091013163748.4164:@thin controller.py
 #@-leo
