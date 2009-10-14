@@ -2,6 +2,9 @@
 #@+node:gcross.20091013184459.1473:@thin worker.py
 #@@language Python
 
+import warnings
+warnings.simplefilter('ignore', DeprecationWarning)
+
 #@<< Import needed modules >>
 #@+node:gcross.20091013184459.1477:<< Import needed modules >>
 from foolscap.api import Tub, Referenceable, Copyable, RemoteCopy, DeadReferenceError
@@ -29,8 +32,6 @@ def becomeWorker(furl):
                 yield controller.callRemote("ping")
             except DeadReferenceError:
                 reactor.stop()
-                import sys
-                sys.exit()
             reactor.callLater(1,ping)
         yield ping()
     reactor.callLater(0,main)

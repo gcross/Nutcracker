@@ -2,6 +2,9 @@
 #@+node:gcross.20091013163748.4180:@thin simulate.py
 #@@language Python
 
+import warnings
+warnings.simplefilter('ignore', DeprecationWarning)
+
 #@<< Import needed modules >>
 #@+node:gcross.20091013163748.4182:<< Import needed modules >>
 from twisted.internet import reactor
@@ -9,6 +12,8 @@ from twisted.internet.defer import inlineCallbacks
 
 from controller import *
 from trial import *
+from models import *
+#@nonl
 #@-node:gcross.20091013163748.4182:<< Import needed modules >>
 #@nl
 
@@ -23,38 +28,22 @@ def main(controller,furl):
     starting_bandwidth_dimension = 2
     perturbation_strength = 0.1
 
-    from models import GadgetHamiltonianFactory
-    operator_factory = GadgetHamiltonianFactory(number_of_sites,perturbation_strength)
-
-    result1 = yield controller.add_task(
-        TrialTask(
+    simulation_parameters = \
+        SimulationParameters(
             number_of_sites,
             physical_dimension,
             starting_bandwidth_dimension,
-            operator_factory,
-            []
+            GadgetHamiltonianFactory(number_of_sites,perturbation_strength)
         )
-    )
 
-    result2 = yield controller.add_task(
-        TrialTask(
-            number_of_sites,
-            physical_dimension,
-            starting_bandwidth_dimension,
-            operator_factory,
-            [result1.state_fetcher]
-        )
-    )
+    spawnWorkerProcess()
+    spawnWorkerProcess()
+    spawnWorkerProcess()
+    spawnWorkerProcess()
 
-    result3 = yield controller.add_task(
-        TrialTask(
-            number_of_sites,
-            physical_dimension,
-            starting_bandwidth_dimension,
-            operator_factory,
-            [result1.state_fetcher,result2.state_fetcher]
-        )
-    )
+    result1 = yield controller.add_task(TrialTask(simulation_parameters))
+    result2 = yield controller.add_task(TrialTask(simulation_parameters,[result1.state_fetcher]))
+    result3 = yield controller.add_task(TrialTask(simulation_parameters,[result1.state_fetcher,result2.state_fetcher]))
 
     reactor.stop()
     #@-node:gcross.20091013163748.4181:<< Main >>

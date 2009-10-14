@@ -2,9 +2,13 @@
 #@+node:gcross.20091013163748.4164:@thin controller.py
 #@@language Python
 
+import warnings
+warnings.simplefilter('ignore', DeprecationWarning)
+
 #@<< Import needed modules >>
 #@+node:gcross.20091013163748.4183:<< Import needed modules >>
 from foolscap.api import Tub, Referenceable, Copyable, RemoteCopy
+import subprocess
 from twisted.internet import reactor
 from twisted.internet.defer import Deferred, inlineCallbacks, returnValue
 #@-node:gcross.20091013163748.4183:<< Import needed modules >>
@@ -14,17 +18,22 @@ from twisted.internet.defer import Deferred, inlineCallbacks, returnValue
 #@+node:gcross.20091013163748.4171:Functions
 #@+node:gcross.20091013163748.4172:becomeControllerAndThenCall
 def becomeControllerAndThenCall(function_to_call):
-    global furl
     tub = Tub()
     tub.listenOn("tcp:62343")
     tub.startService()
     controller = Controller()
-    tub.setLocationAutomatically().addCallback(lambda _: tub.registerReference(controller)).addCallback(lambda furl: function_to_call(controller,furl))
+    @inlineCallbacks
+    def initialize(_):
+        global furl
+        furl = yield tub.registerReference(controller)
+        yield function_to_call(controller,furl)
+    tub.setLocationAutomatically().addCallback(initialize)
     reactor.run()
 #@-node:gcross.20091013163748.4172:becomeControllerAndThenCall
 #@+node:gcross.20091013184459.1472:spawnWorkerProcess
 def spawnWorkerProcess():
     global furl
+    subprocess.Popen(["python","worker.py",furl])
 #@-node:gcross.20091013184459.1472:spawnWorkerProcess
 #@-node:gcross.20091013163748.4171:Functions
 #@+node:gcross.20091013163748.4165:Classes

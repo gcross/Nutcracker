@@ -101,16 +101,10 @@ class TrialTask(Copyable,RemoteCopy):
     #@-node:gcross.20091013163748.1470:(copy type)
     #@+node:gcross.20091012202301.1619:__init__
     def __init__(self,
-      number_of_sites=None,
-      physical_dimension=None,
-      starting_bandwidth_dimension=None,
-      operator_factory=None,
+      simulation_parameters=None,
       old_state_fetchers=[],
       ):
-        self.number_of_sites = number_of_sites
-        self.physical_dimension = physical_dimension
-        self.starting_bandwidth_dimension = starting_bandwidth_dimension
-        self.operator_factory = operator_factory
+        self.simulation_parameters = simulation_parameters
         self.old_state_fetchers = old_state_fetchers
     #@-node:gcross.20091012202301.1619:__init__
     #@+node:gcross.20091013113202.1448:__call__
@@ -126,11 +120,12 @@ class TrialTask(Copyable,RemoteCopy):
             level_number = len(orthogonal_state_information_list)+1
             print ("Level number {level_number}, Bandwidth dimension {bandwidth_dimension}, Sweep number {sweep_number}: {energy}".format(**vars()))
 
+        simulation_parameters = self.simulation_parameters
         result = yield deferToThread(run_simulation,
-            self.number_of_sites,
-            self.physical_dimension,
-            self.starting_bandwidth_dimension,
-            self.operator_factory(),
+            simulation_parameters.number_of_sites,
+            simulation_parameters.physical_dimension,
+            simulation_parameters.starting_bandwidth_dimension,
+            simulation_parameters.operator_factory(),
             orthogonal_state_information_list,
             sweep_callback,
         )
@@ -143,6 +138,25 @@ class TrialTask(Copyable,RemoteCopy):
     #@-node:gcross.20091013163748.4188:setCopyState
     #@-others
 #@-node:gcross.20091012202301.1607:TrialTask
+#@+node:gcross.20091014124839.1483:SimulationParameters
+class SimulationParameters(Copyable,RemoteCopy):
+    #@    @+others
+    #@+node:gcross.20091014124839.1484:(copy type)
+    typeToCopy = copytype = "SimulationParameters"
+    #@-node:gcross.20091014124839.1484:(copy type)
+    #@+node:gcross.20091014124839.1485:__init__
+    def __init__(self,number_of_sites=None,physical_dimension=None,starting_bandwidth_dimension=None,operator_factory=None):
+        self.number_of_sites = number_of_sites
+        self.physical_dimension = physical_dimension
+        self.starting_bandwidth_dimension = starting_bandwidth_dimension
+        self.operator_factory = operator_factory
+    #@-node:gcross.20091014124839.1485:__init__
+    #@+node:gcross.20091014124839.1486:setCopyState
+    def setCopyableState(self, state):
+        self.__dict__ = state
+    #@-node:gcross.20091014124839.1486:setCopyState
+    #@-others
+#@-node:gcross.20091014124839.1483:SimulationParameters
 #@-node:gcross.20091012202301.1606:Classes
 #@-others
 #@-node:gcross.20091012202301.1605:@thin trial.py
