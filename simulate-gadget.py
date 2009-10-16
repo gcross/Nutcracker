@@ -7,10 +7,12 @@ warnings.simplefilter("ignore",DeprecationWarning)
 
 #@<< Import needed modules >>
 #@+node:gcross.20091004090150.1365:<< Import needed modules >>
+from numpy import array, zeros, identity, complex128
+
+from database import VMPSDatabase
+from paulis import *
 from simulation import compute_level
 from utils import convert_old_state_tensors_to_orthogonal_state_information
-from numpy import array, zeros, identity, complex128
-from paulis import *
 #@-node:gcross.20091004090150.1365:<< Import needed modules >>
 #@nl
 
@@ -19,11 +21,9 @@ from paulis import *
 
 #@<< Define parameters >>
 #@+node:gcross.20091004090150.1367:<< Define parameters >>
-number_of_sites = 100
+number_of_sites = 2
 
 bandwidth_dimension = 2
-
-number_of_levels = 4
 
 x = 0.1
 #@-node:gcross.20091004090150.1367:<< Define parameters >>
@@ -65,11 +65,12 @@ operator_site_tensors = [left_operator_site_tensor] + [middle_operator_site_tens
 #@<< Run sweeps >>
 #@+node:gcross.20091004090150.1370:<< Run sweeps >>
 energy_levels = []
+state_site_tensors_list = []
 orthogonal_state_information_list = []
 
 try:
     level_number = 1
-    while level_number <= number_of_levels:
+    while level_number <= 4:
 
         def sweep_callback(bandwidth_dimension,sweep_number,energy,level_number=level_number):
             print "Level {level_number}, Bandwidth dimension {bandwidth_dimension}, Sweep number {sweep_number}: {energy}".format(**vars())
@@ -92,8 +93,9 @@ try:
             )
         print "Level {0} energy = {1}".format(level_number,energy)
         energy_levels.append(energy)
+        state_site_tensors_list.append(state_site_tensors)
 
-        if level_number < number_of_levels:
+        if level_number < 4:
             orthogonal_state_information_list.append(convert_old_state_tensors_to_orthogonal_state_information(state_site_tensors))
 
         def ensure_equal_or_restart(index1,index2):
@@ -126,6 +128,10 @@ print
 print "The energy levels of the system are:"
 for energy_level in energy_levels:
     print "\t",energy_level
+
+print "SOLUTION ID:", VMPSDatabase().save_solution(energy_levels,state_site_tensors_list)
+
+
 #@-node:gcross.20091004090150.1370:<< Run sweeps >>
 #@nl
 #@-node:gcross.20091004090150.1364:@thin simulate-gadget.py
