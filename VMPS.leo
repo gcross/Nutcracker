@@ -21,11 +21,15 @@
 </v>
 <v t="gcross.20091004090150.1371"><vh>Gadget Model</vh>
 <v t="gcross.20091004090150.1364"><vh>@thin simulate-gadget.py</vh></v>
+<v t="gcross.20091019185011.1406"><vh>Scripts</vh>
+<v t="gcross.20091019185011.1405"><vh>@thin bitslayer-sweep.hs</vh></v>
+</v>
 </v>
 </vnodes>
 <tnodes>
 <t tx="gcross.20090930124443.1231" str_leo_pos="5,1"></t>
 <t tx="gcross.20090930213318.1310"></t>
 <t tx="gcross.20091004090150.1371"></t>
+<t tx="gcross.20091019185011.1406"></t>
 </tnodes>
 </leo_file>
