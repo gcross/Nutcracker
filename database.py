@@ -4,6 +4,7 @@
 
 #@<< Import needed modules >>
 #@+node:gcross.20091014143858.1508:<< Import needed modules >>
+from ConfigParser import SafeConfigParser
 from itertools import izip
 from uuid import uuid4
 #from pg import connect, unescape_bytea, escape_bytea
@@ -25,15 +26,12 @@ class VMPSDatabase(object):
     #@-node:gcross.20091014143858.1493:__slots__
     #@+node:gcross.20091014143858.1494:__init__
     def __init__(self,*args,**keywords):
-        self.connection = connect(database="vmps",*args,**keywords)
+        config = SafeConfigParser()
+        config.read("database.cfg")
+        keywords.update(config.defaults())
+        self.connection = connect(*args,**keywords)
         self.cursor = self.connection.cursor()
     #@-node:gcross.20091014143858.1494:__init__
-    #@+node:gcross.20091014143858.1511:__del__
-    def __del__(self):
-        self.connection.commit()
-        self.cursor.close()
-        self.connection.close()
-    #@-node:gcross.20091014143858.1511:__del__
     #@+node:gcross.20091014143858.1507:save_state
     def save_state(self,state_site_tensors):
         state_id = str(uuid4())

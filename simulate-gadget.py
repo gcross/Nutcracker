@@ -8,6 +8,7 @@ warnings.simplefilter("ignore",DeprecationWarning)
 #@<< Import needed modules >>
 #@+node:gcross.20091004090150.1365:<< Import needed modules >>
 from numpy import array, zeros, identity, complex128
+import sys
 
 from database import VMPSDatabase
 from paulis import *
@@ -19,13 +20,20 @@ from utils import convert_old_state_tensors_to_orthogonal_state_information
 #@+others
 #@-others
 
+#@<< Read simulation parameters >>
+#@+node:gcross.20091019143831.1403:<< Read simulation parameters >>
+try:
+    number_of_sites = int(sys.argv[1])
+    perturbation_coefficient = float(sys.argv[2])
+except:
+    print "USAGE:  {0} <number of sites> <perturbation coefficient>".format(sys.argv[0])
+    sys.exit(1)
+#@-node:gcross.20091019143831.1403:<< Read simulation parameters >>
+#@nl
+
 #@<< Define parameters >>
 #@+node:gcross.20091004090150.1367:<< Define parameters >>
-number_of_sites = 2
-
 bandwidth_dimension = 2
-
-x = 0.1
 #@-node:gcross.20091004090150.1367:<< Define parameters >>
 #@nl
 
@@ -36,7 +44,7 @@ physical_dimension = 2
 number_of_sites += 2
 
 left_operator_site_tensor = zeros((2,2,1,6),complex128)
-left_operator_site_tensor[...,0,0] = -x*X/2
+left_operator_site_tensor[...,0,0] = -perturbation_coefficient*X/2
 left_operator_site_tensor[...,0,2] = I
 left_operator_site_tensor[...,0,4] = I
 left_operator_site_tensor[...,0,5] = 0
@@ -54,7 +62,7 @@ middle_operator_site_tensor[...,5,5] = I
 
 right_operator_site_tensor = zeros((2,2,6,1),complex128)
 right_operator_site_tensor[...,1,0] = I
-right_operator_site_tensor[...,3,0] = -x*X/2
+right_operator_site_tensor[...,3,0] = -perturbation_coefficient*X/2
 right_operator_site_tensor[...,4,0] = 0
 right_operator_site_tensor[...,5,0] = I
 
@@ -67,6 +75,11 @@ operator_site_tensors = [left_operator_site_tensor] + [middle_operator_site_tens
 energy_levels = []
 state_site_tensors_list = []
 orthogonal_state_information_list = []
+
+database = VMPSDatabase()
+database.cursor.execute("select count(*) from gadget_model_1_simulations where number_of_sites={0} and perturbation_strength={1};".format(number_of_sites-2,perturbation_coefficient))
+if database.cursor.fetchone()[0] > 0:
+    sys.exit("Model has already been solved for the given parameters.")
 
 try:
     level_number = 1
@@ -113,7 +126,7 @@ try:
                 print "(Levels {0} and {1} are equal, as expected.)".format(index1+1,index2+1)
 
         if level_number == 2:
-            bandwidth_dimension = 3
+            bandwidth_dimension += 1
             ensure_equal_or_restart(0,1)
 
         if level_number == 4:
@@ -124,13 +137,21 @@ try:
 except KeyboardInterrupt:
     pass
 
+else:
+    database.cursor.execute("BEGIN TRANSACTION;")
+    try:
+        solution_id = database.save_solution(energy_levels,state_site_tensors_list)
+        database.cursor.execute("insert into gadget_model_1_simulations (number_of_sites,perturbation_strength,solution_id,energy_gap) values ({0},{1},'{2}',{3})".format(number_of_sites-2,perturbation_coefficient,solution_id,energy_levels[-1]-energy_levels[0]))
+    except:
+        database.cursor.execute("ROLLBACK;")
+        raise
+    else:
+        database.cursor.execute("COMMIT;")
+
 print
 print "The energy levels of the system are:"
 for energy_level in energy_levels:
     print "\t",energy_level
-
-print "SOLUTION ID:", VMPSDatabase().save_solution(energy_levels,state_site_tensors_list)
-
 
 #@-node:gcross.20091004090150.1370:<< Run sweeps >>
 #@nl
