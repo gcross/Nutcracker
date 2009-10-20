@@ -295,6 +295,9 @@ def compute_level(
             )
         if abs(lowest_trial_energy-trial_energy) < 1e-7:
             number_of_occurances += 1
+            # If the peak bandwidth is smaller, then use this state representation instead
+            if trial_state_site_tensors[len(trial_state_site_tensors)/2].shape[1] < lowest_trial_state_site_tensors[len(lowest_trial_state_site_tensors)/2].shape[1]:
+                lowest_trial_state_site_tensors = trial_state_site_tensors
         elif lowest_trial_energy-trial_energy > 1e-7:
             lowest_trial_energy = trial_energy
             lowest_trial_state_site_tensors = trial_state_site_tensors
