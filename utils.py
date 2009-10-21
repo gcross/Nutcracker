@@ -6,10 +6,11 @@
 #@+node:gcross.20090930134608.1304:<< Import needed modules >>
 import __builtin__
 from scipy.linalg import svd, eigh, LinAlgError
-from numpy import prod, dot, tensordot, multiply, sqrt, identity
+from scipy.sparse.linalg.eigen.arpack import eigen
+from scipy.sparse.linalg import aslinearoperator
+from numpy import prod, dot, tensordot, multiply, sqrt, identity, complex128, argsort, real, isfinite, inner
 from numpy.random import rand
 from itertools import izip, islice
-#@nonl
 #@-node:gcross.20090930134608.1304:<< Import needed modules >>
 #@nl
 
@@ -222,6 +223,12 @@ def make_contractor_from_implicit_joins(tensor_index_labels,result_index_labels,
 #@-node:gcross.20090930124443.1256:make_contractor_from_implicit_joins
 #@-others
 #@-node:gcross.20090930124443.1249:Macro building functions
+#@+node:gcross.20091020183902.1478:Exceptions
+#@+node:gcross.20091020183902.1479:class ConvergenceError
+class ConvergenceError(Exception):
+    pass
+#@-node:gcross.20091020183902.1479:class ConvergenceError
+#@-node:gcross.20091020183902.1478:Exceptions
 #@+node:gcross.20090930134608.1299:Utility functions
 #@+node:gcross.20090930134608.1301:crand
 def crand(*shape):
@@ -277,6 +284,81 @@ def create_normalized_state_site_tensors(physical_dimension,bandwidth_dimension,
 def convert_old_state_tensors_to_orthogonal_state_information(old_state_site_tensors,active_site_number=0):
     return conjugate_lists_where_not_None(compute_all_normalized_tensors(old_state_site_tensors,active_site_number))
 #@-node:gcross.20091012135649.1409:convert_old_state_tensors_to_orthogonal_state_information
+#@+node:gcross.20091020183902.1473:compute_optimized_state_site_tensor
+def compute_optimized_vector(matvec_,guess,iteration_cap=None,tol=0,energy_raise_threshold=1e-10,ncv=None,sigma_solve=None,which='SR'):
+    n = len(guess)
+    k = 1
+    class matrix(object):
+        shape = (n,n)
+        dtype = complex128
+        @staticmethod
+        def matvec(state_site_vector):
+            return matvec_(state_site_vector)
+    try:
+        eigenvalues, eigenvectors = \
+            eigen(
+                matrix,1,
+                which=which,
+                ncv=ncv,
+                v0=guess,
+                maxiter=iteration_cap,
+                tol=tol,
+                return_eigenvectors=True
+            )
+    except ValueError, msg:
+        raise ConvergenceError, "Problem converging to solution in eigenvalue solver: "+str(msg)
+
+    eigenvalue = eigenvalues[0]
+    eigenvector = eigenvectors[:,0]
+    del eigenvectors
+
+#@+at
+# It's not enough to simply take the eigenvector corresponding to the lowest 
+# eigenvalue as our solution, since sometimes for various reasons (due mainly 
+# to numerical instability) some or all of the eigenvalues are bogus.  For 
+# example, sometimes the algorithm returns th the equivalent of $-\infty$, 
+# which generally corresponds to an eigenvector that is very nearly zero.  
+# Thus, it is important to filter out all of these bogus solutions before 
+# declaring victory.
+# 
+# A solution $\lambda,\vx$ is acceptable iff:
+# 
+# \begin{itemize}
+# \item $\|\vx\|_\infty > 1\cdot 10^{-10}$, to rule out erroneous ``nearly 
+# zero'' solutions that result in infinitely large eigenvalues
+# \item $\abs{\text{Im}[\lambda]} < 1\cdot 10^{-10}$, since energies should be 
+# \emph{real} as the Hamiltonian is hermitian.  (Small imaginary parts aren't 
+# great, but they don't hurt too much as long as they are sufficiently 
+# negligible.)
+# \item $\abs{x_i}<\infty, \abs{\lambda} < \infty$
+# \item $\abs{\frac{\coip{\vx}{\bD}{\vx}}{\coip{\vx}{\bN}{\vx}} - \lam}<1\cdot 
+# 10^{-10}$, since sometimes the returned eigenvalue is actually much 
+# different from the energy obtained by using the corresponding eigenvector
+# \end{itemize}
+#@-at
+#@@c
+
+    if max(abs(eigenvector))<1e-10:
+        raise ConvergenceError, "Unable to find an eigenvector."
+
+    if not isfinite(eigenvalue):
+        raise ConvergenceError, "Eigenvalue is infinite."
+
+    if not isfinite(eigenvector).all():
+        raise ConvergenceError, "Eigenvector is infinite."
+
+#@+at
+# If we've reached this point, then we have at least one solution that isn't 
+# atrocious.  However, it's possible that our solution has a higher energy 
+# than our current state -- either due to a problem in the eigenvalue solver, 
+# or because we filtered out all the lower-energy solutions.  Thus, we need 
+# compare the energy of the solution we've found to our old energy to make 
+# sure that it's higher.
+#@-at
+#@@c
+
+    return eigenvector, real(eigenvalue)
+#@-node:gcross.20091020183902.1473:compute_optimized_state_site_tensor
 #@-node:gcross.20090930134608.1299:Utility functions
 #@+node:gcross.20091001102811.1311:Normalization
 #@+node:gcross.20090930134608.1296:normalize

@@ -4,10 +4,8 @@
 
 #@<< Import needed modules >>
 #@+node:gcross.20090930134608.1306:<< Import needed modules >>
-from utils import make_contractor_from_implicit_joins, compute_all_normalized_tensors, conjugate_lists_where_not_None, normalize_and_denormalize
-from numpy import inner, complex128, argsort, real, isfinite, ones, prod, conj, array, dot
-from scipy.sparse.linalg.eigen.arpack import eigen
-from scipy.sparse.linalg import aslinearoperator
+from utils import make_contractor_from_implicit_joins, compute_all_normalized_tensors, conjugate_lists_where_not_None, normalize_and_denormalize, compute_optimized_vector, ConvergenceError
+from numpy import ones, prod, conj, array, dot, complex128, inner, real
 from scipy.linalg import qr
 from itertools import izip
 #@-node:gcross.20090930134608.1306:<< Import needed modules >>
@@ -221,12 +219,6 @@ compute_optimization_matrix = make_contractor_from_implicit_joins([
 #@-node:gcross.20090930134608.1360:Compute optimization matrix
 #@-node:gcross.20090930124443.1285:Contractors
 #@-node:gcross.20090930124443.1294:Functions
-#@+node:gcross.20090930134608.1354:Exceptions
-#@+node:gcross.20090930134608.1356:class ConvergenceError
-class ConvergenceError(Exception):
-    pass
-#@-node:gcross.20090930134608.1356:class ConvergenceError
-#@-node:gcross.20090930134608.1354:Exceptions
 #@+node:gcross.20090930124443.1293:Classes
 #@+others
 #@+node:gcross.20091002125713.1354:chains
@@ -332,84 +324,28 @@ class ChainContractorForExpectations(ChainContractorBase):
             )
 
     #@-node:gcross.20090930134608.1338:partially_contract_with_state_site_tensor
-    #@+node:gcross.20090930134608.1349:compute_optimized_site_matrix
+    #@+node:gcross.20090930134608.1361:compute_optimization_matrix
+    def compute_optimization_matrix(self):
+        return compute_optimization_matrix(self.operator_site_tensor,self.left_boundary,self.right_boundary)
+    #@-node:gcross.20090930134608.1361:compute_optimization_matrix
+    #@+node:gcross.20091020183902.1475:compute_optimized_site_matrix
     def compute_optimized_state_site_tensor(self,guess,project=lambda x: x,iteration_cap=None,tol=0,energy_raise_threshold=1e-10,ncv=None,sigma_solve=None):
-        n = prod(guess.shape)
-        k = 1
         state_site_tensor_shape = guess.shape
-        class matrix(object):
-            shape = (n,n)
-            dtype = complex128
-            @staticmethod
-            def matvec(state_site_vector):
-                return project(self.partially_contract_with_state_site_tensor(project(state_site_vector).reshape(state_site_tensor_shape)).ravel())
-        try:
-            eigenvalues, eigenvectors = \
-                eigen(
-                    matrix,1,
-                    which='SR',
-                    ncv=ncv,
-                    v0=project(guess.ravel().copy()),
-                    maxiter=iteration_cap,
-                    tol=tol,
-                    return_eigenvectors=True
-                )
-        except ValueError, msg:
-            raise ConvergenceError, "Problem converging to solution in eigenvalue solver: "+str(msg)
+        def matvec(state_site_vector):
+            return project(self.partially_contract_with_state_site_tensor(project(state_site_vector).reshape(state_site_tensor_shape)).ravel())
 
-        eigenvalue = eigenvalues[0]
-        eigenvector = eigenvectors[:,0]
-        del eigenvectors
-
-    #@+at
-    # It's not enough to simply take the eigenvector corresponding to the 
-    # lowest eigenvalue as our solution, since sometimes for various reasons 
-    # (due mainly to numerical instability) some or all of the eigenvalues are 
-    # bogus.  For example, sometimes the algorithm returns th the equivalent 
-    # of $-\infty$, which generally corresponds to an eigenvector that is very 
-    # nearly zero.  Thus, it is important to filter out all of these bogus 
-    # solutions before declaring victory.
-    #
-    # A solution $\lambda,\vx$ is acceptable iff:
-    # 
-    # \begin{itemize}
-    # \item $\|\vx\|_\infty > 1\cdot 10^{-10}$, to rule out erroneous ``nearly 
-    # zero'' solutions that result in infinitely large eigenvalues
-    # \item $\abs{\text{Im}[\lambda]} < 1\cdot 10^{-10}$, since energies 
-    # should be \emph{real} as the Hamiltonian is hermitian.  (Small imaginary 
-    # parts aren't great, but they don't hurt too much as long as they are 
-    # sufficiently negligible.)
-    # \item $\abs{x_i}<\infty, \abs{\lambda} < \infty$
-    # \item $\abs{\frac{\coip{\vx}{\bD}{\vx}}{\coip{\vx}{\bN}{\vx}} - 
-    # \lam}<1\cdot 10^{-10}$, since sometimes the returned eigenvalue is 
-    # actually much different from the energy obtained by using the 
-    # corresponding eigenvector
-    # \end{itemize}
-    #@-at
-    #@@c
-
-        if max(abs(eigenvector))<1e-10:
-            raise ConvergenceError, "Unable to find an eigenvector."
-
-        if not isfinite(eigenvalue):
-            raise ConvergenceError, "Eigenvalue is infinite."
-
-        if not isfinite(eigenvector).all():
-            raise ConvergenceError, "Eigenvector is infinite."
-
-    #@+at
-    # If we've reached this point, then we have at least one solution that 
-    # isn't atrocious.  However, it's possible that our solution has a higher 
-    # energy than our current state -- either due to a problem in the 
-    # eigenvalue solver, or because we filtered out all the lower-energy 
-    # solutions.  Thus, we need compare the energy of the solution we've found 
-    # to our old energy to make sure that it's higher.
-    #@-at
-    #@@c
-
-        state_site_tensor = eigenvector.reshape(state_site_tensor_shape)
-
-        new_energy = real(eigenvalue)
+        state_site_tensor_as_vector, new_energy = \
+            compute_optimized_vector(
+                matvec,
+                guess=project(guess.ravel().copy()).ravel(),
+                iteration_cap=iteration_cap,
+                tol=tol,
+                energy_raise_threshold=energy_raise_threshold,
+                ncv=ncv,
+                sigma_solve=sigma_solve,
+                which='SR',
+            )
+        state_site_tensor = state_site_tensor_as_vector.reshape(state_site_tensor_shape)
 
         old_energy = self.fully_contract_with_state_site_tensor(guess.conj(),guess)/inner(guess.conj().ravel(),guess.ravel())
 
@@ -417,11 +353,7 @@ class ChainContractorForExpectations(ChainContractorBase):
             raise ConvergenceError, "Only found a solution which *raised* the energy. (%.15f < %.15f)" % (new_energy,old_energy)
 
         return state_site_tensor, new_energy
-    #@-node:gcross.20090930134608.1349:compute_optimized_site_matrix
-    #@+node:gcross.20090930134608.1361:compute_optimization_matrix
-    def compute_optimization_matrix(self):
-        return compute_optimization_matrix(self.operator_site_tensor,self.left_boundary,self.right_boundary)
-    #@-node:gcross.20090930134608.1361:compute_optimization_matrix
+    #@-node:gcross.20091020183902.1475:compute_optimized_site_matrix
     #@-others
 #@-node:gcross.20090930124443.1295:ChainContractorForExpectations
 #@+node:gcross.20090930134608.1292:ChainContractorForOverlaps
