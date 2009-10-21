@@ -120,7 +120,8 @@ try:
                 else:
                     index_to_delete = index1
                 del energy_levels[index_to_delete]
-                del orthogonal_state_information_list[index_to_delete]
+                if index_to_delete < len(orthogonal_state_information_list):
+                    del orthogonal_state_information_list[index_to_delete]
                 level_number -= 1
             else:
                 print "(Levels {0} and {1} are equal, as expected.)".format(index1+1,index2+1)
