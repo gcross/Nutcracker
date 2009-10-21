@@ -245,7 +245,7 @@ def run_simulation(
         previous_sweep_energy = 1e100
         while previous_sweep_energy-simulation.energy > 1e-7:
             sweep_number += 1
-            if sweep_number > 15:
+            if sweep_number > 7:
                 optimize.number_of_sites_skipped_in_a_row = 0
                 sweep_number = 0
                 previous_sweep_energy = 1e100
