@@ -1,2 +1,6 @@
 *.pyc
-database.cfg
+*.cfg
+logs
+*.csv
+*.hi
+*.o
