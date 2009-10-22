@@ -14,53 +14,6 @@ from contractors import *
 
 #@+others
 #@+node:gcross.20091008162221.1382:Classes
-#@+node:gcross.20091008162221.1377:TensorChainState
-class TensorChainState(object):
-    #@    @+others
-    #@+node:gcross.20091008162221.1374:__slots__
-    __slots__ = ["number_of_sites","active_site_number","tensors_left_of_active_site","active_site_tensor","tensors_right_of_active_site"]
-    #@-node:gcross.20091008162221.1374:__slots__
-    #@+node:gcross.20091008162221.1378:__init__
-    def __init__(self,tensors_left_of_active_site,active_site_tensor,tensors_right_of_active_site):
-        self.number_of_sites = len(tensors_left_of_active_site)+1+len(tensors_right_of_active_site)
-        self.active_site_number = len(tensors_left_of_active_site)
-        self.tensors_left_of_active_site = tensors_left_of_active_site
-        self.active_site_tensor = active_site_tensor
-        self.tensors_right_of_active_site = list(reversed(tensors_right_of_active_site))
-    #@-node:gcross.20091008162221.1378:__init__
-    #@+node:gcross.20091008162221.1390:from_list
-    @classmethod
-    def from_list(cls,list_of_tensors):
-        return cls([],list_of_tensors[0],list_of_tensors[1:])
-    #@-node:gcross.20091008162221.1390:from_list
-    #@+node:gcross.20091008162221.1391:to_list
-    def to_list(self):
-        return self.tensors_left_of_active_site + [self.active_site_tensor] + list(reversed(self.tensors_right_of_active_site))
-    #@-node:gcross.20091008162221.1391:to_list
-    #@+node:gcross.20091008162221.1392:normalize_active_site_in_preparation_for_moving_XXX
-    def normalize_active_site_in_preparation_for_moving_left(self):
-        self.active_site_tensor, self.tensors_left_of_active_site[-1] = \
-            normalize_and_denormalize(self.active_site_tensor,1,self.tensors_left_of_active_site[-1],2)
-
-    def normalize_active_site_in_preparation_for_moving_right(self):
-        self.active_site_tensor, self.tensors_right_of_active_site[-1] = \
-            normalize_and_denormalize(self.active_site_tensor,2,self.tensors_right_of_active_site[-1],1)
-    #@-node:gcross.20091008162221.1392:normalize_active_site_in_preparation_for_moving_XXX
-    #@+node:gcross.20091008162221.1401:move_active_site_XXX
-    def move_active_site_left(self):
-        self.tensors_right_of_active_site.append(self.active_site_tensor)
-        self.active_site_tensor = self.tensors_left_of_active_site.pop()
-
-    def move_active_site_right(self):
-        self.tensors_left_of_active_site.append(self.active_site_tensor)
-        self.active_site_tensor = self.tensors_right_of_active_site.pop()
-    #@-node:gcross.20091008162221.1401:move_active_site_XXX
-    #@+node:gcross.20091009120817.1401:to_tensor
-    def to_tensor(self):
-        return reduce(dot,self.to_list()).squeeze()
-    #@-node:gcross.20091009120817.1401:to_tensor
-    #@-others
-#@-node:gcross.20091008162221.1377:TensorChainState
 #@+node:gcross.20091008162221.1381:Simulation
 class Simulation(object):
     #@    @+others
