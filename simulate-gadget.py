@@ -127,11 +127,7 @@ try:
                 print "(Levels {0} and {1} are equal, as expected.)".format(index1+1,index2+1)
 
         if level_number == 2:
-            if number_of_sites > 100:
-                bandwidth_dimension += 2
-            else:
-                bandwidth_dimension += 1
-            ensure_equal_or_restart(0,1)
+            bandwidth_dimension += 2
 
         if level_number == 4:
             ensure_equal_or_restart(2,3)

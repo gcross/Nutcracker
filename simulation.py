@@ -109,7 +109,7 @@ class Simulation(object):
         projector = self.projection_chain.construct_projector()
 
         try:
-            new_site_tensor, new_energy = self.expectation_chain.compute_optimized_state_site_tensor(self.state.active_site_tensor,projector)
+            new_site_tensor, new_energy = self.expectation_chain.compute_optimized_state_site_tensor(self.state.active_site_tensor,projector,iteration_cap=1000)
 
             if new_energy-self.energy > 1e-7:
                 raise ConvergenceError("Variational breakdown: {0} > {1}".format(new_energy,self.energy))
