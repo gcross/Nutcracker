@@ -72,7 +72,7 @@ class NormMaximizer(object):
                     0*state_site_tensor_as_vector
                 )
 
-            new_site_tensor_as_vector, new_norm = \
+            new_site_tensor_as_vector, eigenvalue = \
                 compute_optimized_vector(
                     matvec,
                     guess=self.state.active_site_tensor.ravel(),
@@ -81,6 +81,7 @@ class NormMaximizer(object):
                 )
 
             new_site_tensor = new_site_tensor_as_vector.reshape(self.state.active_site_tensor.shape)
+            new_norm = abs(eigenvalue)
 
             if self.norm-new_norm > 1e-7:
                 raise ConvergenceError("Variational breakdown: {0} < {1}".format(new_norm,self.norm))
@@ -213,7 +214,7 @@ def compute_norm_maximizer(
         previous_sweep_norm = -1
         while simulation.norm-previous_sweep_norm > 1e-7:
             sweep_number += 1
-            if sweep_number > 7:
+            if sweep_number > 15:
                 optimize.number_of_sites_skipped_in_a_row = 0
                 sweep_number = 0
                 previous_sweep_norm = -1
