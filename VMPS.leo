@@ -23,7 +23,7 @@
 </v>
 <v t="gcross.20091004090150.1371"><vh>Gadget Model</vh>
 <v t="gcross.20091004090150.1364"><vh>@thin simulate-gadget.py</vh></v>
-<v t="gcross.20091022120112.1458"><vh>@thin gadget-normdiff.py</vh></v>
+<v t="gcross.20091022120112.1458"><vh>@thin compare-gadget-to-desired-states.py</vh></v>
 <v t="gcross.20091019185011.1406"><vh>Scripts</vh>
 <v t="gcross.20091019185011.1405"><vh>@thin bitslayer-sweep.hs</vh></v>
 </v>
