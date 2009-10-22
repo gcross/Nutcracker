@@ -4,17 +4,19 @@
 
 #@<< Import needed modules >>
 #@+node:gcross.20090930134608.1306:<< Import needed modules >>
-from utils import make_contractor_from_implicit_joins, compute_all_normalized_tensors, conjugate_lists_where_not_None, normalize_and_denormalize, compute_optimized_vector, ConvergenceError
-from numpy import ones, prod, conj, array, dot, complex128, inner, real
+from numpy import ones, prod, conj, array, dot, complex128, inner, real, sqrt
 from scipy.linalg import qr
 from itertools import izip
+
+from utils import make_contractor_from_implicit_joins, compute_all_normalized_tensors, conjugate_lists_where_not_None, normalize_and_denormalize, compute_optimized_vector, ConvergenceError
+#@nonl
 #@-node:gcross.20090930134608.1306:<< Import needed modules >>
 #@nl
 
 #@+others
-#@+node:gcross.20090930124443.1294:Functions
-#@+node:gcross.20090930124443.1285:Contractors
-#@+node:gcross.20090930124443.1286:Absorb site expectation into left boundary
+#@+node:gcross.20091022120112.1478:Contractor Functions
+#@+node:gcross.20091022120112.1479:Contractors
+#@+node:gcross.20091022120112.1480:Absorb site expectation into left boundary
 #@+at
 # 
 # L = left boundary
@@ -45,8 +47,8 @@ contract_site_expectation_into_left_boundary = make_contractor_from_implicit_joi
     22,
     23,
 ])
-#@-node:gcross.20090930124443.1286:Absorb site expectation into left boundary
-#@+node:gcross.20090930124443.1290:Absorb site contraction into left boundary
+#@-node:gcross.20091022120112.1480:Absorb site expectation into left boundary
+#@+node:gcross.20091022120112.1481:Absorb site contraction into left boundary
 #@+at
 # 
 # L = left boundary
@@ -70,8 +72,8 @@ contract_site_overlap_into_left_boundary = make_contractor_from_implicit_joins([
     21,
     23,
 ])
-#@-node:gcross.20090930124443.1290:Absorb site contraction into left boundary
-#@+node:gcross.20090930124443.1288:Absorb site expectation into right boundary
+#@-node:gcross.20091022120112.1481:Absorb site contraction into left boundary
+#@+node:gcross.20091022120112.1482:Absorb site expectation into right boundary
 #@+at
 # 
 # R = right boundary
@@ -102,8 +104,8 @@ contract_site_expectation_into_right_boundary = make_contractor_from_implicit_jo
     2,
     3,
 ])
-#@-node:gcross.20090930124443.1288:Absorb site expectation into right boundary
-#@+node:gcross.20090930124443.1292:Absorb site contraction into right boundary
+#@-node:gcross.20091022120112.1482:Absorb site expectation into right boundary
+#@+node:gcross.20091022120112.1483:Absorb site contraction into right boundary
 #@+at
 # 
 # R = left boundary
@@ -127,8 +129,8 @@ contract_site_overlap_into_right_boundary = make_contractor_from_implicit_joins(
     1,
     3,
 ])
-#@-node:gcross.20090930124443.1292:Absorb site contraction into right boundary
-#@+node:gcross.20090930134608.1334:Partial contraction for expectation
+#@-node:gcross.20091022120112.1483:Absorb site contraction into right boundary
+#@+node:gcross.20091022120112.1484:Partial contraction for expectation
 #@+at
 # 
 # L = left boundary
@@ -159,8 +161,8 @@ partially_contract_expectation = make_contractor_from_implicit_joins([
     1,
     21,
 ])
-#@-node:gcross.20090930134608.1334:Partial contraction for expectation
-#@+node:gcross.20091001102811.4043:Partial contraction for overlap (conjugated)
+#@-node:gcross.20091022120112.1484:Partial contraction for expectation
+#@+node:gcross.20091022120112.1485:Partial contraction for overlap (conjugated)
 #@+at
 # 
 # L = left boundary
@@ -186,8 +188,8 @@ partially_contract_overlap_conjugated = make_contractor_from_implicit_joins([
     3,
     23,
 ])
-#@-node:gcross.20091001102811.4043:Partial contraction for overlap (conjugated)
-#@+node:gcross.20091020183902.1540:Partial contraction for overlap
+#@-node:gcross.20091022120112.1485:Partial contraction for overlap (conjugated)
+#@+node:gcross.20091022120112.1486:Partial contraction for overlap
 #@+at
 # 
 # L = left boundary
@@ -213,8 +215,8 @@ partially_contract_overlap = make_contractor_from_implicit_joins([
     1,
     21,
 ])
-#@-node:gcross.20091020183902.1540:Partial contraction for overlap
-#@+node:gcross.20090930134608.1360:Compute optimization matrix
+#@-node:gcross.20091022120112.1486:Partial contraction for overlap
+#@+node:gcross.20091022120112.1487:Compute optimization matrix
 #@+at
 # 
 # L = left boundary
@@ -243,9 +245,22 @@ compute_optimization_matrix = make_contractor_from_implicit_joins([
     (32,1,21),
     (42,3,23),
 ])
-#@-node:gcross.20090930134608.1360:Compute optimization matrix
-#@-node:gcross.20090930124443.1285:Contractors
-#@-node:gcross.20090930124443.1294:Functions
+#@-node:gcross.20091022120112.1487:Compute optimization matrix
+#@-node:gcross.20091022120112.1479:Contractors
+#@-node:gcross.20091022120112.1478:Contractor Functions
+#@+node:gcross.20091022120112.1488:Utility Functions
+#@+node:gcross.20091022120112.1490:compute_state_overlap
+def compute_state_overlap(state_A_site_tensors,state_B_site_tensors):
+    left_boundary = ones((1,1),complex128)
+    for state_A_site_tensor, state_B_site_tensor in izip(state_A_site_tensors,state_B_site_tensors):
+        left_boundary = contract_site_overlap_into_left_boundary(left_boundary,state_A_site_tensor.conj(),state_B_site_tensor)
+    return left_boundary.squeeze()
+#@-node:gcross.20091022120112.1490:compute_state_overlap
+#@+node:gcross.20091022120112.1492:compute_state_norm
+def compute_state_norm(state_site_tensors):
+    return sqrt(abs(compute_state_overlap(state_site_tensors,state_site_tensors)))
+#@-node:gcross.20091022120112.1492:compute_state_norm
+#@-node:gcross.20091022120112.1488:Utility Functions
 #@+node:gcross.20090930124443.1293:Classes
 #@+others
 #@+node:gcross.20091002125713.1354:chains
