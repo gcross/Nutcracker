@@ -25,10 +25,10 @@ class VMPSDatabase(object):
     ]
     #@-node:gcross.20091014143858.1493:__slots__
     #@+node:gcross.20091014143858.1494:__init__
-    def __init__(self,*args,**keywords):
+    def __init__(self,header="DEFAULT",*args,**keywords):
         config = SafeConfigParser()
         config.read("database.cfg")
-        keywords.update(config.defaults())
+        keywords.update(dict(config.items(header)))
         self.connection = connect(*args,**keywords)
         self.cursor = self.connection.cursor()
     #@-node:gcross.20091014143858.1494:__init__
