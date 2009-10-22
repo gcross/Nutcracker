@@ -32,7 +32,7 @@ class VMPSDatabase(object):
         self.connection = connect(*args,**keywords)
         self.cursor = self.connection.cursor()
     #@-node:gcross.20091014143858.1494:__init__
-    #@+node:gcross.20091014143858.1507:save_state
+    #@+node:gcross.20091014143858.1507:save_state/load_state
     def save_state(self,state_site_tensors):
         state_id = str(uuid4())
         self.cursor.execute(
@@ -49,8 +49,8 @@ class VMPSDatabase(object):
             frombuffer(result[0],dtype=complex128).reshape(result[1:])
             for result in self.cursor.fetchall()
         ]
-    #@-node:gcross.20091014143858.1507:save_state
-    #@+node:gcross.20091014143858.1509:save_solution
+    #@-node:gcross.20091014143858.1507:save_state/load_state
+    #@+node:gcross.20091014143858.1509:save_solution/load_solution
     def save_solution(self,energy_levels,state_site_tensors_list):
         solution_id = str(uuid4())
         self.cursor.execute(
@@ -63,7 +63,11 @@ class VMPSDatabase(object):
         )
         assert(self.cursor.rowcount == len(state_site_tensors_list))
         return solution_id
-    #@-node:gcross.20091014143858.1509:save_solution
+
+    def load_solution(self,solution_id):
+        self.cursor.execute("select energy, state_id from solutions where solution_id='{0}' order by level_number asc".format(solution_id))
+        return [(energy,self.load_state(state_id)) for (energy,state_id) in self.cursor.fetchall()]
+    #@-node:gcross.20091014143858.1509:save_solution/load_solution
     #@-others
 #@-node:gcross.20091014143858.1492:VMPSDatabase
 #@-node:gcross.20091014143858.1491:Classes
