@@ -160,7 +160,7 @@ partially_contract_expectation = make_contractor_from_implicit_joins([
     21,
 ])
 #@-node:gcross.20090930134608.1334:Partial contraction for expectation
-#@+node:gcross.20091001102811.4043:Partial contraction for overlap
+#@+node:gcross.20091001102811.4043:Partial contraction for overlap (conjugated)
 #@+at
 # 
 # L = left boundary
@@ -177,7 +177,7 @@ partially_contract_expectation = make_contractor_from_implicit_joins([
 #@-at
 #@@c
 
-partially_contract_overlap = make_contractor_from_implicit_joins([
+partially_contract_overlap_conjugated = make_contractor_from_implicit_joins([
     [42,1,21],  # state site tensor
     [1,3],      # left boundary tensor
     [21,23],    # right boundary tensor
@@ -186,7 +186,34 @@ partially_contract_overlap = make_contractor_from_implicit_joins([
     3,
     23,
 ])
-#@-node:gcross.20091001102811.4043:Partial contraction for overlap
+#@-node:gcross.20091001102811.4043:Partial contraction for overlap (conjugated)
+#@+node:gcross.20091020183902.1540:Partial contraction for overlap
+#@+at
+# 
+# L = left boundary
+# R = left boundary
+# S = state site tensor
+# O = operator site tensor
+# 
+# /-1-   -21-\
+# |    |     |
+# |    42    |
+# |    |     |
+# \-3--S -23-/
+# 
+#@-at
+#@@c
+
+partially_contract_overlap = make_contractor_from_implicit_joins([
+    [42,3,23],  # state site tensor
+    [1,3],      # left boundary tensor
+    [21,23],    # right boundary tensor
+],[
+    42,
+    1,
+    21,
+])
+#@-node:gcross.20091020183902.1540:Partial contraction for overlap
 #@+node:gcross.20090930134608.1360:Compute optimization matrix
 #@+at
 # 
@@ -275,8 +302,8 @@ class ChainContractorBase(object):
         self.pop_right_boundary()
     #@-node:gcross.20090930134608.1270:contract_and_move_XXX
     #@+node:gcross.20090930134608.1331:fully_contract_with_state_site_tensor
-    def fully_contract_with_state_site_tensor(self,state_site_tensor_conjugated,state_site_tensor):
-        return inner(self.partially_contract_with_state_site_tensor(state_site_tensor).ravel(),state_site_tensor_conjugated.ravel())
+    def fully_contract_with_state_site_tensor(self,state_site_tensor_A,state_site_tensor_B):
+        return inner(self.partially_contract_with_state_site_tensor(state_site_tensor_B).ravel(),state_site_tensor_A.ravel())
     #@-node:gcross.20090930134608.1331:fully_contract_with_state_site_tensor
     #@-others
 #@-node:gcross.20090930134608.1341:ChainContractorBase
@@ -347,11 +374,6 @@ class ChainContractorForExpectations(ChainContractorBase):
             )
         state_site_tensor = state_site_tensor_as_vector.reshape(state_site_tensor_shape)
 
-        old_energy = self.fully_contract_with_state_site_tensor(guess.conj(),guess)/inner(guess.conj().ravel(),guess.ravel())
-
-        if old_energy is not None and real(new_energy) > real(old_energy) and abs(new_energy-old_energy)>energy_raise_threshold and False:
-            raise ConvergenceError, "Only found a solution which *raised* the energy. (%.15f < %.15f)" % (new_energy,old_energy)
-
         return state_site_tensor, new_energy
     #@-node:gcross.20091020183902.1475:compute_optimized_site_matrix
     #@-others
@@ -386,15 +408,24 @@ class ChainContractorForOverlaps(ChainContractorBase):
                 state_B_site_tensor
             )
     #@-node:gcross.20090930134608.1291:contract_into_XXX_boundary
-    #@+node:gcross.20090930134608.1340:partially_contract_with_state_site_tensor
-    def partially_contract_with_state_site_tensor(self,state_site_tensor_conjugated):
+    #@+node:gcross.20091020183902.1538:partially_contract_with_state_site_tensor
+    def partially_contract_with_state_site_tensor(self,state_site_tensor):
         return \
             partially_contract_overlap(
+                state_site_tensor,
+                self.left_boundary,
+                self.right_boundary
+            )
+    #@-node:gcross.20091020183902.1538:partially_contract_with_state_site_tensor
+    #@+node:gcross.20090930134608.1340:partially_contract_with_state_site_tensor_conjugated
+    def partially_contract_with_state_site_tensor_conjugated(self,state_site_tensor_conjugated):
+        return \
+            partially_contract_overlap_conjugated(
                 state_site_tensor_conjugated,
                 self.left_boundary,
                 self.right_boundary
             )
-    #@-node:gcross.20090930134608.1340:partially_contract_with_state_site_tensor
+    #@-node:gcross.20090930134608.1340:partially_contract_with_state_site_tensor_conjugated
     #@-others
 #@-node:gcross.20090930134608.1292:ChainContractorForOverlaps
 #@+node:gcross.20091001102811.4036:ChainContractorForProjector
@@ -431,7 +462,7 @@ class ChainContractorForProjector(ChainContractorForOverlaps):
     #@-node:gcross.20091001102811.4040:contract_and_move_XXX
     #@+node:gcross.20091001102811.4041:compute_projector
     def compute_projector(self):
-        return self.partially_contract_with_state_site_tensor(self.overlap_state_site_tensors_conjugated[self.current_site_number])
+        return self.partially_contract_with_state_site_tensor_conjugated(self.overlap_state_site_tensors_conjugated[self.current_site_number])
     #@-node:gcross.20091001102811.4041:compute_projector
     #@-others
 #@-node:gcross.20091001102811.4036:ChainContractorForProjector
