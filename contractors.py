@@ -464,6 +464,10 @@ class ChainContractorForProjector(ChainContractorForOverlaps):
     def compute_projector(self):
         return self.partially_contract_with_state_site_tensor_conjugated(self.overlap_state_site_tensors_conjugated[self.current_site_number])
     #@-node:gcross.20091001102811.4041:compute_projector
+    #@+node:gcross.20091020183902.1536:compute_overlap
+    def compute_overlap(self,state_site_tensor):
+        return self.fully_contract_with_state_site_tensor(self.overlap_state_site_tensors_conjugated[self.current_site_number],state_site_tensor)
+    #@-node:gcross.20091020183902.1536:compute_overlap
     #@-others
 #@-node:gcross.20091001102811.4036:ChainContractorForProjector
 #@-node:gcross.20091002125713.1354:chains

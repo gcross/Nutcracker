@@ -359,6 +359,10 @@ def compute_optimized_vector(matvec_,guess,iteration_cap=None,tol=0,energy_raise
 
     return eigenvector, real(eigenvalue)
 #@-node:gcross.20091020183902.1473:compute_optimized_state_site_tensor
+#@+node:gcross.20091020183902.1518:peak_bandwidth_of
+def peak_bandwidth_of(state_site_tensors):
+    return state_site_tensors[len(state_site_tensors)/2].shape[2]
+#@-node:gcross.20091020183902.1518:peak_bandwidth_of
 #@-node:gcross.20090930134608.1299:Utility functions
 #@+node:gcross.20091020183902.1519:Classes
 #@+node:gcross.20091020183902.1528:TensorChainState

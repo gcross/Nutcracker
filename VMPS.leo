@@ -29,6 +29,8 @@
 <v t="gcross.20091020092327.1514"><vh>@thin PlotGapVersusPerturbation.hs</vh></v>
 </v>
 </v>
+<v t="gcross.20091020183902.1500"><vh>@thin matrix_norm.py</vh></v>
+<v t="gcross.20091020183902.1512"><vh>@thin compress-state.py</vh></v>
 </vnodes>
 <tnodes>
 <t tx="gcross.20090930124443.1231" str_leo_pos="5,1"></t>
