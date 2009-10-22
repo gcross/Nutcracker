@@ -59,12 +59,28 @@ class NormMaximizer(object):
     #@+node:gcross.20091020183902.1494:optimize_active_site
     def optimize_active_site(self):
         try:
-            state_site_tensor_shape = self.state.active_site_tensor.shape
 
-            new_site_tensor = sum(weight*projector_term.compute_projector() for weight, projector_term in izip(self.weights,self.projector_terms)).conj()
+            projectors = [projector_term.compute_projector().ravel() for projector_term in self.projector_terms]
+            vectors = [weight * projector.conj() for weight, projector in izip(self.weights,projectors)]
 
-            new_site_tensor /= dot(new_site_tensor.ravel().conj(),new_site_tensor.ravel())
-            new_norm = self.compute_norm_using_active_site_tensor(new_site_tensor)
+            def matvec(state_site_tensor_as_vector):
+                return sum(
+                    (
+                        vector * dot(projector,state_site_tensor_as_vector)
+                        for vector, projector in izip(vectors,projectors)
+                    ),
+                    0*state_site_tensor_as_vector
+                )
+
+            new_site_tensor_as_vector, new_norm = \
+                compute_optimized_vector(
+                    matvec,
+                    guess=self.state.active_site_tensor.ravel(),
+                    iteration_cap=1000,
+                    which='LM',
+                )
+
+            new_site_tensor = new_site_tensor_as_vector.reshape(self.state.active_site_tensor.shape)
 
             if self.norm-new_norm > 1e-7:
                 raise ConvergenceError("Variational breakdown: {0} < {1}".format(new_norm,self.norm))
@@ -219,6 +235,9 @@ def compute_norm_maximizer(
                 sweep_number = 0
                 previous_sweep_norm = -1
                 simulation.restart(bandwidth_dimension)
+
+    if abs(simulation.norm) < 1e-14:
+        raise ConvergenceError("Failed to find a state with non-vanishing expectation")
 
     return simulation.norm, simulation.old_state_site_tensors
 #@-node:gcross.20091020183902.1504:compute_norm_maximizer
