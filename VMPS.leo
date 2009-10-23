@@ -26,18 +26,22 @@
 <v t="gcross.20091022120112.1458"><vh>@thin compare-gadget-to-desired-states.py</vh></v>
 <v t="gcross.20091019185011.1406"><vh>Scripts</vh>
 <v t="gcross.20091019185011.1405"><vh>@thin bitslayer-sweep.hs</vh></v>
+<v t="gcross.20091022161927.1464"><vh>@thin bitslayer-updater.hs</vh></v>
 </v>
 <v t="gcross.20091020092327.1407"><vh>Analysis</vh>
 <v t="gcross.20091020092327.1514"><vh>@thin PlotGapVersusPerturbation.hs</vh></v>
 </v>
 </v>
+<v t="gcross.20091022161927.1466"><vh>Scripts</vh>
 <v t="gcross.20091020183902.1512"><vh>@thin compress-state.py</vh></v>
+</v>
 </vnodes>
 <tnodes>
-<t tx="gcross.20090930124443.1231" str_leo_pos="5,1"></t>
+<t tx="gcross.20090930124443.1231" str_leo_pos="9"></t>
 <t tx="gcross.20090930213318.1310"></t>
 <t tx="gcross.20091004090150.1371"></t>
 <t tx="gcross.20091019185011.1406"></t>
 <t tx="gcross.20091020092327.1407"></t>
+<t tx="gcross.20091022161927.1466"></t>
 </tnodes>
 </leo_file>

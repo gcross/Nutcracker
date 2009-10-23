@@ -37,9 +37,10 @@ defaultOptions = "true"
 parseOptions :: [String] -> (String,[String])
 parseOptions args = 
     case getOpt Permute options args of
+        (_,[],errs) -> error (concat errs ++ usageInfo header options)
         (o,number_of_sites_list,[]  ) -> (concat o,number_of_sites_list)
         (_,_,errs) -> error (concat errs ++ usageInfo header options)
-    where header = "Usage: PlotGapVersusPerturbation [OPTION...]"
+    where header = "\n\nUsage: PlotGapVersusPerturbation [-m #] [-M #] <number of sites> <number of sites> ..."
 -- @-node:gcross.20091020104204.1750:<< Options handling >>
 -- @nl
 
@@ -49,19 +50,26 @@ main =
     flip withSession (do
         (filter_string,number_of_sites_list) <- liftIO getArgs >>= return . parseOptions
         forM number_of_sites_list $ \number_of_sites ->
-            let sql_statement = "select perturbation_strength, energy_gap from gadget_model_1_simulations where number_of_sites = " ++ number_of_sites ++ filter_string ++ " order by perturbation_strength desc;"
+            let sql_statement = "select perturbation_strength, energy_gap, infidelity from gadget_model_1_simulations where number_of_sites = " ++ number_of_sites ++ filter_string ++ " order by perturbation_strength desc;"
             in do
                 liftIO . hPutStrLn stderr $ "> " ++ sql_statement
-                (data_points :: [(Float,Float)]) <- query (sql $ sql_statement) fetch2 [] "Error fetching completed graphs from the database:\n"
+                (data_points :: [(Float,Float,Float)]) <- query (sql $ sql_statement) fetch3 [] "Error fetching completed graphs from the database:\n"
                 return (number_of_sites,data_points)
     )
     >>=
-    return . concatMap (\(number_of_sites,data_points) ->
-        [ (PlotStyle Points (CustomStyle [LineTitle "", LineType 1]),data_points)
-        , (PlotStyle Lines (CustomStyle [LineTitle number_of_sites]),map (\(x,_) -> (x,x * x * (read number_of_sites) / 2.0)) data_points)
+    return . concatMap (\(color,(number_of_sites,data_points)) ->
+        [ (PlotStyle Points (CustomStyle [LineTitle "", LineType color, PointType 2]),[(x,y) | (x,y,_) <- data_points])
+        , (PlotStyle Lines (CustomStyle [LineTitle ("energy gap for " ++ number_of_sites ++ " sites"), LineType color]),map (\(x,_,_) -> (x,x * x * (read number_of_sites) / 2.0)) data_points)
+        , (PlotStyle LinesPoints (CustomStyle [LineTitle ("infidelity for " ++ number_of_sites ++ " sites"), LineType color, PointType 6]),[(x,y) | (x,_,y) <- data_points])
         ]
-    )
+    ) . zip [1..]
     >>=
-    plotPathsStyle []
+    plotPathsStyle
+        [Custom "logscale" ["xy"]
+        ,Key (Just ["left","top"])
+        ,Title "Energy Gap (with predictions) & Infidelity vs. Perturbation Strength"
+        ,XLabel "Perturbation Strength"
+        ,YLabel "Energy Gap (Delta = 1) & Infidelity"
+        ]
 -- @-node:gcross.20091020092327.1514:@thin PlotGapVersusPerturbation.hs
 -- @-leo

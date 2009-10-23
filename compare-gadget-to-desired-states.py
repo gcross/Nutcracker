@@ -7,7 +7,8 @@ warnings.simplefilter("ignore",DeprecationWarning)
 
 #@<< Import needed modules >>
 #@+node:gcross.20091022120112.1459:<< Import needed modules >>
-from numpy import array, zeros, identity, complex128, set_printoptions, log, imag, pi, sqrt
+from numpy import array, zeros, identity, complex128, set_printoptions, sqrt, allclose, prod
+from numpy.linalg import svd
 import sys
 
 from database import VMPSDatabase
@@ -65,17 +66,25 @@ set_printoptions(linewidth=132)
 overlaps = array(
         [
             [
-                compute_state_overlap(predicted_state_site_tensors,state_site_tensors)
+                abs(compute_state_overlap(predicted_state_site_tensors,state_site_tensors))
                 for state_site_tensors in state_site_tensors_list
             ]
             for predicted_state_site_tensors in predicted_state_site_tensors_list
         ]
     )
 
-overlaps[abs(overlaps)<1e-7] = 0
+singular_values = svd(overlaps,compute_uv=False)
 
-print abs(overlaps)
+infidelity = 1-sqrt(prod(singular_values))
 #@-node:gcross.20091022120112.1463:<< Perform comparison >>
+#@nl
+
+#@<< Write infidelity to the database >>
+#@+node:gcross.20091022161927.1462:<< Write infidelity to the database >>
+database = VMPSDatabase("updater")
+database.cursor.execute("update gadget_model_1_simulations set infidelity = {infidelity} where solution_id='{solution_id}'".format(**vars()))
+database.connection.commit()
+#@-node:gcross.20091022161927.1462:<< Write infidelity to the database >>
 #@nl
 #@-node:gcross.20091022120112.1458:@thin compare-gadget-to-desired-states.py
 #@-leo
