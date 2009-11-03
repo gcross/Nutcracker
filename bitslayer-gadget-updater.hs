@@ -1,5 +1,5 @@
 -- @+leo-ver=4-thin
--- @+node:gcross.20091022161927.1464:@thin bitslayer-updater.hs
+-- @+node:gcross.20091022161927.1464:@thin bitslayer-gadget-updater.hs
 -- @@language Haskell
 
 {-# LANGUAGE ScopedTypeVariables #-}
@@ -46,5 +46,5 @@ main =
     )
     >>=
     mapM_ launchProcessForSolutionId
--- @-node:gcross.20091022161927.1464:@thin bitslayer-updater.hs
+-- @-node:gcross.20091022161927.1464:@thin bitslayer-gadget-updater.hs
 -- @-leo

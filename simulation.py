@@ -168,7 +168,10 @@ def run_simulation(
   starting_bandwidth_dimension,
   operator_site_tensors,
   orthogonal_state_information_list=[],
-  sweep_callback=None
+  sweep_callback=None,
+  sweep_number_to_restart_after=7,
+  sweep_convergence_threshold=1e-7,
+  bandwidth_convergence_threshold=1e-7,
   ):
     simulation = Simulation(number_of_sites,physical_dimension,starting_bandwidth_dimension,operator_site_tensors,orthogonal_state_information_list)
 
@@ -187,7 +190,7 @@ def run_simulation(
 
     sweep_number = 0
     previous_bandwidth_energy = 1e100
-    while previous_bandwidth_energy-simulation.energy > 1e-7:
+    while previous_bandwidth_energy-simulation.energy > bandwidth_convergence_threshold:
         bandwidth_dimension += 1
         if bandwidth_dimension > starting_bandwidth_dimension:
             simulation.save_current_and_increase_bandwidth_dimension_to(bandwidth_dimension)
@@ -196,9 +199,9 @@ def run_simulation(
         number_of_sites_skipped_in_a_row = 0
         sweep_number = 0
         previous_sweep_energy = 1e100
-        while previous_sweep_energy-simulation.energy > 1e-7:
+        while previous_sweep_energy-simulation.energy > sweep_convergence_threshold:
             sweep_number += 1
-            if sweep_number > 7:
+            if sweep_number > sweep_number_to_restart_after:
                 optimize.number_of_sites_skipped_in_a_row = 0
                 sweep_number = 0
                 previous_sweep_energy = 1e100
@@ -224,6 +227,10 @@ def run_simulation(
     return simulation.energy, simulation.old_state_site_tensors
 #@-node:gcross.20091012135649.1411:run_simulation
 #@+node:gcross.20091014143858.1489:compute_level
+trial_ACCEPTED = 0
+trial_REPLACED = 1
+trial_IMPROVED = 2
+trial_REJECTED = 3
 def compute_level(
   number_of_sites,
   physical_dimension,
@@ -233,6 +240,10 @@ def compute_level(
   number_of_occurances_needed=3,
   sweep_callback=None,
   trial_callback=None,
+  sweep_number_to_restart_after=7,
+  sweep_convergence_threshold=1e-7,
+  bandwidth_convergence_threshold=1e-7,
+  trial_convergence_threshold=1e-7,
   ):
     lowest_trial_energy = 1e100
     number_of_occurances = 0
@@ -244,24 +255,40 @@ def compute_level(
                 starting_bandwidth_dimension,
                 operator_site_tensors,
                 orthogonal_state_information_list,
-                sweep_callback
+                sweep_callback,
+                sweep_number_to_restart_after,
+                sweep_convergence_threshold,
+                bandwidth_convergence_threshold,
             )
-        if abs(lowest_trial_energy-trial_energy) < 1e-7:
+        if abs(lowest_trial_energy-trial_energy) < trial_convergence_threshold:
+            status = trial_ACCEPTED
             number_of_occurances += 1
             # If the peak bandwidth is smaller, then use this state representation instead
-            if trial_state_site_tensors[len(trial_state_site_tensors)/2].shape[1] < lowest_trial_state_site_tensors[len(lowest_trial_state_site_tensors)/2].shape[1]:
+            if trial_energy <= lowest_trial_energy and trial_state_site_tensors[len(trial_state_site_tensors)/2].shape[1] < lowest_trial_state_site_tensors[len(lowest_trial_state_site_tensors)/2].shape[1]:
+                status = trial_REPLACED
+                lowest_trial_energy = lowest_trial_energy
                 lowest_trial_state_site_tensors = trial_state_site_tensors
-        elif lowest_trial_energy-trial_energy > 1e-7:
+        elif lowest_trial_energy-trial_energy > trial_convergence_threshold:
+            status = trial_IMPROVED
             lowest_trial_energy = trial_energy
             lowest_trial_state_site_tensors = trial_state_site_tensors
             number_of_occurances = 1
+        else:
+            status = trial_REJECTED
         if trial_callback:
-            trial_callback(trial_energy,lowest_trial_energy,number_of_occurances,number_of_occurances_needed)
+            trial_callback(status,trial_energy,lowest_trial_energy,number_of_occurances,number_of_occurances_needed)
     return lowest_trial_energy, lowest_trial_state_site_tensors
 #@-node:gcross.20091014143858.1489:compute_level
 #@-node:gcross.20091012135649.1410:Functions
 #@-others
 
-__all__ = ["run_simulation"]
+__all__ = [
+    "run_simulation",
+    "compute_level",
+    "trial_ACCEPTED",
+    "trial_REJECTED",
+    "trial_REPLACED",
+    "trial_IMPROVED",
+]
 #@-node:gcross.20091008162221.1380:@thin simulation.py
 #@-leo

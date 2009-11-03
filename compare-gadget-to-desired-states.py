@@ -82,7 +82,7 @@ infidelity = 1-sqrt(prod(singular_values))
 #@<< Write infidelity to the database >>
 #@+node:gcross.20091022161927.1462:<< Write infidelity to the database >>
 database = VMPSDatabase("updater")
-database.cursor.execute("update gadget_model_1_simulations set infidelity = {infidelity} where solution_id='{solution_id}'".format(**vars()))
+database.cursor.execute("update gadget_model_simulations set infidelity = {infidelity} where solution_id='{solution_id}'".format(**vars()))
 database.connection.commit()
 #@-node:gcross.20091022161927.1462:<< Write infidelity to the database >>
 #@nl

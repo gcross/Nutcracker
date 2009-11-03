@@ -1,5 +1,5 @@
 -- @+leo-ver=4-thin
--- @+node:gcross.20091019185011.1405:@thin bitslayer-sweep.hs
+-- @+node:gcross.20091023155936.1526:@thin bitslayer-adiabatic-sweep.hs
 -- @@language Haskell
 
 import Control.Monad
@@ -10,8 +10,8 @@ import Text.Printf
 
 system_parameters = [
         (number_of_sites,perturbation_coefficient)
-        |   number_of_sites <- [10,100]
-        ,   perturbation_coefficient <- [0.001,0.002..0.01] ++ [0.01,0.02..0.1]
+        |   number_of_sites <- [10]
+        ,   perturbation_coefficient <- [0,0.1..1]
     ]
 
 parametersToScript :: (Int,Float) -> String
@@ -24,7 +24,7 @@ parametersToScript (number_of_sites,perturbation_coefficient) =
         ,"#PBS -o logs/out/" ++ job_name
         ,"#PBS -v LD_LIBRARY_PATH=/usr/local/pgsql/lib"
         ,""
-        ,printf "python simulate-gadget3.py %i %f" number_of_sites perturbation_coefficient
+        ,printf "python simulate-adiabatic1.py %i %f" number_of_sites perturbation_coefficient
         ]
 
 main = forM_ system_parameters $ \parameters -> do
@@ -32,5 +32,5 @@ main = forM_ system_parameters $ \parameters -> do
     hPutStrLn stdin . parametersToScript $ parameters
     hFlush stdin
     return ()
--- @-node:gcross.20091019185011.1405:@thin bitslayer-sweep.hs
+-- @-node:gcross.20091023155936.1526:@thin bitslayer-adiabatic-sweep.hs
 -- @-leo
