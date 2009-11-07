@@ -1,5 +1,5 @@
 #@+leo-ver=4-thin
-#@+node:gcross.20090930124443.1284:@thin contractors.py
+#@+node:gcross.20090930124443.1284:@thin chains.py
 #@@language Python
 
 #@<< Import needed modules >>
@@ -840,5 +840,5 @@ if __name__ == '__main__':
     unittest.main()
 #@-node:gcross.20090930134608.1315:Unit Tests
 #@-others
-#@-node:gcross.20090930124443.1284:@thin contractors.py
+#@-node:gcross.20090930124443.1284:@thin chains.py
 #@-leo

@@ -1,0 +1,2 @@
+NUMPYDIR = ${HOME}/local/lib/python2.6/site-packages/numpy/core
+PYTHONINCDIR = ${HOME}/local/include/python2.6
