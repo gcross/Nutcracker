@@ -34,7 +34,7 @@ pure subroutine pre_iteration( &
     matrix  = sparse_operator_matrices(:,:,index)
     do j=1,b
       do i=1,b
-        output_tensor(i,:,k2,j,:) = output_tensor(i,:,k2,j,:) + matrix(:,:)*left_environment(i,j,k2)
+        output_tensor(i,:,k2,j,:) = output_tensor(i,:,k2,j,:) + matrix(:,:)*left_environment(i,j,k1)
       end do
     end do
   end do
