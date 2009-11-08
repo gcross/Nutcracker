@@ -12,9 +12,9 @@ contains
 !@+others
 !@+node:gcross.20091106154604.1512:pre_iteration
 pure subroutine pre_iteration( &
-  b, & ! "state bandwidth dimension"
-  c, & ! "operator bandwidth dimension"
-  d, & ! "physical dimension"
+  b, & ! state bandwidth dimension
+  c, & ! operator bandwidth dimension
+  d, & ! physical dimension
   left_environment, &
   number_of_matrices,sparse_operator_indices,sparse_operator_matrices, &
   output_tensor &
