@@ -41,6 +41,44 @@ pure subroutine pre_iteration( &
 
 end subroutine
 !@-node:gcross.20091106154604.1512:pre_iteration
+!@+node:gcross.20091107163338.1529:iteration
+subroutine iteration( &
+  b, & ! state bandwidth dimension
+  c, & ! operator bandwidth dimension
+  d, & ! physical dimension
+  iteration_tensor, &
+  state_site_tensor, &
+  right_environment, &
+  workspace, &
+  output_state_site_tensor &
+)
+  integer, intent(in) :: b, c, d
+  double complex, intent(in) :: right_environment(b,b,c), state_site_tensor(b,b,d), iteration_tensor(b,d,c,b,d)
+  double complex, intent(out) :: workspace(b,c,b,d), output_state_site_tensor(b,b,d)
+
+  external :: zgemm
+
+  call zgemm( &
+      'N','N', &
+      b,c*b*d,b*d, &
+      (1d0,0d0), &
+      state_site_tensor(1,1,1), b, &
+      iteration_tensor(1,1,1,1,1), b*d, &
+      (0d0,0d0), &
+      workspace(1,1,1,1), b &
+  )
+  call zgemm( &
+      'N','N', &
+      b, b*d, b*c, &
+      (1d0,0d0), &
+      right_environment(1,1,1), b, &
+      workspace(1,1,1,1), b*c, &
+      (0d0,0d0), &
+      output_state_site_tensor(1,1,1), b &
+  )
+
+end subroutine
+!@-node:gcross.20091107163338.1529:iteration
 !@-others
 
 end module

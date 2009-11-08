@@ -40,10 +40,33 @@ class pre_iteration(unittest.TestCase):
         correct_output_tensor = pre_iteration_correct_contractor(left_environment,operator)
         self.assertTrue(allclose(actual_output_tensor,correct_output_tensor))
 #@-node:gcross.20091106154604.1986:pre_iteration
+#@+node:gcross.20091107163338.1531:iteration
+iteration_correct_contractor = make_contractor_from_implicit_joins([
+    [1,2,3,4,5], # iteration tensor
+    [6,1,2],     # state site tensor
+    [7,6,3],     # right environment
+],[7,4,5])
+
+class iteration(unittest.TestCase):
+
+    @with_checker(number_of_calls=10)
+    def test_agreement_with_contractor(self,
+        b = irange(2,20),
+        c = irange(2,10),
+    ):
+        d = 2
+        iteration_tensor = crand(b,d,c,b,d)
+        state_site_tensor = crand(b,b,d)
+        right_environment = crand(b,b,c)
+        _, actual_output_tensor = vmps.contractors.iteration(iteration_tensor,state_site_tensor,right_environment)
+        correct_output_tensor = iteration_correct_contractor(iteration_tensor,state_site_tensor,right_environment)
+        self.assertTrue(allclose(actual_output_tensor,correct_output_tensor))
+#@-node:gcross.20091107163338.1531:iteration
 #@-others
 
 tests = [
-    pre_iteration
+    pre_iteration,
+    iteration
     ]
 
 if __name__ == "__main__":
