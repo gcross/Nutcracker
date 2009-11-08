@@ -26,8 +26,8 @@ class pre_iteration(unittest.TestCase):
 
     @with_checker(number_of_calls=10)
     def test_agreement_with_contractor(self,
-        b = irange(2,100),
-        c = irange(2,20),
+        b = irange(2,20),
+        c = irange(2,10),
     ):
         d = 2
         left_environment = crand(b,b,c)
