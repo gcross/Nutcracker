@@ -51,13 +51,14 @@ class iteration(unittest.TestCase):
 
     @with_checker(number_of_calls=10)
     def test_agreement_with_contractor(self,
-        b = irange(2,20),
+        bl = irange(2,20),
+        br = irange(2,20),
         c = irange(2,10),
     ):
         d = 2
-        iteration_tensor = crand(b,d,c,b,d)
-        state_site_tensor = crand(b,b,d)
-        right_environment = crand(b,b,c)
+        iteration_tensor = crand(bl,d,c,bl,d)
+        state_site_tensor = crand(br,bl,d)
+        right_environment = crand(br,br,c)
         _, actual_output_tensor = vmps.contractors.iteration(iteration_tensor,state_site_tensor,right_environment)
         correct_output_tensor = iteration_correct_contractor(iteration_tensor,state_site_tensor,right_environment)
         self.assertTrue(allclose(actual_output_tensor,correct_output_tensor))

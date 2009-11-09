@@ -43,38 +43,39 @@ end subroutine
 !@-node:gcross.20091106154604.1512:pre_iteration
 !@+node:gcross.20091107163338.1529:iteration
 subroutine iteration( &
-  b, & ! state bandwidth dimension
-  c, & ! operator bandwidth dimension
-  d, & ! physical dimension
+  bl, & ! state left bandwidth dimension
+  br, & ! state right bandwidth dimension
+  c, &  ! operator bandwidth dimension
+  d, &  ! physical dimension
   iteration_tensor, &
   state_site_tensor, &
   right_environment, &
   workspace, &
   output_state_site_tensor &
 )
-  integer, intent(in) :: b, c, d
-  double complex, intent(in) :: right_environment(b,b,c), state_site_tensor(b,b,d), iteration_tensor(b,d,c,b,d)
-  double complex, intent(out) :: workspace(b,c,b,d), output_state_site_tensor(b,b,d)
+  integer, intent(in) :: bl, br, c, d
+  double complex, intent(in) :: right_environment(br,br,c), state_site_tensor(br,bl,d), iteration_tensor(bl,d,c,bl,d)
+  double complex, intent(out) :: workspace(br,c,bl,d), output_state_site_tensor(br,bl,d)
 
   external :: zgemm
 
   call zgemm( &
       'N','N', &
-      b,c*b*d,b*d, &
+      br,c*bl*d,bl*d, &
       (1d0,0d0), &
-      state_site_tensor(1,1,1), b, &
-      iteration_tensor(1,1,1,1,1), b*d, &
+      state_site_tensor(1,1,1), br, &
+      iteration_tensor(1,1,1,1,1), bl*d, &
       (0d0,0d0), &
-      workspace(1,1,1,1), b &
+      workspace(1,1,1,1), br &
   )
   call zgemm( &
       'N','N', &
-      b, b*d, b*c, &
+      br, bl*d, br*c, &
       (1d0,0d0), &
-      right_environment(1,1,1), b, &
-      workspace(1,1,1,1), b*c, &
+      right_environment(1,1,1), br, &
+      workspace(1,1,1,1), br*c, &
       (0d0,0d0), &
-      output_state_site_tensor(1,1,1), b &
+      output_state_site_tensor(1,1,1), br &
   )
 
 end subroutine
