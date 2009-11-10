@@ -17,13 +17,15 @@ import vmps
 
 #@+others
 #@+node:gcross.20091108152444.1533:Functions
-#@+node:gcross.20091108152444.1535:sparse_to_operator
-def sparse_to_operator(c,d,sparse_operator_indices,sparse_operator_matrices):
-    operator = zeros((d,d,c,c),complex128)
+#@+node:gcross.20091110011014.1558:generate_random_sparse_matrices
+def generate_random_sparse_matrices(c,d):
+    sparse_operator_indices = array([(randint(1,c),randint(1,c)) for _ in xrange(randint(2,2*c))]).transpose()
+    sparse_operator_matrices = crand(d,d,sparse_operator_indices.shape[-1])
+    operator_site_tensor = zeros((d,d,c,c),complex128)
     for (index1,index2),matrix in zip(sparse_operator_indices.transpose(),sparse_operator_matrices.transpose(2,0,1)):
-        operator[...,index2-1,index1-1] += matrix
-    return operator
-#@-node:gcross.20091108152444.1535:sparse_to_operator
+        operator_site_tensor[...,index2-1,index1-1] += matrix
+    return sparse_operator_indices, sparse_operator_matrices, operator_site_tensor
+#@-node:gcross.20091110011014.1558:generate_random_sparse_matrices
 #@-node:gcross.20091108152444.1533:Functions
 #@+node:gcross.20091108152444.1534:Tests
 #@+node:gcross.20091106154604.1986:iteration_stage_1
@@ -56,11 +58,9 @@ class iteration_stage_1(unittest.TestCase):
     ):
         d = 2
         left_environment = crand(b,b,c)
-        sparse_operator_indices = array([(randint(1,c),randint(1,c)) for _ in xrange(randint(2,2*c))]).transpose()
-        sparse_operator_matrices = crand(d,d,sparse_operator_indices.shape[-1])
+        sparse_operator_indices, sparse_operator_matrices, operator_site_tensor = generate_random_sparse_matrices(c,d)
         actual_output_tensor = vmps.contractors.iteration_stage_1(left_environment,sparse_operator_indices,sparse_operator_matrices)
-        operator = sparse_to_operator(c,d,sparse_operator_indices,sparse_operator_matrices)
-        correct_output_tensor = iteration_stage_1_correct_contractor(left_environment,operator)
+        correct_output_tensor = iteration_stage_1_correct_contractor(left_environment,operator_site_tensor)
         self.assertTrue(allclose(actual_output_tensor,correct_output_tensor))
 #@-node:gcross.20091106154604.1986:iteration_stage_1
 #@+node:gcross.20091107163338.1531:iteration_stage_2
@@ -194,9 +194,7 @@ class combined_iteration(unittest.TestCase):
         left_environment = crand(bl,bl,c)
         state_site_tensor = crand(br,bl,d)
         right_environment = crand(br,br,c)
-        sparse_operator_indices = array([(randint(1,c),randint(1,c)) for _ in xrange(randint(2,2*c))]).transpose()
-        sparse_operator_matrices = crand(d,d,sparse_operator_indices.shape[-1])
-        operator_site_tensor = sparse_to_operator(c,d,sparse_operator_indices,sparse_operator_matrices)
+        sparse_operator_indices, sparse_operator_matrices, operator_site_tensor = generate_random_sparse_matrices(c,d)
         iteration_tensor = vmps.contractors.pre_iteration(left_environment,sparse_operator_indices,sparse_operator_matrices)
         _, actual_output_tensor = vmps.contractors.iteration(iteration_tensor,state_site_tensor,right_environment)
         correct_output_tensor = combined_iteration_correct_contractor(left_environment,operator_site_tensor,state_site_tensor,right_environment)
@@ -222,6 +220,58 @@ class combined_iteration(unittest.TestCase):
     #@-node:gcross.20091109182634.1551:test_single_Z_operator
     #@-others
 #@-node:gcross.20091108152444.1537:combined_iteration
+#@+node:gcross.20091110011014.1557:contract_sos_left
+e = {}
+
+for index, (v1, v2) in enumerate([
+    ("L2","S*2"),
+    ("L1","O1"),
+    ("L3","S2"),
+    ("O3","S*1"),
+    ("O4","S1"),
+    ("O2","N1"),
+    ("S3","N3"),
+    ("S*3","N2"),
+]):
+    if v1 in e:
+        raise ValueError("vertex {0} appears twice".format(v1))
+    if v2 in e:
+        raise ValueError("vertex {0} appears twice".format(v2))
+    e[v1] = index
+    e[v2] = index
+
+contract_sos_left_correct_contractor = make_contractor_from_implicit_joins([
+    [e["L"+str(i)] for i in reversed(xrange(1,3+1))],
+    [e["O"+str(i)] for i in reversed(xrange(1,4+1))],
+    [e["S"+str(i)] for i in reversed(xrange(1,3+1))],
+    [e["S*"+str(i)] for i in reversed(xrange(1,3+1))],
+],[e["N"+str(i)] for i in reversed(xrange(1,3+1))])
+
+class contract_sos_left(unittest.TestCase):
+
+    @with_checker(number_of_calls=10)
+    def test_agreement_with_contractor(self,
+        bl = irange(2,20),
+        br = irange(2,20),
+        c = irange(2,10),
+    ):
+        d = 2
+        left_environment = crand(bl,bl,c)
+        sparse_operator_indices, sparse_operator_matrices, operator_site_tensor = generate_random_sparse_matrices(c,d)
+        state_site_tensor = crand(br,bl,d)
+        actual_output_tensor = vmps.contractors.contract_sos_left(
+            left_environment,
+            sparse_operator_indices, sparse_operator_matrices,
+            state_site_tensor
+        )
+        correct_output_tensor = contract_sos_left_correct_contractor(
+            left_environment,
+            operator_site_tensor,
+            state_site_tensor,
+            state_site_tensor.conj(),
+        )
+        self.assertTrue(allclose(actual_output_tensor,correct_output_tensor))
+#@-node:gcross.20091110011014.1557:contract_sos_left
 #@-node:gcross.20091108152444.1534:Tests
 #@-others
 
@@ -229,6 +279,7 @@ tests = [
     iteration_stage_1,
     iteration_stage_2,
     iteration_stage_3,
+    contract_sos_left,
     ]
 
 if __name__ == "__main__":

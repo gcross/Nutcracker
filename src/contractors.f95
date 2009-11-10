@@ -97,6 +97,60 @@ subroutine iteration_stage_3( &
 
 end subroutine
 !@-node:gcross.20091110011014.1551:iteration_stage_3
+!@+node:gcross.20091110011014.1549:contract_sos_left
+subroutine contract_sos_left( &
+  bl, & ! state left bandwidth dimension
+  br, & ! state right bandwidth dimension
+  c, &  ! operator bandwidth dimension
+  d, &  ! physical dimension
+  left_environment, &
+  number_of_matrices,sparse_operator_indices,sparse_operator_matrices, &
+  state_site_tensor, &
+  new_left_environment &
+)
+  integer, intent(in) :: bl, br, c, d, number_of_matrices, sparse_operator_indices(2,number_of_matrices)
+  double complex, intent(in) :: &
+    left_environment(bl,bl,c), &
+    state_site_tensor(br,bl,d), &
+    sparse_operator_matrices(d,d,number_of_matrices)
+  double complex, intent(out) :: new_left_environment(br,br,c)
+
+  double complex :: &
+    iteration_stage_1_tensor(bl,d,c,bl,d), &
+    iteration_stage_2_tensor(br,c,bl,d), &
+    iteration_stage_3_tensor(br,c,br)
+
+  external :: zgemm
+
+  ! Stage 1
+  call iteration_stage_1( &
+    bl, c, d, &
+    left_environment, &
+    number_of_matrices, sparse_operator_indices, sparse_operator_matrices, &
+    iteration_stage_1_tensor &
+  )
+  ! Stage 2
+  call iteration_stage_2( &
+    bl, br, c, d, &
+    iteration_stage_1_tensor, &
+    state_site_tensor, &
+    iteration_stage_2_tensor &
+  )
+  ! Stage 3
+  call zgemm( &
+      'N','C', &
+      br*c,br,bl*d, &
+      (1d0,0d0), &
+      iteration_stage_2_tensor(1,1,1,1), br*c, &
+      state_site_tensor(1,1,1), br, &
+      (0d0,0d0), &
+      iteration_stage_3_tensor(1,1,1), br*c &
+  )
+  ! Stage 4
+  new_left_environment = reshape(iteration_stage_3_tensor,shape(new_left_environment),order=(/1,3,2/))
+
+end subroutine
+!@-node:gcross.20091110011014.1549:contract_sos_left
 !@-others
 
 end module
