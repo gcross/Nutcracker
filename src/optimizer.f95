@@ -139,13 +139,13 @@ function optimize( &
     ) 
     if (ido == -1 .or. ido == 1) then
       call iteration_stage_2( &
-        bl, br, c, d, &  ! physical dimension
+        bl, br, c, d, &
         iteration_stage_1_tensor, &
         workd(ipntr(1)), &
         iteration_stage_2_tensor &
       )
       call iteration_stage_3( &
-        bl, br, c, d, &  ! physical dimension
+        bl, br, c, d, &
         iteration_stage_2_tensor, &
         right_environment, &
         workd(ipntr(2)) &
