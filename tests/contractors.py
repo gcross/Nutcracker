@@ -251,6 +251,40 @@ class contract_sos_left(unittest.TestCase):
         )
         self.assertTrue(allclose(actual_output_tensor,correct_output_tensor))
 #@-node:gcross.20091110011014.1557:contract_sos_left
+#@+node:gcross.20091110135225.1563:contract_sos_right_stage_1
+contract_sos_right_stage_1_correct_contractor = form_contractor([
+    ("R3","S*3"),
+    ("R1","O1"),
+    ("R2","O2"),
+    ("S*1","O3"),
+    ("S*2","O4"),
+], [
+    ("R",3),
+    ("S*",3),
+], ("O",4)
+)
+
+class contract_sos_right_stage_1(unittest.TestCase):
+
+    @with_checker(number_of_calls=10)
+    def test_agreement_with_contractor(self,
+        bl = irange(2,20),
+        br = irange(2,20),
+        c = irange(2,10),
+    ):
+        d = 2
+        right_environment = crand(br,br,c)
+        state_site_tensor = crand(br,bl,d)
+        actual_output_tensor = vmps.contractors.contract_sos_right_stage_1(
+            right_environment,
+            state_site_tensor
+        )
+        correct_output_tensor = contract_sos_right_stage_1_correct_contractor(
+            right_environment,
+            state_site_tensor.conj(),
+        )
+        self.assertTrue(allclose(actual_output_tensor,correct_output_tensor))
+#@-node:gcross.20091110135225.1563:contract_sos_right_stage_1
 #@-node:gcross.20091108152444.1534:Tests
 #@-others
 
@@ -259,6 +293,7 @@ tests = [
     iteration_stage_2,
     iteration_stage_3,
     contract_sos_left,
+    contract_sos_right_stage_1,
     ]
 
 if __name__ == "__main__":

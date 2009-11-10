@@ -151,6 +151,35 @@ subroutine contract_sos_left( &
 
 end subroutine
 !@-node:gcross.20091110011014.1549:contract_sos_left
+!@+node:gcross.20091110135225.1556:contract_sos_right_stage_1
+subroutine contract_sos_right_stage_1( &
+  bl, & ! state left bandwidth dimension
+  br, & ! state right bandwidth dimension
+  c, &  ! operator bandwidth dimension
+  d, &  ! physical dimension
+  right_environment, &
+  state_site_tensor, &
+  sos_right_stage_1_tensor &
+)
+  integer, intent(in) :: bl, br, c, d
+  double complex, intent(in) :: &
+    right_environment(br,br,c), &
+    state_site_tensor(br,bl,d)
+  double complex, intent(out) :: sos_right_stage_1_tensor(bl,d,br,c)
+
+  external :: zgemm
+
+  call zgemm( &
+      'C','N', &
+      bl*d, br*c, br, &
+      (1d0,0d0), &
+      state_site_tensor, br, &
+      right_environment, br, &
+      (0d0,0d0), &
+      sos_right_stage_1_tensor, bl*d &
+  )
+end subroutine
+!@-node:gcross.20091110135225.1556:contract_sos_right_stage_1
 !@-others
 
 end module
