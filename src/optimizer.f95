@@ -82,8 +82,8 @@ function optimize( &
   integer :: status
 
   double complex :: &
-    workspace(br,c,bl,d), &
-    iteration_tensor(bl,d,c,bl,d), &
+    iteration_stage_1_tensor(bl,d,c,bl,d), &
+    iteration_stage_2_tensor(br,c,bl,d), &
     v(br*bl*d,ncv), &
     workd(3*br*bl*d), &
     workl(3*ncv**2+5*ncv), &
@@ -102,15 +102,16 @@ function optimize( &
   double precision :: rwork(ncv)
 
 !@+at
-! First do the pre-iteration contraction.
+! First do the stage 1 contraction, since it is independent of the state site 
+! tensor.
 !@-at
 !@@c
 
-  call pre_iteration( &
+  call iteration_stage_1( &
     bl, c, d, &
     left_environment, &
     number_of_matrices, sparse_operator_indices, sparse_operator_matrices, &
-    iteration_tensor &
+    iteration_stage_1_tensor &
   )
 
 !@+at
@@ -137,12 +138,16 @@ function optimize( &
       iparam, ipntr, workd, workl, 3*ncv**2+5*ncv, rwork, info &
     ) 
     if (ido == -1 .or. ido == 1) then
-      call iteration( &
+      call iteration_stage_2( &
         bl, br, c, d, &  ! physical dimension
-        iteration_tensor, &
+        iteration_stage_1_tensor, &
         workd(ipntr(1)), &
+        iteration_stage_2_tensor &
+      )
+      call iteration_stage_3( &
+        bl, br, c, d, &  ! physical dimension
+        iteration_stage_2_tensor, &
         right_environment, &
-        workspace, &
         workd(ipntr(2)) &
       )
     end if

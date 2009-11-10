@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!-- Created with Inkscape (http://www.inkscape.org/) -->
-
 <svg
    xmlns:dc="http://purl.org/dc/elements/1.1/"
    xmlns:cc="http://creativecommons.org/ns#"
@@ -13,7 +12,7 @@
    height="481.5"
    id="svg2"
    sodipodi:version="0.32"
-   inkscape:version="0.47pre4 r22446"
+   inkscape:version="0.46"
    version="1.0"
    sodipodi:docname="iteration.svg"
    inkscape:output_extension="org.inkscape.output.svg.inkscape">
@@ -65,8 +64,8 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="0.70710678"
-     inkscape:cx="753.8705"
-     inkscape:cy="485.3372"
+     inkscape:cx="527.59633"
+     inkscape:cy="259.06303"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
@@ -75,7 +74,7 @@
      inkscape:guide-bbox="true"
      inkscape:window-width="1069"
      inkscape:window-height="834"
-     inkscape:window-x="-4"
+     inkscape:window-x="370"
      inkscape:window-y="0"
      inkscape:window-maximized="0">
     <inkscape:grid
@@ -98,7 +97,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -776,5 +775,38 @@
          id="tspan5986"
          x="490.81219"
          y="65.203003">2</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:30px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:100%;writing-mode:lr-tb;text-anchor:start;opacity:1;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;marker:none;marker-start:none;marker-mid:none;marker-end:none;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;visibility:visible;display:inline;overflow:visible;enable-background:accumulate;font-family:Times;-inkscape-font-specification:Times"
+       x="172.35995"
+       y="41.748123"
+       id="text2839"
+       sodipodi:linespacing="100%"><tspan
+         sodipodi:role="line"
+         id="tspan2841"
+         x="172.35995"
+         y="41.748123">Stage 1</tspan></text>
+    <text
+       sodipodi:linespacing="100%"
+       id="text2843"
+       y="21.748123"
+       x="390.35995"
+       style="font-size:30px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:100%;writing-mode:lr-tb;text-anchor:start;opacity:1;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;marker:none;marker-start:none;marker-mid:none;marker-end:none;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;visibility:visible;display:inline;overflow:visible;enable-background:accumulate;font-family:Times;-inkscape-font-specification:Times"
+       xml:space="preserve"><tspan
+         y="21.748123"
+         x="390.35995"
+         id="tspan2845"
+         sodipodi:role="line">Stage 2</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:30px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:100%;writing-mode:lr-tb;text-anchor:start;opacity:1;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;marker:none;marker-start:none;marker-mid:none;marker-end:none;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;visibility:visible;display:inline;overflow:visible;enable-background:accumulate;font-family:Times;-inkscape-font-specification:Times"
+       x="802.35999"
+       y="1.7481232"
+       id="text2847"
+       sodipodi:linespacing="100%"><tspan
+         sodipodi:role="line"
+         id="tspan2849"
+         x="802.35999"
+         y="1.7481232">Stage 3</tspan></text>
   </g>
 </svg>

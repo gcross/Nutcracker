@@ -10,23 +10,23 @@ module contractors
 contains
 
 !@+others
-!@+node:gcross.20091106154604.1512:pre_iteration
-pure subroutine pre_iteration( &
+!@+node:gcross.20091106154604.1512:iteration_stage_1
+subroutine iteration_stage_1( &
   b, & ! state bandwidth dimension
   c, & ! operator bandwidth dimension
   d, & ! physical dimension
   left_environment, &
   number_of_matrices,sparse_operator_indices,sparse_operator_matrices, &
-  output_tensor &
+  iteration_stage_1_tensor &
 )
   integer, intent(in) :: b, c, d, number_of_matrices, sparse_operator_indices(2,number_of_matrices)
   double complex, intent(in) :: left_environment(b,b,c), sparse_operator_matrices(d,d,number_of_matrices)
-  double complex, intent(out) :: output_tensor(b,d,c,b,d)
+  double complex, intent(out) :: iteration_stage_1_tensor(b,d,c,b,d)
 
   integer :: index, i, j, k1, k2
   double complex :: matrix(d,d)
 
-  output_tensor = 0
+  iteration_stage_1_tensor = 0
 
   do index = 1, number_of_matrices
     k1 = sparse_operator_indices(1,index)
@@ -34,28 +34,26 @@ pure subroutine pre_iteration( &
     matrix  = sparse_operator_matrices(:,:,index)
     do j=1,b
       do i=1,b
-        output_tensor(i,:,k2,j,:) = output_tensor(i,:,k2,j,:) + matrix(:,:)*left_environment(i,j,k1)
+        iteration_stage_1_tensor(i,:,k2,j,:) = iteration_stage_1_tensor(i,:,k2,j,:) + matrix(:,:)*left_environment(i,j,k1)
       end do
     end do
   end do
 
 end subroutine
-!@-node:gcross.20091106154604.1512:pre_iteration
-!@+node:gcross.20091107163338.1529:iteration
-subroutine iteration( &
+!@-node:gcross.20091106154604.1512:iteration_stage_1
+!@+node:gcross.20091107163338.1529:iteration_stage_2
+subroutine iteration_stage_2( &
   bl, & ! state left bandwidth dimension
   br, & ! state right bandwidth dimension
   c, &  ! operator bandwidth dimension
   d, &  ! physical dimension
-  iteration_tensor, &
+  iteration_stage_1_tensor, &
   state_site_tensor, &
-  right_environment, &
-  workspace, &
-  output_state_site_tensor &
+  iteration_stage_2_tensor &
 )
   integer, intent(in) :: bl, br, c, d
-  double complex, intent(in) :: right_environment(br,br,c), state_site_tensor(br,bl,d), iteration_tensor(bl,d,c,bl,d)
-  double complex, intent(out) :: workspace(br,c,bl,d), output_state_site_tensor(br,bl,d)
+  double complex, intent(in) :: state_site_tensor(br,bl,d), iteration_stage_1_tensor(bl,d,c,bl,d)
+  double complex, intent(out) :: iteration_stage_2_tensor(br,c,bl,d)
 
   external :: zgemm
 
@@ -64,22 +62,41 @@ subroutine iteration( &
       br,c*bl*d,bl*d, &
       (1d0,0d0), &
       state_site_tensor(1,1,1), br, &
-      iteration_tensor(1,1,1,1,1), bl*d, &
+      iteration_stage_1_tensor(1,1,1,1,1), bl*d, &
       (0d0,0d0), &
-      workspace(1,1,1,1), br &
+      iteration_stage_2_tensor(1,1,1,1), br &
   )
+
+end subroutine
+!@-node:gcross.20091107163338.1529:iteration_stage_2
+!@+node:gcross.20091110011014.1551:iteration_stage_3
+subroutine iteration_stage_3( &
+  bl, & ! state left bandwidth dimension
+  br, & ! state right bandwidth dimension
+  c, &  ! operator bandwidth dimension
+  d, &  ! physical dimension
+  iteration_stage_2_tensor, &
+  right_environment, &
+  output_state_site_tensor &
+)
+  integer, intent(in) :: bl, br, c, d
+  double complex, intent(in) :: right_environment(br,br,c), iteration_stage_2_tensor(br,c,bl,d)
+  double complex, intent(out) :: output_state_site_tensor(br,bl,d)
+
+  external :: zgemm
+
   call zgemm( &
       'N','N', &
       br, bl*d, br*c, &
       (1d0,0d0), &
       right_environment(1,1,1), br, &
-      workspace(1,1,1,1), br*c, &
+      iteration_stage_2_tensor(1,1,1,1), br*c, &
       (0d0,0d0), &
       output_state_site_tensor(1,1,1), br &
   )
 
 end subroutine
-!@-node:gcross.20091107163338.1529:iteration
+!@-node:gcross.20091110011014.1551:iteration_stage_3
 !@-others
 
 end module
