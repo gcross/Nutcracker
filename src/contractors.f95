@@ -61,10 +61,10 @@ subroutine iteration_stage_2( &
       'N','N', &
       br,c*bl*d,bl*d, &
       (1d0,0d0), &
-      state_site_tensor(1,1,1), br, &
-      iteration_stage_1_tensor(1,1,1,1,1), bl*d, &
+      state_site_tensor, br, &
+      iteration_stage_1_tensor, bl*d, &
       (0d0,0d0), &
-      iteration_stage_2_tensor(1,1,1,1), br &
+      iteration_stage_2_tensor, br &
   )
 
 end subroutine
@@ -89,10 +89,10 @@ subroutine iteration_stage_3( &
       'N','N', &
       br, bl*d, br*c, &
       (1d0,0d0), &
-      right_environment(1,1,1), br, &
-      iteration_stage_2_tensor(1,1,1,1), br*c, &
+      right_environment, br, &
+      iteration_stage_2_tensor, br*c, &
       (0d0,0d0), &
-      output_state_site_tensor(1,1,1), br &
+      output_state_site_tensor, br &
   )
 
 end subroutine
@@ -141,10 +141,10 @@ subroutine contract_sos_left( &
       'N','C', &
       br*c,br,bl*d, &
       (1d0,0d0), &
-      iteration_stage_2_tensor(1,1,1,1), br*c, &
-      state_site_tensor(1,1,1), br, &
+      iteration_stage_2_tensor, br*c, &
+      state_site_tensor, br, &
       (0d0,0d0), &
-      iteration_stage_3_tensor(1,1,1), br*c &
+      iteration_stage_3_tensor, br*c &
   )
   ! Stage 4
   new_left_environment = reshape(iteration_stage_3_tensor,shape(new_left_environment),order=(/1,3,2/))
