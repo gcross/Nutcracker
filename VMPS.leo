@@ -16,6 +16,7 @@
 <v t="gcross.20090930124443.1265"><vh>@thin utils.py</vh></v>
 <v t="gcross.20091106154604.9812"><vh>@path src</vh>
 <v t="gcross.20091105135203.1510"><vh>@thin contractors.f95</vh></v>
+<v t="gcross.20091109182552.1535"><vh>@thin optimizer.f95</vh></v>
 </v>
 <v t="gcross.20090930124443.1284"><vh>@thin chains.py</vh></v>
 <v t="gcross.20091008162221.1380"><vh>@thin simulation.py</vh></v>
@@ -25,6 +26,7 @@
 <v t="gcross.20091106154604.1972"><vh>@path tests</vh>
 <v t="gcross.20091106154604.1979"><vh>@thin __init__.py</vh></v>
 <v t="gcross.20091106154604.1983"><vh>@thin contractors.py</vh></v>
+<v t="gcross.20091109182634.1542"><vh>@thin optimizer.py</vh></v>
 </v>
 <v t="gcross.20090930213318.1310"><vh>Transverse Ising Model</vh>
 <v t="gcross.20090930212235.1299"><vh>@thin simulate-TI.py</vh></v>

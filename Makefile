@@ -10,9 +10,11 @@ include options.mk
 
 SOURCES = \
 	src/contractors.f95 \
+	src/optimizer.f95 \
 
 OBJECTS = \
 	obj/contractors.o \
+	obj/optimizer.o \
 	obj/wrappers/vmpsmodule.o \
 	obj/wrappers/vmps-f2pywrappers2.o \
 	obj/wrappers/fortranobject.o
@@ -30,7 +32,7 @@ obj/%.o: src/%.f Makefile
 	${FC} ${FLAGS} ${FFLAGS} -c $< -o $@
 
 lib/vmps.so: ${OBJECTS} Makefile
-	${FC} ${PYTHONLINK} ${FLAGS} -shared -o lib/vmps.so -lgfortran -lblas -llapack ${OBJECTS}
+	${FC} ${PYTHONLINK} ${FLAGS} -shared -o lib/vmps.so -lgfortran -lblas -llapack -larpack ${OBJECTS}
 
 clean:
 	rm -f obj/*/* lib/* src/*/*.mod src/wrappers/vpifmodule.c src/wrappers/vpif-f2pywrappers2.f90

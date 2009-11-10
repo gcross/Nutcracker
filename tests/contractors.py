@@ -103,6 +103,8 @@ class iteration(unittest.TestCase):
         self.assertTrue(allclose(actual_output_tensor,correct_output_tensor))
 #@-node:gcross.20091107163338.1531:iteration
 #@+node:gcross.20091108152444.1537:combined_iteration
+#@<< Correct contractor >>
+#@+node:gcross.20091109182634.1547:<< Correct contractor >>
 e = {}
 
 for index, (v1, v2) in enumerate([
@@ -126,10 +128,14 @@ combined_iteration_correct_contractor = make_contractor_from_implicit_joins([
     [e["S"+str(i)] for i in reversed(xrange(1,3+1))],  # state site tensor
     [e["R"+str(i)] for i in reversed(xrange(1,3+1))],  # right environment
 ],[e["S*"+str(i)] for i in reversed(xrange(1,3+1))])
+#@nonl
+#@-node:gcross.20091109182634.1547:<< Correct contractor >>
+#@nl
 
 
 class combined_iteration(unittest.TestCase):
-
+    #@    @+others
+    #@+node:gcross.20091109182634.1548:test_correct_contractor
     @with_checker(number_of_calls=10)
     def test_correct_contractor(self,
         bl = irange(2,20),
@@ -144,8 +150,8 @@ class combined_iteration(unittest.TestCase):
         correct_output_tensor = iteration_correct_contractor(pre_iteration_correct_contractor(left_environment,operator_site_tensor),state_site_tensor,right_environment)
         actual_output_tensor = combined_iteration_correct_contractor(left_environment,operator_site_tensor,state_site_tensor,right_environment)
         self.assertTrue(allclose(actual_output_tensor,correct_output_tensor))
-
-
+    #@-node:gcross.20091109182634.1548:test_correct_contractor
+    #@+node:gcross.20091109182634.1549:test_agreement_with_contractor
     @with_checker(number_of_calls=10)
     def test_agreement_with_contractor(self,
         bl = irange(2,20),
@@ -163,6 +169,26 @@ class combined_iteration(unittest.TestCase):
         _, actual_output_tensor = vmps.contractors.iteration(iteration_tensor,state_site_tensor,right_environment)
         correct_output_tensor = combined_iteration_correct_contractor(left_environment,operator_site_tensor,state_site_tensor,right_environment)
         self.assertTrue(allclose(actual_output_tensor,correct_output_tensor))
+    #@-node:gcross.20091109182634.1549:test_agreement_with_contractor
+    #@+node:gcross.20091109182634.1551:test_single_Z_operator
+    @with_checker(number_of_calls=10)
+    def test_single_Z_operator(self):
+        d = 2
+        left_environment = ones((1,1,1),complex128)
+        right_environment = ones((1,1,1),complex128)
+        sparse_operator_indices = ones((2,1))
+        sparse_operator_matrices = Z.reshape(2,2,1)
+        state_site_tensor = array(crand(1,1,2),order='Fortran')
+
+        iteration_tensor = vmps.contractors.pre_iteration(left_environment,sparse_operator_indices,sparse_operator_matrices)
+        _, actual_output_tensor = vmps.contractors.iteration(iteration_tensor,state_site_tensor,right_environment)
+
+        correct_output_tensor = state_site_tensor.copy()
+        correct_output_tensor[...,1] *= -1
+
+        self.assertTrue(allclose(actual_output_tensor,correct_output_tensor))
+    #@-node:gcross.20091109182634.1551:test_single_Z_operator
+    #@-others
 #@-node:gcross.20091108152444.1537:combined_iteration
 #@-node:gcross.20091108152444.1534:Tests
 #@-others
