@@ -280,7 +280,7 @@ subroutine contract_sos_right_stage_2( &
 
 end subroutine
 !@-node:gcross.20091110135225.1572:contract_sos_right_stage_2
-!@+node:gcross.20091110205054.1907:contract_sos_left
+!@+node:gcross.20091110205054.1907:contract_sos_right
 subroutine contract_sos_right( &
   bl, & ! state left bandwidth dimension
   br, & ! state right bandwidth dimension
@@ -317,7 +317,7 @@ subroutine contract_sos_right( &
   )
 
 end subroutine
-!@-node:gcross.20091110205054.1907:contract_sos_left
+!@-node:gcross.20091110205054.1907:contract_sos_right
 !@-node:gcross.20091110205054.1911:Environment SOS contraction
 !@+node:gcross.20091110205054.1912:compute_expectation_1
 function compute_expectation_1( &
