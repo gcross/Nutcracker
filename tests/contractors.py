@@ -390,6 +390,49 @@ class contract_sos_right_stage_2(unittest.TestCase):
         )
         self.assertTrue(allclose(actual_output_tensor,correct_output_tensor))
 #@-node:gcross.20091110135225.1566:contract_sos_right_stage_2
+#@+node:gcross.20091110205054.1909:contract_sos_right
+contract_sos_right_correct_contractor = form_contractor([
+    ("R3","S*3"),
+    ("R1","O2"),
+    ("R2","S3"),
+    ("O3","S*1"),
+    ("O4","S1"),
+    ("O1","N1"),
+    ("S2","N2"),
+    ("S*2","N3"),
+], [
+    ("R",3),
+    ("O",4),
+    ("S",3),
+    ("S*",3),
+], ("N",3)
+)
+
+class contract_sos_right(unittest.TestCase):
+
+    @with_checker(number_of_calls=10)
+    def test_agreement_with_contractor(self,
+        bl = irange(2,20),
+        br = irange(2,20),
+        c = irange(2,10),
+    ):
+        d = 2
+        right_environment = crand(br,br,c)
+        sparse_operator_indices, sparse_operator_matrices, operator_site_tensor = generate_random_sparse_matrices(c,d)
+        state_site_tensor = crand(br,bl,d)
+        actual_output_tensor = vmps.contractors.contract_sos_right(
+            right_environment,
+            sparse_operator_indices, sparse_operator_matrices,
+            state_site_tensor
+        )
+        correct_output_tensor = contract_sos_right_correct_contractor(
+            right_environment,
+            operator_site_tensor,
+            state_site_tensor,
+            state_site_tensor.conj(),
+        )
+        self.assertTrue(allclose(actual_output_tensor,correct_output_tensor))
+#@-node:gcross.20091110205054.1909:contract_sos_right
 #@-node:gcross.20091110135225.1568:contract_sos
 #@-others
 
@@ -402,6 +445,7 @@ tests = [
     contract_sos_right_stage_2a,
     contract_sos_right_stage_2b,
     contract_sos_right_stage_2,
+    contract_sos_right,
     ]
 #@-node:gcross.20091108152444.1534:Tests
 #@-others

@@ -277,6 +277,44 @@ subroutine contract_sos_right_stage_2( &
 
 end subroutine
 !@-node:gcross.20091110135225.1572:contract_sos_right_stage_2
+!@+node:gcross.20091110205054.1907:contract_sos_left
+subroutine contract_sos_right( &
+  bl, & ! state left bandwidth dimension
+  br, & ! state right bandwidth dimension
+  c, &  ! operator bandwidth dimension
+  d, &  ! physical dimension
+  right_environment, &
+  number_of_matrices,sparse_operator_indices,sparse_operator_matrices, &
+  state_site_tensor, &
+  new_right_environment &
+)
+  integer, intent(in) :: bl, br, c, d, number_of_matrices, sparse_operator_indices(2,number_of_matrices)
+  double complex, intent(in) :: &
+    right_environment(br,br,c), &
+    state_site_tensor(br,bl,d), &
+    sparse_operator_matrices(d,d,number_of_matrices)
+  double complex, intent(out) :: new_right_environment(bl,bl,c)
+
+  double complex :: &
+    sos_right_stage_1_tensor(bl,d,br,c)
+
+  call contract_sos_right_stage_1( &
+    bl, br, c, d, &
+    right_environment, &
+    state_site_tensor, &
+    sos_right_stage_1_tensor &
+  )
+
+  call contract_sos_right_stage_2( &
+    bl, br, c, d, &
+    sos_right_stage_1_tensor, &
+    number_of_matrices,sparse_operator_indices,sparse_operator_matrices, &
+    state_site_tensor, &
+    new_right_environment &
+  )
+
+end subroutine
+!@-node:gcross.20091110205054.1907:contract_sos_left
 !@-others
 
 end module
