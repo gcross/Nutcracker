@@ -17,7 +17,7 @@ class rand_norm_state_site_tensor(unittest.TestCase):
     #@-others
 
     @with_checker
-    def testCorrectness(self,bl=irange(2,4),br=irange(8,12)):
+    def testCorrectness(self,bl=irange(2,4),br=irange(2,4)):
         d = 2
         info, normalized_tensor = vmps.randomizer.rand_norm_state_site_tensor(bl,br,d)
         self.assertEqual(0,info)
