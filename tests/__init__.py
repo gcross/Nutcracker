@@ -38,12 +38,13 @@ if __name__ == "__main__":
 #@-node:gcross.20091106154604.1981:runner
 #@-others
 
-from tests import contractors, optimizer, randomizer
+from tests import contractors, optimizer, randomizer, normalizer
 
 modules = [
     contractors,
     optimizer,
     randomizer,
+    normalizer,
     ]
 #@-node:gcross.20091106154604.1979:@thin __init__.py
 #@-leo

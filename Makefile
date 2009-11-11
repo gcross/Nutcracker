@@ -9,14 +9,18 @@ include paths.mk
 include options.mk
 
 SOURCES = \
+	src/utils.f95 \
 	src/contractors.f95 \
 	src/optimizer.f95 \
 	src/randomizer.f95 \
+	src/normalizer.f95 \
 
 OBJECTS = \
+	obj/utils.o \
 	obj/contractors.o \
 	obj/optimizer.o \
 	obj/randomizer.o \
+	obj/normalizer.o \
 	obj/wrappers/vmpsmodule.o \
 	obj/wrappers/vmps-f2pywrappers2.o \
 	obj/wrappers/fortranobject.o
