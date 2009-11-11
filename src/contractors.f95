@@ -180,6 +180,103 @@ subroutine contract_sos_right_stage_1( &
   )
 end subroutine
 !@-node:gcross.20091110135225.1556:contract_sos_right_stage_1
+!@+node:gcross.20091110135225.1564:contract_sos_right_stage_2a
+subroutine contract_sos_right_stage_2a( &
+  bl, & ! state left bandwidth dimension
+  br, & ! state right bandwidth dimension
+  d, &  ! physical dimension
+  matrix, &
+  state_site_tensor, &
+  sos_right_stage_2a_tensor &
+)
+  integer, intent(in) :: bl, br, d
+  double complex, intent(in) :: &
+    matrix(d,d), &
+    state_site_tensor(br,bl,d)
+  double complex, intent(out) :: sos_right_stage_2a_tensor(bl,d,br)
+
+  integer :: index, i, j, k
+
+  do j = 1,bl
+  do i = 1,br
+  do k = 1,d
+    sos_right_stage_2a_tensor(j,k,i) = sum(state_site_tensor(i,j,:)*matrix(:,k))
+  end do
+  end do
+  end do
+
+end subroutine
+!@-node:gcross.20091110135225.1564:contract_sos_right_stage_2a
+!@+node:gcross.20091110135225.1570:contract_sos_right_stage_2b
+subroutine contract_sos_right_stage_2b( &
+  bl, & ! state left bandwidth dimension
+  br, & ! state right bandwidth dimension
+  d, &  ! physical dimension
+  sos_right_stage_1_tensor_slice, &
+  sos_right_stage_2a_tensor, &
+  new_right_environment_slice &
+)
+  integer, intent(in) :: bl, br, d
+  double complex, intent(in) :: &
+    sos_right_stage_1_tensor_slice(bl,d,br), &
+    sos_right_stage_2a_tensor(bl,d,br)
+  double complex, intent(inout) :: new_right_environment_slice(bl,bl)
+
+  external :: zgemm
+
+  call zgemm( &
+      'N','T', &
+      bl, bl, d*br, &
+      (1d0,0d0), &
+      sos_right_stage_1_tensor_slice(1,1,1), bl, &
+      sos_right_stage_2a_tensor, bl, &
+      (1d0,0d0), &
+      new_right_environment_slice(1,1), bl &
+  )
+
+end subroutine
+!@-node:gcross.20091110135225.1570:contract_sos_right_stage_2b
+!@+node:gcross.20091110135225.1572:contract_sos_right_stage_2
+subroutine contract_sos_right_stage_2( &
+  bl, & ! state left bandwidth dimension
+  br, & ! state right bandwidth dimension
+  c, &  ! operator bandwidth dimension
+  d, &  ! physical dimension
+  sos_right_stage_1_tensor, &
+  number_of_matrices,sparse_operator_indices,sparse_operator_matrices, &
+  state_site_tensor, &
+  new_right_environment &
+)
+  integer, intent(in) :: bl, br, c, d, number_of_matrices, sparse_operator_indices(2,number_of_matrices)
+  double complex, intent(in) :: &
+    sos_right_stage_1_tensor(bl,d,br,c), &
+    sparse_operator_matrices(d,d,number_of_matrices), &
+    state_site_tensor(br,bl,d)
+  double complex, intent(out) :: new_right_environment(bl,bl,c)
+
+  integer :: index
+  double complex :: &
+    sos_right_stage_2a_tensor(bl,d,br)
+
+  new_right_environment = 0
+
+  do index = 1, number_of_matrices
+    call contract_sos_right_stage_2a( &
+      bl, br, d, &
+      sparse_operator_matrices(:,:,index), &
+      state_site_tensor, &
+      sos_right_stage_2a_tensor &
+    )
+    call contract_sos_right_stage_2b( &
+      bl, br, d, &
+      sos_right_stage_1_tensor(1,1,1,sparse_operator_indices(2,index)), &
+      sos_right_stage_2a_tensor, &
+      new_right_environment(1,1,sparse_operator_indices(1,index)) &
+    )
+  end do
+
+end subroutine
+!@-node:gcross.20091110135225.1572:contract_sos_right_stage_2
 !@-others
 
 end module
