@@ -326,8 +326,8 @@ class contract_sos_right_stage_2a(unittest.TestCase):
 contract_sos_right_stage_2b_correct_contractor = form_contractor([
     ("A1","B1"),
     ("A2","B2"),
-    ("A3","C1"),
-    ("B3","C2"),
+    ("A3","C2"),
+    ("B3","C1"),
 ], [
     ("A",3),
     ("B",3),
