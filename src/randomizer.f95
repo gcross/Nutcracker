@@ -10,6 +10,60 @@ module randomizer
 contains
 
 !@+others
+!@+node:gcross.20091110205054.1929:svd
+function svd( &
+  n, m, rank, &
+  a, &
+  u, s, vt &
+) result (info)
+  integer, intent(in) :: N, M, rank
+  double complex, intent(in) :: a(n,m)
+  double complex, intent(out) :: u(n,rank), vt(rank,m)
+  double precision :: s(rank)
+
+  double complex, allocatable :: work(:)
+  integer :: iwork(8*rank)
+  double precision :: rwork(5*rank*rank + 5*rank)
+  double complex :: optimal_lwork
+  integer :: lwork, info
+
+  external :: zgesdd
+
+  lwork = -1
+
+  call zgesdd( &
+    'S', n, m, &
+    a, n, &
+    s, &
+    u, n, &
+    vt, rank, &
+    optimal_lwork, lwork, &
+    rwork, &
+    iwork, &
+    info &
+  )
+
+  lwork = floor(real(optimal_lwork))
+
+  allocate(work(lwork))
+
+  call zgesdd( &
+    'S', n, m, &
+    a, n, &
+    s, &
+    u, n, &
+    vt, rank, &
+    work, lwork, &
+    rwork, &
+    iwork, &
+    info &
+  )
+
+  deallocate(work)
+
+end function
+!@nonl
+!@-node:gcross.20091110205054.1929:svd
 !@+node:gcross.20091110205054.1921:seed_randomizer
 subroutine seed_randomizer(seed)
   integer, intent(in) :: seed
@@ -37,17 +91,13 @@ function rand_norm_state_site_tensor(bl, br, d, state_site_tensor) result (info)
   integer, intent(in) :: bl, br, d
   double complex, intent(out) :: state_site_tensor(br,bl,d)
 
-  double complex, allocatable :: work(:)
-  integer :: iwork(8*bl)
-  double precision :: rwork(5*bl*bl + 5*bl)
-  double complex :: &
-    u(bl,bl), s(bl), vt(bl,br*d), &
-    optimal_lwork
-  integer :: lwork, info
+  double complex :: u(bl,bl), vt(bl,br*d)
+  double precision :: s(bl)
+  integer :: info
 
   double complex :: normalized_state_site_tensor(bl,br*d)
 
-  external :: zgesdd, zgemm
+  external :: zgemm
 
   if (br*d < bl) then
     print *, "Not enough degrees of freedom to normalize."
@@ -57,37 +107,7 @@ function rand_norm_state_site_tensor(bl, br, d, state_site_tensor) result (info)
 
   call randomize_state_site_tensor(bl, br, d, normalized_state_site_tensor)
 
-  lwork = -1
-
-  call zgesdd( &
-    'S', bl, br*d, &
-    normalized_state_site_tensor, bl, &
-    s, &
-    u, bl, &
-    vt, bl, &
-    optimal_lwork, lwork, &
-    rwork, &
-    iwork, &
-    info &
-  )
-
-  lwork = floor(real(optimal_lwork))
-
-  allocate(work(lwork))
-
-  call zgesdd( &
-    'S', bl, br*d, &
-    normalized_state_site_tensor, bl, &
-    s, &
-    u, bl, &
-    vt, bl, &
-    work,lwork, &
-    rwork, &
-    iwork, &
-    info &
-  )
-
-  deallocate(work)
+  info = svd(bl,br*d,bl,normalized_state_site_tensor,u,s,vt)
 
   call zgemm( &
     'N','N', &
