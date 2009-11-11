@@ -87,6 +87,89 @@ function norm_denorm_going_left( &
 
 end function
 !@-node:gcross.20091110205054.1926:norm_denorm_going_left
+!@+node:gcross.20091110205054.1935:norm_denorm_going_right
+function norm_denorm_going_right( &
+  bl,br,brr, &
+  d,dr, &
+  site_tensor_to_normalize, &
+  site_tensor_to_denormalize, &
+  normalized_site_tensor, &
+  denormalized_site_tensor &
+) result (info)
+  integer, intent(in) :: bl, br, brr, dr, d
+  double complex, intent(in) :: &
+    site_tensor_to_normalize(br,bl,d), &
+    site_tensor_to_denormalize(brr,br,dr)
+  double complex, intent(out) :: &
+    normalized_site_tensor(br,bl,d), &
+    denormalized_site_tensor(brr,br,dr)
+  double complex :: &
+    denormalized_tensor_workspace_1(br,brr,dr), &
+    denormalized_tensor_workspace_2(br,brr,dr)
+
+  double complex :: u(br,br), vt(br,bl*d)
+  double precision :: s(br)
+  integer :: info, i, j
+
+  external :: zgemm
+
+  if (bl*d < br) then
+    print *, "Not enough degrees of freedom to normalize."
+    print *, bl*d, "<", br
+    stop
+  end if
+
+  info = svd(br,bl*d,br,site_tensor_to_normalize,u,s,vt)
+
+  call zgemm( &
+    'N','N', &
+    br,bl*d,br, &
+    (1d0,0d0), &
+    u, br, &
+    vt, br, &
+    (0d0,0d0), &
+    normalized_site_tensor, br &
+  )
+
+  denormalized_tensor_workspace_1 = reshape( &
+    site_tensor_to_denormalize, &
+    shape(denormalized_tensor_workspace_1), &
+    order=(/2,1,3/) &
+  )
+
+  u = conjg(u)
+
+  call zgemm( &
+    'C','N', &
+    br,brr*dr,br, &
+    (1d0,0d0), &
+    u, br, &
+    denormalized_tensor_workspace_1, br, &
+    (0d0,0d0), &
+    denormalized_tensor_workspace_2, br &
+  )
+
+  forall (i=1:brr,j=1:dr) &
+    denormalized_tensor_workspace_2(:,i,j) = denormalized_tensor_workspace_2(:,i,j) * s(:)
+
+  call zgemm( &
+    'N','N', &
+    br,brr*dr,br, &
+    (1d0,0d0), &
+    u, br, &
+    denormalized_tensor_workspace_2, br, &
+    (0d0,0d0), &
+    denormalized_tensor_workspace_1, br &
+  )
+
+  denormalized_site_tensor = reshape( &
+    denormalized_tensor_workspace_1, &
+    shape(denormalized_site_tensor), &
+    order=(/2,1,3/) &
+  )
+
+end function
+!@-node:gcross.20091110205054.1935:norm_denorm_going_right
 !@-others
 
 end module
