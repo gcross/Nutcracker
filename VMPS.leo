@@ -14,20 +14,11 @@
 <v t="gcross.20090930134608.1330"><vh>@thin paulis.py</vh></v>
 <v t="gcross.20091014143858.1490"><vh>@thin database.py</vh></v>
 <v t="gcross.20090930124443.1265"><vh>@thin utils.py</vh></v>
-<v t="gcross.20091106154604.9812"><vh>@path src</vh>
-<v t="gcross.20091105135203.1510"><vh>@thin contractors.f95</vh></v>
-<v t="gcross.20091109182552.1535"><vh>@thin optimizer.f95</vh></v>
-</v>
 <v t="gcross.20090930124443.1284"><vh>@thin chains.py</vh></v>
 <v t="gcross.20091008162221.1380"><vh>@thin simulation.py</vh></v>
 <v t="gcross.20091020183902.1500"><vh>@thin matrix_norm.py</vh></v>
 <v t="gcross.20091020092327.1443"><vh>@thin Database.hs</vh></v>
 <v t="gcross.20091106154604.1974"><vh>@thin test.py</vh></v>
-<v t="gcross.20091106154604.1972"><vh>@path tests</vh>
-<v t="gcross.20091106154604.1979"><vh>@thin __init__.py</vh></v>
-<v t="gcross.20091106154604.1983"><vh>@thin contractors.py</vh></v>
-<v t="gcross.20091109182634.1542"><vh>@thin optimizer.py</vh></v>
-</v>
 <v t="gcross.20090930213318.1310"><vh>Transverse Ising Model</vh>
 <v t="gcross.20090930212235.1299"><vh>@thin simulate-TI.py</vh></v>
 <v t="gcross.20090930213318.1312"><vh>@thin compute-TI-spectrum.py</vh></v>
@@ -63,6 +54,17 @@
 </v>
 <v t="gcross.20091022161927.1466"><vh>Scripts</vh>
 <v t="gcross.20091020183902.1512"><vh>@thin compress-state.py</vh></v>
+</v>
+<v t="gcross.20091106154604.9812"><vh>@path src</vh>
+<v t="gcross.20091105135203.1510"><vh>@thin contractors.f95</vh></v>
+<v t="gcross.20091109182552.1535"><vh>@thin optimizer.f95</vh></v>
+<v t="gcross.20091110205054.1919"><vh>@thin randomizer.f95</vh></v>
+</v>
+<v t="gcross.20091106154604.1972"><vh>@path tests</vh>
+<v t="gcross.20091106154604.1979"><vh>@thin __init__.py</vh></v>
+<v t="gcross.20091106154604.1983"><vh>@thin contractors.py</vh></v>
+<v t="gcross.20091109182634.1542"><vh>@thin optimizer.py</vh></v>
+<v t="gcross.20091110205054.1923"><vh>@thin randomizer.py</vh></v>
 </v>
 </vnodes>
 <tnodes>

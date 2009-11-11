@@ -11,10 +11,12 @@ include options.mk
 SOURCES = \
 	src/contractors.f95 \
 	src/optimizer.f95 \
+	src/randomizer.f95 \
 
 OBJECTS = \
 	obj/contractors.o \
 	obj/optimizer.o \
+	obj/randomizer.o \
 	obj/wrappers/vmpsmodule.o \
 	obj/wrappers/vmps-f2pywrappers2.o \
 	obj/wrappers/fortranobject.o

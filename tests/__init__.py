@@ -36,14 +36,14 @@ def run_tests():
 if __name__ == "__main__":
     run_tests()
 #@-node:gcross.20091106154604.1981:runner
-#@+node:gcross.20091106154604.1982:tests
-from tests import contractors, optimizer
+#@-others
+
+from tests import contractors, optimizer, randomizer
 
 modules = [
     contractors,
     optimizer,
+    randomizer,
     ]
-#@-node:gcross.20091106154604.1982:tests
-#@-others
 #@-node:gcross.20091106154604.1979:@thin __init__.py
 #@-leo
