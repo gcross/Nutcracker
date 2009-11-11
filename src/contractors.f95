@@ -195,7 +195,7 @@ subroutine contract_sos_right_stage_2a( &
     state_site_tensor(br,bl,d)
   double complex, intent(out) :: sos_right_stage_2a_tensor(bl,d,br)
 
-  integer :: index, i, j, k
+  integer :: i, j, k
 
   do j = 1,bl
   do i = 1,br
