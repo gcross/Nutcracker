@@ -12,16 +12,16 @@ contains
 !@+others
 !@+node:gcross.20091106154604.1512:iteration_stage_1
 subroutine iteration_stage_1( &
-  b, & ! state bandwidth dimension
+  bl, & ! state bandwidth dimension
   c, & ! operator bandwidth dimension
   d, & ! physical dimension
   left_environment, &
   number_of_matrices,sparse_operator_indices,sparse_operator_matrices, &
   iteration_stage_1_tensor &
 )
-  integer, intent(in) :: b, c, d, number_of_matrices, sparse_operator_indices(2,number_of_matrices)
-  double complex, intent(in) :: left_environment(b,b,c), sparse_operator_matrices(d,d,number_of_matrices)
-  double complex, intent(out) :: iteration_stage_1_tensor(b,d,c,b,d)
+  integer, intent(in) :: bl, c, d, number_of_matrices, sparse_operator_indices(2,number_of_matrices)
+  double complex, intent(in) :: left_environment(bl,bl,c), sparse_operator_matrices(d,d,number_of_matrices)
+  double complex, intent(out) :: iteration_stage_1_tensor(bl,d,c,bl,d)
 
   integer :: index, i, j, k1, k2
   double complex :: matrix(d,d)
@@ -32,8 +32,8 @@ subroutine iteration_stage_1( &
     k1 = sparse_operator_indices(1,index)
     k2 = sparse_operator_indices(2,index)
     matrix  = sparse_operator_matrices(:,:,index)
-    do j=1,b
-      do i=1,b
+    do j=1,bl
+      do i=1,bl
         iteration_stage_1_tensor(i,:,k2,j,:) = iteration_stage_1_tensor(i,:,k2,j,:) + matrix(:,:)*left_environment(i,j,k1)
       end do
     end do
