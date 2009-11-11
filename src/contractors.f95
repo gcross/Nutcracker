@@ -10,6 +10,7 @@ module contractors
 contains
 
 !@+others
+!@+node:gcross.20091110205054.1910:Main iteration
 !@+node:gcross.20091106154604.1512:iteration_stage_1
 subroutine iteration_stage_1( &
   bl, & ! state bandwidth dimension
@@ -97,6 +98,8 @@ subroutine iteration_stage_3( &
 
 end subroutine
 !@-node:gcross.20091110011014.1551:iteration_stage_3
+!@-node:gcross.20091110205054.1910:Main iteration
+!@+node:gcross.20091110205054.1911:Environment SOS contraction
 !@+node:gcross.20091110011014.1549:contract_sos_left
 subroutine contract_sos_left( &
   bl, & ! state left bandwidth dimension
@@ -315,6 +318,143 @@ subroutine contract_sos_right( &
 
 end subroutine
 !@-node:gcross.20091110205054.1907:contract_sos_left
+!@-node:gcross.20091110205054.1911:Environment SOS contraction
+!@+node:gcross.20091110205054.1912:compute_expectation_1
+function compute_expectation_1( &
+  bl, & ! state left bandwidth dimension
+  br, & ! state right bandwidth dimension
+  c, &  ! operator bandwidth dimension
+  d, &  ! physical dimension
+  left_environment, &
+  state_site_tensor, &
+  number_of_matrices,sparse_operator_indices,sparse_operator_matrices, &
+  right_environment &
+) result (expectation)
+
+  integer, intent(in) :: bl, br, c, d, number_of_matrices, sparse_operator_indices(2,number_of_matrices)
+  double complex, intent(in) :: &
+    left_environment(bl,bl,c), &
+    state_site_tensor(br,bl,d), &
+    right_environment(br,br,c), &
+    sparse_operator_matrices(d,d,number_of_matrices)
+
+  double complex :: &
+    iteration_stage_1_tensor(bl,d,c,bl,d), &
+    iteration_stage_2_tensor(br,c,bl,d), &
+    output_state_site_tensor(br,bl,d), &
+    expectation    
+
+  double complex, external :: zdotc
+
+  call iteration_stage_1( &
+    bl, c, d, &
+    left_environment, &
+    number_of_matrices,sparse_operator_indices,sparse_operator_matrices, &
+    iteration_stage_1_tensor &
+  )
+
+  call iteration_stage_2( &
+    bl, br, c, d, &
+    iteration_stage_1_tensor, &
+    state_site_tensor, &
+    iteration_stage_2_tensor &
+  )
+
+  call iteration_stage_3( &
+    bl, br, c, d, &
+    iteration_stage_2_tensor, &
+    right_environment, &
+    output_state_site_tensor &
+  )
+
+  expectation = zdotc(br*bl*d,state_site_tensor,1,output_state_site_tensor,1)
+
+end function
+!@-node:gcross.20091110205054.1912:compute_expectation_1
+!@+node:gcross.20091110205054.1914:compute_expectation_2
+function compute_expectation_2( &
+  bl, & ! state left bandwidth dimension
+  br, & ! state right bandwidth dimension
+  c, &  ! operator bandwidth dimension
+  d, &  ! physical dimension
+  left_environment, &
+  state_site_tensor, &
+  number_of_matrices,sparse_operator_indices,sparse_operator_matrices, &
+  right_environment &
+) result (expectation)
+
+  integer, intent(in) :: bl, br, c, d, number_of_matrices, sparse_operator_indices(2,number_of_matrices)
+  double complex, intent(in) :: &
+    left_environment(bl,bl,c), &
+    state_site_tensor(br,bl,d), &
+    right_environment(br,br,c), &
+    sparse_operator_matrices(d,d,number_of_matrices)
+
+  double complex :: new_left_environment(br,br,c), expectation
+  integer :: i, j, k
+
+  call contract_sos_left( &
+    bl, br, c, d, &
+    left_environment, &
+    number_of_matrices,sparse_operator_indices,sparse_operator_matrices, &
+    state_site_tensor, &
+    new_left_environment &
+  )
+
+  expectation = 0
+
+  do k = 1, c
+  do i = 1, br
+  do j = 1, br
+    expectation = expectation + new_left_environment(i,j,k)*right_environment(j,i,k)
+  end do
+  end do
+  end do
+
+end function
+!@-node:gcross.20091110205054.1914:compute_expectation_2
+!@+node:gcross.20091110205054.1916:compute_expectation_3
+function compute_expectation_3( &
+  bl, & ! state left bandwidth dimension
+  br, & ! state right bandwidth dimension
+  c, &  ! operator bandwidth dimension
+  d, &  ! physical dimension
+  left_environment, &
+  state_site_tensor, &
+  number_of_matrices,sparse_operator_indices,sparse_operator_matrices, &
+  right_environment &
+) result (expectation)
+
+  integer, intent(in) :: bl, br, c, d, number_of_matrices, sparse_operator_indices(2,number_of_matrices)
+  double complex, intent(in) :: &
+    left_environment(bl,bl,c), &
+    state_site_tensor(br,bl,d), &
+    right_environment(br,br,c), &
+    sparse_operator_matrices(d,d,number_of_matrices)
+
+  double complex :: new_right_environment(bl,bl,c), expectation
+  integer :: i, j, k
+
+  call contract_sos_right( &
+    bl, br, c, d, &
+    right_environment, &
+    number_of_matrices,sparse_operator_indices,sparse_operator_matrices, &
+    state_site_tensor, &
+    new_right_environment &
+  )
+
+  expectation = 0
+
+  do k = 1, c
+  do i = 1, br
+  do j = 1, br
+    expectation = expectation + new_right_environment(i,j,k)*left_environment(j,i,k)
+  end do
+  end do
+  end do
+
+end function
+!@-node:gcross.20091110205054.1916:compute_expectation_3
 !@-others
 
 end module
