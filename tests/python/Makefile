@@ -5,10 +5,10 @@
 
 test: vmps.so
 
-include ../paths.mk
-include ../options.mk
+include ../../paths.mk
+include ../../options.mk
 
-vmps.so: ../src/core.f95 Makefile
+vmps.so: ../../src/core.f95 Makefile
 	${F2PY} -m vmps $< -c -lgfortran -lblas -llapack -larpack
 
 clean:

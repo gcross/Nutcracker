@@ -4,13 +4,8 @@
 !@@tabwidth -2
 
 !@+others
-!@+node:gcross.20091110205054.1970:hello
-subroutine hello
-  print *, "Hello, world!"
-end subroutine
-!@-node:gcross.20091110205054.1970:hello
-!@+node:gcross.20091110205054.1929:svd
-function mysvd( &
+!@+node:gcross.20091110205054.1929:mysvd
+function mysvd ( &
   n, m, rank, &
   a, &
   u, s, vt &
@@ -62,7 +57,7 @@ function mysvd( &
 
 end function
 !@nonl
-!@-node:gcross.20091110205054.1929:svd
+!@-node:gcross.20091110205054.1929:mysvd
 !@+node:gcross.20091110205054.1940:Contractors
 !@+node:gcross.20091110205054.1910:Main iteration
 !@+node:gcross.20091106154604.1512:iteration_stage_1
@@ -615,6 +610,7 @@ function rand_norm_state_site_tensor(bl, br, d, state_site_tensor) result (info)
 
   double complex :: normalized_state_site_tensor(bl,br*d)
 
+  integer :: mysvd
   external :: zgemm
 
   if (br*d < bl) then
@@ -667,6 +663,7 @@ function norm_denorm_going_left( &
   double precision :: s(bl)
   integer :: info, i, j
 
+  integer :: mysvd
   external :: zgemm
 
   if (br*d < bl) then
@@ -742,6 +739,7 @@ function norm_denorm_going_right( &
   double precision :: s(br)
   integer :: info, i, j
 
+  integer :: mysvd
   external :: zgemm
 
   if (bl*d < br) then

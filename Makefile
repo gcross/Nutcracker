@@ -3,7 +3,7 @@
 #@@language Makefile
 #@@tabwidth 4
 
-default: test
+default: objects
 
 include paths.mk
 include options.mk
@@ -11,7 +11,7 @@ include options.mk
 obj/%.o: src/%.c Makefile
 	${CC} ${CFLAGS} -c $< -o $@
 obj/%.o: src/%.hs Makefile
-	${HC} ${HFLAGS} -c $< -o $@
+	${HC} ${HFLAGS} -c $< -o $@ -ohi obj/$*.hi
 obj/%.o: src/%.f95 Makefile                 
 	${FC} ${FFLAGS} -c $< -o $@
 obj/%.o: src/%.f90 Makefile                 
@@ -19,11 +19,10 @@ obj/%.o: src/%.f90 Makefile
 obj/%.o: src/%.f Makefile                   
 	${FC} ${FFLAGS} -c $< -o $@
 
-TESTOBJS = obj/test.o obj/core.o
+OBJS = obj/VMPS.o obj/core.o
 LIBS = -lblas -llapack -larpack -lgfortran
 
-test: ${TESTOBJS}
-	${HC} ${TESTOBJS} ${LIBS} -o test
+objects: ${OBJS}
 
 clean:
 	rm -f mods/* obj/* lib/* src/*.mod

@@ -56,11 +56,17 @@
 </v>
 <v t="gcross.20091106154604.9812"><vh>@path src</vh>
 <v t="gcross.20091110205054.1939"><vh>@thin core.f95</vh></v>
-<v t="gcross.20091110205054.1969"><vh>@thin test.hs</vh></v>
+<v t="gcross.20091110205054.1969"><vh>@thin VMPS.hs</vh></v>
 </v>
 <v t="gcross.20091106154604.1972"><vh>@path tests</vh>
+<v t="gcross.20091111171052.1604"><vh>@path python</vh>
 <v t="gcross.20091110205054.1950"><vh>@thin Makefile</vh></v>
 <v t="gcross.20091106154604.1979"><vh>@thin test.py</vh></v>
+</v>
+<v t="gcross.20091111171052.1605"><vh>@path haskell</vh>
+<v t="gcross.20091111171052.1607"><vh>@thin Makefile</vh></v>
+<v t="gcross.20091111171052.1608"><vh>@thin test.hs</vh></v>
+</v>
 </v>
 </vnodes>
 <tnodes>
@@ -74,5 +80,7 @@
 <t tx="gcross.20091023155936.1524"></t>
 <t tx="gcross.20091106154604.1972"></t>
 <t tx="gcross.20091106154604.9812"></t>
+<t tx="gcross.20091111171052.1604"></t>
+<t tx="gcross.20091111171052.1605"></t>
 </tnodes>
 </leo_file>
