@@ -742,9 +742,7 @@ class norm_denorm_going_left(unittest.TestCase):
         dl = d = 2
         tensor_to_denormalize = crand(bl,bll,d)
         tensor_to_normalize = crand(br,bl,d)
-        denormalized_tensor = array(tensor_to_denormalize,copy=True,order='Fortran')
-        normalized_tensor = array(tensor_to_normalize,copy=True,order='Fortran')
-        info = vmps.norm_denorm_going_left(denormalized_tensor,normalized_tensor)
+        info, denormalized_tensor, normalized_tensor = vmps.norm_denorm_going_left(tensor_to_denormalize,tensor_to_normalize)
         self.assertEqual(0,info)
         should_be_identity = tensordot(normalized_tensor.conj(),normalized_tensor,((0,2,),)*2)
         self.assertTrue(allclose(identity(bl),should_be_identity))
@@ -763,9 +761,7 @@ class norm_denorm_going_right(unittest.TestCase):
         dr = d = 2
         tensor_to_normalize = crand(br,bl,d)
         tensor_to_denormalize = crand(brr,br,dr)
-        normalized_tensor = array(tensor_to_normalize,copy=True,order='Fortran')
-        denormalized_tensor = array(tensor_to_denormalize,copy=True,order='Fortran')
-        info = vmps.norm_denorm_going_right(normalized_tensor, denormalized_tensor)
+        info, normalized_tensor, denormalized_tensor = vmps.norm_denorm_going_right(tensor_to_normalize,tensor_to_denormalize)
         self.assertEqual(0,info)
         should_be_identity = tensordot(normalized_tensor.conj(),normalized_tensor,((1,2,),)*2)
         self.assertTrue(allclose(identity(br),should_be_identity))
