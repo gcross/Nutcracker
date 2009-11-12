@@ -225,10 +225,10 @@ def crand(*shape):
     return rand(*shape)*2-1+rand(*shape)*2j-1j
 #@-node:gcross.20091110205054.1968:crand
 #@+node:gcross.20091110011014.1558:generate_random_sparse_matrices
-def generate_random_sparse_matrices(c,d):
-    sparse_operator_indices = array([(randint(1,c),randint(1,c)) for _ in xrange(randint(2,2*c))]).transpose()
+def generate_random_sparse_matrices(cl,cr,d):
+    sparse_operator_indices = array([(randint(1,cl),randint(1,cr)) for _ in xrange(randint(2,cl+cr))]).transpose()
     sparse_operator_matrices = crand(d,d,sparse_operator_indices.shape[-1])
-    operator_site_tensor = zeros((d,d,c,c),complex128)
+    operator_site_tensor = zeros((d,d,cr,cl),complex128)
     for (index1,index2),matrix in zip(sparse_operator_indices.transpose(),sparse_operator_matrices.transpose(2,0,1)):
         operator_site_tensor[...,index2-1,index1-1] += matrix
     return sparse_operator_indices, sparse_operator_matrices, operator_site_tensor
@@ -275,12 +275,13 @@ class iteration_stage_1(unittest.TestCase):
     @with_checker(number_of_calls=10)
     def test_agreement_with_contractor(self,
         b = irange(2,20),
-        c = irange(2,10),
+        cl = irange(2,10),
+        cr = irange(2,10),
     ):
         d = 2
-        left_environment = crand(b,b,c)
-        sparse_operator_indices, sparse_operator_matrices, operator_site_tensor = generate_random_sparse_matrices(c,d)
-        actual_output_tensor = vmps.iteration_stage_1(left_environment,sparse_operator_indices,sparse_operator_matrices)
+        left_environment = crand(b,b,cl)
+        sparse_operator_indices, sparse_operator_matrices, operator_site_tensor = generate_random_sparse_matrices(cl,cr,d)
+        actual_output_tensor = vmps.iteration_stage_1(cr,left_environment,sparse_operator_indices,sparse_operator_matrices)
         correct_output_tensor = iteration_stage_1_correct_contractor(left_environment,operator_site_tensor)
         self.assertTrue(allclose(actual_output_tensor,correct_output_tensor))
 #@-node:gcross.20091106154604.1986:iteration_stage_1
@@ -304,10 +305,10 @@ class iteration_stage_2(unittest.TestCase):
     def test_agreement_with_contractor(self,
         bl = irange(2,20),
         br = irange(2,20),
-        c = irange(2,10),
+        cr = irange(2,10),
     ):
         d = 2
-        iteration_stage_1_tensor = crand(bl,d,c,bl,d)
+        iteration_stage_1_tensor = crand(bl,d,cr,bl,d)
         state_site_tensor = crand(br,bl,d)
         actual_output_tensor = vmps.iteration_stage_2(iteration_stage_1_tensor,state_site_tensor)
         correct_output_tensor = iteration_stage_2_correct_contractor(iteration_stage_1_tensor,state_site_tensor)
@@ -332,11 +333,11 @@ class iteration_stage_3(unittest.TestCase):
     def test_agreement_with_contractor(self,
         bl = irange(2,20),
         br = irange(2,20),
-        c = irange(2,10),
+        cr = irange(2,10),
     ):
         d = 2
-        iteration_stage_2_tensor = crand(br,c,br,d)
-        right_environment = crand(br,br,c)
+        iteration_stage_2_tensor = crand(br,cr,br,d)
+        right_environment = crand(br,br,cr)
         actual_output_tensor = vmps.iteration_stage_3(iteration_stage_2_tensor,right_environment)
         correct_output_tensor = iteration_stage_3_correct_contractor(iteration_stage_2_tensor,right_environment)
         self.assertTrue(allclose(actual_output_tensor,correct_output_tensor))
@@ -370,13 +371,14 @@ class combined_iteration(unittest.TestCase):
     def test_correct_contractor(self,
         bl = irange(2,20),
         br = irange(2,20),
-        c = irange(2,10),
+        cl = irange(2,10),
+        cr = irange(2,10),
     ):
         d = 2
-        left_environment = crand(bl,bl,c)
+        left_environment = crand(bl,bl,cl)
         state_site_tensor = crand(br,bl,d)
-        right_environment = crand(br,br,c)
-        operator_site_tensor = crand(d,d,c,c)
+        right_environment = crand(br,br,cr)
+        operator_site_tensor = crand(d,d,cr,cl)
         correct_output_tensor = iteration_correct_contractor(pre_iteration_correct_contractor(left_environment,operator_site_tensor),state_site_tensor,right_environment)
         actual_output_tensor = combined_iteration_correct_contractor(left_environment,operator_site_tensor,state_site_tensor,right_environment)
         self.assertTrue(allclose(actual_output_tensor,correct_output_tensor))
@@ -386,13 +388,14 @@ class combined_iteration(unittest.TestCase):
     def test_agreement_with_contractor(self,
         bl = irange(2,20),
         br = irange(2,20),
-        c = irange(2,10),
+        cl = irange(2,10),
+        cr = irange(2,10),
     ):
         d = 2
         left_environment = crand(bl,bl,c)
         state_site_tensor = crand(br,bl,d)
         right_environment = crand(br,br,c)
-        sparse_operator_indices, sparse_operator_matrices, operator_site_tensor = generate_random_sparse_matrices(c,d)
+        sparse_operator_indices, sparse_operator_matrices, operator_site_tensor = generate_random_sparse_matrices(cl,cr,d)
         iteration_tensor = vmps.pre_iteration(left_environment,sparse_operator_indices,sparse_operator_matrices)
         _, actual_output_tensor = vmps.iteration(iteration_tensor,state_site_tensor,right_environment)
         correct_output_tensor = combined_iteration_correct_contractor(left_environment,operator_site_tensor,state_site_tensor,right_environment)
@@ -444,13 +447,15 @@ class contract_sos_left(unittest.TestCase):
     def test_agreement_with_contractor(self,
         bl = irange(2,20),
         br = irange(2,20),
-        c = irange(2,10),
+        cl = irange(2,10),
+        cr = irange(2,10),
     ):
         d = 2
-        left_environment = crand(bl,bl,c)
-        sparse_operator_indices, sparse_operator_matrices, operator_site_tensor = generate_random_sparse_matrices(c,d)
+        left_environment = crand(bl,bl,cl)
+        sparse_operator_indices, sparse_operator_matrices, operator_site_tensor = generate_random_sparse_matrices(cl,cr,d)
         state_site_tensor = crand(br,bl,d)
         actual_output_tensor = vmps.contract_sos_left(
+            cr,
             left_environment,
             sparse_operator_indices, sparse_operator_matrices,
             state_site_tensor
@@ -482,10 +487,10 @@ class contract_sos_right_stage_1(unittest.TestCase):
     def test_agreement_with_contractor(self,
         bl = irange(2,20),
         br = irange(2,20),
-        c = irange(2,10),
+        cr = irange(2,10),
     ):
         d = 2
-        right_environment = crand(br,br,c)
+        right_environment = crand(br,br,cr)
         state_site_tensor = crand(br,bl,d)
         actual_output_tensor = vmps.contract_sos_right_stage_1(
             right_environment,
@@ -548,7 +553,6 @@ class contract_sos_right_stage_2b(unittest.TestCase):
     def test_agreement_with_contractor(self,
         bl = irange(2,20),
         br = irange(2,20),
-        c = irange(2,10),
     ):
         d = 2
         A = crand(bl,d,br)
@@ -580,13 +584,15 @@ class contract_sos_right_stage_2(unittest.TestCase):
     def test_agreement_with_contractor(self,
         bl = irange(2,20),
         br = irange(2,20),
-        c = irange(2,10),
+        cl = irange(2,10),
+        cr = irange(2,10),
     ):
         d = 2
-        sos_right_stage_1_tensor = crand(bl,d,br,c)
+        sos_right_stage_1_tensor = crand(bl,d,br,cr)
         state_site_tensor = crand(br,bl,d)
-        sparse_operator_indices, sparse_operator_matrices, operator_site_tensor = generate_random_sparse_matrices(c,d)
+        sparse_operator_indices, sparse_operator_matrices, operator_site_tensor = generate_random_sparse_matrices(cl,cr,d)
         actual_output_tensor = vmps.contract_sos_right_stage_2(
+            cl,
             sos_right_stage_1_tensor,
             sparse_operator_indices, sparse_operator_matrices,
             state_site_tensor
@@ -622,13 +628,15 @@ class contract_sos_right(unittest.TestCase):
     def test_agreement_with_contractor(self,
         bl = irange(2,20),
         br = irange(2,20),
-        c = irange(2,10),
+        cl = irange(2,10),
+        cr = irange(2,10),
     ):
         d = 2
-        right_environment = crand(br,br,c)
-        sparse_operator_indices, sparse_operator_matrices, operator_site_tensor = generate_random_sparse_matrices(c,d)
+        right_environment = crand(br,br,cr)
+        sparse_operator_indices, sparse_operator_matrices, operator_site_tensor = generate_random_sparse_matrices(cl,cr,d)
         state_site_tensor = crand(br,bl,d)
         actual_output_tensor = vmps.contract_sos_right(
+            cl,
             right_environment,
             sparse_operator_indices, sparse_operator_matrices,
             state_site_tensor
@@ -667,12 +675,13 @@ class compute_expectation(unittest.TestCase):
     def test_agreement_with_contractor(self,
         bl = irange(2,20),
         br = irange(2,20),
-        c = irange(2,10),
+        cl = irange(2,10),
+        cr = irange(2,10),
     ):
         d = 2
-        left_environment = crand(bl,bl,c)
-        right_environment = crand(br,br,c)
-        sparse_operator_indices, sparse_operator_matrices, operator_site_tensor = generate_random_sparse_matrices(c,d)
+        left_environment = crand(bl,bl,cl)
+        right_environment = crand(br,br,cr)
+        sparse_operator_indices, sparse_operator_matrices, operator_site_tensor = generate_random_sparse_matrices(cl,cr,d)
         state_site_tensor = crand(br,bl,d)
         actual_output_tensor = vmps.compute_expectation(
             left_environment,

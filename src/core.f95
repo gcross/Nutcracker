@@ -68,15 +68,16 @@ end function
 !@+node:gcross.20091106154604.1512:iteration_stage_1
 subroutine iteration_stage_1( &
   bl, & ! state bandwidth dimension
-  c, & ! operator bandwidth dimension
+  cl, & ! operator left  bandwidth dimension
+  cr, & ! operator right bandwidth dimension
   d, & ! physical dimension
   left_environment, &
   number_of_matrices,sparse_operator_indices,sparse_operator_matrices, &
   iteration_stage_1_tensor &
 )
-  integer, intent(in) :: bl, c, d, number_of_matrices, sparse_operator_indices(2,number_of_matrices)
-  double complex, intent(in) :: left_environment(bl,bl,c), sparse_operator_matrices(d,d,number_of_matrices)
-  double complex, intent(out) :: iteration_stage_1_tensor(bl,d,c,bl,d)
+  integer, intent(in) :: bl, cl, cr, d, number_of_matrices, sparse_operator_indices(2,number_of_matrices)
+  double complex, intent(in) :: left_environment(bl,bl,cl), sparse_operator_matrices(d,d,number_of_matrices)
+  double complex, intent(out) :: iteration_stage_1_tensor(bl,d,cr,bl,d)
 
   integer :: index, i, j, k1, k2
   double complex :: matrix(d,d)
@@ -100,21 +101,21 @@ end subroutine
 subroutine iteration_stage_2( &
   bl, & ! state left bandwidth dimension
   br, & ! state right bandwidth dimension
-  c, &  ! operator bandwidth dimension
+  cr, &  ! operator right bandwidth dimension
   d, &  ! physical dimension
   iteration_stage_1_tensor, &
   state_site_tensor, &
   iteration_stage_2_tensor &
 )
-  integer, intent(in) :: bl, br, c, d
-  double complex, intent(in) :: state_site_tensor(br,bl,d), iteration_stage_1_tensor(bl,d,c,bl,d)
-  double complex, intent(out) :: iteration_stage_2_tensor(br,c,bl,d)
+  integer, intent(in) :: bl, br, cr, d
+  double complex, intent(in) :: state_site_tensor(br,bl,d), iteration_stage_1_tensor(bl,d,cr,bl,d)
+  double complex, intent(out) :: iteration_stage_2_tensor(br,cr,bl,d)
 
   external :: zgemm
 
   call zgemm( &
       'N','N', &
-      br,c*bl*d,bl*d, &
+      br,cr*bl*d,bl*d, &
       (1d0,0d0), &
       state_site_tensor, br, &
       iteration_stage_1_tensor, bl*d, &
@@ -128,24 +129,24 @@ end subroutine
 subroutine iteration_stage_3( &
   bl, & ! state left bandwidth dimension
   br, & ! state right bandwidth dimension
-  c, &  ! operator bandwidth dimension
+  cr, &  ! operator right bandwidth dimension
   d, &  ! physical dimension
   iteration_stage_2_tensor, &
   right_environment, &
   output_state_site_tensor &
 )
-  integer, intent(in) :: bl, br, c, d
-  double complex, intent(in) :: right_environment(br,br,c), iteration_stage_2_tensor(br,c,bl,d)
+  integer, intent(in) :: bl, br, cr, d
+  double complex, intent(in) :: right_environment(br,br,cr), iteration_stage_2_tensor(br,cr,bl,d)
   double complex, intent(out) :: output_state_site_tensor(br,bl,d)
 
   external :: zgemm
 
   call zgemm( &
       'N','N', &
-      br, bl*d, br*c, &
+      br, bl*d, br*cr, &
       (1d0,0d0), &
       right_environment, br, &
-      iteration_stage_2_tensor, br*c, &
+      iteration_stage_2_tensor, br*cr, &
       (0d0,0d0), &
       output_state_site_tensor, br &
   )
@@ -158,37 +159,38 @@ end subroutine
 subroutine contract_sos_left( &
   bl, & ! state left bandwidth dimension
   br, & ! state right bandwidth dimension
-  c, &  ! operator bandwidth dimension
+  cl, & ! operator left  bandwidth dimension
+  cr, & ! operator right bandwidth dimension
   d, &  ! physical dimension
   left_environment, &
   number_of_matrices,sparse_operator_indices,sparse_operator_matrices, &
   state_site_tensor, &
   new_left_environment &
 )
-  integer, intent(in) :: bl, br, c, d, number_of_matrices, sparse_operator_indices(2,number_of_matrices)
+  integer, intent(in) :: bl, br, cl, cr, d, number_of_matrices, sparse_operator_indices(2,number_of_matrices)
   double complex, intent(in) :: &
-    left_environment(bl,bl,c), &
+    left_environment(bl,bl,cl), &
     state_site_tensor(br,bl,d), &
     sparse_operator_matrices(d,d,number_of_matrices)
-  double complex, intent(out) :: new_left_environment(br,br,c)
+  double complex, intent(out) :: new_left_environment(br,br,cr)
 
   double complex :: &
-    iteration_stage_1_tensor(bl,d,c,bl,d), &
-    iteration_stage_2_tensor(br,c,bl,d), &
-    iteration_stage_3_tensor(br,c,br)
+    iteration_stage_1_tensor(bl,d,cr,bl,d), &
+    iteration_stage_2_tensor(br,cr,bl,d), &
+    iteration_stage_3_tensor(br,cr,br)
 
   external :: zgemm
 
   ! Stage 1
   call iteration_stage_1( &
-    bl, c, d, &
+    bl, cl, cr, d, &
     left_environment, &
     number_of_matrices, sparse_operator_indices, sparse_operator_matrices, &
     iteration_stage_1_tensor &
   )
   ! Stage 2
   call iteration_stage_2( &
-    bl, br, c, d, &
+    bl, br, cr, d, &
     iteration_stage_1_tensor, &
     state_site_tensor, &
     iteration_stage_2_tensor &
@@ -196,12 +198,12 @@ subroutine contract_sos_left( &
   ! Stage 3
   call zgemm( &
       'N','C', &
-      br*c,br,bl*d, &
+      br*cr,br,bl*d, &
       (1d0,0d0), &
-      iteration_stage_2_tensor, br*c, &
+      iteration_stage_2_tensor, br*cr, &
       state_site_tensor, br, &
       (0d0,0d0), &
-      iteration_stage_3_tensor, br*c &
+      iteration_stage_3_tensor, br*cr &
   )
   ! Stage 4
   new_left_environment = reshape(iteration_stage_3_tensor,shape(new_left_environment),order=(/1,3,2/))
@@ -212,23 +214,23 @@ end subroutine
 subroutine contract_sos_right_stage_1( &
   bl, & ! state left bandwidth dimension
   br, & ! state right bandwidth dimension
-  c, &  ! operator bandwidth dimension
+  cr, & ! operator right bandwidth dimension
   d, &  ! physical dimension
   right_environment, &
   state_site_tensor, &
   sos_right_stage_1_tensor &
 )
-  integer, intent(in) :: bl, br, c, d
+  integer, intent(in) :: bl, br, cr, d
   double complex, intent(in) :: &
-    right_environment(br,br,c), &
+    right_environment(br,br,cr), &
     state_site_tensor(br,bl,d)
-  double complex, intent(out) :: sos_right_stage_1_tensor(bl,d,br,c)
+  double complex, intent(out) :: sos_right_stage_1_tensor(bl,d,br,cr)
 
   external :: zgemm
 
   call zgemm( &
       'C','N', &
-      bl*d, br*c, br, &
+      bl*d, br*cr, br, &
       (1d0,0d0), &
       state_site_tensor, br, &
       right_environment, br, &
@@ -297,19 +299,20 @@ end subroutine
 subroutine contract_sos_right_stage_2( &
   bl, & ! state left bandwidth dimension
   br, & ! state right bandwidth dimension
-  c, &  ! operator bandwidth dimension
+  cl, & ! operator left  bandwidth dimension
+  cr, & ! operator right bandwidth dimension
   d, &  ! physical dimension
   sos_right_stage_1_tensor, &
   number_of_matrices,sparse_operator_indices,sparse_operator_matrices, &
   state_site_tensor, &
   new_right_environment &
 )
-  integer, intent(in) :: bl, br, c, d, number_of_matrices, sparse_operator_indices(2,number_of_matrices)
+  integer, intent(in) :: bl, br, cl, cr, d, number_of_matrices, sparse_operator_indices(2,number_of_matrices)
   double complex, intent(in) :: &
-    sos_right_stage_1_tensor(bl,d,br,c), &
+    sos_right_stage_1_tensor(bl,d,br,cr), &
     sparse_operator_matrices(d,d,number_of_matrices), &
     state_site_tensor(br,bl,d)
-  double complex, intent(out) :: new_right_environment(bl,bl,c)
+  double complex, intent(out) :: new_right_environment(bl,bl,cl)
 
   integer :: index
   double complex :: &
@@ -338,32 +341,33 @@ end subroutine
 subroutine contract_sos_right( &
   bl, & ! state left bandwidth dimension
   br, & ! state right bandwidth dimension
-  c, &  ! operator bandwidth dimension
+  cl, & ! operator left  bandwidth dimension
+  cr, & ! operator right bandwidth dimension
   d, &  ! physical dimension
   right_environment, &
   number_of_matrices,sparse_operator_indices,sparse_operator_matrices, &
   state_site_tensor, &
   new_right_environment &
 )
-  integer, intent(in) :: bl, br, c, d, number_of_matrices, sparse_operator_indices(2,number_of_matrices)
+  integer, intent(in) :: bl, br, cl, cr, d, number_of_matrices, sparse_operator_indices(2,number_of_matrices)
   double complex, intent(in) :: &
-    right_environment(br,br,c), &
+    right_environment(br,br,cr), &
     state_site_tensor(br,bl,d), &
     sparse_operator_matrices(d,d,number_of_matrices)
-  double complex, intent(out) :: new_right_environment(bl,bl,c)
+  double complex, intent(out) :: new_right_environment(bl,bl,cl)
 
   double complex :: &
-    sos_right_stage_1_tensor(bl,d,br,c)
+    sos_right_stage_1_tensor(bl,d,br,cr)
 
   call contract_sos_right_stage_1( &
-    bl, br, c, d, &
+    bl, br, cr, d, &
     right_environment, &
     state_site_tensor, &
     sos_right_stage_1_tensor &
   )
 
   call contract_sos_right_stage_2( &
-    bl, br, c, d, &
+    bl, br, cl, cr, d, &
     sos_right_stage_1_tensor, &
     number_of_matrices,sparse_operator_indices,sparse_operator_matrices, &
     state_site_tensor, &
@@ -377,7 +381,8 @@ end subroutine
 function compute_expectation( &
   bl, & ! state left bandwidth dimension
   br, & ! state right bandwidth dimension
-  c, &  ! operator bandwidth dimension
+  cl, & ! operator left  bandwidth dimension
+  cr, & ! operator right bandwidth dimension
   d, &  ! physical dimension
   left_environment, &
   state_site_tensor, &
@@ -385,18 +390,18 @@ function compute_expectation( &
   right_environment &
 ) result (expectation)
 
-  integer, intent(in) :: bl, br, c, d, number_of_matrices, sparse_operator_indices(2,number_of_matrices)
+  integer, intent(in) :: bl, br, cl, cr, d, number_of_matrices, sparse_operator_indices(2,number_of_matrices)
   double complex, intent(in) :: &
-    left_environment(bl,bl,c), &
+    left_environment(bl,bl,cl), &
     state_site_tensor(br,bl,d), &
-    right_environment(br,br,c), &
+    right_environment(br,br,cr), &
     sparse_operator_matrices(d,d,number_of_matrices)
 
-  double complex :: new_right_environment(bl,bl,c), expectation
+  double complex :: new_right_environment(bl,bl,cl), expectation
   integer :: i, j, k
 
   call contract_sos_right( &
-    bl, br, c, d, &
+    bl, br, cl, cr, d, &
     right_environment, &
     number_of_matrices,sparse_operator_indices,sparse_operator_matrices, &
     state_site_tensor, &
@@ -405,7 +410,7 @@ function compute_expectation( &
 
   expectation = 0
 
-  do k = 1, c
+  do k = 1, cl
   do i = 1, bl
   do j = 1, bl
     expectation = expectation + new_right_environment(i,j,k)*left_environment(j,i,k)
@@ -419,7 +424,8 @@ end function
 !@+node:gcross.20091109182634.1537:optimize
 function optimize( &
   bl, br, & ! state bandwidth dimension
-  c, & ! operator bandwidth dimension
+  cl, & ! operator left  bandwidth dimension
+  cr, & ! operator right bandwidth dimension
   d, & ! physical dimension
   left_environment, &
   number_of_matrices, sparse_operator_indices, sparse_operator_matrices, &
@@ -429,11 +435,11 @@ function optimize( &
   number_of_iterations, &
   result &
 ) result (info)
-  integer, intent(in) :: bl, br, c, d, number_of_matrices, sparse_operator_indices(2,number_of_matrices)
+  integer, intent(in) :: bl, br, cl, cr, d, number_of_matrices, sparse_operator_indices(2,number_of_matrices)
   integer, intent(inout) :: number_of_iterations
   double complex, intent(in) :: &
-    left_environment(bl,bl,c), &
-    right_environment(br,br,c), &
+    left_environment(bl,bl,cl), &
+    right_environment(br,br,cr), &
     sparse_operator_matrices(d,d,number_of_matrices)
   double complex, intent(inout) :: &
     result(br,bl,d)
@@ -484,8 +490,8 @@ end interface
   integer, parameter :: nev = 1, ncv = 3
 
   double complex :: &
-    iteration_stage_1_tensor(bl,d,c,bl,d), &
-    iteration_stage_2_tensor(br,c,bl,d), &
+    iteration_stage_1_tensor(bl,d,cr,bl,d), &
+    iteration_stage_2_tensor(br,cr,bl,d), &
     v(br*bl*d,ncv), &
     workd(3*br*bl*d), &
     workl(3*ncv**2+5*ncv), &
@@ -510,7 +516,7 @@ end interface
 !@@c
 
   call iteration_stage_1( &
-    bl, c, d, &
+    bl, cl, cr, d, &
     left_environment, &
     number_of_matrices, sparse_operator_indices, sparse_operator_matrices, &
     iteration_stage_1_tensor &
@@ -541,13 +547,13 @@ end interface
     ) 
     if (ido == -1 .or. ido == 1) then
       call iteration_stage_2( &
-        bl, br, c, d, &
+        bl, br, cr, d, &
         iteration_stage_1_tensor, &
         workd(ipntr(1)), &
         iteration_stage_2_tensor &
       )
       call iteration_stage_3( &
-        bl, br, c, d, &
+        bl, br, cr, d, &
         iteration_stage_2_tensor, &
         right_environment, &
         workd(ipntr(2)) &
@@ -797,6 +803,5 @@ end function
 !@-node:gcross.20091110205054.1935:norm_denorm_going_right
 !@-node:gcross.20091110205054.1943:Normalization
 !@-others
-!@nonl
 !@-node:gcross.20091110205054.1939:@thin core.f95
 !@-leo
