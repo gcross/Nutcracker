@@ -428,6 +428,7 @@ function optimize( &
   which, &
   tol, &
   number_of_iterations, &
+  guess, &
   result &
 ) result (info)
   integer, intent(in) :: bl, br, cl, cr, d, number_of_matrices, sparse_operator_indices(2,number_of_matrices)
@@ -435,8 +436,9 @@ function optimize( &
   double complex, intent(in) :: &
     left_environment(bl,bl,cl), &
     right_environment(br,br,cr), &
-    sparse_operator_matrices(d,d,number_of_matrices)
-  double complex, intent(inout) :: &
+    sparse_operator_matrices(d,d,number_of_matrices), &
+    guess(br,bl,d)
+  double complex, intent(out) :: &
     result(br,bl,d)
   character, intent(in) :: which*2
   double precision, intent(in) :: tol
@@ -491,7 +493,8 @@ end interface
     workd(3*br*bl*d), &
     workl(3*ncv**2+5*ncv), &
     eigenvalues(nev+1), &
-    workev(2*ncv)
+    workev(2*ncv), &
+    resid(br,bl,d)
 
   integer :: &
     iparam(11), &
@@ -530,6 +533,8 @@ end interface
   iparam(3) = number_of_iterations
   iparam(7) = 1
 
+  resid = guess
+
 !@+at
 ! Run the iteration.
 !@-at
@@ -537,7 +542,7 @@ end interface
 
   do while (ido /= 99)
     call znaupd ( &
-      ido, 'I', d*bl*br, which, nev, tol, result, ncv, v, br*bl*d, &
+      ido, 'I', d*bl*br, which, nev, tol, resid, ncv, v, br*bl*d, &
       iparam, ipntr, workd, workl, 3*ncv**2+5*ncv, rwork, info &
     ) 
     if (ido == -1 .or. ido == 1) then
@@ -568,7 +573,7 @@ end interface
 !@@c
 
   call zneupd (.true.,'A', select, eigenvalues, v, br*bl*d, (0d0,0d0), workev, &
-              'I', d*bl*br, which, nev, tol, result, ncv, &
+              'I', d*bl*br, which, nev, tol, resid, ncv, &
               v, br*bl*d, iparam, ipntr, workd, workl, 3*ncv**2+5*ncv, &
               rwork, info)
 

@@ -710,9 +710,8 @@ class optimize(unittest.TestCase):
         sparse_operator_indices = ones((2,1))
         sparse_operator_matrices = diag([1,1,1,-1])
         sparse_operator_matrices = sparse_operator_matrices.reshape(sparse_operator_matrices.shape + (1,))
-        result = array(crand(1,1,4),order='Fortran')
-        status = vmps.optimize(left_environment,sparse_operator_indices,sparse_operator_matrices,right_environment,"SR",0,10000,result)
-        self.assertEqual(0,status)
+        info, result = vmps.optimize(left_environment,sparse_operator_indices,sparse_operator_matrices,right_environment,"SR",0,10000,crand(1,1,4))
+        self.assertEqual(0,info)
         result /= result[0,0,-1]
         self.assertTrue(allclose(result.ravel(),array([0,0,0,1])))
     #@-node:gcross.20091109182634.1546:test_correct_result_for_simple_operator
