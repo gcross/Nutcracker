@@ -9,7 +9,7 @@
 <preferences/>
 <find_panel_settings/>
 <vnodes>
-<v t="gcross.20090930124443.1231" str_leo_pos="11"><vh>@chapters</vh></v>
+<v t="gcross.20090930124443.1231" str_leo_pos="14"><vh>@chapters</vh></v>
 <v t="gcross.20091106154604.9811"><vh>@thin Makefile</vh></v>
 <v t="gcross.20090930134608.1330"><vh>@thin paulis.py</vh></v>
 <v t="gcross.20091014143858.1490"><vh>@thin database.py</vh></v>
@@ -70,7 +70,7 @@
 </v>
 </vnodes>
 <tnodes>
-<t tx="gcross.20090930124443.1231" str_leo_pos="0"></t>
+<t tx="gcross.20090930124443.1231" str_leo_pos="14"></t>
 <t tx="gcross.20090930213318.1310"></t>
 <t tx="gcross.20091004090150.1371"></t>
 <t tx="gcross.20091019185011.1406"></t>
