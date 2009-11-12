@@ -8,7 +8,7 @@ default: test
 include ../../paths.mk
 include ../../options.mk
 
-OBJS = ../../obj/VMPS.o ../../obj/core.o
+OBJS = ../../obj/VMPS.o ../../obj/core.o ../../obj/core-wrapper.o
 LIBS = -lgfortran -lblas -llapack -larpack
 PACKAGES = \
 	-package HUnit \

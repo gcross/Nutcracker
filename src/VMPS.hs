@@ -172,19 +172,19 @@ x /~ y = not (x ~= y)
 -- @+node:gcross.20091111171052.1588:Foreign imports
 
 -- @+node:gcross.20091111171052.1589:computeExpectation
-foreign import ccall unsafe "compute_expectation_" compute_expectation :: 
-    Ptr Int -> -- state left bandwidth dimension
-    Ptr Int -> -- state right bandwidth dimension
-    Ptr Int -> -- operator left bandwidth dimension
-    Ptr Int -> -- operator right bandwidth dimension
-    Ptr Int -> -- physical dimension
+foreign import ccall unsafe "compute_expectation" compute_expectation :: 
+    Int -> -- state left bandwidth dimension
+    Int -> -- state right bandwidth dimension
+    Int -> -- operator left bandwidth dimension
+    Int -> -- operator right bandwidth dimension
+    Int -> -- physical dimension
     Ptr Double -> -- left environment
     Ptr Double -> -- state site tensor
-    Ptr Int -> -- number of matrices
+    Int -> -- number of matrices
     Ptr Int32 -> -- sparse operator indices
     Ptr Double -> -- sparse operator matrices
     Ptr Double -> -- right environment
-    Double -- expectation
+    IO Double -- expectation
 
 computeExpectation :: LeftBoundaryTensor -> StateSiteTensor -> OperatorSiteTensor -> RightBoundaryTensor -> Double
 computeExpectation left_boundary_tensor state_site_tensor operator_site_tensor right_boundary_tensor =
@@ -197,21 +197,18 @@ computeExpectation left_boundary_tensor state_site_tensor operator_site_tensor r
         withPinnedLeftBoundaryTensor left_boundary_tensor $ \p_left_boundary _ ->
         withPinnedStateSiteTensor state_site_tensor $ \p_state_site_tensor _ ->
         withPinnedOperatorSiteTensor operator_site_tensor $ \p_number_of_matrices p_operator_indices p_operator_matrices ->
-        withPinnedRightBoundaryTensor right_boundary_tensor $ \p_right_boundary _ ->
-        with bl $ \p_bl ->
-        with br $ \p_br ->
-        with cl $ \p_cl ->
-        with cr $ \p_cr ->
-        with d  $ \p_d  ->
-        return $
-            compute_expectation
-                p_bl p_br
-                p_cl p_cr
-                p_d
-                p_left_boundary
-                p_state_site_tensor
-                p_number_of_matrices p_operator_indices p_operator_matrices
-                p_right_boundary
+        withPinnedRightBoundaryTensor right_boundary_tensor $ \p_right_boundary _ -> do
+        number_of_matrices <- peek p_number_of_matrices
+        compute_expectation
+            bl
+            br
+            cl
+            cr
+            d
+            p_left_boundary
+            p_state_site_tensor
+            number_of_matrices p_operator_indices p_operator_matrices
+            p_right_boundary
 -- @-node:gcross.20091111171052.1589:computeExpectation
 -- @+node:gcross.20091111171052.1656:computeOptimalSiteStateTensor
 foreign import ccall unsafe "optimize_" optimize ::

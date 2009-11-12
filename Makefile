@@ -19,7 +19,7 @@ obj/%.o: src/%.f90 Makefile
 obj/%.o: src/%.f Makefile                   
 	${FC} ${FFLAGS} -c $< -o $@
 
-OBJS = obj/VMPS.o obj/core.o
+OBJS = obj/VMPS.o obj/core.o obj/core-wrapper.o
 LIBS = -lblas -llapack -larpack -lgfortran
 
 objects: ${OBJS}
