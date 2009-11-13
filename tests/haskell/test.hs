@@ -26,8 +26,8 @@ import Text.Printf
 
 import System.IO.Unsafe
 
-import VMPS
--- @nonl
+import VMPS.Tensors
+import VMPS.Wrappers
 -- @-node:gcross.20091111171052.1610:<< Import needed modules >>
 -- @nl
 

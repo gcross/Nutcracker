@@ -180,6 +180,62 @@ void rand_norm_state_site_tensor(int br, int bl, int d, double* state_site_tenso
     rand_norm_state_site_tensor_(&br,&bl,&d,state_site_tensor);
 }
 //@-node:gcross.20091112145455.1673:rand_norm_state_site_tensor
+//@+node:gcross.20091113125544.1647:norm_denorm_going_left
+int norm_denorm_going_left_(
+  int* bll, int* bl, int* br,
+  int* dl, int* d,
+  double* site_tensor_to_denormalize,
+  double* site_tensor_to_normalize,
+  double* denormalized_site_tensor,
+  double* normalized_site_tensor
+);
+
+int norm_denorm_going_left(
+  int bll, int bl, int br,
+  int dl, int d,
+  double* site_tensor_to_denormalize,
+  double* site_tensor_to_normalize,
+  double* denormalized_site_tensor,
+  double* normalized_site_tensor
+) {
+    return norm_denorm_going_left_(
+      &bll, &bl, &br,
+      &dl, &d,
+      site_tensor_to_denormalize,
+      site_tensor_to_normalize,
+      denormalized_site_tensor,
+      normalized_site_tensor
+    );
+}
+//@-node:gcross.20091113125544.1647:norm_denorm_going_left
+//@+node:gcross.20091113125544.1648:norm_denorm_going_right
+int norm_denorm_going_right_(
+  int* bl, int* br, int* brr,
+  int* d, int* dr,
+  double* site_tensor_to_normalize,
+  double* site_tensor_to_denormalize,
+  double* normalized_site_tensor,
+  double* denormalized_site_tensor
+);
+
+int norm_denorm_going_right(
+  int bl, int br, int brr,
+  int d, int dr,
+  double* site_tensor_to_normalize,
+  double* site_tensor_to_denormalize,
+  double* normalized_site_tensor,
+  double* denormalized_site_tensor
+) {
+    return norm_denorm_going_right_(
+      &bl, &br, &brr,
+      &d, &dr,
+      site_tensor_to_normalize,
+      site_tensor_to_denormalize,
+      normalized_site_tensor,
+      denormalized_site_tensor
+    );
+}
+//@-node:gcross.20091113125544.1648:norm_denorm_going_right
 //@-others
 //@-node:gcross.20091112145455.1619:@thin core-wrapper.c
 //@-leo
