@@ -319,6 +319,46 @@ contractSOSLeft left_boundary_tensor state_site_tensor operator_site_tensor =
                     p_state_site_tensor
             fmap (LeftBoundaryTensor . BoundaryTensor br cr) (unpinComplexArray state_site_tensor_storable_array)
 -- @-node:gcross.20091112145455.1625:contractSOSLeft
+-- @+node:gcross.20091112145455.1635:contractSOSRight
+foreign import ccall unsafe "contract_sos_right" contract_sos_right :: 
+    Int -> -- state left bandwidth dimension
+    Int -> -- state right bandwidth dimension
+    Int -> -- operator left bandwidth dimension
+    Int -> -- operator right bandwidth dimension
+    Int -> -- physical dimension
+    Ptr Double -> -- left environment
+    Int -> -- number of matrices
+    Ptr Int32 -> -- sparse operator indices
+    Ptr Double -> -- sparse operator matrices
+    Ptr Double -> -- state site tensor
+    Ptr Double -> -- new left environment
+    IO ()
+
+contractSOSRight :: RightBoundaryTensor -> StateSiteTensor -> OperatorSiteTensor -> RightBoundaryTensor
+contractSOSRight right_boundary_tensor state_site_tensor operator_site_tensor =
+    let bl = stateLeftBandwidth state_site_tensor
+        br = state_site_tensor <-?-> right_boundary_tensor
+        cl = operatorLeftBandwidth operator_site_tensor
+        cr = operator_site_tensor <-?-> right_boundary_tensor
+        d = operator_site_tensor <-?-> state_site_tensor
+    in unsafePerformIO $
+        withPinnedRightBoundaryTensor right_boundary_tensor $ \p_right_boundary ->
+        withPinnedStateSiteTensor state_site_tensor $ \p_state_site_tensor ->
+        withPinnedOperatorSiteTensor operator_site_tensor $ \number_of_matrices p_operator_indices p_operator_matrices ->
+        do
+            state_site_tensor_storable_array <- newArray_ (1,2*bl*bl*cl)
+            withStorableArray state_site_tensor_storable_array $
+                contract_sos_right
+                    bl
+                    br
+                    cl
+                    cr
+                    d
+                    p_right_boundary
+                    number_of_matrices p_operator_indices p_operator_matrices
+                    p_state_site_tensor
+            fmap (RightBoundaryTensor . BoundaryTensor bl cl) (unpinComplexArray state_site_tensor_storable_array)
+-- @-node:gcross.20091112145455.1635:contractSOSRight
 -- @-node:gcross.20091111171052.1588:Foreign imports
 -- @-others
 -- @-node:gcross.20091110205054.1969:@thin VMPS.hs

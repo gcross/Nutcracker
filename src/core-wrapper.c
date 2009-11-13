@@ -129,6 +129,43 @@ void contract_sos_left(
     );
 }
 //@-node:gcross.20091112145455.1623:contract_sos_left
+//@+node:gcross.20091112145455.1637:contract_sos_right
+void contract_sos_right_(
+    int* bl,
+    int* br,
+    int* cl,
+    int* cr,
+    int* d,
+    double* right_environment,
+    int* number_of_matrices, int* sparse_operator_indices, double* sparse_operator_matrices,
+    double* state_site_tensor,
+    double* new_right_environment
+);
+
+void contract_sos_right(
+    int bl,
+    int br,
+    int cl,
+    int cr,
+    int d,
+    double* right_environment,
+    int number_of_matrices, int* sparse_operator_indices, double* sparse_operator_matrices,
+    double* state_site_tensor,
+    double* new_right_environment
+) {
+    contract_sos_right_(
+        &bl,
+        &br,
+        &cl,
+        &cr,
+        &d,
+        right_environment,
+        &number_of_matrices, sparse_operator_indices, sparse_operator_matrices,
+        state_site_tensor,
+        new_right_environment
+    );
+}
+//@-node:gcross.20091112145455.1637:contract_sos_right
 //@-others
 //@-node:gcross.20091112145455.1619:@thin core-wrapper.c
 //@-leo

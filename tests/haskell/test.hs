@@ -140,6 +140,40 @@ main = defaultMain
         -- @-others
         ]
     -- @-node:gcross.20091112145455.1629:contractSOSLeft
+    -- @+node:gcross.20091112145455.1641:contractSOSRight
+    ,testGroup "contractSOSRight"
+        -- @    @+others
+        -- @+node:gcross.20091112145455.1642:trivial, all dimensions 1
+        [testCase "trivial, all dimensions 1" $
+            let right_boundary = trivial_right_boundary
+                state_site_tensor = StateSiteTensor 1 1 1 trivial_complex_array
+                operator_indices = unsafePerformIO $ newArray (1,2) 1
+                operator_matrices = unsafePerformIO $ newListArray (1,2) [1.0,0.0]
+                operator_site_tensor = OperatorSiteTensor 1 1 1 1 operator_indices operator_matrices
+                RightBoundaryTensor (BoundaryTensor br cr (ComplexArray actual_array)) = contractSOSRight right_boundary state_site_tensor operator_site_tensor
+                components = elems actual_array
+            in do
+                assertEqual "is the new state bandwidth dimension correct?" (stateLeftBandwidth state_site_tensor) br
+                assertEqual "is the new operator bandwidth dimension correct?" (operatorLeftBandwidth operator_site_tensor) cr
+                assertBool "are the components correct?" (components ~= [1.0,0.0])
+        -- @-node:gcross.20091112145455.1642:trivial, all dimensions 1
+        -- @+node:gcross.20091112145455.1643:trivial, c = 2
+        ,testCase "trivial, c = 2" $
+            let right_boundary = RightBoundaryTensor . BoundaryTensor 1 1 . ComplexArray . listArray (1,2) $ [1.0,0.0]
+                state_site_tensor = StateSiteTensor 1 1 1 trivial_complex_array
+                operator_indices = unsafePerformIO $ newListArray (1,2) [2,1]
+                operator_matrices = unsafePerformIO $ newListArray (1,2) [0.0,1.0]
+                operator_site_tensor = OperatorSiteTensor 2 1 1 1 operator_indices operator_matrices
+                RightBoundaryTensor (BoundaryTensor bl cl (ComplexArray actual_array)) = contractSOSRight right_boundary state_site_tensor operator_site_tensor
+                components = elems actual_array
+            in do
+                assertEqual "is the new state bandwidth dimension correct?" (stateLeftBandwidth state_site_tensor) bl
+                assertEqual "is the new operator bandwidth dimension correct?" (operatorLeftBandwidth operator_site_tensor) cl
+                assertBool "are the components correct?" (components ~= [0.0,0.0,0.0,1.0])
+        -- @-node:gcross.20091112145455.1643:trivial, c = 2
+        -- @-others
+        ]
+    -- @-node:gcross.20091112145455.1641:contractSOSRight
     -- @-others
     -- @-node:gcross.20091111171052.1640:<< Tests >>
     -- @nl
