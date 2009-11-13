@@ -43,7 +43,7 @@ main = defaultMain
         [testCase "trivial, all dimensions 1" $
             let left_boundary = trivial_left_boundary
                 right_boundary = trivial_right_boundary
-                state_site_tensor = StateSiteTensor 1 1 1 trivial_complex_array
+                state_site_tensor = UnnormalizedStateSiteTensor $ StateSiteTensor 1 1 1 trivial_complex_array
                 operator_indices = unsafePerformIO $ newArray (1,2) 1
                 operator_matrices = unsafePerformIO $ newListArray (1,2) [1.0,0.0]
                 operator_site_tensor = OperatorSiteTensor 1 1 1 1 operator_indices operator_matrices
@@ -58,7 +58,7 @@ main = defaultMain
             map (\state ->
                 let left_boundary = trivial_left_boundary
                     right_boundary = trivial_right_boundary
-                    state_site_tensor = StateSiteTensor 1 1 2 . complexArrayFromList $ state
+                    state_site_tensor = UnnormalizedStateSiteTensor . StateSiteTensor 1 1 2 . complexArrayFromList $ state
                     operator_indices = unsafePerformIO $ newArray (1,2) 1
                     operator_matrices = unsafePerformIO $ newListArray (1,8) [1,0, 0,0, 0,0, -1,0]
                     operator_site_tensor = OperatorSiteTensor 1 1 2 1 operator_indices operator_matrices
@@ -75,7 +75,7 @@ main = defaultMain
         [testCase "trivial, d = 4" $
             let left_boundary = trivial_left_boundary
                 right_boundary = trivial_right_boundary
-                state_site_tensor = StateSiteTensor 1 1 4 . complexArrayFromList $ replicate (4*2) 1
+                state_site_tensor = UnnormalizedStateSiteTensor . StateSiteTensor 1 1 4 . complexArrayFromList $ replicate (4*2) 1
                 operator_indices = unsafePerformIO $ newArray (1,2) 1
                 operator_matrices = unsafePerformIO $ newListArray (1,4*4*2)
                     [1,0, 0,0, 0,0, 0,0
@@ -95,11 +95,11 @@ main = defaultMain
                         10000
             in case either_result of
                 Left info -> assertFailure $ "failed with info = " ++ show info
-                Right (_, (StateSiteTensor bl br d (ComplexArray actual_array))) -> do
+                Right (_, (UnnormalizedStateSiteTensor (StateSiteTensor bl br d (ComplexArray actual_array)))) -> do
                     let components = elems actual_array
-                    assertEqual "is the new left bandwidth dimension the same?" (stateLeftBandwidth state_site_tensor) bl
-                    assertEqual "is the new right bandwidth dimension the same?" (stateRightBandwidth state_site_tensor) br
-                    assertEqual "is the new physical dimension the same?" (statePhysicalDimension state_site_tensor) d
+                    assertEqual "is the new left bandwidth dimension the same?" (leftBandwidthOfState state_site_tensor) bl
+                    assertEqual "is the new right bandwidth dimension the same?" (rightBandwidthOfState state_site_tensor) br
+                    assertEqual "is the new physical dimension the same?" (physicalDimensionOfState state_site_tensor) d
                     assertBool "are all but the last component of the state zero?" (take 6 components ~= replicate 6 0)
                     assertBool "are either of the last components non-zero?" (any (/~ 0) . drop 6 $ components)
         -- @-node:gcross.20091111171052.1661:trivial, d = 4
@@ -112,28 +112,28 @@ main = defaultMain
         -- @+node:gcross.20091112145455.1630:trivial, all dimensions 1
         [testCase "trivial, all dimensions 1" $
             let left_boundary = trivial_left_boundary
-                state_site_tensor = StateSiteTensor 1 1 1 trivial_complex_array
+                state_site_tensor = LeftAbsorptionNormalizedStateSiteTensor $ StateSiteTensor 1 1 1 trivial_complex_array
                 operator_indices = unsafePerformIO $ newArray (1,2) 1
                 operator_matrices = unsafePerformIO $ newListArray (1,2) [1.0,0.0]
                 operator_site_tensor = OperatorSiteTensor 1 1 1 1 operator_indices operator_matrices
                 LeftBoundaryTensor (BoundaryTensor br cr (ComplexArray actual_array)) = contractSOSLeft left_boundary state_site_tensor operator_site_tensor
                 components = elems actual_array
             in do
-                assertEqual "is the new state bandwidth dimension correct?" (stateRightBandwidth state_site_tensor) br
+                assertEqual "is the new state bandwidth dimension correct?" (rightBandwidthOfState state_site_tensor) br
                 assertEqual "is the new operator bandwidth dimension correct?" (operatorRightBandwidth operator_site_tensor) cr
                 assertBool "are the components correct?" (components ~= [1.0,0.0])
         -- @-node:gcross.20091112145455.1630:trivial, all dimensions 1
         -- @+node:gcross.20091112145455.1633:trivial, c = 2
         ,testCase "trivial, c = 2" $
             let left_boundary = LeftBoundaryTensor . BoundaryTensor 1 1 . ComplexArray . listArray (1,2) $ [1.0,0.0]
-                state_site_tensor = StateSiteTensor 1 1 1 trivial_complex_array
+                state_site_tensor = LeftAbsorptionNormalizedStateSiteTensor $ StateSiteTensor 1 1 1 trivial_complex_array
                 operator_indices = unsafePerformIO $ newListArray (1,2) [1,2]
                 operator_matrices = unsafePerformIO $ newListArray (1,2) [0.0,1.0]
                 operator_site_tensor = OperatorSiteTensor 1 2 1 1 operator_indices operator_matrices
                 LeftBoundaryTensor (BoundaryTensor br cr (ComplexArray actual_array)) = contractSOSLeft left_boundary state_site_tensor operator_site_tensor
                 components = elems actual_array
             in do
-                assertEqual "is the new state bandwidth dimension correct?" (stateRightBandwidth state_site_tensor) br
+                assertEqual "is the new state bandwidth dimension correct?" (rightBandwidthOfState state_site_tensor) br
                 assertEqual "is the new operator bandwidth dimension correct?" (operatorRightBandwidth operator_site_tensor) cr
                 assertBool "are the components correct?" (components ~= [0.0,0.0,0.0,1.0])
         -- @-node:gcross.20091112145455.1633:trivial, c = 2
@@ -146,28 +146,28 @@ main = defaultMain
         -- @+node:gcross.20091112145455.1642:trivial, all dimensions 1
         [testCase "trivial, all dimensions 1" $
             let right_boundary = trivial_right_boundary
-                state_site_tensor = StateSiteTensor 1 1 1 trivial_complex_array
+                state_site_tensor = RightAbsorptionNormalizedStateSiteTensor $ StateSiteTensor 1 1 1 trivial_complex_array
                 operator_indices = unsafePerformIO $ newArray (1,2) 1
                 operator_matrices = unsafePerformIO $ newListArray (1,2) [1.0,0.0]
                 operator_site_tensor = OperatorSiteTensor 1 1 1 1 operator_indices operator_matrices
                 RightBoundaryTensor (BoundaryTensor br cr (ComplexArray actual_array)) = contractSOSRight right_boundary state_site_tensor operator_site_tensor
                 components = elems actual_array
             in do
-                assertEqual "is the new state bandwidth dimension correct?" (stateLeftBandwidth state_site_tensor) br
+                assertEqual "is the new state bandwidth dimension correct?" (leftBandwidthOfState state_site_tensor) br
                 assertEqual "is the new operator bandwidth dimension correct?" (operatorLeftBandwidth operator_site_tensor) cr
                 assertBool "are the components correct?" (components ~= [1.0,0.0])
         -- @-node:gcross.20091112145455.1642:trivial, all dimensions 1
         -- @+node:gcross.20091112145455.1643:trivial, c = 2
         ,testCase "trivial, c = 2" $
             let right_boundary = RightBoundaryTensor . BoundaryTensor 1 1 . ComplexArray . listArray (1,2) $ [1.0,0.0]
-                state_site_tensor = StateSiteTensor 1 1 1 trivial_complex_array
+                state_site_tensor = RightAbsorptionNormalizedStateSiteTensor $ StateSiteTensor 1 1 1 trivial_complex_array
                 operator_indices = unsafePerformIO $ newListArray (1,2) [2,1]
                 operator_matrices = unsafePerformIO $ newListArray (1,2) [0.0,1.0]
                 operator_site_tensor = OperatorSiteTensor 2 1 1 1 operator_indices operator_matrices
                 RightBoundaryTensor (BoundaryTensor bl cl (ComplexArray actual_array)) = contractSOSRight right_boundary state_site_tensor operator_site_tensor
                 components = elems actual_array
             in do
-                assertEqual "is the new state bandwidth dimension correct?" (stateLeftBandwidth state_site_tensor) bl
+                assertEqual "is the new state bandwidth dimension correct?" (leftBandwidthOfState state_site_tensor) bl
                 assertEqual "is the new operator bandwidth dimension correct?" (operatorLeftBandwidth operator_site_tensor) cl
                 assertBool "are the components correct?" (components ~= [0.0,0.0,0.0,1.0])
         -- @-node:gcross.20091112145455.1643:trivial, c = 2

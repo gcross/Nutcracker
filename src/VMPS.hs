@@ -72,15 +72,63 @@ data BoundaryTensor = BoundaryTensor
 withPinnedBoundaryTensor :: BoundaryTensor -> (Ptr Double -> IO a) -> IO a
 withPinnedBoundaryTensor = withPinnedComplexArray . boundaryData
 
-newtype LeftBoundaryTensor = LeftBoundaryTensor { unwrapLeftBoundaryTensor :: BoundaryTensor }
-withPinnedLeftBoundaryTensor = withPinnedBoundaryTensor . unwrapLeftBoundaryTensor
-
-newtype RightBoundaryTensor = RightBoundaryTensor { unwrapRightBoundaryTensor :: BoundaryTensor }
-withPinnedRightBoundaryTensor = withPinnedBoundaryTensor . unwrapRightBoundaryTensor
-
 trivial_boundary = BoundaryTensor 1 1 trivial_complex_array
+
+-- @<< Left boundary >>
+-- @+node:gcross.20091112145455.1649:<< Left boundary >>
+newtype LeftBoundaryTensor = LeftBoundaryTensor { unwrapLeftBoundaryTensor :: BoundaryTensor }
+
+instance Pinnable LeftBoundaryTensor where { withPinnedTensor = withPinnedBoundaryTensor . unwrapLeftBoundaryTensor }
+
+instance Connected LeftBoundaryTensor UnnormalizedStateSiteTensor where
+    (<-?->) = makeConnectedTest
+        "Left boundary and (unnormalized) state site tensors disagree over the bandwidth dimension!"
+        (boundaryStateBandwidth . unwrapLeftBoundaryTensor)
+        (stateLeftBandwidth . unwrapUnnormalizedStateSiteTensor)
+
+instance Connected LeftBoundaryTensor LeftAbsorptionNormalizedStateSiteTensor where
+    (<-?->) = makeConnectedTest
+        "Left boundary and (left-absorption normalized) state site tensors disagree over the bandwidth dimension!"
+        (boundaryStateBandwidth . unwrapLeftBoundaryTensor)
+        (stateLeftBandwidth . unwrapLeftAbsorptionNormalizedStateSiteTensor)
+
+instance Connected LeftBoundaryTensor OperatorSiteTensor where
+    (<-?->) = makeConnectedTest
+        "Left boundary and operator site tensors disagree over the bandwidth dimension!"
+        (boundaryStateBandwidth . unwrapLeftBoundaryTensor)
+        operatorLeftBandwidth
+
 trivial_left_boundary = LeftBoundaryTensor trivial_boundary
+-- @-node:gcross.20091112145455.1649:<< Left boundary >>
+-- @nl
+
+-- @<< Right boundary >>
+-- @+node:gcross.20091112145455.1651:<< Right boundary >>
+newtype RightBoundaryTensor = RightBoundaryTensor { unwrapRightBoundaryTensor :: BoundaryTensor }
+
+instance Pinnable RightBoundaryTensor where { withPinnedTensor = withPinnedBoundaryTensor . unwrapRightBoundaryTensor }
+
+instance Connected UnnormalizedStateSiteTensor RightBoundaryTensor where
+    (<-?->) = makeConnectedTest
+        "Right boundary and (unnormalized) state site tensors disagree over the bandwidth dimension!"
+        (stateRightBandwidth . unwrapUnnormalizedStateSiteTensor)
+        (boundaryStateBandwidth . unwrapRightBoundaryTensor)
+
+instance Connected RightAbsorptionNormalizedStateSiteTensor RightBoundaryTensor where
+    (<-?->) = makeConnectedTest
+        "Right boundary and (right-absorption normalized) state site tensors disagree over the bandwidth dimension!"
+        (stateRightBandwidth . unwrapRightAbsorptionNormalizedStateSiteTensor)
+        (boundaryStateBandwidth . unwrapRightBoundaryTensor)
+
+instance Connected OperatorSiteTensor RightBoundaryTensor where
+    (<-?->) = makeConnectedTest
+        "Right boundary and operator site tensors disagree over the bandwidth dimension!"
+        operatorRightBandwidth
+        (boundaryStateBandwidth . unwrapRightBoundaryTensor)
+
 trivial_right_boundary = RightBoundaryTensor trivial_boundary
+-- @-node:gcross.20091112145455.1651:<< Right boundary >>
+-- @nl
 -- @-node:gcross.20091111171052.1595:Left/Right Boundaries
 -- @+node:gcross.20091111171052.1597:State Site Tensor
 data StateSiteTensor = StateSiteTensor
@@ -92,6 +140,38 @@ data StateSiteTensor = StateSiteTensor
 
 withPinnedStateSiteTensor :: StateSiteTensor -> (Ptr Double -> IO a) -> IO a
 withPinnedStateSiteTensor = withPinnedComplexArray . stateData
+
+newtype UnnormalizedStateSiteTensor = UnnormalizedStateSiteTensor
+    { unwrapUnnormalizedStateSiteTensor :: StateSiteTensor }
+newtype LeftAbsorptionNormalizedStateSiteTensor = LeftAbsorptionNormalizedStateSiteTensor
+    { unwrapLeftAbsorptionNormalizedStateSiteTensor :: StateSiteTensor }
+newtype RightAbsorptionNormalizedStateSiteTensor = RightAbsorptionNormalizedStateSiteTensor
+    { unwrapRightAbsorptionNormalizedStateSiteTensor :: StateSiteTensor }
+
+instance Pinnable UnnormalizedStateSiteTensor where
+    withPinnedTensor = withPinnedStateSiteTensor . unwrapUnnormalizedStateSiteTensor
+instance Pinnable LeftAbsorptionNormalizedStateSiteTensor where
+    withPinnedTensor = withPinnedStateSiteTensor . unwrapLeftAbsorptionNormalizedStateSiteTensor
+instance Pinnable RightAbsorptionNormalizedStateSiteTensor where 
+    withPinnedTensor = withPinnedStateSiteTensor . unwrapRightAbsorptionNormalizedStateSiteTensor
+
+class StateSiteTensorClass a where
+    leftBandwidthOfState :: a -> Int
+    rightBandwidthOfState :: a -> Int
+    physicalDimensionOfState :: a -> Int
+
+instance StateSiteTensorClass UnnormalizedStateSiteTensor where
+    leftBandwidthOfState = stateLeftBandwidth . unwrapUnnormalizedStateSiteTensor
+    rightBandwidthOfState = stateRightBandwidth . unwrapUnnormalizedStateSiteTensor
+    physicalDimensionOfState = statePhysicalDimension . unwrapUnnormalizedStateSiteTensor
+instance StateSiteTensorClass LeftAbsorptionNormalizedStateSiteTensor where
+    leftBandwidthOfState = stateLeftBandwidth . unwrapLeftAbsorptionNormalizedStateSiteTensor
+    rightBandwidthOfState = stateRightBandwidth . unwrapLeftAbsorptionNormalizedStateSiteTensor
+    physicalDimensionOfState = statePhysicalDimension . unwrapLeftAbsorptionNormalizedStateSiteTensor
+instance StateSiteTensorClass RightAbsorptionNormalizedStateSiteTensor where
+    leftBandwidthOfState = stateLeftBandwidth . unwrapRightAbsorptionNormalizedStateSiteTensor
+    rightBandwidthOfState = stateRightBandwidth . unwrapRightAbsorptionNormalizedStateSiteTensor
+    physicalDimensionOfState = statePhysicalDimension . unwrapRightAbsorptionNormalizedStateSiteTensor
 -- @-node:gcross.20091111171052.1597:State Site Tensor
 -- @+node:gcross.20091111171052.1598:Operator Site Tensor
 data OperatorSiteTensor = OperatorSiteTensor
@@ -108,6 +188,24 @@ withPinnedOperatorSiteTensor operator_site_tensor thunk =
     (withStorableArray . operatorIndices) operator_site_tensor $ \p_indices ->
     (withStorableArray . operatorMatrices) operator_site_tensor $ \p_matrices ->
     thunk (operatorNumberOfMatrices operator_site_tensor) p_indices p_matrices
+
+instance Connected OperatorSiteTensor UnnormalizedStateSiteTensor where
+    (<-?->) = makeConnectedTest
+        "Operator and (unnormalized) state site tensors disagree over the physical dimension!"
+        operatorPhysicalDimension
+        physicalDimensionOfState
+
+instance Connected OperatorSiteTensor LeftAbsorptionNormalizedStateSiteTensor where
+    (<-?->) = makeConnectedTest
+        "Operator and (unnormalized) state site tensors disagree over the physical dimension!"
+        operatorPhysicalDimension
+        physicalDimensionOfState
+
+instance Connected OperatorSiteTensor RightAbsorptionNormalizedStateSiteTensor where
+    (<-?->) = makeConnectedTest
+        "Operator and (unnormalized) state site tensors disagree over the physical dimension!"
+        operatorPhysicalDimension
+        physicalDimensionOfState
 -- @-node:gcross.20091111171052.1598:Operator Site Tensor
 -- @+node:gcross.20091111171052.1657:SelectionStrategy
 data SelectionStrategy = LM | SR
@@ -125,35 +223,11 @@ withStrategyAsCString = withCString . show
 class Connected a b where
     (<-?->) :: a -> b -> Int
 
-instance Connected LeftBoundaryTensor StateSiteTensor where
-    (<-?->) left_boundary_tensor state_site_tensor =
-        let d1 = boundaryStateBandwidth . unwrapLeftBoundaryTensor $ left_boundary_tensor
-            d2 = stateLeftBandwidth $ state_site_tensor
-        in if d1 == d2 then d1 else error $ (printf "Left boundary and state site tensors disagree over the bandwidth dimension! (%i != %i)\n" d1 d2)
-
-instance Connected OperatorSiteTensor StateSiteTensor where
-    (<-?->) operator_site_tensor state_site_tensor =
-        let d1 = operatorPhysicalDimension $ operator_site_tensor
-            d2 = statePhysicalDimension $ state_site_tensor
-        in if d1 == d2 then d1 else error $ (printf "Operator and state site tensors disagree over the physical dimension! (%i != %i)\n" d1 d2)
-
-instance Connected StateSiteTensor RightBoundaryTensor where
-    (<-?->) state_site_tensor right_boundary_tensor =
-        let d1 = stateRightBandwidth $ state_site_tensor
-            d2 = boundaryStateBandwidth . unwrapRightBoundaryTensor $ right_boundary_tensor
-        in if d1 == d2 then d1 else error $ (printf "Right boundary and state site tensors disagree over the bandwidth dimension! (%i != %i)\n" d1 d2)
-
-instance Connected LeftBoundaryTensor OperatorSiteTensor where
-    (<-?->) left_boundary_tensor operator_site_tensor =
-        let d1 = boundaryStateBandwidth . unwrapLeftBoundaryTensor $ left_boundary_tensor
-            d2 = operatorLeftBandwidth $ operator_site_tensor
-        in if d1 == d2 then d1 else error $ (printf "Left boundary and state site tensors disagree over the bandwidth dimension! (%i != %i)\n" d1 d2)
-
-instance Connected OperatorSiteTensor RightBoundaryTensor where
-    (<-?->) operator_site_tensor right_boundary_tensor =
-        let d1 = operatorRightBandwidth $ operator_site_tensor
-            d2 = boundaryStateBandwidth . unwrapRightBoundaryTensor $ right_boundary_tensor
-        in if d1 == d2 then d1 else error $ (printf "Right boundary and state site tensors disagree over the bandwidth dimension! (%i != %i)\n" d1 d2)
+makeConnectedTest :: String -> (a -> Int) -> (b -> Int) -> a -> b -> Int
+makeConnectedTest message fetch_left_dimension fetch_right_dimension x y =
+    let d1 = fetch_left_dimension x
+        d2 = fetch_right_dimension y
+    in if d1 == d2 then d1 else error $ message ++ (printf " (%i != %i)\n" d1 d2)
 -- @-node:gcross.20091111171052.1602:Connected
 -- @+node:gcross.20091111171052.1664:AlmostEq
 class AlmostEq a where
@@ -167,8 +241,12 @@ instance (AlmostEq a) => AlmostEq [a] where
 
 x /~ y = not (x ~= y)
 -- @-node:gcross.20091111171052.1664:AlmostEq
+-- @+node:gcross.20091112145455.1648:Pinnable
+class Pinnable a where
+    withPinnedTensor :: a -> (Ptr Double -> IO b) -> IO b
+-- @-node:gcross.20091112145455.1648:Pinnable
 -- @-node:gcross.20091111171052.1601:Classes
--- @+node:gcross.20091111171052.1588:Foreign imports
+-- @+node:gcross.20091111171052.1588:Wrappers
 
 -- @+node:gcross.20091111171052.1589:computeExpectation
 foreign import ccall unsafe "compute_expectation" compute_expectation :: 
@@ -185,7 +263,7 @@ foreign import ccall unsafe "compute_expectation" compute_expectation ::
     Ptr Double -> -- right environment
     IO Double -- expectation
 
-computeExpectation :: LeftBoundaryTensor -> StateSiteTensor -> OperatorSiteTensor -> RightBoundaryTensor -> Double
+computeExpectation :: LeftBoundaryTensor -> UnnormalizedStateSiteTensor -> OperatorSiteTensor -> RightBoundaryTensor -> Double
 computeExpectation left_boundary_tensor state_site_tensor operator_site_tensor right_boundary_tensor =
     let bl = left_boundary_tensor <-?-> state_site_tensor
         br = state_site_tensor <-?-> right_boundary_tensor
@@ -193,10 +271,10 @@ computeExpectation left_boundary_tensor state_site_tensor operator_site_tensor r
         cr = operator_site_tensor <-?-> right_boundary_tensor
         d = operator_site_tensor <-?-> state_site_tensor
     in unsafePerformIO $
-        withPinnedLeftBoundaryTensor left_boundary_tensor $ \p_left_boundary ->
-        withPinnedStateSiteTensor state_site_tensor $ \p_state_site_tensor ->
+        withPinnedTensor left_boundary_tensor $ \p_left_boundary ->
+        withPinnedTensor state_site_tensor $ \p_state_site_tensor ->
         withPinnedOperatorSiteTensor operator_site_tensor $ \number_of_matrices p_operator_indices p_operator_matrices ->
-        withPinnedRightBoundaryTensor right_boundary_tensor $
+        withPinnedTensor right_boundary_tensor $
             compute_expectation
                 bl
                 br
@@ -228,13 +306,13 @@ foreign import ccall unsafe "optimize" optimize ::
 
 computeOptimalSiteStateTensor ::
     LeftBoundaryTensor ->
-    StateSiteTensor ->
+    UnnormalizedStateSiteTensor ->
     OperatorSiteTensor ->
     RightBoundaryTensor ->
     SelectionStrategy ->
     Double ->
     Int ->
-    Either Int32 (Int,StateSiteTensor)
+    Either Int32 (Int,UnnormalizedStateSiteTensor)
 computeOptimalSiteStateTensor
     left_boundary_tensor
     state_site_tensor
@@ -250,10 +328,10 @@ computeOptimalSiteStateTensor
         cr = operator_site_tensor <-?-> right_boundary_tensor
         d = operator_site_tensor <-?-> state_site_tensor
     in unsafePerformIO $
-        withPinnedLeftBoundaryTensor left_boundary_tensor $ \p_left_boundary ->
-        withPinnedStateSiteTensor state_site_tensor $ \p_state_site_tensor ->
+        withPinnedTensor left_boundary_tensor $ \p_left_boundary ->
+        withPinnedTensor state_site_tensor $ \p_state_site_tensor ->
         withPinnedOperatorSiteTensor operator_site_tensor $ \number_of_matrices p_operator_indices p_operator_matrices ->
-        withPinnedRightBoundaryTensor right_boundary_tensor $ \p_right_boundary ->
+        withPinnedTensor right_boundary_tensor $ \p_right_boundary ->
         withStrategyAsCString strategy $ \p_strategy ->
         with maximum_number_of_iterations  $ \p_number_of_iterations ->
         do
@@ -276,7 +354,7 @@ computeOptimalSiteStateTensor
                 then return (Left info)
                 else do
                     number_of_iterations <- peek p_number_of_iterations
-                    state_site_tensor <- fmap (StateSiteTensor bl br d) (unpinComplexArray state_site_tensor_storable_array)
+                    state_site_tensor <- fmap (UnnormalizedStateSiteTensor . StateSiteTensor bl br d) (unpinComplexArray state_site_tensor_storable_array)
                     return $ Right (number_of_iterations, state_site_tensor)
 -- @-node:gcross.20091111171052.1656:computeOptimalSiteStateTensor
 -- @+node:gcross.20091112145455.1625:contractSOSLeft
@@ -294,16 +372,16 @@ foreign import ccall unsafe "contract_sos_left" contract_sos_left ::
     Ptr Double -> -- new left environment
     IO ()
 
-contractSOSLeft :: LeftBoundaryTensor -> StateSiteTensor -> OperatorSiteTensor -> LeftBoundaryTensor
+contractSOSLeft :: LeftBoundaryTensor -> LeftAbsorptionNormalizedStateSiteTensor -> OperatorSiteTensor -> LeftBoundaryTensor
 contractSOSLeft left_boundary_tensor state_site_tensor operator_site_tensor =
     let bl = left_boundary_tensor <-?-> state_site_tensor
-        br = stateRightBandwidth state_site_tensor
+        br = rightBandwidthOfState state_site_tensor
         cl = left_boundary_tensor <-?-> operator_site_tensor
         cr = operatorRightBandwidth operator_site_tensor
         d = operator_site_tensor <-?-> state_site_tensor
     in unsafePerformIO $
-        withPinnedLeftBoundaryTensor left_boundary_tensor $ \p_left_boundary ->
-        withPinnedStateSiteTensor state_site_tensor $ \p_state_site_tensor ->
+        withPinnedTensor left_boundary_tensor $ \p_left_boundary ->
+        withPinnedTensor state_site_tensor $ \p_state_site_tensor ->
         withPinnedOperatorSiteTensor operator_site_tensor $ \number_of_matrices p_operator_indices p_operator_matrices ->
         do
             state_site_tensor_storable_array <- newArray_ (1,2*br*br*cr)
@@ -334,16 +412,16 @@ foreign import ccall unsafe "contract_sos_right" contract_sos_right ::
     Ptr Double -> -- new left environment
     IO ()
 
-contractSOSRight :: RightBoundaryTensor -> StateSiteTensor -> OperatorSiteTensor -> RightBoundaryTensor
+contractSOSRight :: RightBoundaryTensor -> RightAbsorptionNormalizedStateSiteTensor -> OperatorSiteTensor -> RightBoundaryTensor
 contractSOSRight right_boundary_tensor state_site_tensor operator_site_tensor =
-    let bl = stateLeftBandwidth state_site_tensor
+    let bl = leftBandwidthOfState state_site_tensor
         br = state_site_tensor <-?-> right_boundary_tensor
         cl = operatorLeftBandwidth operator_site_tensor
         cr = operator_site_tensor <-?-> right_boundary_tensor
         d = operator_site_tensor <-?-> state_site_tensor
     in unsafePerformIO $
-        withPinnedRightBoundaryTensor right_boundary_tensor $ \p_right_boundary ->
-        withPinnedStateSiteTensor state_site_tensor $ \p_state_site_tensor ->
+        withPinnedTensor right_boundary_tensor $ \p_right_boundary ->
+        withPinnedTensor state_site_tensor $ \p_state_site_tensor ->
         withPinnedOperatorSiteTensor operator_site_tensor $ \number_of_matrices p_operator_indices p_operator_matrices ->
         do
             state_site_tensor_storable_array <- newArray_ (1,2*bl*bl*cl)
@@ -359,7 +437,7 @@ contractSOSRight right_boundary_tensor state_site_tensor operator_site_tensor =
                     p_state_site_tensor
             fmap (RightBoundaryTensor . BoundaryTensor bl cl) (unpinComplexArray state_site_tensor_storable_array)
 -- @-node:gcross.20091112145455.1635:contractSOSRight
--- @-node:gcross.20091111171052.1588:Foreign imports
+-- @-node:gcross.20091111171052.1588:Wrappers
 -- @-others
 -- @-node:gcross.20091110205054.1969:@thin VMPS.hs
 -- @-leo
