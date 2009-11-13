@@ -196,17 +196,16 @@ computeExpectation left_boundary_tensor state_site_tensor operator_site_tensor r
         withPinnedLeftBoundaryTensor left_boundary_tensor $ \p_left_boundary ->
         withPinnedStateSiteTensor state_site_tensor $ \p_state_site_tensor ->
         withPinnedOperatorSiteTensor operator_site_tensor $ \number_of_matrices p_operator_indices p_operator_matrices ->
-        withPinnedRightBoundaryTensor right_boundary_tensor $ \p_right_boundary -> do
-        compute_expectation
-            bl
-            br
-            cl
-            cr
-            d
-            p_left_boundary
-            p_state_site_tensor
-            number_of_matrices p_operator_indices p_operator_matrices
-            p_right_boundary
+        withPinnedRightBoundaryTensor right_boundary_tensor $
+            compute_expectation
+                bl
+                br
+                cl
+                cr
+                d
+                p_left_boundary
+                p_state_site_tensor
+                number_of_matrices p_operator_indices p_operator_matrices
 -- @-node:gcross.20091111171052.1589:computeExpectation
 -- @+node:gcross.20091111171052.1656:computeOptimalSiteStateTensor
 foreign import ccall unsafe "optimize" optimize ::
@@ -256,7 +255,8 @@ computeOptimalSiteStateTensor
         withPinnedOperatorSiteTensor operator_site_tensor $ \number_of_matrices p_operator_indices p_operator_matrices ->
         withPinnedRightBoundaryTensor right_boundary_tensor $ \p_right_boundary ->
         withStrategyAsCString strategy $ \p_strategy ->
-        with maximum_number_of_iterations  $ \p_number_of_iterations -> do
+        with maximum_number_of_iterations  $ \p_number_of_iterations ->
+        do
             state_site_tensor_storable_array <- newArray_ (1,2*br*bl*d)
             info <- withStorableArray state_site_tensor_storable_array $
                 optimize
@@ -279,6 +279,46 @@ computeOptimalSiteStateTensor
                     state_site_tensor <- fmap (StateSiteTensor bl br d) (unpinComplexArray state_site_tensor_storable_array)
                     return $ Right (number_of_iterations, state_site_tensor)
 -- @-node:gcross.20091111171052.1656:computeOptimalSiteStateTensor
+-- @+node:gcross.20091112145455.1625:contractSOSLeft
+foreign import ccall unsafe "contract_sos_left" contract_sos_left :: 
+    Int -> -- state left bandwidth dimension
+    Int -> -- state right bandwidth dimension
+    Int -> -- operator left bandwidth dimension
+    Int -> -- operator right bandwidth dimension
+    Int -> -- physical dimension
+    Ptr Double -> -- left environment
+    Int -> -- number of matrices
+    Ptr Int32 -> -- sparse operator indices
+    Ptr Double -> -- sparse operator matrices
+    Ptr Double -> -- state site tensor
+    Ptr Double -> -- new left environment
+    IO ()
+
+contractSOSLeft :: LeftBoundaryTensor -> StateSiteTensor -> OperatorSiteTensor -> LeftBoundaryTensor
+contractSOSLeft left_boundary_tensor state_site_tensor operator_site_tensor =
+    let bl = left_boundary_tensor <-?-> state_site_tensor
+        br = stateRightBandwidth state_site_tensor
+        cl = left_boundary_tensor <-?-> operator_site_tensor
+        cr = operatorRightBandwidth operator_site_tensor
+        d = operator_site_tensor <-?-> state_site_tensor
+    in unsafePerformIO $
+        withPinnedLeftBoundaryTensor left_boundary_tensor $ \p_left_boundary ->
+        withPinnedStateSiteTensor state_site_tensor $ \p_state_site_tensor ->
+        withPinnedOperatorSiteTensor operator_site_tensor $ \number_of_matrices p_operator_indices p_operator_matrices ->
+        do
+            state_site_tensor_storable_array <- newArray_ (1,2*br*br*cr)
+            withStorableArray state_site_tensor_storable_array $
+                contract_sos_left
+                    bl
+                    br
+                    cl
+                    cr
+                    d
+                    p_left_boundary
+                    number_of_matrices p_operator_indices p_operator_matrices
+                    p_state_site_tensor
+            fmap (LeftBoundaryTensor . BoundaryTensor br cr) (unpinComplexArray state_site_tensor_storable_array)
+-- @-node:gcross.20091112145455.1625:contractSOSLeft
 -- @-node:gcross.20091111171052.1588:Foreign imports
 -- @-others
 -- @-node:gcross.20091110205054.1969:@thin VMPS.hs
