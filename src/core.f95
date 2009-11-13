@@ -373,7 +373,7 @@ end subroutine
 !@-node:gcross.20091110205054.1907:contract_sos_right
 !@-node:gcross.20091110205054.1911:Environment SOS contraction
 !@+node:gcross.20091110205054.1916:compute_expectation
-function compute_expectation( &
+subroutine compute_expectation( &
   bl, & ! state left bandwidth dimension
   br, & ! state right bandwidth dimension
   cl, & ! operator left  bandwidth dimension
@@ -382,8 +382,9 @@ function compute_expectation( &
   left_environment, &
   state_site_tensor, &
   number_of_matrices,sparse_operator_indices,sparse_operator_matrices, &
-  right_environment &
-) result (expectation)
+  right_environment, &
+  expectation &
+)
 
   integer, intent(in) :: bl, br, cl, cr, d, number_of_matrices, sparse_operator_indices(2,number_of_matrices)
   double complex, intent(in) :: &
@@ -391,8 +392,9 @@ function compute_expectation( &
     state_site_tensor(br,bl,d), &
     right_environment(br,br,cr), &
     sparse_operator_matrices(d,d,number_of_matrices)
+  double complex, intent(out) :: expectation
 
-  double complex :: new_right_environment(bl,bl,cl), expectation
+  double complex :: new_right_environment(bl,bl,cl)
   integer :: i, j, k
 
   call contract_sos_right( &
@@ -413,7 +415,7 @@ function compute_expectation( &
   end do
   end do
 
-end function
+end subroutine
 !@-node:gcross.20091110205054.1916:compute_expectation
 !@-node:gcross.20091110205054.1940:Contractors
 !@+node:gcross.20091109182634.1537:optimize

@@ -5,6 +5,7 @@
 -- @<< Language extensions >>
 -- @+node:gcross.20091113125544.1655:<< Language extensions >>
 {-# LANGUAGE ForeignFunctionInterface #-}
+{-# LANGUAGE FlexibleInstances #-}
 -- @-node:gcross.20091113125544.1655:<< Language extensions >>
 -- @nl
 
@@ -12,14 +13,17 @@ module VMPS.Wrappers where
 
 -- @<< Import needed modules >>
 -- @+node:gcross.20091113125544.1659:<< Import needed modules >>
+import Control.Arrow
 import Control.Exception
 import Control.Monad
 
 import Data.Array.Storable
 import Data.Array.Unboxed
+import Data.Complex
 import Data.Int
 
 import Foreign.C.String
+import Foreign.Marshal.Alloc
 import Foreign.Marshal.Utils
 import Foreign.Ptr
 import Foreign.Storable
@@ -45,6 +49,23 @@ withStrategyAsCString :: OptimizerSelectionStrategy -> (CString -> IO a) -> IO a
 withStrategyAsCString = withCString . show
 -- @-node:gcross.20091111171052.1657:SelectionStrategy
 -- @-node:gcross.20091113125544.1660:Types
+-- @+node:gcross.20091113142219.1680:Instances
+-- @+node:gcross.20091113142219.1681:Storable (Complex a)
+complexPtrToRealAndImagPtrs :: Ptr (Complex Double) -> (Ptr Double, Ptr Double)
+complexPtrToRealAndImagPtrs p_complex =
+    let p_real_part = castPtr p_complex
+        p_imag_part = plusPtr p_real_part . sizeOf $ (undefined :: Double)
+    in (p_real_part, p_imag_part)
+
+instance Storable (Complex Double) where
+    sizeOf _ = 2 * sizeOf (undefined :: Double)
+    alignment _ = 2 * alignment (undefined :: Double)
+    peek = uncurry (liftM2 (:+)) . (peek *** peek) . complexPtrToRealAndImagPtrs
+    poke p_complex (real_part :+ imag_part) =
+        let (p_real_part, p_imag_part) = complexPtrToRealAndImagPtrs p_complex
+        in poke p_real_part real_part >> poke p_imag_part imag_part
+-- @-node:gcross.20091113142219.1681:Storable (Complex a)
+-- @-node:gcross.20091113142219.1680:Instances
 -- @+node:gcross.20091113125544.1661:Wrapper functions
 -- @+node:gcross.20091113125544.1656:Contractors
 -- @+node:gcross.20091111171052.1589:computeExpectation
@@ -60,9 +81,10 @@ foreign import ccall unsafe "compute_expectation" compute_expectation ::
     Ptr Int32 -> -- sparse operator indices
     Ptr Double -> -- sparse operator matrices
     Ptr Double -> -- right environment
-    IO Double -- expectation
+    Ptr (Complex Double) -> -- expectation
+    IO ()
 
-computeExpectation :: LeftBoundaryTensor -> UnnormalizedStateSiteTensor -> OperatorSiteTensor -> RightBoundaryTensor -> Double
+computeExpectation :: LeftBoundaryTensor -> UnnormalizedStateSiteTensor -> OperatorSiteTensor -> RightBoundaryTensor -> Complex Double
 computeExpectation left_boundary_tensor state_site_tensor operator_site_tensor right_boundary_tensor =
     let bl = left_boundary_tensor <-?-> state_site_tensor
         br = state_site_tensor <-?-> right_boundary_tensor
@@ -73,7 +95,8 @@ computeExpectation left_boundary_tensor state_site_tensor operator_site_tensor r
         withPinnedTensor left_boundary_tensor $ \p_left_boundary ->
         withPinnedTensor state_site_tensor $ \p_state_site_tensor ->
         withPinnedOperatorSiteTensor operator_site_tensor $ \number_of_matrices p_operator_indices p_operator_matrices ->
-        withPinnedTensor right_boundary_tensor $
+        withPinnedTensor right_boundary_tensor $ \p_right_boundary ->
+        alloca $ \p_expectation ->
             compute_expectation
                 bl
                 br
@@ -83,6 +106,10 @@ computeExpectation left_boundary_tensor state_site_tensor operator_site_tensor r
                 p_left_boundary
                 p_state_site_tensor
                 number_of_matrices p_operator_indices p_operator_matrices
+                p_right_boundary
+                p_expectation
+            >>
+            peek p_expectation
 -- @-node:gcross.20091111171052.1589:computeExpectation
 -- @+node:gcross.20091112145455.1625:contractSOSLeft
 foreign import ccall unsafe "contract_sos_left" contract_sos_left :: 

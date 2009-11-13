@@ -67,8 +67,19 @@ main = defaultMain
                 operator_matrices = unsafePerformIO $ newListArray (1,2) [1.0,0.0]
                 operator_site_tensor = OperatorSiteTensor 1 1 1 1 operator_indices operator_matrices
                 expectation = computeExpectation left_boundary state_site_tensor operator_site_tensor right_boundary
-            in assertEqual "is the correct result returned?" 1 expectation
+            in assertEqual "is the correct result returned?" (1 :+ 0) expectation
         -- @-node:gcross.20091111171052.1650:trivial, all dimensions 1
+        -- @+node:gcross.20091113142219.1683:trivial, all dimensions 1
+        ,testCase "trivial, all dimensions 1, imaginary" $
+            let left_boundary = trivial_left_boundary
+                right_boundary = trivial_right_boundary
+                state_site_tensor = UnnormalizedStateSiteTensor $ StateSiteTensor 1 1 1 trivial_complex_array
+                operator_indices = unsafePerformIO $ newArray (1,2) 1
+                operator_matrices = unsafePerformIO $ newListArray (1,2) [0.0,1.0]
+                operator_site_tensor = OperatorSiteTensor 1 1 1 1 operator_indices operator_matrices
+                expectation = computeExpectation left_boundary state_site_tensor operator_site_tensor right_boundary
+            in assertEqual "is the correct result returned?" (0 :+ 1) expectation
+        -- @-node:gcross.20091113142219.1683:trivial, all dimensions 1
         -- @+node:gcross.20091111171052.1655:trivial, d =2
         ,testCase "trivial, d = 2" $
             assertEqual "are the correct results returned for all calls?"

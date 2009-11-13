@@ -6,7 +6,7 @@
 
 //@+others
 //@+node:gcross.20091112145455.1621:compute_expectation
-double compute_expectation_(
+void compute_expectation_(
     int*,
     int*,
     int*,
@@ -15,10 +15,11 @@ double compute_expectation_(
     double*,
     double*,
     int*, int*, double*,
+    double*,
     double*
 );
 
-double compute_expectation(
+void compute_expectation(
     int bl,
     int br,
     int cl,
@@ -27,9 +28,9 @@ double compute_expectation(
     double* left_environment,
     double* state_site_tensor,
     int number_of_matrices, int* sparse_operator_indices, double* sparse_operator_matrices,
-    double* right_environment
+    double* right_environment,
+    double* expectation
 ) {
-    return
     compute_expectation_(
         &bl,
         &br,
@@ -39,7 +40,8 @@ double compute_expectation(
         left_environment,
         state_site_tensor,
         &number_of_matrices, sparse_operator_indices, sparse_operator_matrices,
-        right_environment
+        right_environment,
+        expectation
     );
 }
 //@-node:gcross.20091112145455.1621:compute_expectation
