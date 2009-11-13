@@ -4,10 +4,12 @@
 
 -- @<< Import needed modules >>
 -- @+node:gcross.20091111171052.1610:<< Import needed modules >>
+import Control.Arrow
 import Control.Exception
 
 import Data.Array.Storable
 import Data.Array.Unboxed
+import Data.Complex
 import Data.Int
 
 import Foreign.Marshal.Utils
@@ -30,6 +32,23 @@ import VMPS
 -- @nl
 
 -- @+others
+-- @+node:gcross.20091112145455.1676:Classes
+-- @+node:gcross.20091111171052.1664:AlmostEq
+class AlmostEq a where
+    (~=) :: a -> a -> Bool
+
+instance AlmostEq Double where
+    x ~= y = abs (x-y) < 1e-7
+
+instance (AlmostEq a) => AlmostEq [a] where
+    x ~= y = all (uncurry (~=)) $ zip x y
+
+instance (AlmostEq a, RealFloat a) => AlmostEq (Complex a) where
+    (a :+ b) ~= (c :+ d) = (a ~= c) && (b ~= d)
+
+x /~ y = not (x ~= y)
+-- @-node:gcross.20091111171052.1664:AlmostEq
+-- @-node:gcross.20091112145455.1676:Classes
 -- @-others
 
 main = defaultMain
@@ -174,6 +193,51 @@ main = defaultMain
         -- @-others
         ]
     -- @-node:gcross.20091112145455.1641:contractSOSRight
+    -- @+node:gcross.20091112145455.1660:generateRandomizedStateTensor
+    ,testGroup "generateRandomizedUnnormalizedSiteStateTensor"
+        -- @    @+others
+        -- @+node:gcross.20091112145455.1667:unnormalized
+        [testGroup "unnormalized"
+            -- @    @+others
+            -- @+node:gcross.20091112145455.1661:selected dimensions
+            [testCase "bl = 1, br = 2, d = 3" $ do
+                state_site_tensor <- generateRandomizedStateSiteTensor 1 2 3 :: IO (UnnormalizedStateSiteTensor)
+                assertEqual "is the left bandwidth dimension correct?" 1 (leftBandwidthOfState state_site_tensor)
+                assertEqual "is the right bandwidth dimension correct?" 2 (rightBandwidthOfState state_site_tensor)
+                assertEqual "is the physical bandwidth dimension correct?" 3 (physicalDimensionOfState state_site_tensor)
+            -- @-node:gcross.20091112145455.1661:selected dimensions
+            -- @-others
+            ]
+        -- @-node:gcross.20091112145455.1667:unnormalized
+        -- @+node:gcross.20091112145455.1665:normalized
+        ,testGroup "normalized"
+            -- @    @+others
+            -- @+node:gcross.20091112145455.1666:selected dimensions
+            [testCase "bl = 1, br = 4, d = 8" $ do
+                state_site_tensor <- generateRandomizedStateSiteTensor 1 4 8 :: IO (RightAbsorptionNormalizedStateSiteTensor)
+                assertEqual "is the left bandwidth dimension correct?" 1 (leftBandwidthOfState state_site_tensor)
+                assertEqual "is the right bandwidth dimension correct?" 4 (rightBandwidthOfState state_site_tensor)
+                assertEqual "is the physical bandwidth dimension correct?" 8 (physicalDimensionOfState state_site_tensor)
+                let normalization =
+                        sum
+                        .
+                        map ((** 2) . magnitude)
+                        .
+                        toListOfComplexNumbers
+                        .
+                        stateData
+                        .
+                        unwrapRightAbsorptionNormalizedStateSiteTensor
+                        $
+                        state_site_tensor
+                assertBool "is the state site tensor properly normalized?" (1 ~= normalization)
+            -- @-node:gcross.20091112145455.1666:selected dimensions
+            -- @-others
+            ]
+        -- @-node:gcross.20091112145455.1665:normalized
+        -- @-others
+        ]
+    -- @-node:gcross.20091112145455.1660:generateRandomizedStateTensor
     -- @-others
     -- @-node:gcross.20091111171052.1640:<< Tests >>
     -- @nl

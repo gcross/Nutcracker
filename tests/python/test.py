@@ -725,7 +725,7 @@ class rand_norm_state_site_tensor(unittest.TestCase):
     @with_checker
     def testCorrectness(self,bl=irange(2,4),br=irange(2,4)):
         d = 2
-        info, normalized_tensor = vmps.rand_norm_state_site_tensor(bl,br,d)
+        info, normalized_tensor = vmps.rand_norm_state_site_tensor(br,bl,d)
         self.assertEqual(0,info)
         should_be_identity = tensordot(normalized_tensor.conj(),normalized_tensor,((0,2,),)*2)
         self.assertTrue(allclose(identity(bl),should_be_identity))

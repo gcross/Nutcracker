@@ -20,6 +20,7 @@ import Control.Monad
 
 import Data.Array.Storable
 import Data.Array.Unboxed
+import Data.Complex
 import Data.Function
 import Data.Int
 
@@ -61,6 +62,13 @@ unboxedArrayFromList list = listArray (1,length list) list
 complexArrayFromList = ComplexArray . unboxedArrayFromList
 
 trivial_complex_array = complexArrayFromList [1.0,0.0]
+
+toListOfComplexNumbers :: ComplexArray -> [Complex Double]
+toListOfComplexNumbers = go . elems . unwrapComplexArray
+    where
+        go [] = []
+        go (a:b:rest) = (a :+ b) :go rest
+        go _ = error "Can't convert an odd number of doubles to complex numbers."
 -- @-node:gcross.20091111171052.1596:ComplexArray
 -- @+node:gcross.20091111171052.1595:Left/Right Boundaries
 data BoundaryTensor = BoundaryTensor
@@ -229,18 +237,6 @@ makeConnectedTest message fetch_left_dimension fetch_right_dimension x y =
         d2 = fetch_right_dimension y
     in if d1 == d2 then d1 else error $ message ++ (printf " (%i != %i)\n" d1 d2)
 -- @-node:gcross.20091111171052.1602:Connected
--- @+node:gcross.20091111171052.1664:AlmostEq
-class AlmostEq a where
-    (~=) :: a -> a -> Bool
-
-instance AlmostEq Double where
-    x ~= y = abs (x-y) < 1e-7
-
-instance (AlmostEq a) => AlmostEq [a] where
-    x ~= y = all (uncurry (~=)) $ zip x y
-
-x /~ y = not (x ~= y)
--- @-node:gcross.20091111171052.1664:AlmostEq
 -- @+node:gcross.20091112145455.1648:Pinnable
 class Pinnable a where
     withPinnedTensor :: a -> (Ptr Double -> IO b) -> IO b
@@ -438,6 +434,46 @@ contractSOSRight right_boundary_tensor state_site_tensor operator_site_tensor =
             fmap (RightBoundaryTensor . BoundaryTensor bl cl) (unpinComplexArray state_site_tensor_storable_array)
 -- @-node:gcross.20091112145455.1635:contractSOSRight
 -- @-node:gcross.20091111171052.1588:Wrappers
+-- @+node:gcross.20091112145455.1656:Random state site tensor generation
+class RandomizableStateSiteTensor a where
+    generateRandomizedStateSiteTensor :: Int -> Int -> Int -> IO a
+
+applyRandomizerAndReturnStateSiteTensor :: (StateSiteTensor -> a) -> (Int -> Int -> Int -> Ptr Double -> IO ()) -> Int -> Int -> Int -> IO a
+applyRandomizerAndReturnStateSiteTensor wrapper randomizer left_bandwidth_dimension right_bandwidth_dimension physical_dimension =
+        let bl = left_bandwidth_dimension
+            br = right_bandwidth_dimension
+            d  = physical_dimension
+        in do
+            state_site_tensor_storable_array <- newArray_ (1,2*br*bl*d)
+            withStorableArray state_site_tensor_storable_array $
+                randomizer
+                    br
+                    bl
+                    d
+            fmap (wrapper . StateSiteTensor bl br d) (unpinComplexArray state_site_tensor_storable_array)
+-- @+node:gcross.20091112145455.1674:unnormalized
+foreign import ccall unsafe "randomize_state_site_tensor" randomize_state_site_tensor :: 
+    Int -> -- physical dimension
+    Int -> -- state left bandwidth dimension
+    Int -> -- state right bandwidth dimension
+    Ptr Double -> -- state site tensor
+    IO ()
+
+instance RandomizableStateSiteTensor UnnormalizedStateSiteTensor where
+    generateRandomizedStateSiteTensor = applyRandomizerAndReturnStateSiteTensor UnnormalizedStateSiteTensor randomize_state_site_tensor
+-- @-node:gcross.20091112145455.1674:unnormalized
+-- @+node:gcross.20091112145455.1675:normalized
+foreign import ccall unsafe "rand_norm_state_site_tensor" rand_norm_state_site_tensor :: 
+    Int -> -- physical dimension
+    Int -> -- state left bandwidth dimension
+    Int -> -- state right bandwidth dimension
+    Ptr Double -> -- state site tensor
+    IO ()
+
+instance RandomizableStateSiteTensor RightAbsorptionNormalizedStateSiteTensor where
+    generateRandomizedStateSiteTensor = applyRandomizerAndReturnStateSiteTensor RightAbsorptionNormalizedStateSiteTensor rand_norm_state_site_tensor
+-- @-node:gcross.20091112145455.1675:normalized
+-- @-node:gcross.20091112145455.1656:Random state site tensor generation
 -- @-others
 -- @-node:gcross.20091110205054.1969:@thin VMPS.hs
 -- @-leo

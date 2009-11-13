@@ -605,8 +605,8 @@ subroutine randomize_state_site_tensor(br, bl, d, state_site_tensor)
 end subroutine
 !@-node:gcross.20091110205054.1920:randomize_state_site_tensor
 !@+node:gcross.20091110205054.1922:rand_norm_state_site_tensor
-function rand_norm_state_site_tensor(bl, br, d, state_site_tensor) result (info)
-  integer, intent(in) :: bl, br, d
+function rand_norm_state_site_tensor(br, bl, d, state_site_tensor) result (info)
+  integer, intent(in) :: br, bl, d
   double complex, intent(out) :: state_site_tensor(br,bl,d)
 
   double complex :: u(bl,bl), vt(bl,br*d)

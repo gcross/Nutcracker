@@ -166,6 +166,20 @@ void contract_sos_right(
     );
 }
 //@-node:gcross.20091112145455.1637:contract_sos_right
+//@+node:gcross.20091112145455.1655:randomize_state_site_tensor
+void randomize_state_site_tensor_(int* br, int* bl, int* d, double* state_site_tensor);
+
+void randomize_state_site_tensor(int br, int bl, int d, double* state_site_tensor) {
+    randomize_state_site_tensor_(&br,&bl,&d,state_site_tensor);
+}
+//@-node:gcross.20091112145455.1655:randomize_state_site_tensor
+//@+node:gcross.20091112145455.1673:rand_norm_state_site_tensor
+void rand_norm_state_site_tensor_(int* br, int* bl, int* d, double* state_site_tensor);
+
+void rand_norm_state_site_tensor(int br, int bl, int d, double* state_site_tensor) {
+    rand_norm_state_site_tensor_(&br,&bl,&d,state_site_tensor);
+}
+//@-node:gcross.20091112145455.1673:rand_norm_state_site_tensor
 //@-others
 //@-node:gcross.20091112145455.1619:@thin core-wrapper.c
 //@-leo
