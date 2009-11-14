@@ -65,6 +65,7 @@ toListOfComplexNumbers = go . elems . unwrapComplexArray
         go (a:b:rest) = (a :+ b) :go rest
         go _ = error "Can't convert an odd number of doubles to complex numbers."
 -- @-node:gcross.20091111171052.1596:ComplexArray
+-- @+node:gcross.20091113142219.2538:Tensors
 -- @+node:gcross.20091111171052.1595:Left/Right Boundaries
 data BoundaryTensor = BoundaryTensor
     {   boundaryStateBandwidth :: !Int
@@ -222,6 +223,7 @@ instance Connected OperatorSiteTensor RightAbsorptionNormalizedStateSiteTensor w
         operatorPhysicalDimension
         physicalDimensionOfState
 -- @-node:gcross.20091111171052.1598:Operator Site Tensor
+-- @-node:gcross.20091113142219.2538:Tensors
 -- @-node:gcross.20091111171052.1591:Types
 -- @+node:gcross.20091111171052.1601:Classes
 -- @+node:gcross.20091111171052.1602:Connected

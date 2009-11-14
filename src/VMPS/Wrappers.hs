@@ -300,9 +300,9 @@ class RandomizableStateSiteTensor a where
 
 applyRandomizerAndReturnStateSiteTensor :: (StateSiteTensor -> a) -> (Int -> Int -> Int -> Ptr Double -> IO ()) -> Int -> Int -> Int -> IO a
 applyRandomizerAndReturnStateSiteTensor wrapper randomizer physical_dimension left_bandwidth_dimension right_bandwidth_dimension =
-        let bl = left_bandwidth_dimension
+        let d  = physical_dimension
+            bl = left_bandwidth_dimension
             br = right_bandwidth_dimension
-            d  = physical_dimension
         in do
             state_site_tensor_storable_array <- newArray_ (1,2*br*bl*d)
             withStorableArray state_site_tensor_storable_array $
@@ -313,9 +313,9 @@ applyRandomizerAndReturnStateSiteTensor wrapper randomizer physical_dimension le
             fmap (wrapper . StateSiteTensor bl br d) (unpinComplexArray state_site_tensor_storable_array)
 -- @+node:gcross.20091112145455.1674:unnormalized
 foreign import ccall unsafe "randomize_state_site_tensor" randomize_state_site_tensor :: 
-    Int -> -- physical dimension
-    Int -> -- state left bandwidth dimension
     Int -> -- state right bandwidth dimension
+    Int -> -- state left bandwidth dimension
+    Int -> -- physical dimension
     Ptr Double -> -- state site tensor
     IO ()
 
@@ -324,8 +324,8 @@ instance RandomizableStateSiteTensor UnnormalizedStateSiteTensor where
 -- @-node:gcross.20091112145455.1674:unnormalized
 -- @+node:gcross.20091112145455.1675:normalized
 foreign import ccall unsafe "rand_norm_state_site_tensor" rand_norm_state_site_tensor :: 
-    Int -> -- state left bandwidth dimension
     Int -> -- state right bandwidth dimension
+    Int -> -- state left bandwidth dimension
     Int -> -- physical dimension
     Ptr Double -> -- state site tensor
     IO ()
