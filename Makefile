@@ -23,6 +23,7 @@ OBJS = \
 	obj/VMPS/Miscellaneous.o \
 	obj/VMPS/Tensors.o \
 	obj/VMPS/Wrappers.o \
+	obj/VMPS/EnergyMinimizationChain.o \
 	obj/core.o \
 	obj/core-wrapper.o \
 

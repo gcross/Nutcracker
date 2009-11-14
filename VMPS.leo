@@ -9,7 +9,7 @@
 <preferences/>
 <find_panel_settings/>
 <vnodes>
-<v t="gcross.20091113142219.1658" str_leo_pos="1"><vh>@chapters</vh></v>
+<v t="gcross.20091113142219.1658" str_leo_pos="14"><vh>@chapters</vh></v>
 <v t="gcross.20091106154604.9811"><vh>@thin Makefile</vh></v>
 <v t="gcross.20090930134608.1330"><vh>@thin paulis.py</vh></v>
 <v t="gcross.20091014143858.1490"><vh>@thin database.py</vh></v>
@@ -58,6 +58,7 @@
 <v t="gcross.20091110205054.1939"><vh>@thin core.f95</vh></v>
 <v t="gcross.20091112145455.1619"><vh>@thin core-wrapper.c</vh></v>
 <v t="gcross.20091113125544.1651"><vh>@path VMPS</vh>
+<v t="gcross.20091113142219.1659"><vh>@thin EnergyMinimizationChain.hs</vh></v>
 <v t="gcross.20091113142219.1688"><vh>@thin Miscellaneous.hs</vh></v>
 <v t="gcross.20091110205054.1969"><vh>@thin Tensors.hs</vh></v>
 <v t="gcross.20091113125544.1653"><vh>@thin Wrappers.hs</vh></v>
@@ -87,6 +88,6 @@
 <t tx="gcross.20091111171052.1604"></t>
 <t tx="gcross.20091111171052.1605"></t>
 <t tx="gcross.20091113125544.1651"></t>
-<t tx="gcross.20091113142219.1658" str_leo_pos="1"></t>
+<t tx="gcross.20091113142219.1658" str_leo_pos="14"></t>
 </tnodes>
 </leo_file>
