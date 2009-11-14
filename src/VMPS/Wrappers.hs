@@ -299,7 +299,7 @@ class RandomizableStateSiteTensor a where
     generateRandomizedStateSiteTensor :: Int -> Int -> Int -> IO a
 
 applyRandomizerAndReturnStateSiteTensor :: (StateSiteTensor -> a) -> (Int -> Int -> Int -> Ptr Double -> IO ()) -> Int -> Int -> Int -> IO a
-applyRandomizerAndReturnStateSiteTensor wrapper randomizer left_bandwidth_dimension right_bandwidth_dimension physical_dimension =
+applyRandomizerAndReturnStateSiteTensor wrapper randomizer physical_dimension left_bandwidth_dimension right_bandwidth_dimension =
         let bl = left_bandwidth_dimension
             br = right_bandwidth_dimension
             d  = physical_dimension
@@ -324,9 +324,9 @@ instance RandomizableStateSiteTensor UnnormalizedStateSiteTensor where
 -- @-node:gcross.20091112145455.1674:unnormalized
 -- @+node:gcross.20091112145455.1675:normalized
 foreign import ccall unsafe "rand_norm_state_site_tensor" rand_norm_state_site_tensor :: 
-    Int -> -- physical dimension
     Int -> -- state left bandwidth dimension
     Int -> -- state right bandwidth dimension
+    Int -> -- physical dimension
     Ptr Double -> -- state site tensor
     IO ()
 

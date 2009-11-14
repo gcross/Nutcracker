@@ -298,7 +298,7 @@ main = defaultMain
                 -- @    @+others
                 -- @+node:gcross.20091112145455.1661:selected dimensions
                 [testCase "bl = 1, br = 2, d = 3" $ do
-                    state_site_tensor <- generateRandomizedStateSiteTensor 1 2 3 :: IO (UnnormalizedStateSiteTensor)
+                    state_site_tensor <- generateRandomizedStateSiteTensor 3 1 2 :: IO (UnnormalizedStateSiteTensor)
                     assertEqual "is the left bandwidth dimension correct?" 1 (leftBandwidthOfState state_site_tensor)
                     assertEqual "is the right bandwidth dimension correct?" 2 (rightBandwidthOfState state_site_tensor)
                     assertEqual "is the physical bandwidth dimension correct?" 3 (physicalDimensionOfState state_site_tensor)
@@ -311,7 +311,7 @@ main = defaultMain
                 -- @    @+others
                 -- @+node:gcross.20091112145455.1666:selected dimensions
                 [testCase "bl = 1, br = 4, d = 8" $ do
-                    state_site_tensor <- generateRandomizedStateSiteTensor 1 4 8 :: IO (RightAbsorptionNormalizedStateSiteTensor)
+                    state_site_tensor <- generateRandomizedStateSiteTensor 8 1 4 :: IO (RightAbsorptionNormalizedStateSiteTensor)
                     assertEqual "is the left bandwidth dimension correct?" 1 (leftBandwidthOfState state_site_tensor)
                     assertEqual "is the right bandwidth dimension correct?" 4 (rightBandwidthOfState state_site_tensor)
                     assertEqual "is the physical bandwidth dimension correct?" 8 (physicalDimensionOfState state_site_tensor)
