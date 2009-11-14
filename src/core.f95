@@ -431,7 +431,8 @@ function optimize( &
   tol, &
   number_of_iterations, &
   guess, &
-  result &
+  result, &
+  eigenvalue &
 ) result (info)
   integer, intent(in) :: bl, br, cl, cr, d, number_of_matrices, sparse_operator_indices(2,number_of_matrices)
   integer, intent(inout) :: number_of_iterations
@@ -441,7 +442,8 @@ function optimize( &
     sparse_operator_matrices(d,d,number_of_matrices), &
     guess(br,bl,d)
   double complex, intent(out) :: &
-    result(br,bl,d)
+    result(br,bl,d), &
+    eigenvalue
   character, intent(in) :: which*2
   double precision, intent(in) :: tol
 
@@ -580,6 +582,7 @@ end interface
               rwork, info)
 
   result = reshape(v(:,1),shape(result))
+  eigenvalue = eigenvalues(1)
 
 end function
 !@-node:gcross.20091109182634.1537:optimize

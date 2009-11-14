@@ -351,6 +351,7 @@ foreign import ccall unsafe "optimize" optimize ::
     Ptr Int -> -- cap on the number of iterations / number of iterations that were used
     Ptr Double -> -- initial guess for the state site tensor
     Ptr Double -> -- where the result will be written
+    Ptr (Complex Double) -> -- the minimal eigenvalue
     IO Int32
 
 computeOptimalSiteStateTensor ::
@@ -361,7 +362,7 @@ computeOptimalSiteStateTensor ::
     OptimizerSelectionStrategy ->
     Double ->
     Int ->
-    (Int,UnnormalizedStateSiteTensor)
+    (Int, Complex Double, UnnormalizedStateSiteTensor)
 computeOptimalSiteStateTensor
     left_boundary_tensor
     state_site_tensor
@@ -383,9 +384,10 @@ computeOptimalSiteStateTensor
         withPinnedTensor right_boundary_tensor $ \p_right_boundary ->
         withStrategyAsCString strategy $ \p_strategy ->
         with maximum_number_of_iterations  $ \p_number_of_iterations ->
+        alloca $ \p_eigenvalue ->
         do
             state_site_tensor_storable_array <- newArray_ (1,2*br*bl*d)
-            info <- withStorableArray state_site_tensor_storable_array $
+            info <- withStorableArray state_site_tensor_storable_array $ \p_result ->
                 optimize
                     bl
                     br
@@ -399,10 +401,13 @@ computeOptimalSiteStateTensor
                     tolerance
                     p_number_of_iterations
                     p_state_site_tensor
+                    p_result
+                    p_eigenvalue
             when (info /= 0) $ error $ "Failed to converge! info = " ++ show info
             number_of_iterations <- peek p_number_of_iterations
+            eigenvalue <- peek p_eigenvalue
             state_site_tensor <- fmap (UnnormalizedStateSiteTensor . StateSiteTensor bl br d) (unpinComplexArray state_site_tensor_storable_array)
-            return $ (number_of_iterations, state_site_tensor)
+            return $ (number_of_iterations, eigenvalue, state_site_tensor)
 -- @-node:gcross.20091111171052.1656:computeOptimalSiteStateTensor
 -- @-node:gcross.20091113125544.1661:Wrapper functions
 -- @-others

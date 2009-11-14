@@ -98,7 +98,7 @@ main = defaultMain
                     ,0,0, 0,0, 0,0,-1,0
                     ]
                 operator_site_tensor = OperatorSiteTensor 1 1 4 1 operator_indices operator_matrices
-                (_, (UnnormalizedStateSiteTensor (StateSiteTensor bl br d (ComplexArray actual_array)))) =
+                (_, eigenvalue, (UnnormalizedStateSiteTensor (StateSiteTensor bl br d (ComplexArray actual_array)))) =
                     computeOptimalSiteStateTensor
                         left_boundary
                         state_site_tensor
@@ -114,6 +114,7 @@ main = defaultMain
                 assertEqual "is the new physical dimension the same?" (physicalDimensionOfState state_site_tensor) d
                 assertBool "are all but the last component of the state zero?" (take 6 components ~= replicate 6 0)
                 assertBool "are either of the last components non-zero?" (any (/~ 0) . drop 6 $ components)
+                assertBool "is the eigenvalue correct?" (eigenvalue ~= (-1))
         -- @-node:gcross.20091111171052.1661:trivial, d = 4
         -- @-others
         ]

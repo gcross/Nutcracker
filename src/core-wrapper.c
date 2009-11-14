@@ -59,7 +59,8 @@ int optimize_(
     double* tol,
     int* number_of_iterations,
     double* guess,
-    double* result
+    double* result,
+    double* eigenvalue
 );
 
 int optimize(
@@ -75,7 +76,8 @@ int optimize(
     double tol,
     int* number_of_iterations,
     double* guess,
-    double* result
+    double* result,
+    double* eigenvalue
 ) {
     return optimize_(
         &bl,
@@ -90,7 +92,8 @@ int optimize(
         &tol,
         number_of_iterations,
         guess,
-        result
+        result,
+        eigenvalue
     );
 }
 //@-node:gcross.20091112145455.1622:optimize
