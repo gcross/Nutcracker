@@ -361,7 +361,7 @@ computeOptimalSiteStateTensor ::
     OptimizerSelectionStrategy ->
     Double ->
     Int ->
-    Either Int32 (Int,UnnormalizedStateSiteTensor)
+    (Int,UnnormalizedStateSiteTensor)
 computeOptimalSiteStateTensor
     left_boundary_tensor
     state_site_tensor
@@ -399,12 +399,10 @@ computeOptimalSiteStateTensor
                     tolerance
                     p_number_of_iterations
                     p_state_site_tensor
-            if info < 0
-                then return (Left info)
-                else do
-                    number_of_iterations <- peek p_number_of_iterations
-                    state_site_tensor <- fmap (UnnormalizedStateSiteTensor . StateSiteTensor bl br d) (unpinComplexArray state_site_tensor_storable_array)
-                    return $ Right (number_of_iterations, state_site_tensor)
+            when (info /= 0) $ error $ "Failed to converge! info = " ++ show info
+            number_of_iterations <- peek p_number_of_iterations
+            state_site_tensor <- fmap (UnnormalizedStateSiteTensor . StateSiteTensor bl br d) (unpinComplexArray state_site_tensor_storable_array)
+            return $ (number_of_iterations, state_site_tensor)
 -- @-node:gcross.20091111171052.1656:computeOptimalSiteStateTensor
 -- @-node:gcross.20091113125544.1661:Wrapper functions
 -- @-others

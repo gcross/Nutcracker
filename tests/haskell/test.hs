@@ -114,7 +114,7 @@ main = defaultMain
                     ,0,0, 0,0, 0,0,-1,0
                     ]
                 operator_site_tensor = OperatorSiteTensor 1 1 4 1 operator_indices operator_matrices
-                either_result =
+                (_, (UnnormalizedStateSiteTensor (StateSiteTensor bl br d (ComplexArray actual_array)))) =
                     computeOptimalSiteStateTensor
                         left_boundary
                         state_site_tensor
@@ -123,15 +123,13 @@ main = defaultMain
                         SR
                         0
                         10000
-            in case either_result of
-                Left info -> assertFailure $ "failed with info = " ++ show info
-                Right (_, (UnnormalizedStateSiteTensor (StateSiteTensor bl br d (ComplexArray actual_array)))) -> do
-                    let components = elems actual_array
-                    assertEqual "is the new left bandwidth dimension the same?" (leftBandwidthOfState state_site_tensor) bl
-                    assertEqual "is the new right bandwidth dimension the same?" (rightBandwidthOfState state_site_tensor) br
-                    assertEqual "is the new physical dimension the same?" (physicalDimensionOfState state_site_tensor) d
-                    assertBool "are all but the last component of the state zero?" (take 6 components ~= replicate 6 0)
-                    assertBool "are either of the last components non-zero?" (any (/~ 0) . drop 6 $ components)
+                components = elems actual_array
+            in do
+                assertEqual "is the new left bandwidth dimension the same?" (leftBandwidthOfState state_site_tensor) bl
+                assertEqual "is the new right bandwidth dimension the same?" (rightBandwidthOfState state_site_tensor) br
+                assertEqual "is the new physical dimension the same?" (physicalDimensionOfState state_site_tensor) d
+                assertBool "are all but the last component of the state zero?" (take 6 components ~= replicate 6 0)
+                assertBool "are either of the last components non-zero?" (any (/~ 0) . drop 6 $ components)
         -- @-node:gcross.20091111171052.1661:trivial, d = 4
         -- @-others
         ]
