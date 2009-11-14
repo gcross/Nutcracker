@@ -84,12 +84,12 @@ main = defaultMain
             -- @+node:gcross.20091113142219.2505:gets there eventually
             [testProperty "gets there eventually" $
                 \(PDI physical_dimension) (BI bandwith_dimension) (NOSI number_of_sites) ->
-                    maximum (computeBandwidthDimensionSequence physical_dimension bandwith_dimension number_of_sites) == bandwith_dimension
+                    maximum (computeBandwidthDimensionSequence number_of_sites physical_dimension bandwith_dimension) == bandwith_dimension
             -- @-node:gcross.20091113142219.2505:gets there eventually
             -- @+node:gcross.20091113142219.2507:has the right number of entries
             ,testProperty "has the right number of entries" $
                 \(PDI physical_dimension) (BI bandwith_dimension) (NOSI number_of_sites) ->
-                    length (computeBandwidthDimensionSequence physical_dimension bandwith_dimension number_of_sites) == number_of_sites + 1
+                    length (computeBandwidthDimensionSequence number_of_sites physical_dimension bandwith_dimension) == number_of_sites + 1
             -- @-node:gcross.20091113142219.2507:has the right number of entries
             -- @-others
             ]
@@ -100,19 +100,19 @@ main = defaultMain
             -- @+node:gcross.20091113142219.2534:has the right number of entries
             [testProperty "has the right number of entries" $
                 \(PDI physical_dimension) (BI bandwith_dimension) (NOSI number_of_sites) ->
-                    length (computeBandwidthDimensionsAtAllSites physical_dimension bandwith_dimension number_of_sites) == number_of_sites
+                    length (computeBandwidthDimensionsAtAllSites number_of_sites physical_dimension bandwith_dimension) == number_of_sites
             -- @-node:gcross.20091113142219.2534:has the right number of entries
             -- @+node:gcross.20091113142219.2516:doesn't grow too fast from the left
             ,testProperty "doesn't grow too fast from the left" $
                 \(PDI physical_dimension) (BI bandwith_dimension) (NOSI number_of_sites) ->
                     all (\(x,y) -> y <= physical_dimension * x) $
-                        computeBandwidthDimensionsAtAllSites physical_dimension bandwith_dimension number_of_sites
+                        computeBandwidthDimensionsAtAllSites number_of_sites physical_dimension bandwith_dimension
             -- @-node:gcross.20091113142219.2516:doesn't grow too fast from the left
             -- @+node:gcross.20091113142219.2518:doesn't grow too fast from the right
             ,testProperty "doesn't grow too fast from the right" $
                 \(PDI physical_dimension) (BI bandwith_dimension) (NOSI number_of_sites) ->
                     all (\(x,y) -> x <= physical_dimension * y) $
-                        computeBandwidthDimensionsAtAllSites physical_dimension bandwith_dimension number_of_sites
+                        computeBandwidthDimensionsAtAllSites number_of_sites physical_dimension bandwith_dimension
             -- @-node:gcross.20091113142219.2518:doesn't grow too fast from the right
             -- @+node:gcross.20091113142219.2511:complains if too large
             ,testProperty "complains if too large" $
@@ -120,7 +120,7 @@ main = defaultMain
                     Control.Exception.catch
                         ((evaluate
                             .
-                            flip (computeBandwidthDimensionSequence physical_dimension) number_of_sites
+                            computeBandwidthDimensionSequence number_of_sites physical_dimension
                             .
                             product
                             .

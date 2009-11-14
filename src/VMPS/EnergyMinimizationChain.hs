@@ -131,7 +131,7 @@ optimizeSite tolerance maximum_number_of_iterations chain@EnergyMinimizationChai
 -- @-node:gcross.20091113142219.1687:optimizeSite
 -- @+node:gcross.20091113142219.1699:computeBandwidthDimensionSequence
 computeBandwidthDimensionSequence :: Int -> Int -> Int -> [Int]
-computeBandwidthDimensionSequence physical_dimension bandwidth_dimension number_of_sites =
+computeBandwidthDimensionSequence number_of_sites physical_dimension bandwidth_dimension =
     let go :: Int -> Int -> [Int] -> (Int,[Int])
         go list_length next_bandwidth_dimension list
             | next_bandwidth_dimension >= bandwidth_dimension
@@ -145,9 +145,9 @@ computeBandwidthDimensionSequence physical_dimension bandwidth_dimension number_
 -- @-node:gcross.20091113142219.1699:computeBandwidthDimensionSequence
 -- @+node:gcross.20091113142219.2519:computeBandwidthDimensionsAtAllSites
 computeBandwidthDimensionsAtAllSites :: Int -> Int -> Int -> [(Int,Int)]
-computeBandwidthDimensionsAtAllSites physical_dimension bandwidth_dimension number_of_sites =
+computeBandwidthDimensionsAtAllSites number_of_sites physical_dimension bandwidth_dimension =
     uncurry zip . (id &&& tail) $
-        computeBandwidthDimensionSequence physical_dimension bandwidth_dimension number_of_sites
+        computeBandwidthDimensionSequence number_of_sites physical_dimension bandwidth_dimension
 -- @-node:gcross.20091113142219.2519:computeBandwidthDimensionsAtAllSites
 -- @-node:gcross.20091113142219.1678:Functions
 -- @-others
