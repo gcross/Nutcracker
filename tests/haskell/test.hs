@@ -26,29 +26,13 @@ import Text.Printf
 
 import System.IO.Unsafe
 
+import VMPS.Miscellaneous
 import VMPS.Tensors
 import VMPS.Wrappers
 -- @-node:gcross.20091111171052.1610:<< Import needed modules >>
 -- @nl
 
 -- @+others
--- @+node:gcross.20091112145455.1676:Classes
--- @+node:gcross.20091111171052.1664:AlmostEq
-class AlmostEq a where
-    (~=) :: a -> a -> Bool
-
-instance AlmostEq Double where
-    x ~= y = abs (x-y) < 1e-7
-
-instance (AlmostEq a) => AlmostEq [a] where
-    x ~= y = all (uncurry (~=)) $ zip x y
-
-instance (AlmostEq a, RealFloat a) => AlmostEq (Complex a) where
-    (a :+ b) ~= (c :+ d) = (a ~= c) && (b ~= d)
-
-x /~ y = not (x ~= y)
--- @-node:gcross.20091111171052.1664:AlmostEq
--- @-node:gcross.20091112145455.1676:Classes
 -- @-others
 
 main = defaultMain

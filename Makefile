@@ -20,6 +20,7 @@ obj/%.o: src/%.f Makefile
 	${FC} ${FFLAGS} -c $< -o $@
 
 OBJS = \
+	obj/VMPS/Miscellaneous.o \
 	obj/VMPS/Tensors.o \
 	obj/VMPS/Wrappers.o \
 	obj/core.o \

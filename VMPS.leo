@@ -58,6 +58,7 @@
 <v t="gcross.20091110205054.1939"><vh>@thin core.f95</vh></v>
 <v t="gcross.20091112145455.1619"><vh>@thin core-wrapper.c</vh></v>
 <v t="gcross.20091113125544.1651"><vh>@path VMPS</vh>
+<v t="gcross.20091113142219.1688"><vh>@thin Miscellaneous.hs</vh></v>
 <v t="gcross.20091110205054.1969"><vh>@thin Tensors.hs</vh></v>
 <v t="gcross.20091113125544.1653"><vh>@thin Wrappers.hs</vh></v>
 </v>
