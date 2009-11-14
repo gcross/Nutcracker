@@ -11,9 +11,11 @@ module VMPS.EnergyMinimizationChain where
 
 -- @<< Import needed modules >>
 -- @+node:gcross.20091113142219.1663:<< Import needed modules >>
+import Control.Arrow
 import Control.Exception
 
 import Data.Complex
+import Data.Function
 
 import VMPS.Miscellaneous
 import VMPS.Tensors
@@ -141,6 +143,12 @@ computeBandwidthDimensionSequence physical_dimension bandwidth_dimension number_
     in if filler_length < 1 then error "The supplied bandwidth dimension is too large for the given physical dimension and number of sites."
         else reverse prefix_list ++ replicate filler_length bandwidth_dimension ++ prefix_list 
 -- @-node:gcross.20091113142219.1699:computeBandwidthDimensionSequence
+-- @+node:gcross.20091113142219.2519:computeBandwidthDimensionsAtAllSites
+computeBandwidthDimensionsAtAllSites :: Int -> Int -> Int -> [(Int,Int)]
+computeBandwidthDimensionsAtAllSites physical_dimension bandwidth_dimension number_of_sites =
+    uncurry zip . (id &&& tail) $
+        computeBandwidthDimensionSequence physical_dimension bandwidth_dimension number_of_sites
+-- @-node:gcross.20091113142219.2519:computeBandwidthDimensionsAtAllSites
 -- @-node:gcross.20091113142219.1678:Functions
 -- @-others
 -- @-node:gcross.20091113142219.1659:@thin EnergyMinimizationChain.hs

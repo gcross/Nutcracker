@@ -79,7 +79,7 @@ main = defaultMain
     [testGroup "VMPS.EnergyMinimizationChain"
         -- @    @+others
         -- @+node:gcross.20091113142219.1853:computeBandwidthDimensionSequence
-        [testGroup "computeExpectation"
+        [testGroup "computeBandwidthDimensionSequence"
             -- @    @+others
             -- @+node:gcross.20091113142219.2505:gets there eventually
             [testProperty "gets there eventually" $
@@ -91,17 +91,28 @@ main = defaultMain
                 \(PDI physical_dimension) (BI bandwith_dimension) (NOSI number_of_sites) ->
                     length (computeBandwidthDimensionSequence physical_dimension bandwith_dimension number_of_sites) == number_of_sites + 1
             -- @-node:gcross.20091113142219.2507:has the right number of entries
+            -- @-others
+            ]
+        -- @-node:gcross.20091113142219.1853:computeBandwidthDimensionSequence
+        -- @+node:gcross.20091113142219.2532:computeBandwidthDimensionsAtAllSites
+        ,testGroup "computeBandwidthDimensionsAtAllSites"
+            -- @    @+others
+            -- @+node:gcross.20091113142219.2534:has the right number of entries
+            [testProperty "has the right number of entries" $
+                \(PDI physical_dimension) (BI bandwith_dimension) (NOSI number_of_sites) ->
+                    length (computeBandwidthDimensionsAtAllSites physical_dimension bandwith_dimension number_of_sites) == number_of_sites
+            -- @-node:gcross.20091113142219.2534:has the right number of entries
             -- @+node:gcross.20091113142219.2516:doesn't grow too fast from the left
             ,testProperty "doesn't grow too fast from the left" $
                 \(PDI physical_dimension) (BI bandwith_dimension) (NOSI number_of_sites) ->
-                    and . uncurry (zipWith (\x y -> y <= physical_dimension * x)) . (id &&& tail) $
-                        computeBandwidthDimensionSequence physical_dimension bandwith_dimension number_of_sites
+                    all (\(x,y) -> y <= physical_dimension * x) $
+                        computeBandwidthDimensionsAtAllSites physical_dimension bandwith_dimension number_of_sites
             -- @-node:gcross.20091113142219.2516:doesn't grow too fast from the left
             -- @+node:gcross.20091113142219.2518:doesn't grow too fast from the right
             ,testProperty "doesn't grow too fast from the right" $
                 \(PDI physical_dimension) (BI bandwith_dimension) (NOSI number_of_sites) ->
-                    and . uncurry (zipWith (\x y -> x <= physical_dimension * y)) . (tail &&& id) $
-                        computeBandwidthDimensionSequence physical_dimension bandwith_dimension number_of_sites
+                    all (\(x,y) -> x <= physical_dimension * y) $
+                        computeBandwidthDimensionsAtAllSites physical_dimension bandwith_dimension number_of_sites
             -- @-node:gcross.20091113142219.2518:doesn't grow too fast from the right
             -- @+node:gcross.20091113142219.2511:complains if too large
             ,testProperty "complains if too large" $
@@ -124,7 +135,7 @@ main = defaultMain
             -- @-node:gcross.20091113142219.2511:complains if too large
             -- @-others
             ]
-        -- @-node:gcross.20091113142219.1853:computeBandwidthDimensionSequence
+        -- @-node:gcross.20091113142219.2532:computeBandwidthDimensionsAtAllSites
         -- @-others
         ]
     -- @-node:gcross.20091113142219.1701:VMPS.EnergyMinimizationChain
