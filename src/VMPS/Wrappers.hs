@@ -217,7 +217,7 @@ makeNormalizedForAbsorbingLeft tensor_to_normalize tensor_to_denormalize =
                         p_tensor_to_normalize
                         p_tensor_to_denormalize
                         p_normalized_state_site_tensor_storable_array
-            when (info < 0) $ fail "unable to normalize tensor!"
+            when (info /= 0) $ fail "unable to normalize tensor!"
             normalized_state_site_tensor <- fmap 
                 (LeftAbsorptionNormalizedStateSiteTensor . StateSiteTensor bl br d)
                 (unpinComplexArray normalized_state_site_tensor_storable_array)
@@ -267,7 +267,7 @@ makeNormalizedForAbsorbingRight tensor_to_denormalize tensor_to_normalize =
                         p_tensor_to_denormalize
                         p_tensor_to_normalize
                         p_denormalized_state_site_tensor_storable_array
-            when (info < 0) $ fail "unable to normalize tensor!"
+            when (info /= 0) $ fail "unable to normalize tensor!"
             denormalized_state_site_tensor <- fmap 
                 (UnnormalizedStateSiteTensor . StateSiteTensor bll bl dl)
                 (unpinComplexArray denormalized_state_site_tensor_storable_array)

@@ -17,6 +17,8 @@ import Control.Exception
 import Data.Complex
 import Data.Function
 
+import Debug.Trace
+
 import VMPS.Miscellaneous
 import VMPS.Tensors
 import VMPS.Wrappers
@@ -124,10 +126,12 @@ optimizeSite tolerance maximum_number_of_iterations chain@EnergyMinimizationChai
                 maximum_number_of_iterations
     in assert (imagPart eigenvalue ~= 0) $
         (number_of_iterations, chain
-            {   siteStateTensor = state_site_tensor
+            {   siteStateTensor = optimal_site_tensor
             ,   chainEnergy = realPart eigenvalue
             }
         )
+
+optimizeSite_ = optimizeSite 0 1000
 -- @-node:gcross.20091113142219.1687:optimizeSite
 -- @+node:gcross.20091113142219.1699:computeBandwidthDimensionSequence
 computeBandwidthDimensionSequence :: Int -> Int -> Int -> [Int]

@@ -12,6 +12,8 @@ module VMPS.Miscellaneous where
 -- @<< Import needed modules >>
 -- @+node:gcross.20091113142219.1696:<< Import needed modules >>
 import Data.Complex
+
+import Debug.Trace
 -- @-node:gcross.20091113142219.1696:<< Import needed modules >>
 -- @nl
 
@@ -33,6 +35,11 @@ instance (AlmostEq a, RealFloat a) => AlmostEq (Complex a) where
 x /~ y = not (x ~= y)
 -- @-node:gcross.20091113142219.1692:AlmostEq
 -- @-node:gcross.20091113142219.1691:Classes
+-- @+node:gcross.20091114174920.1744:Functions
+-- @+node:gcross.20091114174920.1746:echo
+echo x = trace (show x) x
+-- @-node:gcross.20091114174920.1746:echo
+-- @-node:gcross.20091114174920.1744:Functions
 -- @-others
 -- @-node:gcross.20091113142219.1688:@thin Miscellaneous.hs
 -- @-leo

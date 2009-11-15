@@ -66,44 +66,12 @@ instance Arbitrary PhysicalDimensionInt where
 -- @-node:gcross.20091113142219.2504:PhysicalDimensionInt
 -- @-node:gcross.20091113142219.2499:Generators
 -- @+node:gcross.20091113142219.2508:Helpers
--- @+node:gcross.20091113142219.2509:echo
-echo x = trace (show x) x
--- @-node:gcross.20091113142219.2509:echo
 -- @+node:gcross.20091114174920.1734:assertAlmostEqual
 assertAlmostEqual :: (Show a, AlmostEq a) => String -> a -> a -> Assertion
 assertAlmostEqual message x y
     | x ~= y     = return ()
     | otherwise  = assertFailure $ message ++ " (" ++ show x ++ " /~ " ++ show y ++ ")"
 -- @-node:gcross.20091114174920.1734:assertAlmostEqual
--- @+node:gcross.20091114174920.1737:createEnergyInvarianceTest
-createEnergyInvarianceTest number_of_sites bandwidth_dimension = 
-        let operator_site_tensors = replicate number_of_sites $ makeOperatorSiteTensorFromPaulis 1 1 [((1,1),I)]
-        in do
-            chain <- generateRandomizedChain operator_site_tensors 2 2
-            let chains_going_right =
-                    take number_of_sites
-                    .
-                    iterate moveActiveSiteRightByOneBead
-                    $
-                    chain
-                chains_going_left =
-                    take number_of_sites
-                    .
-                    iterate moveActiveSiteLeftByOneBead
-                    .
-                    last
-                    $
-                    chains_going_right
-                correct_energy = chainEnergy chain
-            forM_ (zip [1..] . map chainEnergy $ chains_going_right) $ \(site_number::Int,energy) ->
-                assertAlmostEqual
-                    (printf "Did the energy change after moving right to site %i?" site_number)
-                    correct_energy energy
-            forM_ (zip [number_of_sites,number_of_sites-1..] . map chainEnergy $ chains_going_left) $ \(site_number,energy) ->
-                assertAlmostEqual
-                    (printf "Did the energy change after moving left to site %i?" site_number)
-                    correct_energy energy
--- @-node:gcross.20091114174920.1737:createEnergyInvarianceTest
 -- @-node:gcross.20091113142219.2508:Helpers
 -- @-others
 
@@ -172,18 +140,106 @@ main = defaultMain
             -- @-others
             ]
         -- @-node:gcross.20091113142219.2532:computeBandwidthDimensionsAtAllSites
-        -- @+node:gcross.20091114174920.1728:Chain movement
-        ,testGroup "Chain energy invariant under movement"
-            [testCase (show number_of_sites ++ " sites") $ 
-                createEnergyInvarianceTest number_of_sites bandwidth_dimension
-            | (number_of_sites,bandwidth_dimension) <-
-                [( 2, 2)
-                ,( 3, 2)
-                ,( 4, 4)
-                ,( 5, 4)
-                ,(10,16)
-            ]]
-        -- @-node:gcross.20091114174920.1728:Chain movement
+        -- @+node:gcross.20091114174920.1728:Chain energy invariant under movement
+        ,testGroup "Chain energy invariant under movement" $
+            let 
+            -- @nonl
+            -- @<< createEnergyInvarianceTest >>
+            -- @+node:gcross.20091114174920.1738:<< createEnergyInvarianceTest >>
+            createEnergyInvarianceTest number_of_sites bandwidth_dimension = do
+                let operator_site_tensors = replicate number_of_sites $ makeOperatorSiteTensorFromPaulis 1 1 [((1,1),I)]
+                chain <- generateRandomizedChain operator_site_tensors 2 bandwidth_dimension
+                let chains_going_right =
+                        take number_of_sites
+                        .
+                        iterate moveActiveSiteRightByOneBead
+                        $
+                        chain
+                    chains_going_left =
+                        take number_of_sites
+                        .
+                        iterate moveActiveSiteLeftByOneBead
+                        .
+                        last
+                        $
+                        chains_going_right
+                    correct_energy = chainEnergy chain
+                forM_ (zip [1..] . map chainEnergy $ chains_going_right) $ \(site_number::Int,energy) ->
+                    assertAlmostEqual
+                        (printf "Did the energy change after moving right to site %i?" site_number)
+                        correct_energy energy
+                forM_ (zip [number_of_sites,number_of_sites-1..] . map chainEnergy $ chains_going_left) $ \(site_number,energy) ->
+                    assertAlmostEqual
+                        (printf "Did the energy change after moving left to site %i?" site_number)
+                        correct_energy energy
+            -- @-node:gcross.20091114174920.1738:<< createEnergyInvarianceTest >>
+            -- @nl
+            in map (\(number_of_sites,bandwidth_dimension) ->
+                    testCase (printf "%i sites, bandwidth = %i" number_of_sites bandwidth_dimension) $ 
+                        createEnergyInvarianceTest number_of_sites bandwidth_dimension
+            ) $ concat
+                [[ ( 2,b) | b <- [1,2]]
+                ,[ ( 3,b) | b <- [1,2]]
+                ,[ ( 4,b) | b <- [1,2,4]]
+                ,[ ( 5,b) | b <- [1,2,4]]
+                ,[ (10,b) | b <- [1,2,4,8,16]]
+                ]
+        -- @-node:gcross.20091114174920.1728:Chain energy invariant under movement
+        -- @+node:gcross.20091114174920.1743:Optimizer tests
+        ,testGroup "Optimizer tests"
+            -- @    @+others
+            -- @+node:gcross.20091114174920.1741:magnetic field
+            [testGroup "Chain energy invariant under movement" $
+                let 
+                -- @nonl
+                -- @<< createMagneticFieldTest >>
+                -- @+node:gcross.20091114174920.1742:<< createMagneticFieldTest >>
+                createMagneticFieldTest number_of_sites bandwidth_dimension =
+                    generateRandomizedChain 
+                        (
+                            [makeOperatorSiteTensorFromPaulis 1 2 [((1,1),I),((1,2),Z)]]
+                            ++
+                            (replicate (number_of_sites-2) $
+                                makeOperatorSiteTensorFromPaulis 2 2 [((1,1),I),((1,2),Z),((2,2),I)])
+                            ++
+                            [makeOperatorSiteTensorFromPaulis 2 1 [((1,1),Z),((2,1),I)]]
+                        )
+                        2 bandwidth_dimension
+                    >>= return
+                        .
+                        chainEnergy
+                        .
+                        moveActiveSiteLeftByOneBead
+                        .
+                        (!! (number_of_sites - 2))
+                        .
+                        iterate (snd . optimizeSite_ . moveActiveSiteLeftByOneBead)
+                        .
+                        (!! (number_of_sites - 1))
+                        .
+                        iterate (snd . optimizeSite_ . moveActiveSiteRightByOneBead)
+                        .
+                        snd
+                        .
+                        optimizeSite_
+                    >>=
+                    assertAlmostEqual "Is the optimal energy correct?" (-(toEnum number_of_sites))
+                -- @-node:gcross.20091114174920.1742:<< createMagneticFieldTest >>
+                -- @nl
+                in map (\(number_of_sites,bandwidth_dimension) ->
+                        testCase (printf "%i sites, bandwidth = %i" number_of_sites bandwidth_dimension) $ 
+                            createMagneticFieldTest number_of_sites bandwidth_dimension
+                ) $ concat
+                    [[ ( 2,b) | b <- [2]]
+                    ,[ ( 3,b) | b <- [2]]
+                    ,[ ( 4,b) | b <- [2,4]]
+                    ,[ ( 5,b) | b <- [2,4]]
+                    ,[ (10,b) | b <- [2,4,8,16]]
+                    ]
+            -- @-node:gcross.20091114174920.1741:magnetic field
+            -- @-others
+            ]
+        -- @-node:gcross.20091114174920.1743:Optimizer tests
         -- @-others
         ]
     -- @-node:gcross.20091113142219.1701:VMPS.EnergyMinimizationChain

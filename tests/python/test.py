@@ -710,10 +710,11 @@ class optimize(unittest.TestCase):
         sparse_operator_indices = ones((2,1))
         sparse_operator_matrices = diag([1,1,1,-1])
         sparse_operator_matrices = sparse_operator_matrices.reshape(sparse_operator_matrices.shape + (1,))
-        info, result = vmps.optimize(left_environment,sparse_operator_indices,sparse_operator_matrices,right_environment,"SR",0,10000,crand(1,1,4))
+        info, result, eigenvalue = vmps.optimize(left_environment,sparse_operator_indices,sparse_operator_matrices,right_environment,"SR",0,10000,crand(1,1,4))
         self.assertEqual(0,info)
         result /= result[0,0,-1]
         self.assertTrue(allclose(result.ravel(),array([0,0,0,1])))
+        self.assertAlmostEqual(-1,eigenvalue)
     #@-node:gcross.20091109182634.1546:test_correct_result_for_simple_operator
     #@-others
 #@-node:gcross.20091109182634.1543:optimize
@@ -749,6 +750,23 @@ class norm_denorm_going_left(unittest.TestCase):
             tensordot(tensor_to_denormalize,tensor_to_normalize,(0,1)),
             tensordot(denormalized_tensor,normalized_tensor,(0,1)),
         ))
+
+    @with_checker
+    def testCorrectnessOnLarge(self):
+        br = 10
+        bl = 20
+        bll = 40
+        dl = d = 2
+        tensor_to_denormalize = crand(bl,bll,d)
+        tensor_to_normalize = crand(br,bl,d)
+        info, denormalized_tensor, normalized_tensor = vmps.norm_denorm_going_left(tensor_to_denormalize,tensor_to_normalize)
+        self.assertEqual(0,info)
+        should_be_identity = tensordot(normalized_tensor.conj(),normalized_tensor,((0,2,),)*2)
+        self.assertTrue(allclose(identity(bl),should_be_identity))
+        self.assertTrue(allclose(
+            tensordot(tensor_to_denormalize,tensor_to_normalize,(0,1)),
+            tensordot(denormalized_tensor,normalized_tensor,(0,1)),
+        ))
 #@-node:gcross.20091110205054.1933:norm_denorm_going_left
 #@+node:gcross.20091110205054.1937:norm_denorm_going_right
 class norm_denorm_going_right(unittest.TestCase):
@@ -757,6 +775,23 @@ class norm_denorm_going_right(unittest.TestCase):
 
     @with_checker
     def testCorrectness(self,brr=irange(2,4),br=irange(2,4),bl=irange(2,4)):
+        dr = d = 2
+        tensor_to_normalize = crand(br,bl,d)
+        tensor_to_denormalize = crand(brr,br,dr)
+        info, normalized_tensor, denormalized_tensor = vmps.norm_denorm_going_right(tensor_to_normalize,tensor_to_denormalize)
+        self.assertEqual(0,info)
+        should_be_identity = tensordot(normalized_tensor.conj(),normalized_tensor,((1,2,),)*2)
+        self.assertTrue(allclose(identity(br),should_be_identity))
+        self.assertTrue(allclose(
+            tensordot(tensor_to_normalize,tensor_to_denormalize,(0,1)),
+            tensordot(normalized_tensor,denormalized_tensor,(0,1)),
+        ))
+
+    @with_checker
+    def testCorrectnessOnLarge(self):
+        bl = 10
+        br = 20
+        brr = 40
         dr = d = 2
         tensor_to_normalize = crand(br,bl,d)
         tensor_to_denormalize = crand(brr,br,dr)
