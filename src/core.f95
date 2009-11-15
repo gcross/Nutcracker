@@ -676,6 +676,11 @@ function norm_denorm_going_left( &
   integer :: mysvd
   external :: zgemm
 
+  denormalized_site_tensor = 0
+  normalized_site_tensor = 0
+  denormalized_tensor_workspace = 0
+  normalized_tensor_workspace = 0
+
   if (br*d < bl) then
     print *, "Not enough degrees of freedom to normalize."
     print *, br*d, "<", bl
@@ -751,6 +756,11 @@ function norm_denorm_going_right( &
 
   integer :: mysvd
   external :: zgemm
+
+  denormalized_site_tensor = 0
+  normalized_site_tensor = 0
+  denormalized_tensor_workspace_1 = 0
+  denormalized_tensor_workspace_2 = 0
 
   if (bl*d < br) then
     print *, "Not enough degrees of freedom to normalize."
