@@ -858,6 +858,70 @@ subroutine create_bandwidth_increase_matrix(old_bandwidth,new_bandwidth,matrix)
 
 end subroutine
 !@-node:gcross.20091115094257.1712:create_bandwidth_increase_matrix
+!@+node:gcross.20091115094257.1721:absorb_bi_matrix_from_left
+subroutine absorb_bi_matrix_from_left( &
+  br,bl,d, &
+  new_bl, &
+  old_state_site_tensor, &
+  matrix, &
+  new_state_site_tensor &
+)
+  integer, intent(in) :: br, bl, d, new_bl
+  double complex, intent(in) :: &
+    old_state_site_tensor(br,bl,d), &
+    matrix(new_bl,bl)
+  double complex, intent(out) :: &
+    new_state_site_tensor(br,new_bl,d)
+
+  double complex :: &
+    intermediate_tensor_1(br,d,bl), &
+    intermediate_tensor_2(br,d,new_bl)
+
+  intermediate_tensor_1 = reshape(old_state_site_tensor,shape(intermediate_tensor_1),order=(/1,3,2/))
+  intermediate_tensor_2 = 0
+
+  call zgemm( &
+    'N','C', &
+    br*d,new_bl,bl, &
+    (1d0,0d0), &
+    intermediate_tensor_1, br*d, &
+    matrix, new_bl, &
+    (0d0,0d0), &
+    intermediate_tensor_2, br*d &
+  )
+
+  new_state_site_tensor = reshape(intermediate_tensor_2,shape(new_state_site_tensor),order=(/1,3,2/))
+
+end subroutine
+!@-node:gcross.20091115094257.1721:absorb_bi_matrix_from_left
+!@+node:gcross.20091115094257.1717:absorb_bi_matrix_from_right
+subroutine absorb_bi_matrix_from_right( &
+  br,bl,d, &
+  new_br, &
+  old_state_site_tensor, &
+  matrix, &
+  new_state_site_tensor &
+)
+  integer, intent(in) :: br, bl, d, new_br
+  double complex, intent(in) :: &
+    old_state_site_tensor(br,bl,d), &
+    matrix(new_br,br)
+  double complex, intent(out) :: &
+    new_state_site_tensor(new_br,bl,d)
+
+  new_state_site_tensor = 0
+  call zgemm( &
+    'N','N', &
+    new_br,bl*d,br, &
+    (1d0,0d0), &
+    matrix, new_br, &
+    old_state_site_tensor, br, &
+    (0d0,0d0), &
+    new_state_site_tensor, new_br &
+  )
+
+end subroutine
+!@-node:gcross.20091115094257.1717:absorb_bi_matrix_from_right
 !@-node:gcross.20091115094257.1711:Bandwidth increasing
 !@-others
 !@-node:gcross.20091110205054.1939:@thin core.f95

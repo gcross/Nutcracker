@@ -809,6 +809,7 @@ class norm_denorm_going_right(unittest.TestCase):
         ))
 #@-node:gcross.20091110205054.1937:norm_denorm_going_right
 #@-node:gcross.20091110205054.1948:Normalization
+#@+node:gcross.20091115094257.1724:Bandwidth increase
 #@+node:gcross.20091115094257.1714:create_bandwidth_increase_matrix
 class create_bandwidth_increase_matrix(unittest.TestCase):
     #@    @+others
@@ -821,6 +822,52 @@ class create_bandwidth_increase_matrix(unittest.TestCase):
         should_be_identity = dot(matrix.transpose().conj(),matrix)
         self.assertTrue(allclose(identity(old_bandwidth),should_be_identity))
 #@-node:gcross.20091115094257.1714:create_bandwidth_increase_matrix
+#@+node:gcross.20091115094257.1723:absorb_bi_matrix_from_left
+class absorb_bi_matrix_from_left(unittest.TestCase):
+    #@    @+others
+    #@-others
+
+    @with_checker
+    def testCorrectness(self,br=irange(1,4),bl=irange(2,8),new_bl=irange(9,32),d=irange(2,4)):
+        old_state_site_tensor = crand(br,bl,d)
+        matrix = vmps.create_bandwidth_increase_matrix(bl,new_bl)
+        new_state_site_tensor = vmps.absorb_bi_matrix_from_left(old_state_site_tensor,matrix)
+        self.assertTrue(allclose(tensordot(old_state_site_tensor,matrix.transpose().conj(),(1,0)).transpose(0,2,1),new_state_site_tensor))
+        new_state_site_tensor = vmps.absorb_bi_matrix_from_left(new_state_site_tensor,matrix.conj().transpose())
+        self.assertTrue(allclose(old_state_site_tensor,new_state_site_tensor))
+#@-node:gcross.20091115094257.1723:absorb_bi_matrix_from_left
+#@+node:gcross.20091115094257.1719:absorb_bi_matrix_from_right
+class absorb_bi_matrix_from_right(unittest.TestCase):
+    #@    @+others
+    #@-others
+
+    @with_checker
+    def testCorrectness(self,br=irange(2,8),new_br=irange(9,32),bl=irange(1,4),d=irange(2,4)):
+        old_state_site_tensor = crand(br,bl,d)
+        matrix = vmps.create_bandwidth_increase_matrix(br,new_br)
+        new_state_site_tensor = vmps.absorb_bi_matrix_from_right(old_state_site_tensor,matrix)
+        self.assertTrue(allclose(tensordot(matrix,old_state_site_tensor,(1,0)),new_state_site_tensor))
+        new_state_site_tensor = vmps.absorb_bi_matrix_from_right(new_state_site_tensor,matrix.transpose().conj())
+        self.assertTrue(allclose(old_state_site_tensor,new_state_site_tensor))
+#@-node:gcross.20091115094257.1719:absorb_bi_matrix_from_right
+#@+node:gcross.20091115094257.1725:bandwidth_increase
+class bandwidth_increase(unittest.TestCase):
+    #@    @+others
+    #@-others
+
+    @with_checker
+    def testCorrectness(self,bl=irange(1,4),bm=irange(2,8),new_bm=irange(9,32),br=irange(1,4),d=irange(2,4)):
+        matrix = vmps.create_bandwidth_increase_matrix(bm,new_bm)
+        old_left_tensor = crand(bm,bl,d)
+        new_left_tensor = vmps.absorb_bi_matrix_from_right(old_left_tensor,matrix)
+        old_right_tensor = crand(br,bm,d)
+        new_right_tensor = vmps.absorb_bi_matrix_from_left(old_right_tensor,matrix)
+        self.assertTrue(allclose(
+            tensordot(old_left_tensor,old_right_tensor,(0,1)),
+            tensordot(new_left_tensor,new_right_tensor,(0,1)),
+        ))
+#@-node:gcross.20091115094257.1725:bandwidth_increase
+#@-node:gcross.20091115094257.1724:Bandwidth increase
 #@-node:gcross.20091110205054.1947:Tests
 #@-others
 
@@ -840,6 +887,9 @@ tests = [
     norm_denorm_going_left,
     norm_denorm_going_right,
     create_bandwidth_increase_matrix,
+    absorb_bi_matrix_from_left,
+    absorb_bi_matrix_from_right,
+    bandwidth_increase,
 ]
 
 #@<< Runner >>
