@@ -150,23 +150,23 @@ main = defaultMain
                 let left_boundary = trivial_left_boundary
                     right_boundary = trivial_right_boundary
                     state_site_tensor = UnnormalizedStateSiteTensor $ StateSiteTensor 1 1 1 trivial_complex_array
-                    operator_indices = unsafePerformIO $ newArray (1,2) 1
-                    operator_matrices = unsafePerformIO $ newListArray (1,2) [1.0,0.0]
+                    operator_indices = unsafePerformIO $ newArray ((1,1),(1,2)) 1
+                    operator_matrices = unsafePerformIO $ newListArray ((1,1,1),(1,1,1)) [1.0 + 0.0]
                     operator_site_tensor = OperatorSiteTensor 1 1 1 1 operator_indices operator_matrices
                     expectation = computeExpectation left_boundary state_site_tensor operator_site_tensor right_boundary
                 in assertEqual "is the correct result returned?" (1 :+ 0) expectation
             -- @-node:gcross.20091111171052.1650:trivial, all dimensions 1
-            -- @+node:gcross.20091113142219.1683:trivial, all dimensions 1
+            -- @+node:gcross.20091113142219.1683:trivial, all dimensions 1, imaginary
             ,testCase "trivial, all dimensions 1, imaginary" $
                 let left_boundary = trivial_left_boundary
                     right_boundary = trivial_right_boundary
                     state_site_tensor = UnnormalizedStateSiteTensor $ StateSiteTensor 1 1 1 trivial_complex_array
-                    operator_indices = unsafePerformIO $ newArray (1,2) 1
-                    operator_matrices = unsafePerformIO $ newListArray (1,2) [0.0,1.0]
+                    operator_indices = unsafePerformIO $ newArray ((1,1),(1,2)) 1
+                    operator_matrices = unsafePerformIO $ newListArray ((1,1,1),(1,1,1)) [0 :+ 1]
                     operator_site_tensor = OperatorSiteTensor 1 1 1 1 operator_indices operator_matrices
                     expectation = computeExpectation left_boundary state_site_tensor operator_site_tensor right_boundary
                 in assertEqual "is the correct result returned?" (0 :+ 1) expectation
-            -- @-node:gcross.20091113142219.1683:trivial, all dimensions 1
+            -- @-node:gcross.20091113142219.1683:trivial, all dimensions 1, imaginary
             -- @+node:gcross.20091111171052.1655:trivial, d =2
             ,testCase "trivial, d = 2" $
                 assertEqual "are the correct results returned for all calls?"
@@ -176,9 +176,7 @@ main = defaultMain
                     let left_boundary = trivial_left_boundary
                         right_boundary = trivial_right_boundary
                         state_site_tensor = UnnormalizedStateSiteTensor . StateSiteTensor 1 1 2 . complexArrayFromList $ state
-                        operator_indices = unsafePerformIO $ newArray (1,2) 1
-                        operator_matrices = unsafePerformIO $ newListArray (1,8) [1,0, 0,0, 0,0, -1,0]
-                        operator_site_tensor = OperatorSiteTensor 1 1 2 1 operator_indices operator_matrices
+                        operator_site_tensor = makeOperatorSiteTensorFromPaulis 1 1 [((1,1),Z)]
                     in computeExpectation left_boundary state_site_tensor operator_site_tensor right_boundary
                 ) [[1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,1]]
             -- @-node:gcross.20091111171052.1655:trivial, d =2
@@ -193,12 +191,12 @@ main = defaultMain
                 let left_boundary = trivial_left_boundary
                     right_boundary = trivial_right_boundary
                     state_site_tensor = UnnormalizedStateSiteTensor . StateSiteTensor 1 1 4 . complexArrayFromList $ replicate (4*2) 1
-                    operator_indices = unsafePerformIO $ newArray (1,2) 1
-                    operator_matrices = unsafePerformIO $ newListArray (1,4*4*2)
-                        [1,0, 0,0, 0,0, 0,0
-                        ,0,0, 1,0, 0,0, 0,0
-                        ,0,0, 0,0, 1,0, 0,0
-                        ,0,0, 0,0, 0,0,-1,0
+                    operator_indices = unsafePerformIO $ newArray ((1,1),(1,2)) 1
+                    operator_matrices = unsafePerformIO $ newListArray ((1,1,1),(1,4,4))
+                        [ 1, 0, 0, 0
+                        , 0, 1, 0, 0
+                        , 0, 0, 1, 0
+                        , 0, 0, 0,-1
                         ]
                     operator_site_tensor = OperatorSiteTensor 1 1 4 1 operator_indices operator_matrices
                     (_, eigenvalue, (UnnormalizedStateSiteTensor (StateSiteTensor bl br d (ComplexArray actual_array)))) =
@@ -229,8 +227,8 @@ main = defaultMain
             [testCase "trivial, all dimensions 1" $
                 let left_boundary = trivial_left_boundary
                     state_site_tensor = LeftAbsorptionNormalizedStateSiteTensor $ StateSiteTensor 1 1 1 trivial_complex_array
-                    operator_indices = unsafePerformIO $ newArray (1,2) 1
-                    operator_matrices = unsafePerformIO $ newListArray (1,2) [1.0,0.0]
+                    operator_indices = unsafePerformIO $ newArray ((1,1),(1,2)) 1
+                    operator_matrices = unsafePerformIO $ newListArray ((1,1,1),(1,1,1)) [1]
                     operator_site_tensor = OperatorSiteTensor 1 1 1 1 operator_indices operator_matrices
                     LeftBoundaryTensor (BoundaryTensor br cr (ComplexArray actual_array)) = contractSOSLeft left_boundary state_site_tensor operator_site_tensor
                     components = elems actual_array
@@ -243,8 +241,8 @@ main = defaultMain
             ,testCase "trivial, c = 2" $
                 let left_boundary = LeftBoundaryTensor . BoundaryTensor 1 1 . ComplexArray . listArray (1,2) $ [1.0,0.0]
                     state_site_tensor = LeftAbsorptionNormalizedStateSiteTensor $ StateSiteTensor 1 1 1 trivial_complex_array
-                    operator_indices = unsafePerformIO $ newListArray (1,2) [1,2]
-                    operator_matrices = unsafePerformIO $ newListArray (1,2) [0.0,1.0]
+                    operator_indices = unsafePerformIO $ newListArray ((1,1),(1,2)) [1,2]
+                    operator_matrices = unsafePerformIO $ newListArray ((1,1,1),(1,1,1)) [0 :+ 1]
                     operator_site_tensor = OperatorSiteTensor 1 2 1 1 operator_indices operator_matrices
                     LeftBoundaryTensor (BoundaryTensor br cr (ComplexArray actual_array)) = contractSOSLeft left_boundary state_site_tensor operator_site_tensor
                     components = elems actual_array
@@ -263,8 +261,8 @@ main = defaultMain
             [testCase "trivial, all dimensions 1" $
                 let right_boundary = trivial_right_boundary
                     state_site_tensor = RightAbsorptionNormalizedStateSiteTensor $ StateSiteTensor 1 1 1 trivial_complex_array
-                    operator_indices = unsafePerformIO $ newArray (1,2) 1
-                    operator_matrices = unsafePerformIO $ newListArray (1,2) [1.0,0.0]
+                    operator_indices = unsafePerformIO $ newArray ((1,1),(1,2)) 1
+                    operator_matrices = unsafePerformIO $ newListArray ((1,1,1),(1,1,1)) [1]
                     operator_site_tensor = OperatorSiteTensor 1 1 1 1 operator_indices operator_matrices
                     RightBoundaryTensor (BoundaryTensor br cr (ComplexArray actual_array)) = contractSOSRight right_boundary state_site_tensor operator_site_tensor
                     components = elems actual_array
@@ -277,8 +275,8 @@ main = defaultMain
             ,testCase "trivial, c = 2" $
                 let right_boundary = RightBoundaryTensor . BoundaryTensor 1 1 . ComplexArray . listArray (1,2) $ [1.0,0.0]
                     state_site_tensor = RightAbsorptionNormalizedStateSiteTensor $ StateSiteTensor 1 1 1 trivial_complex_array
-                    operator_indices = unsafePerformIO $ newListArray (1,2) [2,1]
-                    operator_matrices = unsafePerformIO $ newListArray (1,2) [0.0,1.0]
+                    operator_indices = unsafePerformIO $ newListArray ((1,1),(1,2)) [2,1]
+                    operator_matrices = unsafePerformIO $ newListArray ((1,1,1),(1,1,1)) [0 :+ 1]
                     operator_site_tensor = OperatorSiteTensor 2 1 1 1 operator_indices operator_matrices
                     RightBoundaryTensor (BoundaryTensor bl cl (ComplexArray actual_array)) = contractSOSRight right_boundary state_site_tensor operator_site_tensor
                     components = elems actual_array

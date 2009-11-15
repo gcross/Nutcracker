@@ -14,6 +14,7 @@ module VMPS.Tensors where
 
 -- @<< Import needed modules >>
 -- @+node:gcross.20091111171052.1599:<< Import needed modules >>
+import Control.Arrow
 import Control.Exception
 import Control.Monad
 
@@ -25,6 +26,8 @@ import Data.Int
 
 import Foreign.Ptr
 import Foreign.Storable
+
+import System.IO.Unsafe
 
 import Text.Printf
 -- @-node:gcross.20091111171052.1599:<< Import needed modules >>
@@ -45,6 +48,9 @@ unpinArray arr = liftM2 listArray (getBounds arr) (getElems arr)
 -- @-node:gcross.20091111171052.1658:unpinArray
 -- @-node:gcross.20091111171052.1593:Utilitity Functions
 -- @+node:gcross.20091111171052.1591:Types
+-- @+node:gcross.20091114174920.1712:Pauli
+data Pauli = I | X | Y | Z
+-- @-node:gcross.20091114174920.1712:Pauli
 -- @+node:gcross.20091111171052.1596:ComplexArray
 newtype ComplexArray = ComplexArray { unwrapComplexArray :: UArray Int Double } deriving (Show)
 
@@ -195,16 +201,60 @@ data OperatorSiteTensor = OperatorSiteTensor
     ,   operatorRightBandwidth :: !Int
     ,   operatorPhysicalDimension :: !Int
     ,   operatorNumberOfMatrices :: !Int
-    ,   operatorIndices :: StorableArray Int Int32
-    ,   operatorMatrices :: StorableArray Int Double
+    ,   operatorIndices :: StorableArray (Int,Int) Int32
+    ,   operatorMatrices :: StorableArray (Int,Int,Int) (Complex Double)
     }
 
+-- @+others
+-- @+node:gcross.20091114174920.1715:withPinnedOperatorSiteTensor
 withPinnedOperatorSiteTensor :: OperatorSiteTensor -> (Int -> Ptr Int32 -> Ptr Double -> IO a) -> IO a
 withPinnedOperatorSiteTensor operator_site_tensor thunk = 
     (withStorableArray . operatorIndices) operator_site_tensor $ \p_indices ->
-    (withStorableArray . operatorMatrices) operator_site_tensor $ \p_matrices ->
-    thunk (operatorNumberOfMatrices operator_site_tensor) p_indices p_matrices
-
+    (withStorableArray . operatorMatrices) operator_site_tensor $
+    thunk (operatorNumberOfMatrices operator_site_tensor) p_indices . castPtr
+-- @nonl
+-- @-node:gcross.20091114174920.1715:withPinnedOperatorSiteTensor
+-- @+node:gcross.20091114174920.1716:makeOperatorSiteTensorFromPaulis
+makeOperatorSiteTensorFromPaulis ::
+    Int ->
+    Int ->
+    [((Int32,Int32),Pauli)] ->
+    OperatorSiteTensor
+makeOperatorSiteTensorFromPaulis left_bandwidth right_bandwidth  elements =
+    let number_of_elements = length elements
+    in unsafePerformIO $ do
+        operator_indices <- newArray ((1,1),(number_of_elements,2)) 0
+        operator_matrices <- newArray ((1,1,1),(number_of_elements,2,2)) 0
+        let go :: Int -> [((Int32,Int32),Pauli)] -> IO ()
+            go _ [] = return ()
+            go index (((left_index,right_index),pauli):rest) = do
+                writeArray operator_indices (index,1) left_index
+                writeArray operator_indices (index,2) right_index
+                case pauli of
+                    I -> do
+                        writeArray operator_matrices (index,1,1) 1
+                        writeArray operator_matrices (index,2,2) 1
+                    X -> do
+                        writeArray operator_matrices (index,1,2) 1
+                        writeArray operator_matrices (index,2,1) 1
+                    Y -> do
+                        writeArray operator_matrices (index,1,2) (0 :+ (-1))
+                        writeArray operator_matrices (index,2,1) (0 :+ ( 1))
+                    Z -> do
+                        writeArray operator_matrices (index,1,1) 1
+                        writeArray operator_matrices (index,2,2) (-1)
+                go (index+1) rest
+        go 1 elements
+        return OperatorSiteTensor
+            {   operatorLeftBandwidth = left_bandwidth
+            ,   operatorRightBandwidth = right_bandwidth
+            ,   operatorPhysicalDimension = 2
+            ,   operatorNumberOfMatrices = number_of_elements
+            ,   operatorIndices = operator_indices
+            ,   operatorMatrices = operator_matrices
+            }
+-- @-node:gcross.20091114174920.1716:makeOperatorSiteTensorFromPaulis
+-- @+node:gcross.20091114174920.1717:(Connected instances)
 instance Connected OperatorSiteTensor UnnormalizedStateSiteTensor where
     (<-?->) = makeConnectedTest
         "Operator and (unnormalized) state site tensors disagree over the physical dimension!"
@@ -222,6 +272,9 @@ instance Connected OperatorSiteTensor RightAbsorptionNormalizedStateSiteTensor w
         "Operator and (unnormalized) state site tensors disagree over the physical dimension!"
         operatorPhysicalDimension
         physicalDimensionOfState
+-- @-node:gcross.20091114174920.1717:(Connected instances)
+-- @-others
+
 -- @-node:gcross.20091111171052.1598:Operator Site Tensor
 -- @-node:gcross.20091113142219.2538:Tensors
 -- @-node:gcross.20091111171052.1591:Types
@@ -241,6 +294,23 @@ class Pinnable a where
     withPinnedTensor :: a -> (Ptr Double -> IO b) -> IO b
 -- @-node:gcross.20091112145455.1648:Pinnable
 -- @-node:gcross.20091111171052.1601:Classes
+-- @+node:gcross.20091114174920.1720:Instances
+-- @+node:gcross.20091114174920.1721:Storable (Complex a)
+complexPtrToRealAndImagPtrs :: Ptr (Complex Double) -> (Ptr Double, Ptr Double)
+complexPtrToRealAndImagPtrs p_complex =
+    let p_real_part = castPtr p_complex
+        p_imag_part = plusPtr p_real_part . sizeOf $ (undefined :: Double)
+    in (p_real_part, p_imag_part)
+
+instance Storable (Complex Double) where
+    sizeOf _ = 2 * sizeOf (undefined :: Double)
+    alignment _ = 2 * alignment (undefined :: Double)
+    peek = uncurry (liftM2 (:+)) . (peek *** peek) . complexPtrToRealAndImagPtrs
+    poke p_complex (real_part :+ imag_part) =
+        let (p_real_part, p_imag_part) = complexPtrToRealAndImagPtrs p_complex
+        in poke p_real_part real_part >> poke p_imag_part imag_part
+-- @-node:gcross.20091114174920.1721:Storable (Complex a)
+-- @-node:gcross.20091114174920.1720:Instances
 -- @-others
 -- @-node:gcross.20091110205054.1969:@thin Tensors.hs
 -- @-leo
