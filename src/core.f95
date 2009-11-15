@@ -922,6 +922,60 @@ subroutine absorb_bi_matrix_from_right( &
 
 end subroutine
 !@-node:gcross.20091115094257.1717:absorb_bi_matrix_from_right
+!@+node:gcross.20091115105949.1728:increase_bandwidth_between
+function increase_bandwidth_between( &
+  bl,bm,br, &
+  dl,dr, &
+  new_bm, &
+  normalized_tensor, &
+  denormalized_tensor, &
+  output_denormalized_tensor, &
+  output_normalized_tensor &
+) result (info)
+  integer, intent(in) :: bl, bm, br, dl, dr, new_bm
+  double complex, intent(in) :: &
+    normalized_tensor(bm,bl,dl), &
+    denormalized_tensor(br,bm,dr)
+  double complex, intent(out) :: &
+    output_denormalized_tensor(new_bm,bl,dl), &
+    output_normalized_tensor(br,new_bm,dr)
+
+  double complex :: &
+    bandwidth_increase_matrix(new_bm,bm), &
+    enlarged_tensor_1(new_bm,bl,dl), &
+    enlarged_tensor_2(br,new_bm,dr)
+
+  integer :: info, norm_denorm_going_left
+
+  call create_bandwidth_increase_matrix(bm,new_bm,bandwidth_increase_matrix)
+
+  call absorb_bi_matrix_from_right( &
+      bm,bl,dl, &
+      new_bm, &
+      normalized_tensor, &
+      bandwidth_increase_matrix, &
+      enlarged_tensor_1 &
+    )
+
+  call absorb_bi_matrix_from_left( &
+      br,bm,dr, &
+      new_bm, &
+      denormalized_tensor, &
+      bandwidth_increase_matrix, &
+      enlarged_tensor_2 &
+    )
+
+  info = norm_denorm_going_left( &
+      bl,new_bm,br, &
+      dl,dr, &
+      enlarged_tensor_1, &
+      enlarged_tensor_2, &
+      output_denormalized_tensor, &
+      output_normalized_tensor &
+    )
+
+end function
+!@-node:gcross.20091115105949.1728:increase_bandwidth_between
 !@-node:gcross.20091115094257.1711:Bandwidth increasing
 !@-others
 !@-node:gcross.20091110205054.1939:@thin core.f95

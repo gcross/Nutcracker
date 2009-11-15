@@ -850,23 +850,31 @@ class absorb_bi_matrix_from_right(unittest.TestCase):
         new_state_site_tensor = vmps.absorb_bi_matrix_from_right(new_state_site_tensor,matrix.transpose().conj())
         self.assertTrue(allclose(old_state_site_tensor,new_state_site_tensor))
 #@-node:gcross.20091115094257.1719:absorb_bi_matrix_from_right
-#@+node:gcross.20091115094257.1725:bandwidth_increase
-class bandwidth_increase(unittest.TestCase):
+#@+node:gcross.20091115094257.1725:increase_bandwidth_between
+class increase_bandwidth_between(unittest.TestCase):
     #@    @+others
     #@-others
 
     @with_checker
-    def testCorrectness(self,bl=irange(1,4),bm=irange(2,8),new_bm=irange(9,32),br=irange(1,4),d=irange(2,4)):
-        matrix = vmps.create_bandwidth_increase_matrix(bm,new_bm)
-        old_left_tensor = crand(bm,bl,d)
-        new_left_tensor = vmps.absorb_bi_matrix_from_right(old_left_tensor,matrix)
-        old_right_tensor = crand(br,bm,d)
-        new_right_tensor = vmps.absorb_bi_matrix_from_left(old_right_tensor,matrix)
+    def testCorrectness(self,
+        bl=irange(2,4),
+        bm=irange(2,4),
+        new_bm=irange(5,8),
+        br=irange(2,4),
+        dl=irange(4,5),
+        dr=irange(4,5)
+    ):
+        old_left_tensor = crand(bm,bl,dl)
+        old_right_tensor = crand(br,bm,dr)
+        info, new_left_tensor, new_right_tensor = vmps.increase_bandwidth_between(new_bm,old_left_tensor,old_right_tensor)
+        self.assertEqual(0,info)
+        should_be_identity = tensordot(new_right_tensor.conj(),new_right_tensor,((0,2,),)*2)
+        self.assertTrue(allclose(identity(new_bm),should_be_identity))
         self.assertTrue(allclose(
             tensordot(old_left_tensor,old_right_tensor,(0,1)),
             tensordot(new_left_tensor,new_right_tensor,(0,1)),
         ))
-#@-node:gcross.20091115094257.1725:bandwidth_increase
+#@-node:gcross.20091115094257.1725:increase_bandwidth_between
 #@-node:gcross.20091115094257.1724:Bandwidth increase
 #@-node:gcross.20091110205054.1947:Tests
 #@-others
@@ -889,7 +897,7 @@ tests = [
     create_bandwidth_increase_matrix,
     absorb_bi_matrix_from_left,
     absorb_bi_matrix_from_right,
-    bandwidth_increase,
+    increase_bandwidth_between,
 ]
 
 #@<< Runner >>
