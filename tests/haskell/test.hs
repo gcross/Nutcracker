@@ -12,6 +12,7 @@
 -- @+node:gcross.20091111171052.1610:<< Import needed modules >>
 import Control.Arrow
 import Control.Exception
+import Control.Monad
 
 import Data.Array.Storable
 import Data.Array.Unboxed
@@ -74,6 +75,35 @@ assertAlmostEqual message x y
     | x ~= y     = return ()
     | otherwise  = assertFailure $ message ++ " (" ++ show x ++ " /~ " ++ show y ++ ")"
 -- @-node:gcross.20091114174920.1734:assertAlmostEqual
+-- @+node:gcross.20091114174920.1737:createEnergyInvarianceTest
+createEnergyInvarianceTest number_of_sites bandwidth_dimension = 
+        let operator_site_tensors = replicate number_of_sites $ makeOperatorSiteTensorFromPaulis 1 1 [((1,1),I)]
+        in do
+            chain <- generateRandomizedChain operator_site_tensors 2 2
+            let chains_going_right =
+                    take number_of_sites
+                    .
+                    iterate moveActiveSiteRightByOneBead
+                    $
+                    chain
+                chains_going_left =
+                    take number_of_sites
+                    .
+                    iterate moveActiveSiteLeftByOneBead
+                    .
+                    last
+                    $
+                    chains_going_right
+                correct_energy = chainEnergy chain
+            forM_ (zip [1..] . map chainEnergy $ chains_going_right) $ \(site_number::Int,energy) ->
+                assertAlmostEqual
+                    (printf "Did the energy change after moving right to site %i?" site_number)
+                    correct_energy energy
+            forM_ (zip [number_of_sites,number_of_sites-1..] . map chainEnergy $ chains_going_left) $ \(site_number,energy) ->
+                assertAlmostEqual
+                    (printf "Did the energy change after moving left to site %i?" site_number)
+                    correct_energy energy
+-- @-node:gcross.20091114174920.1737:createEnergyInvarianceTest
 -- @-node:gcross.20091113142219.2508:Helpers
 -- @-others
 
@@ -143,23 +173,16 @@ main = defaultMain
             ]
         -- @-node:gcross.20091113142219.2532:computeBandwidthDimensionsAtAllSites
         -- @+node:gcross.20091114174920.1728:Chain movement
-        ,testGroup "Chain movement"
-            -- @    @+others
-            -- @+node:gcross.20091114174920.1729:2 sites
-            [testCase "2 sites" $
-                    let operator_site_tensors = replicate 2 $ makeOperatorSiteTensorFromPaulis 1 1 [((1,1),I)]
-                    in do
-                        chain <- generateRandomizedChain operator_site_tensors 2 2
-                        let chain_after_left_move = moveActiveSiteRightByOneBead chain
-                            chain_after_right_move = moveActiveSiteLeftByOneBead chain_after_left_move
-                            energy1 = chainEnergy chain
-                            energy2 = chainEnergy chain_after_right_move
-                            energy3 = chainEnergy chain_after_left_move
-                        assertAlmostEqual "Did the energy remaing the same after moving right?" energy1 energy2
-                        assertAlmostEqual "Did the energy remaing the same after moving right then back left?" energy1 energy3
-            -- @-node:gcross.20091114174920.1729:2 sites
-            -- @-others
-            ]
+        ,testGroup "Chain energy invariant under movement"
+            [testCase (show number_of_sites ++ " sites") $ 
+                createEnergyInvarianceTest number_of_sites bandwidth_dimension
+            | (number_of_sites,bandwidth_dimension) <-
+                [( 2, 2)
+                ,( 3, 2)
+                ,( 4, 4)
+                ,( 5, 4)
+                ,(10,16)
+            ]]
         -- @-node:gcross.20091114174920.1728:Chain movement
         -- @-others
         ]
