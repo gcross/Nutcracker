@@ -167,7 +167,7 @@ generateRandomizedChain operator_site_tensors physical_dimension bandwidth_dimen
                     remaining
         (first_site_left_bandwidth_dimension, first_site_right_bandwidth_dimension) = head state_site_bandwidth_dimensions
     in do
-        (right_boundary,right_neighbors) <- go trivial_right_boundary [] (reverse $ zip state_site_bandwidth_dimensions operator_site_tensors)
+        (right_boundary,right_neighbors) <- go trivial_right_boundary [] (reverse . tail $ zip state_site_bandwidth_dimensions operator_site_tensors)
         unnormalized_state_site_tensor <- unnormalized_randomizer . head $ state_site_bandwidth_dimensions
         return $
             let chain = EnergyMinimizationChain

@@ -68,6 +68,12 @@ instance Arbitrary PhysicalDimensionInt where
 -- @+node:gcross.20091113142219.2509:echo
 echo x = trace (show x) x
 -- @-node:gcross.20091113142219.2509:echo
+-- @+node:gcross.20091114174920.1734:assertAlmostEqual
+assertAlmostEqual :: (Show a, AlmostEq a) => String -> a -> a -> Assertion
+assertAlmostEqual message x y
+    | x ~= y     = return ()
+    | otherwise  = assertFailure $ message ++ " (" ++ show x ++ " /~ " ++ show y ++ ")"
+-- @-node:gcross.20091114174920.1734:assertAlmostEqual
 -- @-node:gcross.20091113142219.2508:Helpers
 -- @-others
 
@@ -136,6 +142,25 @@ main = defaultMain
             -- @-others
             ]
         -- @-node:gcross.20091113142219.2532:computeBandwidthDimensionsAtAllSites
+        -- @+node:gcross.20091114174920.1728:Chain movement
+        ,testGroup "Chain movement"
+            -- @    @+others
+            -- @+node:gcross.20091114174920.1729:2 sites
+            [testCase "2 sites" $
+                    let operator_site_tensors = replicate 2 $ makeOperatorSiteTensorFromPaulis 1 1 [((1,1),I)]
+                    in do
+                        chain <- generateRandomizedChain operator_site_tensors 2 2
+                        let chain_after_left_move = moveActiveSiteRightByOneBead chain
+                            chain_after_right_move = moveActiveSiteLeftByOneBead chain_after_left_move
+                            energy1 = chainEnergy chain
+                            energy2 = chainEnergy chain_after_right_move
+                            energy3 = chainEnergy chain_after_left_move
+                        assertAlmostEqual "Did the energy remaing the same after moving right?" energy1 energy2
+                        assertAlmostEqual "Did the energy remaing the same after moving right then back left?" energy1 energy3
+            -- @-node:gcross.20091114174920.1729:2 sites
+            -- @-others
+            ]
+        -- @-node:gcross.20091114174920.1728:Chain movement
         -- @-others
         ]
     -- @-node:gcross.20091113142219.1701:VMPS.EnergyMinimizationChain

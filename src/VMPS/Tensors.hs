@@ -105,7 +105,7 @@ instance Connected LeftBoundaryTensor LeftAbsorptionNormalizedStateSiteTensor wh
 instance Connected LeftBoundaryTensor OperatorSiteTensor where
     (<-?->) = makeConnectedTest
         "Left boundary and operator site tensors disagree over the bandwidth dimension!"
-        (boundaryStateBandwidth . unwrapLeftBoundaryTensor)
+        (boundaryOperatorBandwidth . unwrapLeftBoundaryTensor)
         operatorLeftBandwidth
 
 trivial_left_boundary = LeftBoundaryTensor trivial_boundary
@@ -134,7 +134,7 @@ instance Connected OperatorSiteTensor RightBoundaryTensor where
     (<-?->) = makeConnectedTest
         "Right boundary and operator site tensors disagree over the bandwidth dimension!"
         operatorRightBandwidth
-        (boundaryStateBandwidth . unwrapRightBoundaryTensor)
+        (boundaryOperatorBandwidth . unwrapRightBoundaryTensor)
 
 trivial_right_boundary = RightBoundaryTensor trivial_boundary
 -- @-node:gcross.20091112145455.1651:<< Right boundary >>
