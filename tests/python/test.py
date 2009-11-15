@@ -1,14 +1,18 @@
 #@+leo-ver=4-thin
 #@+node:gcross.20091106154604.1979:@thin test.py
+#@<< Import needed modules >>
+#@+node:gcross.20091115094257.1715:<< Import needed modules >>
 import unittest
 from paycheck import *
-from numpy import array, zeros, all, double, tensordot, multiply, complex128, allclose, ones, diag, identity
+from numpy import array, zeros, all, double, tensordot, multiply, complex128, allclose, ones, diag, identity, dot
 from numpy.linalg import norm
 from numpy.random import rand
 from random import randint, choice
 import random
 import __builtin__
 import vmps
+#@-node:gcross.20091115094257.1715:<< Import needed modules >>
+#@nl
 
 #@+others
 #@+node:gcross.20091108152444.1533:Functions
@@ -805,6 +809,18 @@ class norm_denorm_going_right(unittest.TestCase):
         ))
 #@-node:gcross.20091110205054.1937:norm_denorm_going_right
 #@-node:gcross.20091110205054.1948:Normalization
+#@+node:gcross.20091115094257.1714:create_bandwidth_increase_matrix
+class create_bandwidth_increase_matrix(unittest.TestCase):
+    #@    @+others
+    #@-others
+
+    @with_checker
+    def testCorrectness(self,old_bandwidth=irange(2,8),new_bandwidth=irange(9,32)):
+        matrix = vmps.create_bandwidth_increase_matrix(old_bandwidth,new_bandwidth)
+        self.assertEqual((new_bandwidth,old_bandwidth),matrix.shape)
+        should_be_identity = dot(matrix.transpose().conj(),matrix)
+        self.assertTrue(allclose(identity(old_bandwidth),should_be_identity))
+#@-node:gcross.20091115094257.1714:create_bandwidth_increase_matrix
 #@-node:gcross.20091110205054.1947:Tests
 #@-others
 
@@ -823,6 +839,7 @@ tests = [
     rand_norm_state_site_tensor,
     norm_denorm_going_left,
     norm_denorm_going_right,
+    create_bandwidth_increase_matrix,
 ]
 
 #@<< Runner >>

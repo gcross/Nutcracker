@@ -820,6 +820,45 @@ function norm_denorm_going_right( &
 end function
 !@-node:gcross.20091110205054.1935:norm_denorm_going_right
 !@-node:gcross.20091110205054.1943:Normalization
+!@+node:gcross.20091115094257.1711:Bandwidth increasing
+!@+node:gcross.20091115094257.1712:create_bandwidth_increase_matrix
+subroutine create_bandwidth_increase_matrix(old_bandwidth,new_bandwidth,matrix)
+  integer, intent(in) :: old_bandwidth, new_bandwidth
+  double complex, intent(out) :: matrix(new_bandwidth,old_bandwidth)
+
+  integer :: info, mysvd, i, j
+  double complex :: &
+    u(new_bandwidth,old_bandwidth), &
+    s(old_bandwidth), &
+    vt(old_bandwidth,old_bandwidth), &
+    dummy(new_bandwidth,old_bandwidth)
+
+  matrix = 0
+
+  do j = 1, old_bandwidth
+  do i = 1, new_bandwidth
+    dummy(i,j) = rand()*(1d0,0d0) + rand()*(0d0,1d0)
+  end do
+  end do
+
+  info = mysvd(new_bandwidth,old_bandwidth,old_bandwidth,dummy,u,s,vt)
+  if (info /= 0) then
+    print *, "Error creating bandwidth increase matrix!  info = ",info
+  end if
+
+  call zgemm( &
+    'N','N', &
+    new_bandwidth,old_bandwidth,old_bandwidth, &
+    (1d0,0d0), &
+    u, new_bandwidth, &
+    vt, old_bandwidth, &
+    (0d0,0d0), &
+    matrix, new_bandwidth &
+  )
+
+end subroutine
+!@-node:gcross.20091115094257.1712:create_bandwidth_increase_matrix
+!@-node:gcross.20091115094257.1711:Bandwidth increasing
 !@-others
 !@-node:gcross.20091110205054.1939:@thin core.f95
 !@-leo
