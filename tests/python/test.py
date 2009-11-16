@@ -714,12 +714,40 @@ class optimize(unittest.TestCase):
         sparse_operator_indices = ones((2,1))
         sparse_operator_matrices = diag([1,1,1,-1])
         sparse_operator_matrices = sparse_operator_matrices.reshape(sparse_operator_matrices.shape + (1,))
-        info, result, eigenvalue = vmps.optimize(left_environment,sparse_operator_indices,sparse_operator_matrices,right_environment,"SR",0,10000,crand(1,1,4))
+        info, result, eigenvalue = vmps.optimize(left_environment,sparse_operator_indices,sparse_operator_matrices,right_environment,zeros((0,0)),"SR",0,10000,crand(1,1,4))
         self.assertEqual(0,info)
         result /= result[0,0,-1]
         self.assertTrue(allclose(result.ravel(),array([0,0,0,1])))
         self.assertAlmostEqual(-1,eigenvalue)
     #@-node:gcross.20091109182634.1546:test_correct_result_for_simple_operator
+    #@+node:gcross.20091115201814.1735:test_orthogonalization_1
+    def test_orthogonalization_1(self):
+        left_environment = ones((1,1,1),complex128)
+        right_environment = ones((1,1,1),complex128)
+        sparse_operator_indices = ones((2,1))
+        sparse_operator_matrices = diag([1,1,-1,-2])
+        sparse_operator_matrices = sparse_operator_matrices.reshape(sparse_operator_matrices.shape + (1,))
+        projectors = array([[0,0,0,1]]).transpose()
+        info, result, eigenvalue = vmps.optimize(left_environment,sparse_operator_indices,sparse_operator_matrices,right_environment,projectors,"SR",0,10000,crand(1,1,4))
+        self.assertEqual(0,info)
+        result /= result[0,0,-2]
+        self.assertTrue(allclose(result.ravel(),array([0,0,1,0])))
+        self.assertAlmostEqual(-1,eigenvalue)
+    #@-node:gcross.20091115201814.1735:test_orthogonalization_1
+    #@+node:gcross.20091115201814.1738:test_orthogonalization_2
+    def test_orthogonalization_2(self):
+        left_environment = ones((1,1,1),complex128)
+        right_environment = ones((1,1,1),complex128)
+        sparse_operator_indices = ones((2,1))
+        sparse_operator_matrices = diag([-1,-2,-3,-4])
+        sparse_operator_matrices = sparse_operator_matrices.reshape(sparse_operator_matrices.shape + (1,))
+        projectors = array([[0,0,0,1],[0,0,1,0]]).transpose()
+        info, result, eigenvalue = vmps.optimize(left_environment,sparse_operator_indices,sparse_operator_matrices,right_environment,projectors,"SR",0,10000,crand(1,1,4))
+        self.assertEqual(0,info)
+        result /= result[0,0,1]
+        self.assertTrue(allclose(result.ravel(),array([0,1,0,0])))
+        self.assertAlmostEqual(-2,eigenvalue)
+    #@-node:gcross.20091115201814.1738:test_orthogonalization_2
     #@-others
 #@-node:gcross.20091109182634.1543:optimize
 #@+node:gcross.20091110205054.1924:rand_norm_state_site_tensor
