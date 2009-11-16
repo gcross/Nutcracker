@@ -169,19 +169,23 @@ class StateSiteTensorClass a where
     leftBandwidthOfState :: a -> Int
     rightBandwidthOfState :: a -> Int
     physicalDimensionOfState :: a -> Int
+    unnormalize :: a -> UnnormalizedStateSiteTensor
 
 instance StateSiteTensorClass UnnormalizedStateSiteTensor where
     leftBandwidthOfState = stateLeftBandwidth . unwrapUnnormalizedStateSiteTensor
     rightBandwidthOfState = stateRightBandwidth . unwrapUnnormalizedStateSiteTensor
     physicalDimensionOfState = statePhysicalDimension . unwrapUnnormalizedStateSiteTensor
+    unnormalize = id
 instance StateSiteTensorClass LeftAbsorptionNormalizedStateSiteTensor where
     leftBandwidthOfState = stateLeftBandwidth . unwrapLeftAbsorptionNormalizedStateSiteTensor
     rightBandwidthOfState = stateRightBandwidth . unwrapLeftAbsorptionNormalizedStateSiteTensor
     physicalDimensionOfState = statePhysicalDimension . unwrapLeftAbsorptionNormalizedStateSiteTensor
+    unnormalize = UnnormalizedStateSiteTensor . unwrapLeftAbsorptionNormalizedStateSiteTensor
 instance StateSiteTensorClass RightAbsorptionNormalizedStateSiteTensor where
     leftBandwidthOfState = stateLeftBandwidth . unwrapRightAbsorptionNormalizedStateSiteTensor
     rightBandwidthOfState = stateRightBandwidth . unwrapRightAbsorptionNormalizedStateSiteTensor
     physicalDimensionOfState = statePhysicalDimension . unwrapRightAbsorptionNormalizedStateSiteTensor
+    unnormalize = UnnormalizedStateSiteTensor . unwrapRightAbsorptionNormalizedStateSiteTensor
 
 instance Connected LeftAbsorptionNormalizedStateSiteTensor UnnormalizedStateSiteTensor where
     (<-?->) = makeConnectedTest

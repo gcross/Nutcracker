@@ -27,14 +27,21 @@ import VMPS.Wrappers
 
 -- @+others
 -- @+node:gcross.20091113142219.1664:Types
+-- @+node:gcross.20091115105949.1734:Neighbor
+data (StateSiteTensorClass b) => Neighbor a b = Neighbor
+    {   neighborBoundary :: a
+    ,   neighborState    :: b
+    ,   neighborOperator :: OperatorSiteTensor
+    }
+-- @-node:gcross.20091115105949.1734:Neighbor
 -- @+node:gcross.20091113142219.1665:EnergyMinimizationChain
 data EnergyMinimizationChain = EnergyMinimizationChain
     {   siteLeftBoundaryTensor :: LeftBoundaryTensor
     ,   siteStateTensor :: UnnormalizedStateSiteTensor
     ,   siteHamiltonianTensor :: OperatorSiteTensor
     ,   siteRightBoundaryTensor :: RightBoundaryTensor
-    ,   siteLeftNeighbors :: [(LeftBoundaryTensor,LeftAbsorptionNormalizedStateSiteTensor,OperatorSiteTensor)]
-    ,   siteRightNeighbors :: [(RightBoundaryTensor,RightAbsorptionNormalizedStateSiteTensor,OperatorSiteTensor)]
+    ,   siteLeftNeighbors :: [Neighbor LeftBoundaryTensor LeftAbsorptionNormalizedStateSiteTensor]
+    ,   siteRightNeighbors :: [Neighbor RightBoundaryTensor RightAbsorptionNormalizedStateSiteTensor]
     ,   siteNumber :: !Int
     ,   chainNumberOfSites :: !Int
     ,   chainEnergy :: Double
@@ -54,14 +61,19 @@ computeEnergy EnergyMinimizationChain
     in assert (imagPart expectation ~= 0) (realPart expectation)
 -- @-node:gcross.20091113142219.1679:computeEnergy
 -- @+node:gcross.20091113142219.1684:moveActiveSiteLeftByOneBead
-moveActiveSiteLeftByOneBead :: EnergyMinimizationChain -> EnergyMinimizationChain
-moveActiveSiteLeftByOneBead EnergyMinimizationChain { siteLeftNeighbors = [] } =
-    error "Chain is already at its leftmost bead!"
-moveActiveSiteLeftByOneBead EnergyMinimizationChain
+activateLeftNeighbor :: EnergyMinimizationChain -> EnergyMinimizationChain
+activateLeftNeighbor EnergyMinimizationChain { siteLeftNeighbors = [] } =
+    error "Chain is already at its leftmost site!"
+activateLeftNeighbor EnergyMinimizationChain
     {   siteStateTensor = state_tensor_to_normalize
     ,   siteHamiltonianTensor = old_hamiltonian_tensor
     ,   siteRightBoundaryTensor = old_right_boundary_tensor
-    ,   siteLeftNeighbors = (new_left_boundary,state_tensor_to_denormalize,new_hamiltonian_tensor):new_left_neighbors
+    ,   siteLeftNeighbors =
+            (Neighbor
+                new_left_boundary
+                state_tensor_to_denormalize
+                new_hamiltonian_tensor
+            ):new_left_neighbors
     ,   siteRightNeighbors = old_right_neighbors
     ,   siteNumber = old_site_number
     ,   chainNumberOfSites = number_of_sites
@@ -73,7 +85,12 @@ moveActiveSiteLeftByOneBead EnergyMinimizationChain
             ,   siteHamiltonianTensor = new_hamiltonian_tensor
             ,   siteRightBoundaryTensor = contractSOSRight old_right_boundary_tensor normalized_site_tensor old_hamiltonian_tensor
             ,   siteLeftNeighbors = new_left_neighbors
-            ,   siteRightNeighbors = (old_right_boundary_tensor,normalized_site_tensor,old_hamiltonian_tensor):old_right_neighbors
+            ,   siteRightNeighbors =
+                    (Neighbor
+                        old_right_boundary_tensor
+                        normalized_site_tensor
+                        old_hamiltonian_tensor
+                    ):old_right_neighbors
             ,   siteNumber = old_site_number-1
             ,   chainNumberOfSites = number_of_sites
             ,   chainEnergy = computeEnergy new_chain
@@ -81,15 +98,20 @@ moveActiveSiteLeftByOneBead EnergyMinimizationChain
     in new_chain
 -- @-node:gcross.20091113142219.1684:moveActiveSiteLeftByOneBead
 -- @+node:gcross.20091113142219.1686:moveActiveSiteRightByOneBead
-moveActiveSiteRightByOneBead :: EnergyMinimizationChain -> EnergyMinimizationChain
-moveActiveSiteRightByOneBead EnergyMinimizationChain { siteRightNeighbors = [] } =
-    error "Chain is already at its rightmost bead!"
-moveActiveSiteRightByOneBead EnergyMinimizationChain
+activateRightNeighbor :: EnergyMinimizationChain -> EnergyMinimizationChain
+activateRightNeighbor EnergyMinimizationChain { siteRightNeighbors = [] } =
+    error "Chain is already at its rightmost site!"
+activateRightNeighbor EnergyMinimizationChain
     {   siteLeftBoundaryTensor = old_left_boundary_tensor
     ,   siteStateTensor = state_tensor_to_normalize
     ,   siteHamiltonianTensor = old_hamiltonian_tensor
     ,   siteLeftNeighbors = old_left_neighbors
-    ,   siteRightNeighbors = (new_right_boundary,state_tensor_to_denormalize,new_hamiltonian_tensor):new_right_neighbors
+    ,   siteRightNeighbors =
+            (Neighbor
+                new_right_boundary
+                state_tensor_to_denormalize
+                new_hamiltonian_tensor
+            ):new_right_neighbors
     ,   siteNumber = old_site_number
     ,   chainNumberOfSites = number_of_sites
     } =
@@ -99,7 +121,12 @@ moveActiveSiteRightByOneBead EnergyMinimizationChain
             ,   siteStateTensor = active_site_tensor
             ,   siteHamiltonianTensor = new_hamiltonian_tensor
             ,   siteRightBoundaryTensor = new_right_boundary
-            ,   siteLeftNeighbors = (old_left_boundary_tensor,normalized_site_tensor,old_hamiltonian_tensor):old_left_neighbors
+            ,   siteLeftNeighbors =
+                    (Neighbor
+                        old_left_boundary_tensor
+                        normalized_site_tensor
+                        old_hamiltonian_tensor
+                    ):old_left_neighbors
             ,   siteRightNeighbors = new_right_neighbors
             ,   siteNumber = old_site_number+1
             ,   chainNumberOfSites = number_of_sites
@@ -167,7 +194,7 @@ generateRandomizedChain operator_site_tensors physical_dimension bandwidth_dimen
             >>=
             \site_state_tensor ->
                 go  (contractSOSRight right_environment site_state_tensor operator_site_tensor)
-                    ((right_environment,site_state_tensor,operator_site_tensor):current_neighbors)
+                    ((Neighbor right_environment site_state_tensor operator_site_tensor):current_neighbors)
                     remaining
         (first_site_left_bandwidth_dimension, first_site_right_bandwidth_dimension) = head state_site_bandwidth_dimensions
     in do

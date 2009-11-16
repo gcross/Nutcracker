@@ -152,13 +152,13 @@ main = defaultMain
                 let chains_going_right =
                         take number_of_sites
                         .
-                        iterate moveActiveSiteRightByOneBead
+                        iterate activateRightNeighbor
                         $
                         chain
                     chains_going_left =
                         take number_of_sites
                         .
-                        iterate moveActiveSiteLeftByOneBead
+                        iterate activateLeftNeighbor
                         .
                         last
                         $
@@ -209,15 +209,15 @@ main = defaultMain
                         .
                         chainEnergy
                         .
-                        moveActiveSiteLeftByOneBead
+                        activateLeftNeighbor
                         .
                         (!! (number_of_sites - 2))
                         .
-                        iterate (snd . optimizeSite_ . moveActiveSiteLeftByOneBead)
+                        iterate (snd . optimizeSite_ . activateLeftNeighbor)
                         .
                         (!! (number_of_sites - 1))
                         .
-                        iterate (snd . optimizeSite_ . moveActiveSiteRightByOneBead)
+                        iterate (snd . optimizeSite_ . activateRightNeighbor)
                         .
                         snd
                         .
