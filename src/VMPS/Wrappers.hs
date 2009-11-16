@@ -329,6 +329,8 @@ foreign import ccall unsafe "optimize" optimize ::
     Ptr Int32 -> -- sparse operator indices
     Ptr Double -> -- sparse operator matrices
     Ptr Double -> -- right environment
+    Int -> -- number of projectors
+    Ptr Double -> -- projectors
     CString -> -- which eigenvectors to select
     Double -> -- tolerance
     Ptr Int -> -- cap on the number of iterations / number of iterations that were used
@@ -380,6 +382,8 @@ computeOptimalSiteStateTensor
                     p_left_boundary
                     number_of_matrices p_operator_indices p_operator_matrices
                     p_right_boundary
+                    0
+                    nullPtr
                     p_strategy
                     tolerance
                     p_number_of_iterations
