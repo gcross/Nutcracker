@@ -654,6 +654,47 @@ class contract_sos_right(unittest.TestCase):
         self.assertTrue(allclose(actual_output_tensor,correct_output_tensor))
 #@-node:gcross.20091110205054.1909:contract_sos_right
 #@-node:gcross.20091110135225.1568:contract_sos
+#@+node:gcross.20091116094945.1741:contract_ss
+#@+node:gcross.20091116094945.1740:contract_ss_left
+contract_ss_left_correct_contractor = form_contractor([
+    ("L1","O3"),
+    ("L2","N2"),
+    ("O2","N1"),
+    ("O1","L'1"),
+    ("N3","L'2"),
+], [
+    ("L",2),
+    ("O",3),
+    ("N",3),
+], ("L'",2)
+)
+
+class contract_ss_left(unittest.TestCase):
+
+    @with_checker(number_of_calls=10)
+    def test_agreement_with_contractor(self,
+        nsl = irange(2,20),
+        nsr = irange(2,20),
+        osl = irange(2,20),
+        osr = irange(2,20),
+        d = irange(2,4),
+    ):
+        left_environment = crand(nsl,osl)
+        new_state_site_tensor = crand(nsr,nsl,d)
+        old_state_site_tensor = crand(osl,d,osr)
+        actual_output_tensor = vmps.contract_ss_left(
+            left_environment,
+            old_state_site_tensor,
+            new_state_site_tensor,
+        )
+        correct_output_tensor = contract_ss_left_correct_contractor(
+            left_environment,
+            old_state_site_tensor,
+            new_state_site_tensor,
+        )
+        self.assertTrue(allclose(actual_output_tensor,correct_output_tensor))
+#@-node:gcross.20091116094945.1740:contract_ss_left
+#@-node:gcross.20091116094945.1741:contract_ss
 #@+node:gcross.20091110205054.1918:compute_expectation
 compute_expectation_correct_contractor = form_contractor([
     ("L2","S*2"),
@@ -917,6 +958,7 @@ tests = [
     contract_sos_right_stage_2b,
     contract_sos_right_stage_2,
     contract_sos_right,
+    contract_ss_left,
     compute_expectation,
     optimize,
     rand_norm_state_site_tensor,

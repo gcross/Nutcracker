@@ -372,6 +372,57 @@ subroutine contract_sos_right( &
 end subroutine
 !@-node:gcross.20091110205054.1907:contract_sos_right
 !@-node:gcross.20091110205054.1911:Environment SOS contraction
+!@+node:gcross.20091115224921.1737:Environment SS contraction
+!@+node:gcross.20091115224921.1738:contract_ss_left
+subroutine contract_ss_left( &
+  b_left_old, b_right_old, &
+  b_left_new, b_right_new, &
+  d, &
+  left_environment, &
+  normalized_projector_site_tensor, &
+  normalized_state_site_tensor, &
+  new_left_environment &
+)
+
+  integer, intent(in) :: &
+    b_left_old, b_right_old, &
+    b_left_new, b_right_new, &
+    d
+  double complex, intent(in) :: &
+    left_environment(b_left_new,b_left_old), &
+    normalized_projector_site_tensor(b_left_old,d,b_right_old), &
+    normalized_state_site_tensor(b_right_new,b_left_new,d)
+  double complex, intent(out) :: new_left_environment(b_right_new,b_right_old)
+
+  double complex :: &
+    intermediate_tensor(b_left_new,d,b_right_old)
+
+  new_left_environment = 0
+
+  call zgemm( &
+      'N','N', &
+      b_left_new,d*b_right_old,b_left_old, &
+      (1d0,0d0), &
+      left_environment, b_left_new, &
+      normalized_projector_site_tensor, b_left_old, &
+      (0d0,0d0), &
+      intermediate_tensor, b_left_new &
+  )
+
+  call zgemm( &
+      'N','N', &
+      b_right_new,b_right_old,b_left_new*d, &
+      (1d0,0d0), &
+      normalized_state_site_tensor, b_right_new, &
+      intermediate_tensor, b_left_new*d, &
+      (0d0,0d0), &
+      new_left_environment, b_right_new &
+  )
+
+end subroutine
+!@nonl
+!@-node:gcross.20091115224921.1738:contract_ss_left
+!@-node:gcross.20091115224921.1737:Environment SS contraction
 !@+node:gcross.20091110205054.1916:compute_expectation
 subroutine compute_expectation( &
   bl, & ! state left bandwidth dimension
