@@ -422,6 +422,62 @@ subroutine contract_ss_left( &
 end subroutine
 !@nonl
 !@-node:gcross.20091115224921.1738:contract_ss_left
+!@+node:gcross.20091116094945.1743:contract_ss_right
+subroutine contract_ss_right( &
+  b_left_old, b_right_old, &
+  b_left_new, b_right_new, &
+  d, &
+  right_environment, &
+  normalized_projector_site_tensor, &
+  normalized_state_site_tensor, &
+  new_right_environment &
+)
+
+  integer, intent(in) :: &
+    b_left_old, b_right_old, &
+    b_left_new, b_right_new, &
+    d
+  double complex, intent(in) :: &
+    right_environment(b_right_old,b_right_new), &
+    normalized_projector_site_tensor(b_left_old,d,b_right_old), &
+    normalized_state_site_tensor(b_right_new,b_left_new,d)
+  double complex, intent(out) :: new_right_environment(b_left_old,b_left_new)
+
+  double complex :: &
+    intermediate_tensor(b_left_old,d,b_right_new), &
+    transposed_state_site_tensor(d,b_right_new,b_left_new)
+
+  intermediate_tensor = 0
+  new_right_environment = 0
+
+  call zgemm( &
+      'N','N', &
+      b_left_old*d,b_right_new,b_right_old, &
+      (1d0,0d0), &
+      normalized_projector_site_tensor, b_left_old*d, &
+      right_environment, b_right_old, &
+      (0d0,0d0), &
+      intermediate_tensor, b_left_old*d &
+  )
+
+  transposed_state_site_tensor = reshape( &
+      normalized_state_site_tensor, &
+      shape(transposed_state_site_tensor), &
+      order=(/2,3,1/) &
+  )
+
+  call zgemm( &
+      'N','N', &
+      b_left_old,b_left_new,d*b_right_new, &
+      (1d0,0d0), &
+      intermediate_tensor, b_left_old, &
+      transposed_state_site_tensor, d*b_right_new, &
+      (0d0,0d0), &
+      new_right_environment, b_left_old &
+  )
+
+end subroutine
+!@-node:gcross.20091116094945.1743:contract_ss_right
 !@-node:gcross.20091115224921.1737:Environment SS contraction
 !@+node:gcross.20091110205054.1916:compute_expectation
 subroutine compute_expectation( &
