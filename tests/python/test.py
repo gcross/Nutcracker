@@ -733,6 +733,45 @@ class contract_ss_right(unittest.TestCase):
         )
         self.assertTrue(allclose(actual_output_tensor,correct_output_tensor))
 #@-node:gcross.20091116094945.1745:contract_ss_right
+#@+node:gcross.20091116094945.1750:form_overlap_vector
+form_overlap_vector_correct_contractor = form_contractor([
+    ("R2","O1"),
+    ("R1","N3"),
+    ("O2","N1"),
+    ("O3","L1"),
+    ("L2","N2"),
+], [
+    ("L",2),
+    ("R",2),
+    ("O",3),
+], ("N",3)
+)
+
+class form_overlap_vector(unittest.TestCase):
+
+    @with_checker(number_of_calls=10)
+    def test_agreement_with_contractor(self,
+        nsl = irange(2,20),
+        nsr = irange(2,20),
+        osl = irange(2,20),
+        osr = irange(2,20),
+        d = irange(2,4),
+    ):
+        left_environment = crand(nsl,osl)
+        right_environment = crand(osr,nsr)
+        old_state_site_tensor = crand(osl,d,osr)
+        actual_output_tensor = vmps.form_overlap_vector(
+            left_environment,
+            right_environment,
+            old_state_site_tensor,
+        )
+        correct_output_tensor = form_overlap_vector_correct_contractor(
+            left_environment,
+            right_environment,
+            old_state_site_tensor,
+        )
+        self.assertTrue(allclose(actual_output_tensor,correct_output_tensor))
+#@-node:gcross.20091116094945.1750:form_overlap_vector
 #@-node:gcross.20091116094945.1741:contract_ss
 #@+node:gcross.20091110205054.1918:compute_expectation
 compute_expectation_correct_contractor = form_contractor([
@@ -999,6 +1038,7 @@ tests = [
     contract_sos_right,
     contract_ss_left,
     contract_ss_right,
+    form_overlap_vector,
     compute_expectation,
     optimize,
     rand_norm_state_site_tensor,

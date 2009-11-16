@@ -478,6 +478,59 @@ subroutine contract_ss_right( &
 
 end subroutine
 !@-node:gcross.20091116094945.1743:contract_ss_right
+!@+node:gcross.20091116094945.1748:form_overlap_vector
+subroutine form_overlap_vector( &
+  b_left_old, b_right_old, &
+  b_left_new, b_right_new, &
+  d, &
+  left_environment, &
+  right_environment, &
+  unnormalized_projector_site_tensor, &
+  overlap_vector &
+)
+
+  integer, intent(in) :: &
+    b_left_old, b_right_old, &
+    b_left_new, b_right_new, &
+    d
+  double complex, intent(in) :: &
+    left_environment(b_left_new,b_left_old), &
+    right_environment(b_right_old,b_right_new), &
+    unnormalized_projector_site_tensor(b_left_old,d,b_right_old)
+  double complex, intent(out) :: overlap_vector(b_right_new,b_left_new,d)
+
+  double complex :: &
+    intermediate_tensor(b_left_old,d,b_right_new), &
+    transposed_overlap_vector(b_left_new,d,b_right_new)
+
+  call zgemm( &
+      'N','N', &
+      b_left_old*d,b_right_new,b_right_old, &
+      (1d0,0d0), &
+      unnormalized_projector_site_tensor, b_left_old*d, &
+      right_environment, b_right_old, &
+      (0d0,0d0), &
+      intermediate_tensor, b_left_old*d &
+  )
+
+  call zgemm( &
+      'N','N', &
+      b_left_new,d*b_right_new,b_left_old, &
+      (1d0,0d0), &
+      left_environment, b_left_new, &
+      intermediate_tensor, b_left_old, &
+      (0d0,0d0), &
+      transposed_overlap_vector, b_left_new &
+  )
+
+  overlap_vector = reshape( &
+    transposed_overlap_vector, &
+    shape(overlap_vector), &
+    order=(/2,3,1/) &
+  )
+
+end subroutine
+!@-node:gcross.20091116094945.1748:form_overlap_vector
 !@-node:gcross.20091115224921.1737:Environment SS contraction
 !@+node:gcross.20091110205054.1916:compute_expectation
 subroutine compute_expectation( &
