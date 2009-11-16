@@ -13,11 +13,11 @@ module VMPS.EnergyMinimizationChain where
 -- @+node:gcross.20091113142219.1663:<< Import needed modules >>
 import Control.Arrow
 import Control.Exception
+import Control.Monad
 
 import Data.Complex
 import Data.Function
-
-import Debug.Trace
+import Data.List
 
 import VMPS.Miscellaneous
 import VMPS.Tensors
@@ -33,6 +33,9 @@ data (StateSiteTensorClass b) => Neighbor a b = Neighbor
     ,   neighborState    :: b
     ,   neighborOperator :: OperatorSiteTensor
     }
+
+type LeftNeighbor = Neighbor LeftBoundaryTensor LeftAbsorptionNormalizedStateSiteTensor
+type RightNeighbor = Neighbor RightBoundaryTensor RightAbsorptionNormalizedStateSiteTensor
 -- @-node:gcross.20091115105949.1734:Neighbor
 -- @+node:gcross.20091113142219.1665:EnergyMinimizationChain
 data EnergyMinimizationChain = EnergyMinimizationChain
@@ -40,8 +43,8 @@ data EnergyMinimizationChain = EnergyMinimizationChain
     ,   siteStateTensor :: UnnormalizedStateSiteTensor
     ,   siteHamiltonianTensor :: OperatorSiteTensor
     ,   siteRightBoundaryTensor :: RightBoundaryTensor
-    ,   siteLeftNeighbors :: [Neighbor LeftBoundaryTensor LeftAbsorptionNormalizedStateSiteTensor]
-    ,   siteRightNeighbors :: [Neighbor RightBoundaryTensor RightAbsorptionNormalizedStateSiteTensor]
+    ,   siteLeftNeighbors :: [LeftNeighbor]
+    ,   siteRightNeighbors :: [RightNeighbor]
     ,   siteNumber :: !Int
     ,   chainNumberOfSites :: !Int
     ,   chainEnergy :: Double
@@ -214,6 +217,115 @@ generateRandomizedChain operator_site_tensors physical_dimension bandwidth_dimen
                     }
             in chain
 -- @-node:gcross.20091113142219.2535:generateRandomizedChain
+-- @+node:gcross.20091115105949.1744:increaseChainBandwidth
+increaseChainBandwidth :: EnergyMinimizationChain -> Int -> Int -> IO EnergyMinimizationChain
+increaseChainBandwidth
+    chain@
+    EnergyMinimizationChain
+    {   siteRightNeighbors = neighbors
+    ,   siteLeftNeighbors = []
+    ,   chainNumberOfSites = number_of_sites
+    }
+    physical_dimension new_bandwidth
+ = (flip go1) []
+    .
+    zip (
+        reverse
+        .
+        (Neighbor
+            undefined
+            (
+                RightAbsorptionNormalizedStateSiteTensor
+                .
+                unwrapUnnormalizedStateSiteTensor
+                .
+                siteStateTensor
+                $
+                chain
+            )
+            undefined
+        :)
+        $
+        neighbors
+    )
+    .
+    tail
+    $
+    computeBandwidthDimensionSequence number_of_sites physical_dimension new_bandwidth
+  where
+    go1 ::
+        [(RightNeighbor,Int)] ->
+        [RightNeighbor] ->
+        IO EnergyMinimizationChain
+    go1 [] _ = error "The chain already had the desired bandwidth!"
+    go1 ((current_neighbor,desired_bandwidth):rest_neighbors) new_neighbors
+        | neighbor_bandwidth > desired_bandwidth
+            = error "The desired bandwidth is *less* than the current bandwidth!"
+        | neighbor_bandwidth == desired_bandwidth
+            = go1 rest_neighbors (current_neighbor:new_neighbors)
+        | otherwise
+            = go2
+                boundary
+                (unnormalize state)
+                operator
+                desired_bandwidth
+                rest_neighbors
+                new_neighbors
+      where
+        (Neighbor boundary state operator) = current_neighbor
+        neighbor_bandwidth = leftBandwidthOfState state
+    go2 ::
+        RightBoundaryTensor ->
+        UnnormalizedStateSiteTensor ->
+        OperatorSiteTensor ->
+        Int ->
+        [(RightNeighbor,Int)] ->
+        [RightNeighbor] ->
+        IO EnergyMinimizationChain
+    go2 right_boundary state_site_tensor _ _ [] new_right_neighbors
+        =
+        return $
+            let new_chain = chain
+                    {   siteRightBoundaryTensor = right_boundary
+                    ,   siteStateTensor = state_site_tensor
+                    ,   siteRightNeighbors = new_right_neighbors
+                    ,   chainEnergy = computeEnergy new_chain
+                    }
+            in new_chain
+    go2
+        right_boundary
+        state_site_tensor
+        operator_site_tensor
+        desired_bandwidth_at_site
+        old_neighbors@((
+            Neighbor
+            {   neighborState = next_state_site_tensor
+            ,   neighborOperator = next_operator_tensor
+            },
+            next_bandwidth_dimension
+        ):remaining_neighbors_to_process)
+        new_neighbors
+        =
+        increaseBandwidthBetween desired_bandwidth_at_site next_state_site_tensor state_site_tensor
+        >>= \(denormalized_state_site_tensor,normalized_state_site_tensor) ->
+        go2
+            (contractSOSRight right_boundary normalized_state_site_tensor operator_site_tensor)
+            denormalized_state_site_tensor
+            next_operator_tensor
+            next_bandwidth_dimension
+            remaining_neighbors_to_process
+            (
+                Neighbor
+                {   neighborState = normalized_state_site_tensor
+                ,   neighborBoundary = right_boundary
+                ,   neighborOperator = operator_site_tensor
+                }
+                :
+                new_neighbors
+            )
+
+increaseChainBandwidth _ _ _ = error "This algorithm is only designed to work when the chain is at its leftmost site."
+-- @-node:gcross.20091115105949.1744:increaseChainBandwidth
 -- @-node:gcross.20091113142219.1678:Functions
 -- @-others
 -- @-node:gcross.20091113142219.1659:@thin EnergyMinimizationChain.hs

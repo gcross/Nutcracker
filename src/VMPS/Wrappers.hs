@@ -392,6 +392,70 @@ computeOptimalSiteStateTensor
             state_site_tensor <- fmap (UnnormalizedStateSiteTensor . StateSiteTensor bl br d) (unpinComplexArray state_site_tensor_storable_array)
             return $ (number_of_iterations, eigenvalue, state_site_tensor)
 -- @-node:gcross.20091111171052.1656:computeOptimalSiteStateTensor
+-- @+node:gcross.20091115105949.1729:increaseBandwidthBetween
+foreign import ccall unsafe "increase_bandwidth_between" increase_bandwidth_between :: 
+    Int -> -- leftmost bandwidth dimension
+    Int -> -- middle bandwidth dimension
+    Int -> -- rightmost bandwidth dimension
+    Int -> -- new middle bandwidth dimension
+    Int -> -- left site physical dimension
+    Int -> -- right site physical dimension
+    Ptr Double -> -- left (normalized) state site tensor
+    Ptr Double -> -- right (unnormalized) state site tensor
+    Ptr Double -> -- output left (unnormalized) state site tensor
+    Ptr Double -> -- output right (normalized) state site tensor
+    IO Int
+
+increaseBandwidthBetween ::
+    Int ->
+    RightAbsorptionNormalizedStateSiteTensor ->
+    UnnormalizedStateSiteTensor ->
+    IO (UnnormalizedStateSiteTensor,RightAbsorptionNormalizedStateSiteTensor)
+increaseBandwidthBetween new_bm tensor_to_denormalize tensor_to_normalize =
+    let bl = leftBandwidthOfState tensor_to_denormalize
+        bm = (LeftAbsorptionNormalizedStateSiteTensor . unwrapRightAbsorptionNormalizedStateSiteTensor $ tensor_to_denormalize) <-?-> tensor_to_normalize
+        br = rightBandwidthOfState tensor_to_normalize
+        dl = physicalDimensionOfState tensor_to_denormalize
+        dr  = physicalDimensionOfState tensor_to_normalize
+    in if bm > new_bm then error "can't use this function to decrease bandwidth!" else do
+        denormalized_state_site_tensor_storable_array <- newArray_ (1,2*bl*new_bm*dl)
+        normalized_state_site_tensor_storable_array <- newArray_ (1,2*new_bm*br*dr)
+        info <-
+            withPinnedTensor tensor_to_denormalize $ \p_tensor_to_denormalize ->
+            withPinnedTensor tensor_to_normalize $ \p_tensor_to_normalize ->
+            withStorableArray denormalized_state_site_tensor_storable_array $ \p_denormalized_state_site_tensor_storable_array ->
+            withStorableArray normalized_state_site_tensor_storable_array $
+                if new_bm > bm
+                    then
+                        increase_bandwidth_between
+                            bl
+                            bm
+                            br
+                            dl
+                            dr
+                            new_bm
+                            p_tensor_to_denormalize
+                            p_tensor_to_normalize
+                            p_denormalized_state_site_tensor_storable_array
+                    else
+                        norm_denorm_going_left
+                            bl
+                            bm
+                            br
+                            dl
+                            dr
+                            p_tensor_to_denormalize
+                            p_tensor_to_normalize
+                            p_denormalized_state_site_tensor_storable_array
+        when (info /= 0) $ fail "unable to normalize tensor!"
+        denormalized_state_site_tensor <- fmap 
+            (UnnormalizedStateSiteTensor . StateSiteTensor bl new_bm dl)
+            (unpinComplexArray denormalized_state_site_tensor_storable_array)
+        normalized_state_site_tensor <- fmap 
+            (RightAbsorptionNormalizedStateSiteTensor . StateSiteTensor new_bm br dr)
+            (unpinComplexArray normalized_state_site_tensor_storable_array)
+        return (denormalized_state_site_tensor,normalized_state_site_tensor)
+-- @-node:gcross.20091115105949.1729:increaseBandwidthBetween
 -- @-node:gcross.20091113125544.1661:Wrapper functions
 -- @-others
 -- @-node:gcross.20091113125544.1653:@thin Wrappers.hs

@@ -185,6 +185,52 @@ main = defaultMain
                 ,[ (10,b) | b <- [1,2,4,8,16]]
                 ]
         -- @-node:gcross.20091114174920.1728:Chain energy invariant under movement
+        -- @+node:gcross.20091115105949.1747:Chain energy invariant under bandwidth increase
+        ,testGroup "Chain energy invariant under bandwidth increase" $
+            let 
+            -- @nonl
+            -- @<< createBandwidthIncreaseTest >>
+            -- @+node:gcross.20091115105949.1748:<< createBandwidthIncreaseTest >>
+            createBandwidthIncreaseTest number_of_sites old_bandwidth_dimension new_bandwidth_dimension = do
+                let operator_site_tensors = replicate number_of_sites $ makeOperatorSiteTensorFromPaulis 1 1 [((1,1),Y)]
+                original_chain <- generateRandomizedChain operator_site_tensors 2 old_bandwidth_dimension
+                chain <- increaseChainBandwidth original_chain 2 new_bandwidth_dimension
+                let chains_going_right =
+                        take number_of_sites
+                        .
+                        iterate activateRightNeighbor
+                        $
+                        chain
+                    chains_going_left =
+                        take number_of_sites
+                        .
+                        iterate activateLeftNeighbor
+                        .
+                        last
+                        $
+                        chains_going_right
+                    correct_energy = chainEnergy original_chain
+                forM_ (zip [1..] . map chainEnergy $ chains_going_right) $ \(site_number::Int,energy) -> trace ("-->" ++ show site_number)
+                    assertAlmostEqual
+                        (printf "Did the energy change at site %i?" site_number)
+                        correct_energy energy
+                forM_ (zip [number_of_sites,number_of_sites-1..] . map chainEnergy $ chains_going_left) $ \(site_number,energy) -> trace ("<--" ++ show site_number)
+                    assertAlmostEqual
+                        (printf "Did the energy change at site %i?" site_number)
+                        correct_energy energy
+            -- @-node:gcross.20091115105949.1748:<< createBandwidthIncreaseTest >>
+            -- @nl
+            in map (\(number_of_sites,old_bandwidth_dimension,new_bandwidth_dimension) ->
+                    testCase (printf "%i sites, bandwidth => %i -> %i" number_of_sites old_bandwidth_dimension new_bandwidth_dimension) $ 
+                        createBandwidthIncreaseTest number_of_sites old_bandwidth_dimension new_bandwidth_dimension
+            ) $ concat
+                [[ ( 2,old_b,new_b) | (old_b,new_b) <- [(1,2)]]
+                ,[ ( 3,old_b,new_b) | (old_b,new_b) <- [(1,2)]]
+                ,[ ( 4,old_b,new_b) | (old_b,new_b) <- [(1,2),(1,3),(1,4),(2,4)]]
+                ,[ ( 5,old_b,new_b) | (old_b,new_b) <- [(1,2),(1,4),(2,4)]]
+                ,[ (10,old_b,new_b) | (old_b,new_b) <- [(1,2),(2,4),(4,8),(8,16)]]
+                ]
+        -- @-node:gcross.20091115105949.1747:Chain energy invariant under bandwidth increase
         -- @+node:gcross.20091114174920.1743:Optimizer tests
         ,testGroup "Optimizer tests"
             -- @    @+others

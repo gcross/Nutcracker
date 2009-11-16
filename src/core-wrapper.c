@@ -241,6 +241,37 @@ int norm_denorm_going_right(
     );
 }
 //@-node:gcross.20091113125544.1648:norm_denorm_going_right
+//@+node:gcross.20091115105949.1731:increase_bandwidth_between
+int increase_bandwidth_between_(
+  int* bl, int* bm, int* br,
+  int* dl, int* dr,
+  int* new_bm,
+  double* site_tensor_to_normalize,
+  double* site_tensor_to_denormalize,
+  double* normalized_site_tensor,
+  double* denormalized_site_tensor
+);
+
+int increase_bandwidth_between(
+  int bl, int bm, int br,
+  int dl, int dr,
+  int new_bm,
+  double* site_tensor_to_normalize,
+  double* site_tensor_to_denormalize,
+  double* normalized_site_tensor,
+  double* denormalized_site_tensor
+) {
+    return increase_bandwidth_between_(
+      &bl, &bm, &br,
+      &dl, &dr,
+      &new_bm,
+      site_tensor_to_normalize,
+      site_tensor_to_denormalize,
+      normalized_site_tensor,
+      denormalized_site_tensor
+    );
+}
+//@-node:gcross.20091115105949.1731:increase_bandwidth_between
 //@-others
 //@-node:gcross.20091112145455.1619:@thin core-wrapper.c
 //@-leo
