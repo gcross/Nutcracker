@@ -41,6 +41,7 @@ data Pauli = I | X | Y | Z
 -- @+node:gcross.20091111171052.1596:ComplexArray
 newtype MyIx i => ComplexTensor i = ComplexTensor { unwrapComplexArray :: StorableArray i (Complex Double) }
 
+withPinnedComplexTensor :: MyIx i => ComplexTensor i -> (Ptr (Complex Double) -> IO a) -> IO a
 withPinnedComplexTensor = withStorableArray . unwrapComplexArray
 
 withNewPinnedComplexTensor dimensions thunk = do
@@ -140,6 +141,101 @@ trivial_right_boundary = RightBoundaryTensor trivial_boundary
 -- @-node:gcross.20091112145455.1651:Right boundary
 -- @-others
 -- @-node:gcross.20091111171052.1595:Left/Right Boundaries
+-- @+node:gcross.20091116175016.1762:Left/Right Overlap Boundaries
+data OverlapBoundaryTensor = OverlapBoundaryTensor
+    {   overlapOldStateBandwidth :: !Int
+    ,   overlapNewStateBandwidth :: !Int
+    ,   overlapData :: !(ComplexTensor (Int,Int))
+    }
+
+withPinnedOverlapBoundaryTensor = withPinnedComplexTensor . overlapData
+withNewPinnedOverlapBoundaryTensor (cl,bl) =
+    fmap (second $ OverlapBoundaryTensor cl bl)
+    .
+    withNewPinnedComplexTensor (cl,bl)
+
+trivial_overlap_boundary = OverlapBoundaryTensor 1 1 trivial_complex_tensor
+
+-- @+others
+-- @+node:gcross.20091116175016.1763:Left boundary
+newtype LeftOverlapBoundaryTensor = LeftOverlapBoundaryTensor { unwrapLeftOverlapBoundaryTensor :: OverlapBoundaryTensor }
+
+instance Pinnable LeftOverlapBoundaryTensor where 
+    withPinnedTensor = withPinnedOverlapBoundaryTensor . unwrapLeftOverlapBoundaryTensor
+
+instance Creatable LeftOverlapBoundaryTensor (Int,Int) where
+    withNewPinnedTensor bounds =
+        fmap (second LeftOverlapBoundaryTensor)
+        .
+        withNewPinnedOverlapBoundaryTensor bounds
+
+instance Connected LeftOverlapBoundaryTensor UnnormalizedOverlapSiteTensor where
+    (<-?->) = makeConnectedTest
+        "Left overlap boundary and (unnormalized) overlap site tensors disagree over the bandwidth dimension!"
+        (overlapOldStateBandwidth . unwrapLeftOverlapBoundaryTensor)
+        leftBandwidthOfState
+
+instance Connected LeftOverlapBoundaryTensor LeftAbsorptionNormalizedOverlapSiteTensor where
+    (<-?->) = makeConnectedTest
+        "Left overlap boundary and (left-absorption normalized) overlap site tensors disagree over the bandwidth dimension!"
+        (overlapOldStateBandwidth . unwrapLeftOverlapBoundaryTensor)
+        leftBandwidthOfState
+
+instance Connected LeftOverlapBoundaryTensor UnnormalizedStateSiteTensor where
+    (<-?->) = makeConnectedTest
+        "Left overlap boundary and (unnormalized) state site tensors disagree over the bandwidth dimension!"
+        (overlapNewStateBandwidth . unwrapLeftOverlapBoundaryTensor)
+        leftBandwidthOfState
+
+instance Connected LeftOverlapBoundaryTensor LeftAbsorptionNormalizedStateSiteTensor where
+    (<-?->) = makeConnectedTest
+        "Left overlap boundary and (left-absorption normalized) state site tensors disagree over the bandwidth dimension!"
+        (overlapNewStateBandwidth . unwrapLeftOverlapBoundaryTensor)
+        leftBandwidthOfState
+
+trivial_left_overlap_boundary = LeftOverlapBoundaryTensor trivial_overlap_boundary
+-- @-node:gcross.20091116175016.1763:Left boundary
+-- @+node:gcross.20091116175016.1768:Right boundary
+newtype RightOverlapBoundaryTensor = RightOverlapBoundaryTensor { unwrapRightOverlapBoundaryTensor :: OverlapBoundaryTensor }
+
+instance Pinnable RightOverlapBoundaryTensor where 
+    withPinnedTensor = withPinnedOverlapBoundaryTensor . unwrapRightOverlapBoundaryTensor
+
+instance Creatable RightOverlapBoundaryTensor (Int,Int) where
+    withNewPinnedTensor bounds =
+        fmap (second RightOverlapBoundaryTensor)
+        .
+        withNewPinnedOverlapBoundaryTensor bounds
+
+instance Connected UnnormalizedOverlapSiteTensor RightOverlapBoundaryTensor where
+    (<-?->) = makeConnectedTest
+        "Right overlap boundary and (unnormalized) overlap site tensors disagree over the bandwidth dimension!"
+        rightBandwidthOfState
+        (overlapOldStateBandwidth . unwrapRightOverlapBoundaryTensor)
+
+instance Connected RightAbsorptionNormalizedOverlapSiteTensor RightOverlapBoundaryTensor where
+    (<-?->) = makeConnectedTest
+        "Right overlap boundary and (Right-absorption normalized) overlap site tensors disagree over the bandwidth dimension!"
+        rightBandwidthOfState
+        (overlapOldStateBandwidth . unwrapRightOverlapBoundaryTensor)
+
+instance Connected UnnormalizedStateSiteTensor RightOverlapBoundaryTensor where
+    (<-?->) = makeConnectedTest
+        "Right overlap boundary and (unnormalized) state site tensors disagree over the bandwidth dimension!"
+        rightBandwidthOfState
+        (overlapNewStateBandwidth . unwrapRightOverlapBoundaryTensor)
+
+instance Connected RightAbsorptionNormalizedStateSiteTensor RightOverlapBoundaryTensor where
+    (<-?->) = makeConnectedTest
+        "Right overlap boundary and (Right-absorption normalized) state site tensors disagree over the bandwidth dimension!"
+        rightBandwidthOfState
+        (overlapNewStateBandwidth . unwrapRightOverlapBoundaryTensor)
+
+trivial_Right_overlap_boundary = RightOverlapBoundaryTensor trivial_overlap_boundary
+-- @nonl
+-- @-node:gcross.20091116175016.1768:Right boundary
+-- @-others
+-- @-node:gcross.20091116175016.1762:Left/Right Overlap Boundaries
 -- @+node:gcross.20091111171052.1597:State Site Tensor
 data StateSiteTensor = StateSiteTensor
     {   statePhysicalDimension :: !Int
@@ -171,64 +267,98 @@ instance Connected UnnormalizedStateSiteTensor RightAbsorptionNormalizedStateSit
         "State site tensors disagree over the bandwidth dimension!"
         rightBandwidthOfState
         leftBandwidthOfState
--- @+node:gcross.20091116132159.1751:Unnormalized
+-- @+node:gcross.20091116175016.1755:newtypes
 newtype UnnormalizedStateSiteTensor = UnnormalizedStateSiteTensor
     { unwrapUnnormalizedStateSiteTensor :: StateSiteTensor }
-
+newtype LeftAbsorptionNormalizedStateSiteTensor = LeftAbsorptionNormalizedStateSiteTensor
+    { unwrapLeftAbsorptionNormalizedStateSiteTensor :: StateSiteTensor }
+newtype RightAbsorptionNormalizedStateSiteTensor = RightAbsorptionNormalizedStateSiteTensor
+    { unwrapRightAbsorptionNormalizedStateSiteTensor :: StateSiteTensor }
+newtype UnnormalizedOverlapSiteTensor = UnnormalizedOverlapSiteTensor
+    { unwrapUnnormalizedOverlapSiteTensor :: StateSiteTensor }
+newtype LeftAbsorptionNormalizedOverlapSiteTensor = LeftAbsorptionNormalizedOverlapSiteTensor
+    { unwrapLeftAbsorptionNormalizedOverlapSiteTensor :: StateSiteTensor }
+newtype RightAbsorptionNormalizedOverlapSiteTensor = RightAbsorptionNormalizedOverlapSiteTensor
+    { unwrapRightAbsorptionNormalizedOverlapSiteTensor :: StateSiteTensor }
+-- @-node:gcross.20091116175016.1755:newtypes
+-- @+node:gcross.20091116175016.1756:Pinnable instances
 instance Pinnable UnnormalizedStateSiteTensor where
     withPinnedTensor = withPinnedStateTensor . unwrapUnnormalizedStateSiteTensor
-
+instance Pinnable LeftAbsorptionNormalizedStateSiteTensor where
+    withPinnedTensor = withPinnedStateTensor . unwrapLeftAbsorptionNormalizedStateSiteTensor
+instance Pinnable RightAbsorptionNormalizedStateSiteTensor where 
+    withPinnedTensor = withPinnedStateTensor . unwrapRightAbsorptionNormalizedStateSiteTensor
+instance Pinnable UnnormalizedOverlapSiteTensor where
+    withPinnedTensor = withPinnedStateTensor . unwrapUnnormalizedOverlapSiteTensor
+instance Pinnable LeftAbsorptionNormalizedOverlapSiteTensor where
+    withPinnedTensor = withPinnedStateTensor . unwrapLeftAbsorptionNormalizedOverlapSiteTensor
+instance Pinnable RightAbsorptionNormalizedOverlapSiteTensor where 
+    withPinnedTensor = withPinnedStateTensor . unwrapRightAbsorptionNormalizedOverlapSiteTensor
+-- @-node:gcross.20091116175016.1756:Pinnable instances
+-- @+node:gcross.20091116175016.1757:Creatable instances
 instance Creatable UnnormalizedStateSiteTensor (Int,Int,Int) where
     withNewPinnedTensor bounds =
         fmap (second UnnormalizedStateSiteTensor)
         .
         withNewPinnedStateTensor bounds
-
-instance StateSiteTensorClass UnnormalizedStateSiteTensor where
-    leftBandwidthOfState = stateLeftBandwidth . unwrapUnnormalizedStateSiteTensor
-    rightBandwidthOfState = stateRightBandwidth . unwrapUnnormalizedStateSiteTensor
-    physicalDimensionOfState = statePhysicalDimension . unwrapUnnormalizedStateSiteTensor
-    unnormalize = id
--- @nonl
--- @-node:gcross.20091116132159.1751:Unnormalized
--- @+node:gcross.20091116132159.1752:Left absorption normalized
-newtype LeftAbsorptionNormalizedStateSiteTensor = LeftAbsorptionNormalizedStateSiteTensor
-    { unwrapLeftAbsorptionNormalizedStateSiteTensor :: StateSiteTensor }
-
-instance Pinnable LeftAbsorptionNormalizedStateSiteTensor where
-    withPinnedTensor = withPinnedStateTensor . unwrapLeftAbsorptionNormalizedStateSiteTensor
-
 instance Creatable LeftAbsorptionNormalizedStateSiteTensor (Int,Int,Int) where
     withNewPinnedTensor bounds =
         fmap (second LeftAbsorptionNormalizedStateSiteTensor)
         .
         withNewPinnedStateTensor bounds
-
-instance StateSiteTensorClass LeftAbsorptionNormalizedStateSiteTensor where
-    leftBandwidthOfState = stateLeftBandwidth . unwrapLeftAbsorptionNormalizedStateSiteTensor
-    rightBandwidthOfState = stateRightBandwidth . unwrapLeftAbsorptionNormalizedStateSiteTensor
-    physicalDimensionOfState = statePhysicalDimension . unwrapLeftAbsorptionNormalizedStateSiteTensor
-    unnormalize = UnnormalizedStateSiteTensor . unwrapLeftAbsorptionNormalizedStateSiteTensor
--- @-node:gcross.20091116132159.1752:Left absorption normalized
--- @+node:gcross.20091116132159.1753:Right absorption normalized
-newtype RightAbsorptionNormalizedStateSiteTensor = RightAbsorptionNormalizedStateSiteTensor
-    { unwrapRightAbsorptionNormalizedStateSiteTensor :: StateSiteTensor }
-
-instance Pinnable RightAbsorptionNormalizedStateSiteTensor where 
-    withPinnedTensor = withPinnedStateTensor . unwrapRightAbsorptionNormalizedStateSiteTensor
-
 instance Creatable RightAbsorptionNormalizedStateSiteTensor (Int,Int,Int) where
     withNewPinnedTensor bounds =
         fmap (second RightAbsorptionNormalizedStateSiteTensor)
         .
         withNewPinnedStateTensor bounds
-
+instance Creatable UnnormalizedOverlapSiteTensor (Int,Int,Int) where
+    withNewPinnedTensor bounds =
+        fmap (second UnnormalizedOverlapSiteTensor)
+        .
+        withNewPinnedStateTensor bounds
+instance Creatable LeftAbsorptionNormalizedOverlapSiteTensor (Int,Int,Int) where
+    withNewPinnedTensor bounds =
+        fmap (second LeftAbsorptionNormalizedOverlapSiteTensor)
+        .
+        withNewPinnedStateTensor bounds
+instance Creatable RightAbsorptionNormalizedOverlapSiteTensor (Int,Int,Int) where
+    withNewPinnedTensor bounds =
+        fmap (second RightAbsorptionNormalizedOverlapSiteTensor)
+        .
+        withNewPinnedStateTensor bounds
+-- @-node:gcross.20091116175016.1757:Creatable instances
+-- @+node:gcross.20091116175016.1758:StateSiteTensorClass instances
+instance StateSiteTensorClass UnnormalizedStateSiteTensor where
+    leftBandwidthOfState = stateLeftBandwidth . unwrapUnnormalizedStateSiteTensor
+    rightBandwidthOfState = stateRightBandwidth . unwrapUnnormalizedStateSiteTensor
+    physicalDimensionOfState = statePhysicalDimension . unwrapUnnormalizedStateSiteTensor
+    unnormalize = id
+instance StateSiteTensorClass LeftAbsorptionNormalizedStateSiteTensor where
+    leftBandwidthOfState = stateLeftBandwidth . unwrapLeftAbsorptionNormalizedStateSiteTensor
+    rightBandwidthOfState = stateRightBandwidth . unwrapLeftAbsorptionNormalizedStateSiteTensor
+    physicalDimensionOfState = statePhysicalDimension . unwrapLeftAbsorptionNormalizedStateSiteTensor
+    unnormalize = UnnormalizedStateSiteTensor . unwrapLeftAbsorptionNormalizedStateSiteTensor
 instance StateSiteTensorClass RightAbsorptionNormalizedStateSiteTensor where
     leftBandwidthOfState = stateLeftBandwidth . unwrapRightAbsorptionNormalizedStateSiteTensor
     rightBandwidthOfState = stateRightBandwidth . unwrapRightAbsorptionNormalizedStateSiteTensor
     physicalDimensionOfState = statePhysicalDimension . unwrapRightAbsorptionNormalizedStateSiteTensor
     unnormalize = UnnormalizedStateSiteTensor . unwrapRightAbsorptionNormalizedStateSiteTensor
--- @-node:gcross.20091116132159.1753:Right absorption normalized
+instance StateSiteTensorClass UnnormalizedOverlapSiteTensor where
+    leftBandwidthOfState = stateLeftBandwidth . unwrapUnnormalizedOverlapSiteTensor
+    rightBandwidthOfState = stateRightBandwidth . unwrapUnnormalizedOverlapSiteTensor
+    physicalDimensionOfState = statePhysicalDimension . unwrapUnnormalizedOverlapSiteTensor
+    unnormalize = undefined
+instance StateSiteTensorClass LeftAbsorptionNormalizedOverlapSiteTensor where
+    leftBandwidthOfState = stateLeftBandwidth . unwrapLeftAbsorptionNormalizedOverlapSiteTensor
+    rightBandwidthOfState = stateRightBandwidth . unwrapLeftAbsorptionNormalizedOverlapSiteTensor
+    physicalDimensionOfState = statePhysicalDimension . unwrapLeftAbsorptionNormalizedOverlapSiteTensor
+    unnormalize = undefined
+instance StateSiteTensorClass RightAbsorptionNormalizedOverlapSiteTensor where
+    leftBandwidthOfState = stateLeftBandwidth . unwrapRightAbsorptionNormalizedOverlapSiteTensor
+    rightBandwidthOfState = stateRightBandwidth . unwrapRightAbsorptionNormalizedOverlapSiteTensor
+    physicalDimensionOfState = statePhysicalDimension . unwrapRightAbsorptionNormalizedOverlapSiteTensor
+    unnormalize = undefined
+-- @-node:gcross.20091116175016.1758:StateSiteTensorClass instances
 -- @-node:gcross.20091111171052.1597:State Site Tensor
 -- @+node:gcross.20091111171052.1598:Operator Site Tensor
 data OperatorSiteTensor = OperatorSiteTensor
