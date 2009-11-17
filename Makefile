@@ -32,6 +32,6 @@ LIBS = -lblas -llapack -larpack -lgfortran
 objects: ${OBJS}
 
 clean:
-	rm -f mods/* obj/* lib/* src/*.mod
+	rm -f mods/* obj/* obj/VMPS/* lib/* src/*.mod
 #@-node:gcross.20091106154604.9811:@thin Makefile
 #@-leo
