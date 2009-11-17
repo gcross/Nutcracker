@@ -32,14 +32,17 @@ import VMPS.Wrappers
 -- @+others
 -- @+node:gcross.20091113142219.1664:Types
 -- @+node:gcross.20091115105949.1734:Neighbor
-data (StateSiteTensorClass b) => Neighbor a b = Neighbor
-    {   neighborBoundary :: a
-    ,   neighborState    :: b
-    ,   neighborOperator :: OperatorSiteTensor
+data LeftNeighbor = LeftNeighbor
+    {   leftNeighborBoundary :: LeftBoundaryTensor
+    ,   leftNeighborState    :: LeftAbsorptionNormalizedStateSiteTensor
+    ,   leftNeighborOperator :: OperatorSiteTensor
     }
 
-type LeftNeighbor = Neighbor LeftBoundaryTensor LeftAbsorptionNormalizedStateSiteTensor
-type RightNeighbor = Neighbor RightBoundaryTensor RightAbsorptionNormalizedStateSiteTensor
+data RightNeighbor = RightNeighbor
+    {   rightNeighborBoundary :: RightBoundaryTensor
+    ,   rightNeighborState    :: RightAbsorptionNormalizedStateSiteTensor
+    ,   rightNeighborOperator :: OperatorSiteTensor
+    }
 -- @-node:gcross.20091115105949.1734:Neighbor
 -- @+node:gcross.20091113142219.1665:EnergyMinimizationChain
 data EnergyMinimizationChain = EnergyMinimizationChain
@@ -55,7 +58,29 @@ data EnergyMinimizationChain = EnergyMinimizationChain
     }
 -- @-node:gcross.20091113142219.1665:EnergyMinimizationChain
 -- @-node:gcross.20091113142219.1664:Types
--- @+node:gcross.20091113142219.1678:Functions
+-- @+node:gcross.20091116222034.2374:Utility Functions
+-- @+node:gcross.20091113142219.1699:computeBandwidthDimensionSequence
+computeBandwidthDimensionSequence :: Int -> Int -> Int -> [Int]
+computeBandwidthDimensionSequence number_of_sites physical_dimension bandwidth_dimension =
+    let go :: Int -> Int -> [Int] -> (Int,[Int])
+        go list_length next_bandwidth_dimension list
+            | next_bandwidth_dimension >= bandwidth_dimension
+                = (list_length,list)
+            | otherwise
+                = go (list_length+1) (next_bandwidth_dimension*physical_dimension) (next_bandwidth_dimension:list)
+        (prefix_list_length,prefix_list) = go 0 1 []
+        filler_length = number_of_sites - 2 * prefix_list_length + 1
+    in if filler_length < 1 then error "The supplied bandwidth dimension is too large for the given physical dimension and number of sites."
+        else reverse prefix_list ++ replicate filler_length bandwidth_dimension ++ prefix_list 
+-- @-node:gcross.20091113142219.1699:computeBandwidthDimensionSequence
+-- @+node:gcross.20091113142219.2519:computeBandwidthDimensionsAtAllSites
+computeBandwidthDimensionsAtAllSites :: Int -> Int -> Int -> [(Int,Int)]
+computeBandwidthDimensionsAtAllSites number_of_sites physical_dimension bandwidth_dimension =
+    uncurry zip . (id &&& tail) $
+        computeBandwidthDimensionSequence number_of_sites physical_dimension bandwidth_dimension
+-- @-node:gcross.20091113142219.2519:computeBandwidthDimensionsAtAllSites
+-- @-node:gcross.20091116222034.2374:Utility Functions
+-- @+node:gcross.20091113142219.1678:Chain Functions
 -- @+node:gcross.20091113142219.1679:computeEnergy
 computeEnergy :: EnergyMinimizationChain -> Double
 computeEnergy EnergyMinimizationChain
@@ -76,7 +101,7 @@ activateLeftNeighbor EnergyMinimizationChain
     ,   siteHamiltonianTensor = old_hamiltonian_tensor
     ,   siteRightBoundaryTensor = old_right_boundary_tensor
     ,   siteLeftNeighbors =
-            (Neighbor
+            (LeftNeighbor
                 new_left_boundary
                 state_tensor_to_denormalize
                 new_hamiltonian_tensor
@@ -93,7 +118,7 @@ activateLeftNeighbor EnergyMinimizationChain
             ,   siteRightBoundaryTensor = contractSOSRight old_right_boundary_tensor normalized_site_tensor old_hamiltonian_tensor
             ,   siteLeftNeighbors = new_left_neighbors
             ,   siteRightNeighbors =
-                    (Neighbor
+                    (RightNeighbor
                         old_right_boundary_tensor
                         normalized_site_tensor
                         old_hamiltonian_tensor
@@ -114,7 +139,7 @@ activateRightNeighbor EnergyMinimizationChain
     ,   siteHamiltonianTensor = old_hamiltonian_tensor
     ,   siteLeftNeighbors = old_left_neighbors
     ,   siteRightNeighbors =
-            (Neighbor
+            (RightNeighbor
                 new_right_boundary
                 state_tensor_to_denormalize
                 new_hamiltonian_tensor
@@ -129,7 +154,7 @@ activateRightNeighbor EnergyMinimizationChain
             ,   siteHamiltonianTensor = new_hamiltonian_tensor
             ,   siteRightBoundaryTensor = new_right_boundary
             ,   siteLeftNeighbors =
-                    (Neighbor
+                    (LeftNeighbor
                         old_left_boundary_tensor
                         normalized_site_tensor
                         old_hamiltonian_tensor
@@ -167,26 +192,6 @@ optimizeSite tolerance maximum_number_of_iterations chain@EnergyMinimizationChai
 
 optimizeSite_ = optimizeSite 0 1000
 -- @-node:gcross.20091113142219.1687:optimizeSite
--- @+node:gcross.20091113142219.1699:computeBandwidthDimensionSequence
-computeBandwidthDimensionSequence :: Int -> Int -> Int -> [Int]
-computeBandwidthDimensionSequence number_of_sites physical_dimension bandwidth_dimension =
-    let go :: Int -> Int -> [Int] -> (Int,[Int])
-        go list_length next_bandwidth_dimension list
-            | next_bandwidth_dimension >= bandwidth_dimension
-                = (list_length,list)
-            | otherwise
-                = go (list_length+1) (next_bandwidth_dimension*physical_dimension) (next_bandwidth_dimension:list)
-        (prefix_list_length,prefix_list) = go 0 1 []
-        filler_length = number_of_sites - 2 * prefix_list_length + 1
-    in if filler_length < 1 then error "The supplied bandwidth dimension is too large for the given physical dimension and number of sites."
-        else reverse prefix_list ++ replicate filler_length bandwidth_dimension ++ prefix_list 
--- @-node:gcross.20091113142219.1699:computeBandwidthDimensionSequence
--- @+node:gcross.20091113142219.2519:computeBandwidthDimensionsAtAllSites
-computeBandwidthDimensionsAtAllSites :: Int -> Int -> Int -> [(Int,Int)]
-computeBandwidthDimensionsAtAllSites number_of_sites physical_dimension bandwidth_dimension =
-    uncurry zip . (id &&& tail) $
-        computeBandwidthDimensionSequence number_of_sites physical_dimension bandwidth_dimension
--- @-node:gcross.20091113142219.2519:computeBandwidthDimensionsAtAllSites
 -- @+node:gcross.20091113142219.2535:generateRandomizedChain
 generateRandomizedChain :: [OperatorSiteTensor] -> Int -> Int -> IO (EnergyMinimizationChain)
 generateRandomizedChain [] _ _ = error "Must have at least one operator site tensor!"
@@ -201,7 +206,7 @@ generateRandomizedChain operator_site_tensors physical_dimension bandwidth_dimen
             >>=
             \site_state_tensor ->
                 go  (contractSOSRight right_environment site_state_tensor operator_site_tensor)
-                    ((Neighbor right_environment site_state_tensor operator_site_tensor):current_neighbors)
+                    ((RightNeighbor right_environment site_state_tensor operator_site_tensor):current_neighbors)
                     remaining
         (first_site_left_bandwidth_dimension, first_site_right_bandwidth_dimension) = head state_site_bandwidth_dimensions
     in do
@@ -236,7 +241,7 @@ increaseChainBandwidth
     zip (
         reverse
         .
-        (Neighbor
+        (RightNeighbor
             undefined
             (
                 RightAbsorptionNormalizedStateSiteTensor
@@ -276,7 +281,7 @@ increaseChainBandwidth
                 rest_neighbors
                 new_neighbors
       where
-        (Neighbor boundary state operator) = current_neighbor
+        (RightNeighbor boundary state operator) = current_neighbor
         neighbor_bandwidth = leftBandwidthOfState state
     go2 ::
         RightBoundaryTensor ->
@@ -302,9 +307,9 @@ increaseChainBandwidth
         operator_site_tensor
         desired_bandwidth_at_site
         old_neighbors@((
-            Neighbor
-            {   neighborState = next_state_site_tensor
-            ,   neighborOperator = next_operator_tensor
+            RightNeighbor
+            {   rightNeighborState = next_state_site_tensor
+            ,   rightNeighborOperator = next_operator_tensor
             },
             next_bandwidth_dimension
         ):remaining_neighbors_to_process)
@@ -319,10 +324,10 @@ increaseChainBandwidth
             next_bandwidth_dimension
             remaining_neighbors_to_process
             (
-                Neighbor
-                {   neighborState = normalized_state_site_tensor
-                ,   neighborBoundary = right_boundary
-                ,   neighborOperator = operator_site_tensor
+                RightNeighbor
+                {   rightNeighborState = normalized_state_site_tensor
+                ,   rightNeighborBoundary = right_boundary
+                ,   rightNeighborOperator = operator_site_tensor
                 }
                 :
                 new_neighbors
@@ -330,7 +335,7 @@ increaseChainBandwidth
 
 increaseChainBandwidth _ _ _ = error "This algorithm is only designed to work when the chain is at its leftmost site."
 -- @-node:gcross.20091115105949.1744:increaseChainBandwidth
--- @-node:gcross.20091113142219.1678:Functions
+-- @-node:gcross.20091113142219.1678:Chain Functions
 -- @-others
 -- @-node:gcross.20091113142219.1659:@thin EnergyMinimizationChain.hs
 -- @-leo
