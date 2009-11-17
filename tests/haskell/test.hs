@@ -5,6 +5,7 @@
 -- @<< Language extensions >>
 -- @+node:gcross.20091113142219.2512:<< Language extensions >>
 {-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE FlexibleInstances #-}
 -- @-node:gcross.20091113142219.2512:<< Language extensions >>
 -- @nl
 
@@ -64,6 +65,10 @@ newtype PhysicalDimensionInt = PDI Int deriving (Show,Eq)
 instance Arbitrary PhysicalDimensionInt where
     arbitrary = choose (2,4) >>= return.PDI
 -- @-node:gcross.20091113142219.2504:PhysicalDimensionInt
+-- @+node:gcross.20091116175016.1812:Complex Double
+instance Arbitrary (Complex Double) where
+    arbitrary = liftM2 (:+) arbitrary arbitrary
+-- @-node:gcross.20091116175016.1812:Complex Double
 -- @-node:gcross.20091113142219.2499:Generators
 -- @+node:gcross.20091113142219.2508:Helpers
 -- @+node:gcross.20091114174920.1734:assertAlmostEqual
@@ -656,6 +661,65 @@ main = defaultMain
             -- @-others
             ]
         -- @-node:gcross.20091112145455.1660:generateRandomizedStateTensor
+        -- @+node:gcross.20091116175016.1809:dotArrays
+        ,testGroup "dotArrays"
+            -- @    @+others
+            -- @+node:gcross.20091116175016.1810:known correct result
+            [testCase "known correct result" $ do
+                arr1 <- newListArray (1,4)
+                    [( 0.07331006) :+ ( 0.54975918)
+                    ,(-0.76662781) :+ ( 0.58918237)
+                    ,(-0.58884695) :+ (-0.14558789)
+                    ,(-0.51358300) :+ (-0.50234503)
+                    ]
+                arr2 <- newListArray (1,4)
+                    [( 0.46947762) :+ ( 0.35345517)
+                    ,(-0.36112978) :+ ( 0.18917933)
+                    ,(-0.84684445) :+ ( 0.55999172)
+                    ,(-0.69551880) :+ (-0.97433324)
+                    ]
+                actual_value <-
+                    withStorableArray arr1 $ \p1 ->
+                    withStorableArray arr2 $ \p2 ->
+                        dotArrays 4 p1 p2
+                assertAlmostEqual
+                    "Was the correct value returned?"
+                    (1.88083777 :+ (-0.46647579))
+                    actual_value
+            -- @-node:gcross.20091116175016.1810:known correct result
+            -- @-others
+            ]
+        -- @-node:gcross.20091116175016.1809:dotArrays
+        -- @+node:gcross.20091116175016.1811:normalize
+        ,testProperty "normalize -- does it work?" $
+            \(numbers :: [Complex Double]) -> ((not . null) numbers) ==>
+            unsafePerformIO $ do
+                let number_of_numbers = length numbers
+                arr <- newListArray (1,number_of_numbers) numbers
+                overlap <- withStorableArray arr $ \p -> do
+                    normalize number_of_numbers p
+                    dotArrays number_of_numbers p p
+                return (overlap ~= 1)
+        -- @-node:gcross.20091116175016.1811:normalize
+        -- @+node:gcross.20091116175016.1814:orthogonalize2 -- does it work?
+        ,testProperty "orthogonalize2 -- does it work?" $
+            \(numbers :: [(Complex Double,Complex Double)]) -> (length numbers >= 2) ==>
+            unsafePerformIO $ do
+                let number_of_numbers = length numbers
+                    (numbers1, numbers2) = unzip numbers
+                arr1 <- newListArray (1,number_of_numbers) numbers1
+                arr2 <- newListArray (1,number_of_numbers) numbers2
+                (norm1,norm2,overlap1,overlap2) <-
+                    withStorableArray arr1 $ \p1 ->
+                    withStorableArray arr2 $ \p2 -> do
+                        orthogonalize2 number_of_numbers p1 p2
+                        liftM4 (,,,)
+                            (dotArrays number_of_numbers p1 p1)
+                            (dotArrays number_of_numbers p2 p2)
+                            (dotArrays number_of_numbers p1 p2)
+                            (dotArrays number_of_numbers p2 p1)
+                return $ and [(norm1 ~= 1),(norm2 ~= 1),(overlap1 ~= 0),(overlap2 ~= 0)]
+        -- @-node:gcross.20091116175016.1814:orthogonalize2 -- does it work?
         -- @-others
         ]
     -- @-node:gcross.20091113142219.1700:VMPS.Wrapper

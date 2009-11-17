@@ -510,6 +510,8 @@ instance Storable (Complex Double) where
     poke p_complex (real_part :+ imag_part) =
         let (p_real_part, p_imag_part) = complexPtrToRealAndImagPtrs p_complex
         in poke p_real_part real_part >> poke p_imag_part imag_part
+
+nextComplexPtr = (`plusPtr` sizeOf (undefined :: Complex Double))
 -- @-node:gcross.20091114174920.1721:Storable (Complex a)
 -- @-node:gcross.20091114174920.1720:Instances
 -- @-others
