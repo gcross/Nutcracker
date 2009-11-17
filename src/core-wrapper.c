@@ -236,6 +236,37 @@ void contract_ss_right(
     );
 }
 //@-node:gcross.20091116175016.1784:contract_ss_right
+//@+node:gcross.20091116175016.1799:form_overlap_vector
+void form_overlap_vector_(
+  int* b_left_old, int* b_right_old,
+  int* b_left_new, int* b_right_new,
+  int* d,
+  double* left_environment,
+  double* right_environment,
+  double* unnormalized_projector_site_tensor,
+  double* overlap_vector
+);
+
+void form_overlap_vector(
+  int b_left_old, int b_right_old,
+  int b_left_new, int b_right_new,
+  int d,
+  double* left_environment,
+  double* right_environment,
+  double* unnormalized_projector_site_tensor,
+  double* overlap_vector
+) {
+    form_overlap_vector_(
+      &b_left_old, &b_right_old,
+      &b_left_new, &b_right_new,
+      &d,
+      left_environment,
+      right_environment,
+      unnormalized_projector_site_tensor,
+      overlap_vector
+    );
+}
+//@-node:gcross.20091116175016.1799:form_overlap_vector
 //@+node:gcross.20091112145455.1655:randomize_state_site_tensor
 void randomize_state_site_tensor_(int* br, int* bl, int* d, double* state_site_tensor);
 
@@ -337,6 +368,25 @@ int increase_bandwidth_between(
     );
 }
 //@-node:gcross.20091115105949.1731:increase_bandwidth_between
+//@+node:gcross.20091116175016.1801:orthogonalize_projector_matrix
+void orthogonalize_projector_matrix_(
+  int* number_of_projectors,
+  int* projector_length,
+  double* projector_matrix
+);
+
+void orthogonalize_projector_matrix(
+  int number_of_projectors,
+  int projector_length,
+  double* projector_matrix
+) {
+    orthogonalize_projector_matrix_(
+        &number_of_projectors,
+        &projector_length,
+        projector_matrix
+    );
+}
+//@-node:gcross.20091116175016.1801:orthogonalize_projector_matrix
 //@-others
 //@-node:gcross.20091112145455.1619:@thin core-wrapper.c
 //@-leo

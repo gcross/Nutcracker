@@ -1023,6 +1023,25 @@ class increase_bandwidth_between(unittest.TestCase):
         ))
 #@-node:gcross.20091115094257.1725:increase_bandwidth_between
 #@-node:gcross.20091115094257.1724:Bandwidth increase
+#@+node:gcross.20091116175016.1815:orthogonalize_projector_matrix
+class orthogonalize_projector_matrix(unittest.TestCase):
+    @with_checker
+    def testCorrectness(self,projector_length=irange(8,20),number_of_projectors=irange(1,7)):
+        original_vectors = crand(number_of_projectors,projector_length)
+        projector_matrix = array(original_vectors.transpose(),order='Fortran',copy=True)
+        vmps.orthogonalize_projector_matrix(projector_matrix)
+        projector_matrix = projector_matrix.transpose()
+        for i, projector in enumerate(projector_matrix):
+            self.assertAlmostEqual(1,norm(projector))
+            for orthogonal_projector in projector_matrix[i+1:]:
+                self.assertAlmostEqual(0,dot(projector.conj(),orthogonal_projector))
+            overlaps_with_any_vector = False
+            for overlap in (dot(projector.conj(),vector) for vector in original_vectors):
+                if abs(overlap) > 1.0/number_of_projectors:
+                    overlaps_with_any_vector = True
+                    break
+            self.assertTrue(overlaps_with_any_vector)
+#@-node:gcross.20091116175016.1815:orthogonalize_projector_matrix
 #@-node:gcross.20091110205054.1947:Tests
 #@-others
 
@@ -1048,6 +1067,7 @@ tests = [
     absorb_bi_matrix_from_left,
     absorb_bi_matrix_from_right,
     increase_bandwidth_between,
+    orthogonalize_projector_matrix,
 ]
 
 #@<< Runner >>

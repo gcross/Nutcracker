@@ -460,6 +460,24 @@ instance Connected OperatorSiteTensor RightAbsorptionNormalizedStateSiteTensor w
 
 -- @-node:gcross.20091111171052.1598:Operator Site Tensor
 -- @-node:gcross.20091113142219.2538:Tensors
+-- @+node:gcross.20091116175016.1796:ProjectorMatrix
+data ProjectorMatrix = NullProjectorMatrix | ProjectorMatrix
+    {   projectorCount :: !Int
+    ,   projectorMatrix :: !(ComplexTensor (Int,Int))
+    }
+
+withPinnedProjectorMatrix :: ProjectorMatrix -> (Int -> Ptr (Complex Double) -> IO a) -> IO a
+withPinnedProjectorMatrix NullProjectorMatrix thunk = thunk 0 nullPtr
+withPinnedProjectorMatrix (ProjectorMatrix number_of_projectors matrix) thunk =
+    withPinnedComplexTensor matrix (thunk number_of_projectors)
+
+withNewPinnedProjectorMatrix :: Int -> Int -> (Ptr (Complex Double) -> IO a) -> IO (a,ProjectorMatrix)
+withNewPinnedProjectorMatrix 0 _ = error "You are trying to get a write pointer to an emptry array!"
+withNewPinnedProjectorMatrix number_of_projectors projector_length =
+    fmap (second $ ProjectorMatrix number_of_projectors)
+    .
+    withNewPinnedComplexTensor (number_of_projectors,projector_length)
+-- @-node:gcross.20091116175016.1796:ProjectorMatrix
 -- @-node:gcross.20091111171052.1591:Types
 -- @+node:gcross.20091111171052.1601:Classes
 -- @+node:gcross.20091111171052.1602:Connected

@@ -1177,6 +1177,75 @@ function increase_bandwidth_between( &
 end function
 !@-node:gcross.20091115105949.1728:increase_bandwidth_between
 !@-node:gcross.20091115094257.1711:Bandwidth increasing
+!@+node:gcross.20091116175016.1817:orthogonalize_projector_matrix
+subroutine orthogonalize_projector_matrix( &
+  number_of_projectors, &
+  projector_length, &
+  projector_matrix &
+)
+  integer, intent(in) :: number_of_projectors, projector_length
+  double complex, intent(inout) :: projector_matrix(projector_length,number_of_projectors)
+
+  integer :: jpvt(number_of_projectors), info, lwork
+  double complex :: tau(number_of_projectors), lwork_as_complex
+  double precision :: rwork(2*number_of_projectors)
+
+  double complex, allocatable :: work(:)
+
+  external :: zgeqp3, zungqr
+
+  if (number_of_projectors >= projector_length) then
+    print *, "There are too many projectors and too few degrees of freedom!"
+    stop
+  end if
+
+  lwork = -1
+  call zgeqp3( &
+    projector_length, number_of_projectors, &
+    projector_matrix, projector_length, &
+    jpvt, &
+    tau, &
+    lwork_as_complex, lwork, &
+    rwork, &
+    info &
+  )
+
+  if (info /= 0) then
+    print *, "Unable to factorize matrix (zgeqp3, workspace query); info =", info
+  end if
+
+  lwork = int(real(lwork_as_complex))
+  allocate(work(lwork))
+  call zgeqp3( &
+    projector_length, number_of_projectors, &
+    projector_matrix, projector_length, &
+    jpvt, &
+    tau, &
+    work, lwork, &
+    rwork, &
+    info &
+  )
+
+  if (info /= 0) then
+    print *, "Unable to factorize matrix (zgeqp3); info =", info
+  end if
+
+  call zungqr( &
+    projector_length, number_of_projectors, number_of_projectors, &
+    projector_matrix, projector_length, &
+    tau, &
+    work, lwork, &
+    info &
+  )
+
+  if (info /= 0) then
+    print *, "Unable to factorize matrix (zungqr); info =", info
+  end if
+
+  deallocate(work)
+
+end subroutine
+!@-node:gcross.20091116175016.1817:orthogonalize_projector_matrix
 !@-others
 !@-node:gcross.20091110205054.1939:@thin core.f95
 !@-leo
