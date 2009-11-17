@@ -586,13 +586,13 @@ subroutine project(vector_size,number_of_projectors,projectors,vector)
   double complex :: projector_weights(number_of_projectors)
   integer :: i
   call zgemv( &
-    'C', &
+    'T', &
     vector_size,number_of_projectors, &
     (1d0,0d0),projectors,vector_size, &
     vector,1, &
     (0d0,0d0),projector_weights,1 &
   )
-  forall (i = 1:vector_size) vector(i) = vector(i) - dot_product(projectors(i,:),projector_weights)
+  forall (i = 1:vector_size) vector(i) = vector(i) - dot_product(conjg(projectors(i,:)),projector_weights)
 end subroutine
 !@-node:gcross.20091115201814.1736:project
 !@+node:gcross.20091109182634.1537:optimize
