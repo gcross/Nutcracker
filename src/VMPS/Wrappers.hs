@@ -206,6 +206,43 @@ contractSSLeft left_boundary_tensor overlap_site_tensor state_site_tensor =
                 p_overlap_site_tensor
                 p_state_site_tensor
 -- @-node:gcross.20091116175016.1770:contractSSLeft
+-- @+node:gcross.20091116175016.1788:contractSSRight
+foreign import ccall unsafe "contract_ss_right" contract_ss_right :: 
+    Int -> -- old state left bandwidth dimension
+    Int -> -- old state right bandwidth dimension
+    Int -> -- new state left bandwidth dimension
+    Int -> -- new state right bandwidth dimension
+    Int -> -- physical dimension
+    Ptr (Complex Double) -> -- right environment
+    Ptr (Complex Double) -> -- old state site tensor
+    Ptr (Complex Double) -> -- new state site tensor
+    Ptr (Complex Double) -> -- new right environment
+    IO ()
+
+contractSSRight ::
+    RightOverlapBoundaryTensor ->
+    RightAbsorptionNormalizedOverlapSiteTensor ->
+    RightAbsorptionNormalizedStateSiteTensor ->
+    RightOverlapBoundaryTensor
+contractSSRight right_boundary_tensor overlap_site_tensor state_site_tensor =
+    let b_left_old = leftBandwidthOfState overlap_site_tensor
+        b_right_old = overlap_site_tensor <-?-> right_boundary_tensor
+        b_left_new = leftBandwidthOfState state_site_tensor
+        b_right_new =  state_site_tensor <-?-> right_boundary_tensor
+        d = overlap_site_tensor <-?-> state_site_tensor
+    in snd . unsafePerformIO $
+        withPinnedTensor right_boundary_tensor $ \p_right_boundary ->
+        withPinnedTensor overlap_site_tensor $ \p_overlap_site_tensor ->
+        withPinnedTensor state_site_tensor $ \p_state_site_tensor ->
+        withNewPinnedTensor (b_left_old,b_left_new) $
+            contract_ss_right
+                b_left_old b_right_old
+                b_left_new b_right_new
+                d
+                p_right_boundary
+                p_overlap_site_tensor
+                p_state_site_tensor
+-- @-node:gcross.20091116175016.1788:contractSSRight
 -- @-node:gcross.20091113125544.1656:Contractors
 -- @+node:gcross.20091113125544.1664:Normalizers
 -- @+node:gcross.20091113125544.1667:makeNormalizedForAbsorbingLeft

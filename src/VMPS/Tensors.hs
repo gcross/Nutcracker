@@ -227,11 +227,11 @@ instance Connected UnnormalizedStateSiteTensor RightOverlapBoundaryTensor where
 
 instance Connected RightAbsorptionNormalizedStateSiteTensor RightOverlapBoundaryTensor where
     (<-?->) = makeConnectedTest
-        "Right overlap boundary and (Right-absorption normalized) state site tensors disagree over the bandwidth dimension!"
+        "Right overlap boundary and (right-absorption normalized) state site tensors disagree over the bandwidth dimension!"
         rightBandwidthOfState
         (overlapNewStateBandwidth . unwrapRightOverlapBoundaryTensor)
 
-trivial_Right_overlap_boundary = RightOverlapBoundaryTensor trivial_overlap_boundary
+trivial_right_overlap_boundary = RightOverlapBoundaryTensor trivial_overlap_boundary
 -- @nonl
 -- @-node:gcross.20091116175016.1768:Right boundary
 -- @-others

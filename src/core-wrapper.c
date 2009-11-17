@@ -205,6 +205,37 @@ void contract_ss_left(
     );
 }
 //@-node:gcross.20091116175016.1772:contract_ss_left
+//@+node:gcross.20091116175016.1784:contract_ss_right
+void contract_ss_right_(
+    int* b_left_old, int* b_right_old,
+    int* b_left_new, int* b_right_new,
+    int* d,
+    double* right_environment,
+    double* normalized_projector_site_tensor,
+    double* normalized_state_site_tensor,
+    double* new_right_environment
+);
+
+void contract_ss_right(
+    int b_left_old, int b_right_old,
+    int b_left_new, int b_right_new,
+    int d,
+    double* right_environment,
+    double* normalized_projector_site_tensor,
+    double* normalized_state_site_tensor,
+    double* new_right_environment
+) {
+    contract_ss_right_(
+        &b_left_old, &b_right_old,
+        &b_left_new, &b_right_new,
+        &d,
+        right_environment,
+        normalized_projector_site_tensor,
+        normalized_state_site_tensor,
+        new_right_environment
+    );
+}
+//@-node:gcross.20091116175016.1784:contract_ss_right
 //@+node:gcross.20091112145455.1655:randomize_state_site_tensor
 void randomize_state_site_tensor_(int* br, int* bl, int* d, double* state_site_tensor);
 
