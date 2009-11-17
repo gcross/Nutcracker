@@ -60,7 +60,10 @@
 <v t="gcross.20091113125544.1651"><vh>@path VMPS</vh>
 <v t="gcross.20091113142219.1659"><vh>@thin EnergyMinimizationChain.hs</vh></v>
 <v t="gcross.20091113142219.1688"><vh>@thin Miscellaneous.hs</vh></v>
-<v t="gcross.20091110205054.1969"><vh>@thin Tensors.hs</vh></v>
+<v t="gcross.20091116222034.1778"><vh>@path Tensors</vh>
+<v t="gcross.20091110205054.1969"><vh>@thin Implementation.hs</vh></v>
+</v>
+<v t="gcross.20091116222034.1779"><vh>@thin Tensors.hs</vh></v>
 <v t="gcross.20091113125544.1653"><vh>@thin Wrappers.hs</vh></v>
 </v>
 </v>
@@ -89,5 +92,6 @@
 <t tx="gcross.20091111171052.1605"></t>
 <t tx="gcross.20091113125544.1651"></t>
 <t tx="gcross.20091113142219.1658" str_leo_pos="14"></t>
+<t tx="gcross.20091116222034.1778"></t>
 </tnodes>
 </leo_file>

@@ -21,6 +21,10 @@ import Data.List
 
 import VMPS.Miscellaneous
 import VMPS.Tensors
+import VMPS.Tensors.Implementation
+    (RightAbsorptionNormalizedStateSiteTensor(..)
+    ,unwrapUnnormalizedStateSiteTensor
+    )
 import VMPS.Wrappers
 -- @-node:gcross.20091113142219.1663:<< Import needed modules >>
 -- @nl

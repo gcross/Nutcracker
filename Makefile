@@ -21,6 +21,7 @@ obj/%.o: src/%.f Makefile
 
 OBJS = \
 	obj/VMPS/Miscellaneous.o \
+	obj/VMPS/Tensors/Implementation.o \
 	obj/VMPS/Tensors.o \
 	obj/VMPS/Wrappers.o \
 	obj/VMPS/EnergyMinimizationChain.o \

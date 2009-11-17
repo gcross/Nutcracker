@@ -33,6 +33,7 @@ import Text.Printf
 
 import System.IO.Unsafe
 
+import VMPS.Miscellaneous
 import VMPS.Tensors
 -- @-node:gcross.20091113125544.1659:<< Import needed modules >>
 -- @nl
@@ -50,56 +51,6 @@ withStrategyAsCString :: OptimizerSelectionStrategy -> (CString -> IO a) -> IO a
 withStrategyAsCString = withCString . show
 -- @-node:gcross.20091111171052.1657:SelectionStrategy
 -- @-node:gcross.20091113125544.1660:Types
--- @+node:gcross.20091116175016.1802:Convenience functions
--- @+node:gcross.20091116175016.1803:normalize
-normalize :: Int -> Ptr (Complex Double) -> IO ()
-normalize array_length p_array =
-    dotArrays array_length p_array p_array
-    >>=
-    return . sqrt
-    >>=
-    divAll array_length p_array
-  where
-    divAll :: Int -> Ptr (Complex Double) -> Complex Double -> IO ()
-    divAll 0 _ _ = return ()
-    divAll n p_array divisor =
-        peek p_array
-        >>=
-        poke p_array . (/ divisor)
-        >>
-        divAll (n-1) (nextComplexPtr p_array) divisor
--- @-node:gcross.20091116175016.1803:normalize
--- @+node:gcross.20091116175016.1807:dotArrays
-dotArrays :: Int -> Ptr (Complex Double) -> Ptr (Complex Double) -> IO (Complex Double)
-dotArrays = go 0
-  where
-    go :: Complex Double -> Int -> Ptr (Complex Double) -> Ptr (Complex Double) -> IO (Complex Double)
-    go acc 0 _ _ = return acc
-    go acc n p1 p2 = do
-        v1 <- peek p1
-        v2 <- peek p2
-        go (acc + ((conjugate v1) * v2)) (n-1) (nextComplexPtr p1) (nextComplexPtr p2)
--- @-node:gcross.20091116175016.1807:dotArrays
--- @+node:gcross.20091116175016.1804:orthogonalize2
-orthogonalize2 :: Int -> Ptr (Complex Double) -> Ptr (Complex Double) -> IO ()
-orthogonalize2 array_length p_array1 p_array2 =
-    normalize array_length p_array1
-    >>
-    dotArrays array_length p_array1 p_array2
-    >>=
-    subtractOverlap array_length p_array1 p_array2
-    >>
-    normalize array_length p_array2
-  where
-    subtractOverlap :: Int -> Ptr (Complex Double) -> Ptr (Complex Double) -> Complex Double -> IO ()
-    subtractOverlap 0 _ _ _ = return ()
-    subtractOverlap n p1 p2 factor = do
-        v1 <- peek p1
-        v2 <- peek p2
-        poke p2 (v2 - v1*factor)
-        subtractOverlap (n-1) (nextComplexPtr p1) (nextComplexPtr p2) factor
--- @-node:gcross.20091116175016.1804:orthogonalize2
--- @-node:gcross.20091116175016.1802:Convenience functions
 -- @+node:gcross.20091113125544.1661:Wrapper functions
 -- @+node:gcross.20091113125544.1656:Contractors
 -- @+node:gcross.20091111171052.1589:computeExpectation
