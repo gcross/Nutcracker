@@ -513,65 +513,61 @@ foreign import ccall unsafe "form_overlap_vector" form_overlap_vector ::
     Ptr (Complex Double) -> -- left environment
     Ptr (Complex Double) -> -- right environment
     Ptr (Complex Double) -> -- old state site tensor
-    Ptr (Complex Double) -> -- new state site tensor
     Ptr (Complex Double) -> -- output overlap vector
     IO ()
 
 foreign import ccall unsafe "orthogonalize_projector_matrix" orthogonalize_projector_matrix :: 
     Int -> -- number of projectors
     Int -> -- projector length
-    Ptr (Complex Double) -> -- left environment
+    Ptr (Complex Double) -> -- projector matrix
     IO ()
 
 formProjectorMatrix :: 
     [(LeftOverlapBoundaryTensor
      ,RightOverlapBoundaryTensor
      ,UnnormalizedOverlapSiteTensor
-     ,UnnormalizedStateSiteTensor
      )] -> ProjectorMatrix
 
 formProjectorMatrix [] = NullProjectorMatrix
-formProjectorMatrix projectors@((_,_,_,state_site_tensor):_) =
+formProjectorMatrix projectors@(first_projector:_) =
     snd . unsafePerformIO $
         withNewPinnedProjectorMatrix number_of_projectors projector_length $
             \p_projector_matrix ->
                 go projectors p_projector_matrix
                 >>
                 case number_of_projectors of
-                    1 -> normalize pointer_increment p_projector_matrix
+                    1 -> do normalize projector_length p_projector_matrix
                     2 -> orthogonalize2
-                            pointer_increment
+                            projector_length
                             p_projector_matrix
                             (plusPtr p_projector_matrix pointer_increment)
-                    _ -> orthogonalize_projector_matrix
+                    _ -> 
+                     do orthogonalize_projector_matrix
                             number_of_projectors
                             projector_length
                             p_projector_matrix
   where
     number_of_projectors = length projectors
-    projector_length =
-        (leftBandwidthOfState state_site_tensor)
-       *(rightBandwidthOfState state_site_tensor)
-       *(physicalDimensionOfState state_site_tensor)
+    (first_left_boundary,first_right_boundary,first_overlap_site_tensor) = first_projector
+    b_left_new = getNewStateBandwidth first_left_boundary
+    b_right_new = getNewStateBandwidth first_right_boundary
+    d = physicalDimensionOfState first_overlap_site_tensor
+    projector_length = b_left_new*b_right_new*d
+
     pointer_increment = projector_length * sizeOf (undefined :: Complex Double)
 
     go [] _ = return ()
     go ((left_boundary_tensor
         ,right_boundary_tensor
         ,overlap_site_tensor
-        ,state_site_tensor
         ):rest_projectors)
        p_projector
        =
         let b_left_old = left_boundary_tensor <-?-> overlap_site_tensor
             b_right_old = overlap_site_tensor <-?-> right_boundary_tensor
-            b_left_new = left_boundary_tensor <-?-> state_site_tensor
-            b_right_new =  state_site_tensor <-?-> right_boundary_tensor
-            d = overlap_site_tensor <-?-> state_site_tensor
         in (withPinnedTensor left_boundary_tensor $ \p_left_boundary ->
             withPinnedTensor right_boundary_tensor $ \p_right_boundary ->
             withPinnedTensor overlap_site_tensor $ \p_overlap_site_tensor ->
-            withPinnedTensor state_site_tensor $ \p_state_site_tensor ->
                 form_overlap_vector
                     b_left_old b_right_old
                     b_left_new b_right_new
@@ -579,7 +575,6 @@ formProjectorMatrix projectors@((_,_,_,state_site_tensor):_) =
                     p_left_boundary
                     p_right_boundary
                     p_overlap_site_tensor
-                    p_state_site_tensor
                     p_projector
             ) >> go rest_projectors (p_projector `plusPtr` pointer_increment)
 -- @-node:gcross.20091116175016.1797:formProjectorMatrix

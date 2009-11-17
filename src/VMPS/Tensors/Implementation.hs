@@ -40,11 +40,11 @@ import VMPS.Miscellaneous
 -- @+node:gcross.20091114174920.1712:Pauli
 data Pauli = I | X | Y | Z
 -- @-node:gcross.20091114174920.1712:Pauli
--- @+node:gcross.20091111171052.1596:ComplexArray
-newtype MyIx i => ComplexTensor i = ComplexTensor { unwrapComplexArray :: StorableArray i (Complex Double) }
+-- @+node:gcross.20091111171052.1596:ComplexTensor
+newtype MyIx i => ComplexTensor i = ComplexTensor { unwrapComplexTensor :: StorableArray i (Complex Double) }
 
 withPinnedComplexTensor :: MyIx i => ComplexTensor i -> (Ptr (Complex Double) -> IO a) -> IO a
-withPinnedComplexTensor = withStorableArray . unwrapComplexArray
+withPinnedComplexTensor = withStorableArray . unwrapComplexTensor
 
 withNewPinnedComplexTensor dimensions thunk = do
     storable_array <- newMyArray dimensions
@@ -58,8 +58,8 @@ trivial_complex_tensor :: MyIx i => ComplexTensor i
 trivial_complex_tensor = complexTensorFromList lowerBounds [1]
 
 toListOfComplexNumbers :: MyIx i => ComplexTensor i -> [Complex Double]
-toListOfComplexNumbers = unsafePerformIO . getElems . unwrapComplexArray
--- @-node:gcross.20091111171052.1596:ComplexArray
+toListOfComplexNumbers = unsafePerformIO . getElems . unwrapComplexTensor
+-- @-node:gcross.20091111171052.1596:ComplexTensor
 -- @+node:gcross.20091113142219.2538:Tensors
 -- @+node:gcross.20091111171052.1595:Left/Right Boundaries
 data BoundaryTensor = BoundaryTensor
@@ -158,6 +158,9 @@ withNewPinnedOverlapBoundaryTensor (cl,bl) =
 
 trivial_overlap_boundary = OverlapBoundaryTensor 1 1 trivial_complex_tensor
 
+class OverlapBoundaryTensorClass a where
+    getNewStateBandwidth :: a -> Int
+
 -- @+others
 -- @+node:gcross.20091116175016.1763:Left boundary
 newtype LeftOverlapBoundaryTensor = LeftOverlapBoundaryTensor { unwrapLeftOverlapBoundaryTensor :: OverlapBoundaryTensor }
@@ -170,6 +173,9 @@ instance Creatable LeftOverlapBoundaryTensor (Int,Int) where
         fmap (second LeftOverlapBoundaryTensor)
         .
         withNewPinnedOverlapBoundaryTensor bounds
+
+instance OverlapBoundaryTensorClass LeftOverlapBoundaryTensor where
+    getNewStateBandwidth = overlapNewStateBandwidth . unwrapLeftOverlapBoundaryTensor
 
 instance Connected LeftOverlapBoundaryTensor UnnormalizedOverlapSiteTensor where
     (<-?->) = makeConnectedTest
@@ -208,6 +214,9 @@ instance Creatable RightOverlapBoundaryTensor (Int,Int) where
         fmap (second RightOverlapBoundaryTensor)
         .
         withNewPinnedOverlapBoundaryTensor bounds
+
+instance OverlapBoundaryTensorClass RightOverlapBoundaryTensor where
+    getNewStateBandwidth = overlapNewStateBandwidth . unwrapRightOverlapBoundaryTensor
 
 instance Connected UnnormalizedOverlapSiteTensor RightOverlapBoundaryTensor where
     (<-?->) = makeConnectedTest

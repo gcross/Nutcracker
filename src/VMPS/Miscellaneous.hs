@@ -53,18 +53,18 @@ normalize :: Int -> Ptr (Complex Double) -> IO ()
 normalize array_length p_array =
     dotArrays array_length p_array p_array
     >>=
-    return . sqrt
+    return . (:+ 0) . (1/) . sqrt . realPart
     >>=
     divAll array_length p_array
   where
     divAll :: Int -> Ptr (Complex Double) -> Complex Double -> IO ()
     divAll 0 _ _ = return ()
-    divAll n p_array divisor =
+    divAll n p_array multiplier =
         peek p_array
         >>=
-        poke p_array . (/ divisor)
+        poke p_array . (* multiplier)
         >>
-        divAll (n-1) (nextComplexPtr p_array) divisor
+        divAll (n-1) (nextComplexPtr p_array) multiplier
 -- @-node:gcross.20091116222034.1789:normalize
 -- @+node:gcross.20091116222034.1790:dotArrays
 dotArrays :: Int -> Ptr (Complex Double) -> Ptr (Complex Double) -> IO (Complex Double)

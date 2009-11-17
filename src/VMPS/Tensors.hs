@@ -28,6 +28,7 @@ module VMPS.Tensors
     ,Creatable()
     ,operatorLeftBandwidth
     ,operatorRightBandwidth
+    ,getNewStateBandwidth
     ,trivial_left_boundary
     ,trivial_right_boundary
     ,OperatorSiteTensor
