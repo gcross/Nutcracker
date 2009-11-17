@@ -388,7 +388,7 @@ main = defaultMain
                 in do
                     assertEqual "is the new state bandwidth dimension correct?" (rightBandwidthOfState state_site_tensor) br
                     assertEqual "is the new operator bandwidth dimension correct?" (operatorRightBandwidth operator_site_tensor) cr
-                    assertBool "are the components correct?" (components ~= [1.0,0.0])
+                    assertBool "are the components correct?" (components ~= [1])
             -- @nonl
             -- @-node:gcross.20091112145455.1630:trivial, all dimensions 1
             -- @+node:gcross.20091112145455.1633:trivial, c = 2
@@ -444,6 +444,89 @@ main = defaultMain
             -- @-others
             ]
         -- @-node:gcross.20091112145455.1641:contractSOSRight
+        -- @+node:gcross.20091116175016.1776:contractSSLeft
+        ,testGroup "contractSSLeft"
+            -- @    @+others
+            -- @+node:gcross.20091116175016.1777:trivial, all dimensions 1
+            [testCase "trivial, all dimensions 1" $
+                let left_boundary = trivial_left_overlap_boundary
+                    overlap_site_tensor = LeftAbsorptionNormalizedOverlapSiteTensor $ StateSiteTensor 1 1 1 trivial_complex_tensor
+                    state_site_tensor = LeftAbsorptionNormalizedStateSiteTensor $ StateSiteTensor 1 1 1 trivial_complex_tensor
+                    LeftOverlapBoundaryTensor (OverlapBoundaryTensor ob nb actual_tensor) = contractSSLeft left_boundary overlap_site_tensor state_site_tensor
+                    components = toListOfComplexNumbers actual_tensor
+                in do
+                    assertEqual "is the old state bandwidth dimension correct?" (rightBandwidthOfState overlap_site_tensor) ob
+                    assertEqual "is the new state bandwidth dimension correct?" (rightBandwidthOfState state_site_tensor) nb
+                    assertBool "are the components correct?" (components ~= [1])
+            -- @-node:gcross.20091116175016.1777:trivial, all dimensions 1
+            -- @+node:gcross.20091116175016.1780:trivial, physical dimensions 2
+            ,testCase "trivial, physical dimensions 2" $
+                let left_boundary = trivial_left_overlap_boundary
+                    overlap_site_tensor =
+                        LeftAbsorptionNormalizedOverlapSiteTensor
+                        .
+                        StateSiteTensor 2 1 1
+                        .
+                        complexTensorFromList (2,1,1)
+                        $
+                        [5,-1]
+                    state_site_tensor =
+                        LeftAbsorptionNormalizedStateSiteTensor
+                        .
+                        StateSiteTensor 2 1 1
+                        .
+                        complexTensorFromList (2,1,1)
+                        $
+                        [1,1]
+                    LeftOverlapBoundaryTensor (OverlapBoundaryTensor ob nb actual_tensor) = contractSSLeft left_boundary overlap_site_tensor state_site_tensor
+                    components = toListOfComplexNumbers actual_tensor
+                in do
+                    assertEqual "is the old state bandwidth dimension correct?" (rightBandwidthOfState overlap_site_tensor) ob
+                    assertEqual "is the new state bandwidth dimension correct?" (rightBandwidthOfState state_site_tensor) nb
+                    assertAlmostEqual "are the components correct?" [4] components
+            -- @-node:gcross.20091116175016.1780:trivial, physical dimensions 2
+            -- @+node:gcross.20091116175016.1782:trivial, varied bandwidth dimensions
+            ,testCase "trivial, varied bandwidth dimensions" $
+                let left_boundary =
+                        LeftOverlapBoundaryTensor
+                        .
+                        OverlapBoundaryTensor 3 2
+                        .
+                        complexTensorFromList (3,2)
+                        $
+                        [2,2
+                        ,1,1
+                        ,3,3
+                        ]
+                    overlap_site_tensor =
+                        LeftAbsorptionNormalizedOverlapSiteTensor
+                        .
+                        StateSiteTensor 1 3 2
+                        .
+                        complexTensorFromList (1,3,2)
+                        $
+                        [1,-1,1
+                        ,1,1,-1]
+                    state_site_tensor =
+                        LeftAbsorptionNormalizedStateSiteTensor
+                        .
+                        StateSiteTensor 1 2 2
+                        .
+                        complexTensorFromList (1,2,2)
+                        $
+                        [1,1
+                        ,2,-2
+                        ]
+                    LeftOverlapBoundaryTensor (OverlapBoundaryTensor ob nb actual_tensor) = contractSSLeft left_boundary overlap_site_tensor state_site_tensor
+                    components = toListOfComplexNumbers actual_tensor
+                in do
+                    assertEqual "is the old state bandwidth dimension correct?" (rightBandwidthOfState overlap_site_tensor) ob
+                    assertEqual "is the new state bandwidth dimension correct?" (rightBandwidthOfState state_site_tensor) nb
+                    assertAlmostEqual "are the components correct?" [12,-4,0,0] components
+            -- @-node:gcross.20091116175016.1782:trivial, varied bandwidth dimensions
+            -- @-others
+            ]
+        -- @-node:gcross.20091116175016.1776:contractSSLeft
         -- @+node:gcross.20091112145455.1660:generateRandomizedStateTensor
         ,testGroup "generateRandomizedUnnormalizedSiteStateTensor"
             -- @    @+others

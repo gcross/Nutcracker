@@ -169,6 +169,43 @@ contractSOSRight right_boundary_tensor state_site_tensor operator_site_tensor =
                 number_of_matrices p_operator_indices p_operator_matrices
                 p_state_site_tensor
 -- @-node:gcross.20091112145455.1635:contractSOSRight
+-- @+node:gcross.20091116175016.1770:contractSSLeft
+foreign import ccall unsafe "contract_ss_left" contract_ss_left :: 
+    Int -> -- old state left bandwidth dimension
+    Int -> -- old state right bandwidth dimension
+    Int -> -- new state left bandwidth dimension
+    Int -> -- new state right bandwidth dimension
+    Int -> -- physical dimension
+    Ptr (Complex Double) -> -- left environment
+    Ptr (Complex Double) -> -- old state site tensor
+    Ptr (Complex Double) -> -- new state site tensor
+    Ptr (Complex Double) -> -- new left environment
+    IO ()
+
+contractSSLeft ::
+    LeftOverlapBoundaryTensor ->
+    LeftAbsorptionNormalizedOverlapSiteTensor ->
+    LeftAbsorptionNormalizedStateSiteTensor ->
+    LeftOverlapBoundaryTensor
+contractSSLeft left_boundary_tensor overlap_site_tensor state_site_tensor =
+    let b_left_old = left_boundary_tensor <-?-> overlap_site_tensor
+        b_right_old = rightBandwidthOfState overlap_site_tensor
+        b_left_new = left_boundary_tensor <-?-> state_site_tensor
+        b_right_new = rightBandwidthOfState state_site_tensor
+        d = overlap_site_tensor <-?-> state_site_tensor
+    in snd . unsafePerformIO $
+        withPinnedTensor left_boundary_tensor $ \p_left_boundary ->
+        withPinnedTensor overlap_site_tensor $ \p_overlap_site_tensor ->
+        withPinnedTensor state_site_tensor $ \p_state_site_tensor ->
+        withNewPinnedTensor (b_right_old,b_right_new) $
+            contract_ss_left
+                b_left_old b_right_old
+                b_left_new b_right_new
+                d
+                p_left_boundary
+                p_overlap_site_tensor
+                p_state_site_tensor
+-- @-node:gcross.20091116175016.1770:contractSSLeft
 -- @-node:gcross.20091113125544.1656:Contractors
 -- @+node:gcross.20091113125544.1664:Normalizers
 -- @+node:gcross.20091113125544.1667:makeNormalizedForAbsorbingLeft

@@ -267,6 +267,24 @@ instance Connected UnnormalizedStateSiteTensor RightAbsorptionNormalizedStateSit
         "State site tensors disagree over the bandwidth dimension!"
         rightBandwidthOfState
         leftBandwidthOfState
+
+instance Connected UnnormalizedOverlapSiteTensor UnnormalizedStateSiteTensor where
+    (<-?->) = makeConnectedTest
+        "State site tensors disagree over the bandwidth dimension!"
+        physicalDimensionOfState
+        physicalDimensionOfState
+
+instance Connected LeftAbsorptionNormalizedOverlapSiteTensor LeftAbsorptionNormalizedStateSiteTensor where
+    (<-?->) = makeConnectedTest
+        "State site tensors disagree over the bandwidth dimension!"
+        physicalDimensionOfState
+        physicalDimensionOfState
+
+instance Connected RightAbsorptionNormalizedOverlapSiteTensor RightAbsorptionNormalizedStateSiteTensor where
+    (<-?->) = makeConnectedTest
+        "State site tensors disagree over the bandwidth dimension!"
+        physicalDimensionOfState
+        physicalDimensionOfState
 -- @+node:gcross.20091116175016.1755:newtypes
 newtype UnnormalizedStateSiteTensor = UnnormalizedStateSiteTensor
     { unwrapUnnormalizedStateSiteTensor :: StateSiteTensor }
