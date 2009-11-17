@@ -32,6 +32,8 @@ import VMPS.Wrappers
 -- @+others
 -- @+node:gcross.20091113142219.1664:Types
 -- @+node:gcross.20091115105949.1734:Neighbor
+-- @+others
+-- @+node:gcross.20091117140132.1791:Definitions
 data LeftNeighbor = LeftNeighbor
     {   leftNeighborBoundary :: LeftBoundaryTensor
     ,   leftNeighborState    :: LeftAbsorptionNormalizedStateSiteTensor
@@ -43,6 +45,90 @@ data RightNeighbor = RightNeighbor
     ,   rightNeighborState    :: RightAbsorptionNormalizedStateSiteTensor
     ,   rightNeighborOperator :: OperatorSiteTensor
     }
+-- @-node:gcross.20091117140132.1791:Definitions
+-- @+node:gcross.20091117140132.1792:absorbIntoNew___Neighbor
+absorbIntoNewRightNeighbor ::
+    RightBoundaryTensor ->
+    RightAbsorptionNormalizedStateSiteTensor ->
+    OperatorSiteTensor ->
+    (RightBoundaryTensor,RightNeighbor)
+
+absorbIntoNewRightNeighbor
+    right_boundary_tensor
+    state_site_tensor
+    operator_site_tensor
+    =
+    (contractSOSRight right_boundary_tensor state_site_tensor operator_site_tensor
+    ,RightNeighbor right_boundary_tensor state_site_tensor operator_site_tensor
+    )
+
+absorbIntoNewLeftNeighbor ::
+    LeftBoundaryTensor ->
+    LeftAbsorptionNormalizedStateSiteTensor ->
+    OperatorSiteTensor ->
+    (LeftBoundaryTensor,LeftNeighbor)
+
+absorbIntoNewLeftNeighbor
+    left_boundary_tensor
+    state_site_tensor
+    operator_site_tensor
+    =
+    (contractSOSLeft left_boundary_tensor state_site_tensor operator_site_tensor
+    ,LeftNeighbor left_boundary_tensor state_site_tensor operator_site_tensor
+    )
+-- @-node:gcross.20091117140132.1792:absorbIntoNew___Neighbor
+-- @+node:gcross.20091117140132.1794:prepareAndAbsorbIntoNew___Neighbor
+prepareAndAbsorbIntoNewRightNeighbor ::
+    LeftNeighbor ->
+    RightBoundaryTensor ->
+    UnnormalizedStateSiteTensor ->
+    OperatorSiteTensor ->
+    (LeftBoundaryTensor,RightBoundaryTensor,UnnormalizedStateSiteTensor,OperatorSiteTensor,RightNeighbor)
+
+prepareAndAbsorbIntoNewLeftNeighbor ::
+    RightNeighbor ->
+    LeftBoundaryTensor ->
+    UnnormalizedStateSiteTensor ->
+    OperatorSiteTensor ->
+    (LeftBoundaryTensor,RightBoundaryTensor,UnnormalizedStateSiteTensor,OperatorSiteTensor,LeftNeighbor)
+
+prepareAndAbsorbIntoNewRightNeighbor
+    (LeftNeighbor new_left_boundary_tensor state_site_tensor new_operator_site_tensor)
+    old_right_boundary_tensor
+    old_state_site_tensor
+    old_operator_site_tensor
+    =
+    let (new_state_site_tensor,normalized_state_site_tensor) =
+            makeNormalizedForAbsorbingRight state_site_tensor old_state_site_tensor
+        (new_right_boundary_tensor,new_right_neighbor) =
+            absorbIntoNewRightNeighbor old_right_boundary_tensor normalized_state_site_tensor old_operator_site_tensor
+    in
+        (new_left_boundary_tensor
+        ,new_right_boundary_tensor
+        ,new_state_site_tensor
+        ,new_operator_site_tensor
+        ,new_right_neighbor
+        )
+
+prepareAndAbsorbIntoNewLeftNeighbor
+    (RightNeighbor new_right_boundary_tensor state_site_tensor new_operator_site_tensor)
+    old_left_boundary_tensor
+    old_state_site_tensor
+    old_operator_site_tensor
+    =
+    let (normalized_state_site_tensor,new_state_site_tensor) =
+            makeNormalizedForAbsorbingLeft old_state_site_tensor state_site_tensor
+        (new_left_boundary_tensor,new_left_neighbor) =
+            absorbIntoNewLeftNeighbor old_left_boundary_tensor normalized_state_site_tensor old_operator_site_tensor
+    in
+        (new_left_boundary_tensor
+        ,new_right_boundary_tensor
+        ,new_state_site_tensor
+        ,new_operator_site_tensor
+        ,new_left_neighbor
+        )
+-- @-node:gcross.20091117140132.1794:prepareAndAbsorbIntoNew___Neighbor
+-- @-others
 -- @-node:gcross.20091115105949.1734:Neighbor
 -- @+node:gcross.20091113142219.1665:EnergyMinimizationChain
 data EnergyMinimizationChain = EnergyMinimizationChain
@@ -92,80 +178,64 @@ computeEnergy EnergyMinimizationChain
     let expectation = computeExpectation left_boundary_tensor state_site_tensor operator_site_tensor right_boundary_tensor
     in assert (imagPart expectation ~= 0) (realPart expectation)
 -- @-node:gcross.20091113142219.1679:computeEnergy
--- @+node:gcross.20091113142219.1684:moveActiveSiteLeftByOneBead
+-- @+node:gcross.20091113142219.1684:activateLeftNeighbor
 activateLeftNeighbor :: EnergyMinimizationChain -> EnergyMinimizationChain
 activateLeftNeighbor EnergyMinimizationChain { siteLeftNeighbors = [] } =
     error "Chain is already at its leftmost site!"
-activateLeftNeighbor EnergyMinimizationChain
-    {   siteStateTensor = state_tensor_to_normalize
-    ,   siteHamiltonianTensor = old_hamiltonian_tensor
-    ,   siteRightBoundaryTensor = old_right_boundary_tensor
-    ,   siteLeftNeighbors =
-            (LeftNeighbor
-                new_left_boundary
-                state_tensor_to_denormalize
-                new_hamiltonian_tensor
-            ):new_left_neighbors
-    ,   siteRightNeighbors = old_right_neighbors
-    ,   siteNumber = old_site_number
-    ,   chainNumberOfSites = number_of_sites
-    } =
-    let (active_site_tensor,normalized_site_tensor) = makeNormalizedForAbsorbingRight state_tensor_to_denormalize state_tensor_to_normalize
+activateLeftNeighbor old_chain =
+    let (   new_left_boundary_tensor
+           ,new_right_boundary_tensor
+           ,new_state_site_tensor
+           ,new_hamiltonian_site_tensor
+           ,new_right_neighbor
+           ) = prepareAndAbsorbIntoNewRightNeighbor
+                    (head . siteLeftNeighbors $ old_chain)
+                    (siteRightBoundaryTensor old_chain)
+                    (siteStateTensor old_chain)
+                    (siteHamiltonianTensor old_chain)
         new_chain = EnergyMinimizationChain
-            {   siteLeftBoundaryTensor = new_left_boundary
-            ,   siteStateTensor = active_site_tensor
-            ,   siteHamiltonianTensor = new_hamiltonian_tensor
-            ,   siteRightBoundaryTensor = contractSOSRight old_right_boundary_tensor normalized_site_tensor old_hamiltonian_tensor
-            ,   siteLeftNeighbors = new_left_neighbors
-            ,   siteRightNeighbors =
-                    (RightNeighbor
-                        old_right_boundary_tensor
-                        normalized_site_tensor
-                        old_hamiltonian_tensor
-                    ):old_right_neighbors
-            ,   siteNumber = old_site_number-1
-            ,   chainNumberOfSites = number_of_sites
-            ,   chainEnergy = computeEnergy new_chain
-            }
+                {   siteLeftBoundaryTensor = new_left_boundary_tensor
+                ,   siteStateTensor = new_state_site_tensor
+                ,   siteHamiltonianTensor = new_hamiltonian_site_tensor
+                ,   siteRightBoundaryTensor = new_right_boundary_tensor
+                ,   siteLeftNeighbors = tail . siteLeftNeighbors $ old_chain
+                ,   siteRightNeighbors = (new_right_neighbor:) . siteRightNeighbors $ old_chain
+                ,   siteNumber = (siteNumber old_chain) - 1
+                ,   chainNumberOfSites = chainNumberOfSites old_chain
+                ,   chainEnergy = computeEnergy new_chain
+                }
     in new_chain
--- @-node:gcross.20091113142219.1684:moveActiveSiteLeftByOneBead
--- @+node:gcross.20091113142219.1686:moveActiveSiteRightByOneBead
+
+-- @-node:gcross.20091113142219.1684:activateLeftNeighbor
+-- @+node:gcross.20091113142219.1686:activateRightNeighbor
 activateRightNeighbor :: EnergyMinimizationChain -> EnergyMinimizationChain
 activateRightNeighbor EnergyMinimizationChain { siteRightNeighbors = [] } =
     error "Chain is already at its rightmost site!"
-activateRightNeighbor EnergyMinimizationChain
-    {   siteLeftBoundaryTensor = old_left_boundary_tensor
-    ,   siteStateTensor = state_tensor_to_normalize
-    ,   siteHamiltonianTensor = old_hamiltonian_tensor
-    ,   siteLeftNeighbors = old_left_neighbors
-    ,   siteRightNeighbors =
-            (RightNeighbor
-                new_right_boundary
-                state_tensor_to_denormalize
-                new_hamiltonian_tensor
-            ):new_right_neighbors
-    ,   siteNumber = old_site_number
-    ,   chainNumberOfSites = number_of_sites
-    } =
-    let (normalized_site_tensor,active_site_tensor) = makeNormalizedForAbsorbingLeft state_tensor_to_normalize state_tensor_to_denormalize
+activateRightNeighbor old_chain =
+    let (   new_left_boundary_tensor
+           ,new_right_boundary_tensor
+           ,new_state_site_tensor
+           ,new_hamiltonian_site_tensor
+           ,new_left_neighbor
+           ) = prepareAndAbsorbIntoNewLeftNeighbor
+                    (head . siteRightNeighbors $ old_chain)
+                    (siteLeftBoundaryTensor old_chain)
+                    (siteStateTensor old_chain)
+                    (siteHamiltonianTensor old_chain)
         new_chain = EnergyMinimizationChain
-            {   siteLeftBoundaryTensor = contractSOSLeft old_left_boundary_tensor normalized_site_tensor old_hamiltonian_tensor
-            ,   siteStateTensor = active_site_tensor
-            ,   siteHamiltonianTensor = new_hamiltonian_tensor
-            ,   siteRightBoundaryTensor = new_right_boundary
-            ,   siteLeftNeighbors =
-                    (LeftNeighbor
-                        old_left_boundary_tensor
-                        normalized_site_tensor
-                        old_hamiltonian_tensor
-                    ):old_left_neighbors
-            ,   siteRightNeighbors = new_right_neighbors
-            ,   siteNumber = old_site_number+1
-            ,   chainNumberOfSites = number_of_sites
-            ,   chainEnergy = computeEnergy new_chain
-            }
+                {   siteLeftBoundaryTensor = new_left_boundary_tensor
+                ,   siteStateTensor = new_state_site_tensor
+                ,   siteHamiltonianTensor = new_hamiltonian_site_tensor
+                ,   siteRightBoundaryTensor = new_right_boundary_tensor
+                ,   siteRightNeighbors = tail . siteRightNeighbors $ old_chain
+                ,   siteLeftNeighbors = (new_left_neighbor:) . siteLeftNeighbors $ old_chain
+                ,   siteNumber = (siteNumber old_chain) + 1
+                ,   chainNumberOfSites = chainNumberOfSites old_chain
+                ,   chainEnergy = computeEnergy new_chain
+                }
     in new_chain
--- @-node:gcross.20091113142219.1686:moveActiveSiteRightByOneBead
+
+-- @-node:gcross.20091113142219.1686:activateRightNeighbor
 -- @+node:gcross.20091113142219.1687:optimizeSite
 optimizeSite :: Double -> Int -> EnergyMinimizationChain -> (Int,EnergyMinimizationChain)
 optimizeSite tolerance maximum_number_of_iterations chain@EnergyMinimizationChain
