@@ -375,32 +375,26 @@ increaseChainBandwidth
         state_site_tensor
         operator_site_tensor
         desired_bandwidth_at_site
-        old_neighbors@((
-            RightNeighbor
-            {   rightNeighborState = next_state_site_tensor
-            ,   rightNeighborOperator = next_operator_tensor
-            },
-            next_bandwidth_dimension
-        ):remaining_neighbors_to_process)
+        ((neighbor,next_bandwidth_dimension):remaining_neighbors_to_process)
         new_neighbors
         =
-        increaseBandwidthBetween desired_bandwidth_at_site next_state_site_tensor state_site_tensor
+        increaseBandwidthBetween
+            desired_bandwidth_at_site
+            (rightNeighborState neighbor)
+            state_site_tensor
         >>= \(denormalized_state_site_tensor,normalized_state_site_tensor) ->
-        go2
-            (contractSOSRight right_boundary normalized_state_site_tensor operator_site_tensor)
-            denormalized_state_site_tensor
-            next_operator_tensor
-            next_bandwidth_dimension
-            remaining_neighbors_to_process
-            (
-                RightNeighbor
-                {   rightNeighborState = normalized_state_site_tensor
-                ,   rightNeighborBoundary = right_boundary
-                ,   rightNeighborOperator = operator_site_tensor
-                }
-                :
-                new_neighbors
-            )
+            let (new_right_boundary,new_neighbor) =
+                    absorbIntoNewRightNeighbor
+                        right_boundary
+                        normalized_state_site_tensor
+                        operator_site_tensor
+            in go2
+                new_right_boundary
+                denormalized_state_site_tensor
+                (rightNeighborOperator neighbor)
+                next_bandwidth_dimension
+                remaining_neighbors_to_process
+                (new_neighbor:new_neighbors)
 
 increaseChainBandwidth _ _ _ = error "This algorithm is only designed to work when the chain is at its leftmost site."
 -- @-node:gcross.20091115105949.1744:increaseChainBandwidth
