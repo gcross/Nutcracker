@@ -234,7 +234,6 @@ activateRightNeighbor old_chain =
                 ,   chainEnergy = computeEnergy new_chain
                 }
     in new_chain
-
 -- @-node:gcross.20091113142219.1686:activateRightNeighbor
 -- @+node:gcross.20091113142219.1687:optimizeSite
 optimizeSite :: Double -> Int -> EnergyMinimizationChain -> (Int,EnergyMinimizationChain)
@@ -275,9 +274,9 @@ generateRandomizedChain operator_site_tensors physical_dimension bandwidth_dimen
             normalized_randomizer bandwidth_dimensions
             >>=
             \site_state_tensor ->
-                go  (contractSOSRight right_environment site_state_tensor operator_site_tensor)
-                    ((RightNeighbor right_environment site_state_tensor operator_site_tensor):current_neighbors)
-                    remaining
+                let (new_right_environment,new_neighbor) =
+                        absorbIntoNewRightNeighbor right_environment site_state_tensor operator_site_tensor
+                in go new_right_environment (new_neighbor:current_neighbors) remaining
         (first_site_left_bandwidth_dimension, first_site_right_bandwidth_dimension) = head state_site_bandwidth_dimensions
     in do
         (right_boundary,right_neighbors) <- go trivial_right_boundary [] (reverse . tail $ zip state_site_bandwidth_dimensions operator_site_tensors)
