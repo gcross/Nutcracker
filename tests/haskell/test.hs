@@ -428,6 +428,7 @@ main = defaultMain
                             state_site_tensor
                             operator_site_tensor
                             right_boundary
+                            NullProjectorMatrix
                             SR
                             0
                             10000

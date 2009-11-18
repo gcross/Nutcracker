@@ -281,6 +281,14 @@ computeEnergy EnergyMinimizationChain
     let expectation = computeExpectation left_boundary_tensor state_site_tensor operator_site_tensor right_boundary_tensor
     in assert (imagPart expectation ~= 0) (realPart expectation)
 -- @-node:gcross.20091113142219.1679:computeEnergy
+-- @+node:gcross.20091117140132.1797:computeProjectorMatrix
+computeProjectorMatrix :: EnergyMinimizationChain -> ProjectorMatrix
+computeProjectorMatrix chain =
+    formProjectorMatrix $
+        zip3 (siteLeftOverlapBoundaryTensors chain)
+             (siteRightOverlapBoundaryTensors chain)
+             (map overlapUnnormalizedTensor . siteOverlapTrios $ chain)
+-- @-node:gcross.20091117140132.1797:computeProjectorMatrix
 -- @+node:gcross.20091113142219.1684:activateLeftNeighbor
 activateLeftNeighbor :: EnergyMinimizationChain -> EnergyMinimizationChain
 activateLeftNeighbor EnergyMinimizationChain { siteLeftNeighbors = [] } =
@@ -356,18 +364,14 @@ activateRightNeighbor old_chain =
 -- @-node:gcross.20091113142219.1686:activateRightNeighbor
 -- @+node:gcross.20091113142219.1687:optimizeSite
 optimizeSite :: Double -> Int -> EnergyMinimizationChain -> (Int,EnergyMinimizationChain)
-optimizeSite tolerance maximum_number_of_iterations chain@EnergyMinimizationChain
-            {   siteLeftBoundaryTensor = left_boundary_tensor
-            ,   siteStateTensor = state_site_tensor
-            ,   siteHamiltonianTensor = operator_site_tensor
-            ,   siteRightBoundaryTensor = right_boundary_tensor
-            } =
+optimizeSite tolerance maximum_number_of_iterations chain =
     let (number_of_iterations, eigenvalue, optimal_site_tensor) =
             computeOptimalSiteStateTensor
-                left_boundary_tensor
-                state_site_tensor
-                operator_site_tensor
-                right_boundary_tensor
+                (siteLeftBoundaryTensor chain)
+                (siteStateTensor chain)
+                (siteHamiltonianTensor chain)
+                (siteRightBoundaryTensor chain)
+                (computeProjectorMatrix chain)
                 SR
                 tolerance
                 maximum_number_of_iterations

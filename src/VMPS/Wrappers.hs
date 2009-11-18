@@ -389,6 +389,7 @@ computeOptimalSiteStateTensor ::
     UnnormalizedStateSiteTensor ->
     OperatorSiteTensor ->
     RightBoundaryTensor ->
+    ProjectorMatrix ->
     OptimizerSelectionStrategy ->
     Double ->
     Int ->
@@ -398,6 +399,7 @@ computeOptimalSiteStateTensor
     state_site_tensor
     operator_site_tensor
     right_boundary_tensor
+    projector_matrix
     strategy
     tolerance
     maximum_number_of_iterations
@@ -412,6 +414,7 @@ computeOptimalSiteStateTensor
             withPinnedTensor state_site_tensor $ \p_state_site_tensor ->
             withPinnedOperatorSiteTensor operator_site_tensor $ \number_of_matrices p_operator_indices p_operator_matrices ->
             withPinnedTensor right_boundary_tensor $ \p_right_boundary ->
+            withPinnedProjectorMatrix projector_matrix $ \number_of_projectors p_projector_matrix ->
             withStrategyAsCString strategy $ \p_strategy ->
             with maximum_number_of_iterations  $ \p_number_of_iterations ->
             alloca $ \p_eigenvalue ->
@@ -425,8 +428,8 @@ computeOptimalSiteStateTensor
                     p_left_boundary
                     number_of_matrices p_operator_indices p_operator_matrices
                     p_right_boundary
-                    0
-                    nullPtr
+                    number_of_projectors
+                    p_projector_matrix
                     p_strategy
                     tolerance
                     p_number_of_iterations
