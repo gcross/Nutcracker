@@ -31,100 +31,179 @@ import VMPS.Wrappers
 
 -- @+others
 -- @+node:gcross.20091113142219.1664:Types
+-- @+node:gcross.20091117140132.1795:OverlapTensorTrio
+data OverlapTensorTrio = OverlapTensorTrio
+    {   overlapUnnormalizedTensor :: UnnormalizedOverlapSiteTensor
+    ,   overlapLeftAbsorptionNormalizedTensor :: LeftAbsorptionNormalizedOverlapSiteTensor
+    ,   overlapRightAbsorptionNormalizedTensor :: RightAbsorptionNormalizedOverlapSiteTensor
+    }
+-- @-node:gcross.20091117140132.1795:OverlapTensorTrio
 -- @+node:gcross.20091115105949.1734:Neighbor
 -- @+others
 -- @+node:gcross.20091117140132.1791:Definitions
 data LeftNeighbor = LeftNeighbor
     {   leftNeighborBoundary :: LeftBoundaryTensor
-    ,   leftNeighborState    :: LeftAbsorptionNormalizedStateSiteTensor
+    ,   leftNeighborState :: LeftAbsorptionNormalizedStateSiteTensor
     ,   leftNeighborOperator :: OperatorSiteTensor
+    ,   leftNeighborOverlapBoundaries :: [LeftOverlapBoundaryTensor]
+    ,   leftNeighborOverlapTrios :: [OverlapTensorTrio]
     }
 
 data RightNeighbor = RightNeighbor
     {   rightNeighborBoundary :: RightBoundaryTensor
-    ,   rightNeighborState    :: RightAbsorptionNormalizedStateSiteTensor
+    ,   rightNeighborState :: RightAbsorptionNormalizedStateSiteTensor
     ,   rightNeighborOperator :: OperatorSiteTensor
+    ,   rightNeighborOverlapBoundaries :: [RightOverlapBoundaryTensor]
+    ,   rightNeighborOverlapTrios :: [OverlapTensorTrio]
     }
 -- @-node:gcross.20091117140132.1791:Definitions
 -- @+node:gcross.20091117140132.1792:absorbIntoNew___Neighbor
 absorbIntoNewRightNeighbor ::
     RightBoundaryTensor ->
+    [RightOverlapBoundaryTensor] ->
     RightAbsorptionNormalizedStateSiteTensor ->
     OperatorSiteTensor ->
-    (RightBoundaryTensor,RightNeighbor)
+    [OverlapTensorTrio] ->
+    (RightBoundaryTensor,[RightOverlapBoundaryTensor],RightNeighbor)
 
 absorbIntoNewRightNeighbor
     right_boundary_tensor
+    right_overlap_boundary_tensors
     state_site_tensor
     operator_site_tensor
+    overlap_tensor_trios
     =
     (contractSOSRight right_boundary_tensor state_site_tensor operator_site_tensor
-    ,RightNeighbor right_boundary_tensor state_site_tensor operator_site_tensor
+    ,map (
+        uncurry (contractSSRight state_site_tensor)
+        .
+        (second overlapRightAbsorptionNormalizedTensor)
+     ) $ zip right_overlap_boundary_tensors overlap_tensor_trios
+    ,RightNeighbor
+        right_boundary_tensor
+        state_site_tensor
+        operator_site_tensor
+        right_overlap_boundary_tensors
+        overlap_tensor_trios
     )
 
 absorbIntoNewLeftNeighbor ::
     LeftBoundaryTensor ->
+    [LeftOverlapBoundaryTensor] ->
     LeftAbsorptionNormalizedStateSiteTensor ->
     OperatorSiteTensor ->
-    (LeftBoundaryTensor,LeftNeighbor)
+    [OverlapTensorTrio] ->
+    (LeftBoundaryTensor,[LeftOverlapBoundaryTensor],LeftNeighbor)
 
 absorbIntoNewLeftNeighbor
     left_boundary_tensor
+    left_overlap_boundary_tensors
     state_site_tensor
     operator_site_tensor
+    overlap_tensor_trios
     =
     (contractSOSLeft left_boundary_tensor state_site_tensor operator_site_tensor
-    ,LeftNeighbor left_boundary_tensor state_site_tensor operator_site_tensor
+    ,map (
+        uncurry (contractSSLeft state_site_tensor)
+        .
+        (second overlapLeftAbsorptionNormalizedTensor)
+     ) $ zip left_overlap_boundary_tensors overlap_tensor_trios
+    ,LeftNeighbor
+        left_boundary_tensor
+        state_site_tensor
+        operator_site_tensor
+        left_overlap_boundary_tensors
+        overlap_tensor_trios
     )
 -- @-node:gcross.20091117140132.1792:absorbIntoNew___Neighbor
 -- @+node:gcross.20091117140132.1794:prepareAndAbsorbIntoNew___Neighbor
 prepareAndAbsorbIntoNewRightNeighbor ::
     LeftNeighbor ->
     RightBoundaryTensor ->
+    [RightOverlapBoundaryTensor] ->
     UnnormalizedStateSiteTensor ->
     OperatorSiteTensor ->
-    (LeftBoundaryTensor,RightBoundaryTensor,UnnormalizedStateSiteTensor,OperatorSiteTensor,RightNeighbor)
+    [OverlapTensorTrio] ->
+     (LeftBoundaryTensor
+     ,[LeftOverlapBoundaryTensor]
+     ,RightBoundaryTensor
+     ,[RightOverlapBoundaryTensor]
+     ,UnnormalizedStateSiteTensor
+     ,OperatorSiteTensor
+     ,[OverlapTensorTrio]
+     ,RightNeighbor
+     )
+
+prepareAndAbsorbIntoNewRightNeighbor
+    old_left_neighbor
+    old_right_boundary_tensor
+    old_right_overlap_boundary_tensors
+    old_state_site_tensor
+    old_operator_site_tensor
+    old_overlap_tensor_trios
+    =
+    let (new_state_site_tensor,normalized_state_site_tensor) =
+            makeNormalizedForAbsorbingRight (leftNeighborState old_left_neighbor) old_state_site_tensor
+        (new_right_boundary_tensor,new_right_overlap_boundary_tensors,new_right_neighbor) =
+            absorbIntoNewRightNeighbor
+                old_right_boundary_tensor
+                old_right_overlap_boundary_tensors
+                normalized_state_site_tensor
+                old_operator_site_tensor
+                old_overlap_tensor_trios
+    in
+        ((leftNeighborBoundary old_left_neighbor)
+        ,(leftNeighborOverlapBoundaries old_left_neighbor)
+        ,new_right_boundary_tensor
+        ,new_right_overlap_boundary_tensors
+        ,new_state_site_tensor
+        ,(leftNeighborOperator old_left_neighbor)
+        ,(leftNeighborOverlapTrios old_left_neighbor)
+        ,new_right_neighbor
+        )
 
 prepareAndAbsorbIntoNewLeftNeighbor ::
     RightNeighbor ->
     LeftBoundaryTensor ->
+    [LeftOverlapBoundaryTensor] ->
     UnnormalizedStateSiteTensor ->
     OperatorSiteTensor ->
-    (LeftBoundaryTensor,RightBoundaryTensor,UnnormalizedStateSiteTensor,OperatorSiteTensor,LeftNeighbor)
-
-prepareAndAbsorbIntoNewRightNeighbor
-    (LeftNeighbor new_left_boundary_tensor state_site_tensor new_operator_site_tensor)
-    old_right_boundary_tensor
-    old_state_site_tensor
-    old_operator_site_tensor
-    =
-    let (new_state_site_tensor,normalized_state_site_tensor) =
-            makeNormalizedForAbsorbingRight state_site_tensor old_state_site_tensor
-        (new_right_boundary_tensor,new_right_neighbor) =
-            absorbIntoNewRightNeighbor old_right_boundary_tensor normalized_state_site_tensor old_operator_site_tensor
-    in
-        (new_left_boundary_tensor
-        ,new_right_boundary_tensor
-        ,new_state_site_tensor
-        ,new_operator_site_tensor
-        ,new_right_neighbor
-        )
+    [OverlapTensorTrio] ->
+     (LeftBoundaryTensor
+     ,[LeftOverlapBoundaryTensor]
+     ,RightBoundaryTensor
+     ,[RightOverlapBoundaryTensor]
+     ,UnnormalizedStateSiteTensor
+     ,OperatorSiteTensor
+     ,[OverlapTensorTrio]
+     ,LeftNeighbor
+     )
 
 prepareAndAbsorbIntoNewLeftNeighbor
-    (RightNeighbor new_right_boundary_tensor state_site_tensor new_operator_site_tensor)
+    old_right_neighbor
     old_left_boundary_tensor
+    old_left_overlap_boundary_tensors
     old_state_site_tensor
     old_operator_site_tensor
+    old_overlap_tensor_trios
     =
     let (normalized_state_site_tensor,new_state_site_tensor) =
-            makeNormalizedForAbsorbingLeft old_state_site_tensor state_site_tensor
-        (new_left_boundary_tensor,new_left_neighbor) =
-            absorbIntoNewLeftNeighbor old_left_boundary_tensor normalized_state_site_tensor old_operator_site_tensor
+            makeNormalizedForAbsorbingLeft old_state_site_tensor (rightNeighborState old_right_neighbor)
+        (new_left_boundary_tensor,new_left_overlap_boundary_tensors,new_left_neighbor) =
+            absorbIntoNewLeftNeighbor
+                old_left_boundary_tensor
+                old_left_overlap_boundary_tensors
+                normalized_state_site_tensor
+                old_operator_site_tensor
+                old_overlap_tensor_trios
     in
         (new_left_boundary_tensor
-        ,new_right_boundary_tensor
+        ,new_left_overlap_boundary_tensors
+        ,(rightNeighborBoundary old_right_neighbor)
+        ,(rightNeighborOverlapBoundaries old_right_neighbor)
         ,new_state_site_tensor
-        ,new_operator_site_tensor
+        ,(rightNeighborOperator old_right_neighbor)
+        ,(rightNeighborOverlapTrios old_right_neighbor)
         ,new_left_neighbor
         )
 -- @-node:gcross.20091117140132.1794:prepareAndAbsorbIntoNew___Neighbor
@@ -133,9 +212,12 @@ prepareAndAbsorbIntoNewLeftNeighbor
 -- @+node:gcross.20091113142219.1665:EnergyMinimizationChain
 data EnergyMinimizationChain = EnergyMinimizationChain
     {   siteLeftBoundaryTensor :: LeftBoundaryTensor
+    ,   siteLeftOverlapBoundaryTensors :: [LeftOverlapBoundaryTensor]
     ,   siteStateTensor :: UnnormalizedStateSiteTensor
     ,   siteHamiltonianTensor :: OperatorSiteTensor
+    ,   siteOverlapTrios :: [OverlapTensorTrio]
     ,   siteRightBoundaryTensor :: RightBoundaryTensor
+    ,   siteRightOverlapBoundaryTensors :: [RightOverlapBoundaryTensor]
     ,   siteLeftNeighbors :: [LeftNeighbor]
     ,   siteRightNeighbors :: [RightNeighbor]
     ,   siteNumber :: !Int
@@ -184,20 +266,28 @@ activateLeftNeighbor EnergyMinimizationChain { siteLeftNeighbors = [] } =
     error "Chain is already at its leftmost site!"
 activateLeftNeighbor old_chain =
     let (   new_left_boundary_tensor
+           ,new_left_overlap_boundary_tensors
            ,new_right_boundary_tensor
+           ,new_right_overlap_boundary_tensors
            ,new_state_site_tensor
            ,new_hamiltonian_site_tensor
+           ,new_overlap_trios
            ,new_right_neighbor
            ) = prepareAndAbsorbIntoNewRightNeighbor
                     (head . siteLeftNeighbors $ old_chain)
                     (siteRightBoundaryTensor old_chain)
+                    (siteRightOverlapBoundaryTensors old_chain)
                     (siteStateTensor old_chain)
                     (siteHamiltonianTensor old_chain)
+                    (siteOverlapTrios old_chain)
         new_chain = EnergyMinimizationChain
                 {   siteLeftBoundaryTensor = new_left_boundary_tensor
+                ,   siteLeftOverlapBoundaryTensors = new_left_overlap_boundary_tensors
                 ,   siteStateTensor = new_state_site_tensor
                 ,   siteHamiltonianTensor = new_hamiltonian_site_tensor
+                ,   siteOverlapTrios = new_overlap_trios
                 ,   siteRightBoundaryTensor = new_right_boundary_tensor
+                ,   siteRightOverlapBoundaryTensors = new_right_overlap_boundary_tensors
                 ,   siteLeftNeighbors = tail . siteLeftNeighbors $ old_chain
                 ,   siteRightNeighbors = (new_right_neighbor:) . siteRightNeighbors $ old_chain
                 ,   siteNumber = (siteNumber old_chain) - 1
@@ -213,22 +303,30 @@ activateRightNeighbor EnergyMinimizationChain { siteRightNeighbors = [] } =
     error "Chain is already at its rightmost site!"
 activateRightNeighbor old_chain =
     let (   new_left_boundary_tensor
+           ,new_left_overlap_boundary_tensors
            ,new_right_boundary_tensor
+           ,new_right_overlap_boundary_tensors
            ,new_state_site_tensor
            ,new_hamiltonian_site_tensor
+           ,new_overlap_trios
            ,new_left_neighbor
            ) = prepareAndAbsorbIntoNewLeftNeighbor
                     (head . siteRightNeighbors $ old_chain)
                     (siteLeftBoundaryTensor old_chain)
+                    (siteLeftOverlapBoundaryTensors old_chain)
                     (siteStateTensor old_chain)
                     (siteHamiltonianTensor old_chain)
+                    (siteOverlapTrios old_chain)
         new_chain = EnergyMinimizationChain
                 {   siteLeftBoundaryTensor = new_left_boundary_tensor
+                ,   siteLeftOverlapBoundaryTensors = new_left_overlap_boundary_tensors
                 ,   siteStateTensor = new_state_site_tensor
                 ,   siteHamiltonianTensor = new_hamiltonian_site_tensor
+                ,   siteOverlapTrios = new_overlap_trios
                 ,   siteRightBoundaryTensor = new_right_boundary_tensor
-                ,   siteRightNeighbors = tail . siteRightNeighbors $ old_chain
+                ,   siteRightOverlapBoundaryTensors = new_right_overlap_boundary_tensors
                 ,   siteLeftNeighbors = (new_left_neighbor:) . siteLeftNeighbors $ old_chain
+                ,   siteRightNeighbors = tail . siteRightNeighbors $ old_chain
                 ,   siteNumber = (siteNumber old_chain) + 1
                 ,   chainNumberOfSites = chainNumberOfSites old_chain
                 ,   chainEnergy = computeEnergy new_chain
@@ -274,8 +372,13 @@ generateRandomizedChain operator_site_tensors physical_dimension bandwidth_dimen
             normalized_randomizer bandwidth_dimensions
             >>=
             \site_state_tensor ->
-                let (new_right_environment,new_neighbor) =
-                        absorbIntoNewRightNeighbor right_environment site_state_tensor operator_site_tensor
+                let (new_right_environment,[],new_neighbor) =
+                        absorbIntoNewRightNeighbor
+                            right_environment
+                            []
+                            site_state_tensor
+                            operator_site_tensor
+                            []
                 in go new_right_environment (new_neighbor:current_neighbors) remaining
         (first_site_left_bandwidth_dimension, first_site_right_bandwidth_dimension) = head state_site_bandwidth_dimensions
     in do
@@ -284,9 +387,12 @@ generateRandomizedChain operator_site_tensors physical_dimension bandwidth_dimen
         return $
             let chain = EnergyMinimizationChain
                     {   siteLeftBoundaryTensor = trivial_left_boundary
+                    ,   siteLeftOverlapBoundaryTensors = []
                     ,   siteStateTensor = unnormalized_state_site_tensor
                     ,   siteHamiltonianTensor = head operator_site_tensors
+                    ,   siteOverlapTrios = []
                     ,   siteRightBoundaryTensor = right_boundary
+                    ,   siteRightOverlapBoundaryTensors = []
                     ,   siteLeftNeighbors = []
                     ,   siteRightNeighbors = right_neighbors
                     ,   siteNumber = 1
@@ -322,6 +428,8 @@ increaseChainBandwidth
                 chain
             )
             undefined
+            undefined
+            undefined
         :)
         $
         neighbors
@@ -343,28 +451,39 @@ increaseChainBandwidth
             = go1 rest_neighbors (current_neighbor:new_neighbors)
         | otherwise
             = go2
-                boundary
-                (unnormalize state)
-                operator
+                (rightNeighborBoundary current_neighbor)
+                (rightNeighborOverlapBoundaries current_neighbor)
+                (unnormalize . rightNeighborState $ current_neighbor)
+                (rightNeighborOperator current_neighbor)
+                (rightNeighborOverlapTrios current_neighbor)
                 desired_bandwidth
                 rest_neighbors
                 new_neighbors
-      where
-        (RightNeighbor boundary state operator) = current_neighbor
-        neighbor_bandwidth = leftBandwidthOfState state
+      where neighbor_bandwidth = leftBandwidthOfState . rightNeighborState $ current_neighbor
+
     go2 ::
         RightBoundaryTensor ->
+        [RightOverlapBoundaryTensor] ->
         UnnormalizedStateSiteTensor ->
         OperatorSiteTensor ->
+        [OverlapTensorTrio] ->
         Int ->
         [(RightNeighbor,Int)] ->
         [RightNeighbor] ->
         IO EnergyMinimizationChain
-    go2 right_boundary state_site_tensor _ _ [] new_right_neighbors
+    go2 right_boundary
+        right_overlap_boundaries
+        state_site_tensor
+        _
+        _
+        _
+        []
+        new_right_neighbors
         =
         return $
             let new_chain = chain
                     {   siteRightBoundaryTensor = right_boundary
+                    ,   siteRightOverlapBoundaryTensors = right_overlap_boundaries
                     ,   siteStateTensor = state_site_tensor
                     ,   siteRightNeighbors = new_right_neighbors
                     ,   chainEnergy = computeEnergy new_chain
@@ -372,8 +491,10 @@ increaseChainBandwidth
             in new_chain
     go2
         right_boundary
+        right_overlap_boundaries
         state_site_tensor
         operator_site_tensor
+        overlap_trios
         desired_bandwidth_at_site
         ((neighbor,next_bandwidth_dimension):remaining_neighbors_to_process)
         new_neighbors
@@ -383,15 +504,19 @@ increaseChainBandwidth
             (rightNeighborState neighbor)
             state_site_tensor
         >>= \(denormalized_state_site_tensor,normalized_state_site_tensor) ->
-            let (new_right_boundary,new_neighbor) =
+            let (new_right_boundary,new_right_overlap_boundaries,new_neighbor) =
                     absorbIntoNewRightNeighbor
                         right_boundary
+                        right_overlap_boundaries
                         normalized_state_site_tensor
                         operator_site_tensor
+                        overlap_trios
             in go2
                 new_right_boundary
+                new_right_overlap_boundaries
                 denormalized_state_site_tensor
                 (rightNeighborOperator neighbor)
+                (rightNeighborOverlapTrios neighbor)
                 next_bandwidth_dimension
                 remaining_neighbors_to_process
                 (new_neighbor:new_neighbors)

@@ -184,11 +184,11 @@ foreign import ccall unsafe "contract_ss_left" contract_ss_left ::
     IO ()
 
 contractSSLeft ::
+    LeftAbsorptionNormalizedStateSiteTensor ->
     LeftOverlapBoundaryTensor ->
     LeftAbsorptionNormalizedOverlapSiteTensor ->
-    LeftAbsorptionNormalizedStateSiteTensor ->
     LeftOverlapBoundaryTensor
-contractSSLeft left_boundary_tensor overlap_site_tensor state_site_tensor =
+contractSSLeft state_site_tensor left_boundary_tensor overlap_site_tensor =
     let b_left_old = left_boundary_tensor <-?-> overlap_site_tensor
         b_right_old = rightBandwidthOfState overlap_site_tensor
         b_left_new = left_boundary_tensor <-?-> state_site_tensor
@@ -221,11 +221,11 @@ foreign import ccall unsafe "contract_ss_right" contract_ss_right ::
     IO ()
 
 contractSSRight ::
+    RightAbsorptionNormalizedStateSiteTensor ->
     RightOverlapBoundaryTensor ->
     RightAbsorptionNormalizedOverlapSiteTensor ->
-    RightAbsorptionNormalizedStateSiteTensor ->
     RightOverlapBoundaryTensor
-contractSSRight right_boundary_tensor overlap_site_tensor state_site_tensor =
+contractSSRight state_site_tensor right_boundary_tensor overlap_site_tensor  =
     let b_left_old = leftBandwidthOfState overlap_site_tensor
         b_right_old = overlap_site_tensor <-?-> right_boundary_tensor
         b_left_new = leftBandwidthOfState state_site_tensor

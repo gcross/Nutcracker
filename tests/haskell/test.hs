@@ -522,7 +522,7 @@ main = defaultMain
                 let left_boundary = trivial_left_overlap_boundary
                     overlap_site_tensor = LeftAbsorptionNormalizedOverlapSiteTensor $ StateSiteTensor 1 1 1 trivial_complex_tensor
                     state_site_tensor = LeftAbsorptionNormalizedStateSiteTensor $ StateSiteTensor 1 1 1 trivial_complex_tensor
-                    LeftOverlapBoundaryTensor (OverlapBoundaryTensor ob nb actual_tensor) = contractSSLeft left_boundary overlap_site_tensor state_site_tensor
+                    LeftOverlapBoundaryTensor (OverlapBoundaryTensor ob nb actual_tensor) = contractSSLeft state_site_tensor left_boundary overlap_site_tensor 
                     components = toListOfComplexNumbers actual_tensor
                 in do
                     assertEqual "is the old state bandwidth dimension correct?" (rightBandwidthOfState overlap_site_tensor) ob
@@ -548,7 +548,7 @@ main = defaultMain
                         complexTensorFromList (2,1,1)
                         $
                         [1,1]
-                    LeftOverlapBoundaryTensor (OverlapBoundaryTensor ob nb actual_tensor) = contractSSLeft left_boundary overlap_site_tensor state_site_tensor
+                    LeftOverlapBoundaryTensor (OverlapBoundaryTensor ob nb actual_tensor) = contractSSLeft state_site_tensor left_boundary overlap_site_tensor
                     components = toListOfComplexNumbers actual_tensor
                 in do
                     assertEqual "is the old state bandwidth dimension correct?" (rightBandwidthOfState overlap_site_tensor) ob
@@ -587,7 +587,7 @@ main = defaultMain
                         [1,1
                         ,2,-2
                         ]
-                    LeftOverlapBoundaryTensor (OverlapBoundaryTensor ob nb actual_tensor) = contractSSLeft left_boundary overlap_site_tensor state_site_tensor
+                    LeftOverlapBoundaryTensor (OverlapBoundaryTensor ob nb actual_tensor) = contractSSLeft state_site_tensor left_boundary overlap_site_tensor
                     components = toListOfComplexNumbers actual_tensor
                 in do
                     assertEqual "is the old state bandwidth dimension correct?" (rightBandwidthOfState overlap_site_tensor) ob
@@ -605,7 +605,7 @@ main = defaultMain
                 let right_boundary = trivial_right_overlap_boundary
                     overlap_site_tensor = RightAbsorptionNormalizedOverlapSiteTensor $ StateSiteTensor 1 1 1 trivial_complex_tensor
                     state_site_tensor = RightAbsorptionNormalizedStateSiteTensor $ StateSiteTensor 1 1 1 trivial_complex_tensor
-                    RightOverlapBoundaryTensor (OverlapBoundaryTensor ob nb actual_tensor) = contractSSRight right_boundary overlap_site_tensor state_site_tensor
+                    RightOverlapBoundaryTensor (OverlapBoundaryTensor ob nb actual_tensor) = contractSSRight state_site_tensor right_boundary overlap_site_tensor
                     components = toListOfComplexNumbers actual_tensor
                 in do
                     assertEqual "is the old state bandwidth dimension correct?" (leftBandwidthOfState overlap_site_tensor) ob
@@ -631,7 +631,7 @@ main = defaultMain
                         complexTensorFromList (2,1,1)
                         $
                         [1,1]
-                    RightOverlapBoundaryTensor (OverlapBoundaryTensor ob nb actual_tensor) = contractSSRight right_boundary overlap_site_tensor state_site_tensor
+                    RightOverlapBoundaryTensor (OverlapBoundaryTensor ob nb actual_tensor) = contractSSRight state_site_tensor right_boundary overlap_site_tensor
                     components = toListOfComplexNumbers actual_tensor
                 in do
                     assertEqual "is the old state bandwidth dimension correct?" (leftBandwidthOfState overlap_site_tensor) ob
@@ -671,7 +671,7 @@ main = defaultMain
                         [1, 2
                         ,1,-2
                         ]
-                    RightOverlapBoundaryTensor (OverlapBoundaryTensor ob nb actual_tensor) = contractSSRight right_boundary overlap_site_tensor state_site_tensor
+                    RightOverlapBoundaryTensor (OverlapBoundaryTensor ob nb actual_tensor) = contractSSRight state_site_tensor right_boundary overlap_site_tensor
                     components = toListOfComplexNumbers actual_tensor
                 in do
                     assertEqual "is the old state bandwidth dimension correct?" (leftBandwidthOfState overlap_site_tensor) ob
