@@ -32,11 +32,32 @@ import VMPS.Wrappers
 -- @+others
 -- @+node:gcross.20091113142219.1664:Types
 -- @+node:gcross.20091117140132.1795:OverlapTensorTrio
-data OverlapTensorTrio = OverlapTensorTrio
-    {   overlapUnnormalizedTensor :: UnnormalizedOverlapSiteTensor
-    ,   overlapLeftAbsorptionNormalizedTensor :: LeftAbsorptionNormalizedOverlapSiteTensor
-    ,   overlapRightAbsorptionNormalizedTensor :: RightAbsorptionNormalizedOverlapSiteTensor
+data OverlapTensorTrio = 
+    LeftSiteOverlapTensorTrio
+    {   leftOverlapUnnormalizedTensor :: !UnnormalizedOverlapSiteTensor
+    ,   leftOverlapLeftAbsorptionNormalizedTensor :: !LeftAbsorptionNormalizedOverlapSiteTensor
+    } |
+    MiddleSiteOverlapTensorTrio
+    {   middleOverlapUnnormalizedTensor :: !UnnormalizedOverlapSiteTensor
+    ,   middleOverlapLeftAbsorptionNormalizedTensor :: !LeftAbsorptionNormalizedOverlapSiteTensor
+    ,   middleOverlapRightAbsorptionNormalizedTensor :: !RightAbsorptionNormalizedOverlapSiteTensor
+    } |
+    RightSiteOverlapTensorTrio
+    {   rightOverlapUnnormalizedTensor :: !UnnormalizedOverlapSiteTensor
+    ,   rightOverlapRightAbsorptionNormalizedTensor :: !RightAbsorptionNormalizedOverlapSiteTensor
     }
+
+overlapUnnormalizedTensor (LeftSiteOverlapTensorTrio x _) = x
+overlapUnnormalizedTensor (MiddleSiteOverlapTensorTrio x _ _) = x
+overlapUnnormalizedTensor (RightSiteOverlapTensorTrio x _) = x
+
+overlapLeftAbsorptionNormalizedTensor (LeftSiteOverlapTensorTrio _ x) = x
+overlapLeftAbsorptionNormalizedTensor (MiddleSiteOverlapTensorTrio _ x _) = x
+overlapLeftAbsorptionNormalizedTensor (RightSiteOverlapTensorTrio _ _) = error "The right-most site does not have a left-absorption normalized overlap tensor!"
+
+overlapRightAbsorptionNormalizedTensor (LeftSiteOverlapTensorTrio _ _) = error "The left-most site does not have a right-absorption normalized overlap tensor!"
+overlapRightAbsorptionNormalizedTensor (MiddleSiteOverlapTensorTrio _ _ x) = x
+overlapRightAbsorptionNormalizedTensor (RightSiteOverlapTensorTrio _ x) = x
 -- @-node:gcross.20091117140132.1795:OverlapTensorTrio
 -- @+node:gcross.20091115105949.1734:Neighbor
 -- @+others
