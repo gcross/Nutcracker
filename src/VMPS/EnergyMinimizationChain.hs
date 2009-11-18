@@ -380,40 +380,60 @@ optimizeSite tolerance maximum_number_of_iterations chain@EnergyMinimizationChai
 
 optimizeSite_ = optimizeSite 0 1000
 -- @-node:gcross.20091113142219.1687:optimizeSite
--- @+node:gcross.20091113142219.2535:generateRandomizedChain
+-- @+node:gcross.20091117140132.1796:generateRandomizedChain
 generateRandomizedChain :: [OperatorSiteTensor] -> Int -> Int -> IO (EnergyMinimizationChain)
-generateRandomizedChain [] _ _ = error "Must have at least one operator site tensor!"
-generateRandomizedChain operator_site_tensors physical_dimension bandwidth_dimension =
+generateRandomizedChain = generateRandomizedChainWithOverlaps . flip zip (repeat [])
+-- @-node:gcross.20091117140132.1796:generateRandomizedChain
+-- @+node:gcross.20091113142219.2535:generateRandomizedChainWithOverlaps
+generateRandomizedChainWithOverlaps :: [(OperatorSiteTensor,[OverlapTensorTrio])] -> Int -> Int -> IO (EnergyMinimizationChain)
+generateRandomizedChainWithOverlaps [] _ _ = error "Must have at least one operator site tensor!"
+generateRandomizedChainWithOverlaps operator_site_tensors physical_dimension bandwidth_dimension =
     let number_of_sites = length operator_site_tensors
+        number_of_projectors = length . snd . head $ operator_site_tensors
         normalized_randomizer = uncurry (generateRandomizedStateSiteTensor physical_dimension)
         unnormalized_randomizer = uncurry (generateRandomizedStateSiteTensor physical_dimension)
-        state_site_bandwidth_dimensions = computeBandwidthDimensionsAtAllSites number_of_sites physical_dimension bandwidth_dimension
-        go final_neighbors final_right_environment [] = return (final_neighbors,final_right_environment)
-        go right_environment current_neighbors ((bandwidth_dimensions,operator_site_tensor):remaining) =
-            normalized_randomizer bandwidth_dimensions
-            >>=
-            \site_state_tensor ->
-                let (new_right_environment,[],new_neighbor) =
-                        absorbIntoNewRightNeighbor
-                            right_environment
-                            []
-                            site_state_tensor
-                            operator_site_tensor
-                            []
-                in go new_right_environment (new_neighbor:current_neighbors) remaining
+        state_site_bandwidth_dimensions =
+            computeBandwidthDimensionsAtAllSites number_of_sites physical_dimension bandwidth_dimension
+        go final_right_boundary
+           final_right_overlap_boundaries
+           final_neighbors
+           []
+           = return (final_neighbors,final_right_boundary,final_right_overlap_boundaries)
+        go right_boundary
+           right_overlap_boundaries
+           current_neighbors
+           ((bandwidth_dimensions,(operator_site_tensor,overlap_trios)):remaining) 
+           = normalized_randomizer bandwidth_dimensions
+             >>=
+             \site_state_tensor ->
+                 let (new_right_boundary,new_right_overlap_boundaries,new_neighbor) =
+                         absorbIntoNewRightNeighbor
+                             right_boundary
+                             right_overlap_boundaries
+                             site_state_tensor
+                             operator_site_tensor
+                             overlap_trios
+                 in go new_right_boundary
+                       new_right_overlap_boundaries
+                       (new_neighbor:current_neighbors)
+                       remaining
         (first_site_left_bandwidth_dimension, first_site_right_bandwidth_dimension) = head state_site_bandwidth_dimensions
     in do
-        (right_boundary,right_neighbors) <- go trivial_right_boundary [] (reverse . tail $ zip state_site_bandwidth_dimensions operator_site_tensors)
+        (right_neighbors,right_boundary,right_overlap_boundaries) <-
+            go trivial_right_boundary
+               (replicate number_of_projectors trivial_right_overlap_boundary)
+               []
+               (reverse . tail $ zip state_site_bandwidth_dimensions operator_site_tensors)
         unnormalized_state_site_tensor <- unnormalized_randomizer . head $ state_site_bandwidth_dimensions
         return $
             let chain = EnergyMinimizationChain
                     {   siteLeftBoundaryTensor = trivial_left_boundary
-                    ,   siteLeftOverlapBoundaryTensors = []
+                    ,   siteLeftOverlapBoundaryTensors = (replicate number_of_projectors trivial_left_overlap_boundary)
                     ,   siteStateTensor = unnormalized_state_site_tensor
-                    ,   siteHamiltonianTensor = head operator_site_tensors
-                    ,   siteOverlapTrios = []
+                    ,   siteHamiltonianTensor = fst . head $ operator_site_tensors
+                    ,   siteOverlapTrios = snd . head $ operator_site_tensors
                     ,   siteRightBoundaryTensor = right_boundary
-                    ,   siteRightOverlapBoundaryTensors = []
+                    ,   siteRightOverlapBoundaryTensors = right_overlap_boundaries
                     ,   siteLeftNeighbors = []
                     ,   siteRightNeighbors = right_neighbors
                     ,   siteNumber = 1
@@ -421,7 +441,7 @@ generateRandomizedChain operator_site_tensors physical_dimension bandwidth_dimen
                     ,   chainEnergy = computeEnergy chain
                     }
             in chain
--- @-node:gcross.20091113142219.2535:generateRandomizedChain
+-- @-node:gcross.20091113142219.2535:generateRandomizedChainWithOverlaps
 -- @+node:gcross.20091115105949.1744:increaseChainBandwidth
 increaseChainBandwidth :: EnergyMinimizationChain -> Int -> Int -> IO EnergyMinimizationChain
 increaseChainBandwidth

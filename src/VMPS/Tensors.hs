@@ -31,6 +31,8 @@ module VMPS.Tensors
     ,getNewStateBandwidth
     ,trivial_left_boundary
     ,trivial_right_boundary
+    ,trivial_left_overlap_boundary
+    ,trivial_right_overlap_boundary
     ,OperatorSiteTensor
     ) where
 
