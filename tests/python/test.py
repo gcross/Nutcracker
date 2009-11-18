@@ -882,6 +882,25 @@ class rand_norm_state_site_tensor(unittest.TestCase):
         should_be_identity = tensordot(normalized_tensor.conj(),normalized_tensor,((0,2,),)*2)
         self.assertTrue(allclose(identity(bl),should_be_identity))
 #@-node:gcross.20091110205054.1924:rand_norm_state_site_tensor
+#@+node:gcross.20091116175016.1815:orthogonalize_projector_matrix
+class orthogonalize_projector_matrix(unittest.TestCase):
+    @with_checker
+    def testCorrectness(self,projector_length=irange(8,20),number_of_projectors=irange(1,7)):
+        original_vectors = crand(number_of_projectors,projector_length)
+        projector_matrix = array(original_vectors.transpose(),order='Fortran',copy=True)
+        vmps.orthogonalize_projector_matrix(projector_matrix)
+        projector_matrix = projector_matrix.transpose()
+        for i, projector in enumerate(projector_matrix):
+            self.assertAlmostEqual(1,norm(projector))
+            for orthogonal_projector in projector_matrix[i+1:]:
+                self.assertAlmostEqual(0,dot(projector.conj(),orthogonal_projector))
+            overlaps_with_any_vector = False
+            for overlap in (dot(projector.conj(),vector) for vector in original_vectors):
+                if abs(overlap) > 1.0/number_of_projectors:
+                    overlaps_with_any_vector = True
+                    break
+            self.assertTrue(overlaps_with_any_vector)
+#@-node:gcross.20091116175016.1815:orthogonalize_projector_matrix
 #@+node:gcross.20091110205054.1948:Normalization
 #@+node:gcross.20091110205054.1933:norm_denorm_going_left
 class norm_denorm_going_left(unittest.TestCase):
@@ -1023,25 +1042,41 @@ class increase_bandwidth_between(unittest.TestCase):
         ))
 #@-node:gcross.20091115094257.1725:increase_bandwidth_between
 #@-node:gcross.20091115094257.1724:Bandwidth increase
-#@+node:gcross.20091116175016.1815:orthogonalize_projector_matrix
-class orthogonalize_projector_matrix(unittest.TestCase):
+#@+node:gcross.20091118141720.1805:Overlap tensor formation
+#@+node:gcross.20091118141720.1807:form_overlap_site_tensor
+class form_overlap_site_tensor(unittest.TestCase):
+    #@    @+others
+    #@-others
+
     @with_checker
-    def testCorrectness(self,projector_length=irange(8,20),number_of_projectors=irange(1,7)):
-        original_vectors = crand(number_of_projectors,projector_length)
-        projector_matrix = array(original_vectors.transpose(),order='Fortran',copy=True)
-        vmps.orthogonalize_projector_matrix(projector_matrix)
-        projector_matrix = projector_matrix.transpose()
-        for i, projector in enumerate(projector_matrix):
-            self.assertAlmostEqual(1,norm(projector))
-            for orthogonal_projector in projector_matrix[i+1:]:
-                self.assertAlmostEqual(0,dot(projector.conj(),orthogonal_projector))
-            overlaps_with_any_vector = False
-            for overlap in (dot(projector.conj(),vector) for vector in original_vectors):
-                if abs(overlap) > 1.0/number_of_projectors:
-                    overlaps_with_any_vector = True
-                    break
-            self.assertTrue(overlaps_with_any_vector)
-#@-node:gcross.20091116175016.1815:orthogonalize_projector_matrix
+    def testCorrectness(self,br=irange(2,4),bl=irange(2,4),d=irange(2,4)):
+        state_site_tensor = crand(br,bl,d)
+        overlap_site_tensor = vmps.form_overlap_site_tensor(state_site_tensor)
+        self.assertTrue(allclose(state_site_tensor.transpose(1,2,0),overlap_site_tensor))
+#@-node:gcross.20091118141720.1807:form_overlap_site_tensor
+#@+node:gcross.20091118141720.1809:form_norm_overlap_tensors
+class form_norm_overlap_tensors(unittest.TestCase):
+    #@    @+others
+    #@-others
+
+    @with_checker
+    def testCorrectness(self,br=irange(2,4),bm=irange(2,4),bl=irange(2,4),dl=irange(2,4),dr=irange(2,4)):
+        unnormalized_state_tensor_1 = crand(bm,bl,dl)
+        right_norm_state_tensor_2 = crand(br,bm,dr)
+        resulting_tensors = vmps.form_norm_overlap_tensors(unnormalized_state_tensor_1,right_norm_state_tensor_2)
+        left_norm_overlap_tensor_1 = resulting_tensors[0]
+        unnormalized_overlap_tensor_1 = resulting_tensors[1]
+        unnormalized_state_tensor_2 = resulting_tensors[2]
+        right_norm_overlap_tensor_2 = resulting_tensors[3]
+        self.assertTrue(allclose(right_norm_state_tensor_2,right_norm_overlap_tensor_2.transpose(2,0,1)))
+        self.assertTrue(allclose(unnormalized_state_tensor_1,unnormalized_overlap_tensor_1.transpose(2,0,1)))
+        left_norm_state_tensor_1 = left_norm_overlap_tensor_1.transpose(2,0,1)
+        self.assertTrue(allclose(
+            tensordot(unnormalized_state_tensor_1,right_norm_state_tensor_2,(0,1)),
+            tensordot(left_norm_state_tensor_1,unnormalized_state_tensor_2,(0,1)),
+        ))
+#@-node:gcross.20091118141720.1809:form_norm_overlap_tensors
+#@-node:gcross.20091118141720.1805:Overlap tensor formation
 #@-node:gcross.20091110205054.1947:Tests
 #@-others
 
@@ -1068,6 +1103,8 @@ tests = [
     absorb_bi_matrix_from_right,
     increase_bandwidth_between,
     orthogonalize_projector_matrix,
+    form_overlap_site_tensor,
+    form_norm_overlap_tensors,
 ]
 
 #@<< Runner >>

@@ -1180,6 +1180,82 @@ function increase_bandwidth_between( &
 end function
 !@-node:gcross.20091115105949.1728:increase_bandwidth_between
 !@-node:gcross.20091115094257.1711:Bandwidth increasing
+!@+node:gcross.20091117140132.1799:Overlap tensor formation
+!@+node:gcross.20091117140132.1800:form_overlap_site_tensor
+subroutine form_overlap_site_tensor(br, bl, d, state_site_tensor, overlap_site_tensor)
+  integer, intent(in) :: br, bl, d
+  double complex, intent(in) :: state_site_tensor(br,bl,d)
+  double complex, intent(out) :: overlap_site_tensor(bl,d,br)
+
+  overlap_site_tensor = &
+    reshape( &
+      state_site_tensor, &
+      shape(overlap_site_tensor), &
+      order=(/3,1,2/) &
+    )
+
+end subroutine
+!@-node:gcross.20091117140132.1800:form_overlap_site_tensor
+!@+node:gcross.20091117140132.1802:form_norm_overlap_tensors
+subroutine form_norm_overlap_tensors( &
+  bl, bm, br, &
+  dl, dr, &
+  unnormalized_state_tensor_1, &
+  right_norm_state_tensor_2, &
+  left_norm_overlap_tensor_1, &
+  unnormalized_overlap_tensor_1, &
+  unnormalized_state_tensor_2, &
+  right_norm_overlap_tensor_2 &
+)
+  integer, intent(in) :: br, bm, bl, dl, dr
+  double complex, intent(in) :: &
+    unnormalized_state_tensor_1(bm,bl,dl), &
+    right_norm_state_tensor_2(br,bm,dr)
+
+  double complex, intent(out) :: &
+    left_norm_overlap_tensor_1(bl,dl,bm), &
+    unnormalized_overlap_tensor_1(bl,dl,bm), &
+    unnormalized_state_tensor_2(br,bm,dr), &
+    right_norm_overlap_tensor_2(bm,dr,br)
+
+  double complex :: &
+    left_norm_state_tensor_1(bm,bl,dl)
+  integer :: info, norm_denorm_going_right
+
+  info = norm_denorm_going_right( &
+    bl,bm,br, &
+    dl,dr, &
+    unnormalized_state_tensor_1, &
+    right_norm_state_tensor_2, &
+    left_norm_state_tensor_1, &
+    unnormalized_state_tensor_2 &
+  )
+  if (info /= 0) then
+    print *, "Unable to normalize tensor."
+    stop
+  end if
+
+  call form_overlap_site_tensor( &
+    bm,bl,dl, &
+    unnormalized_state_tensor_1, &
+    unnormalized_overlap_tensor_1 &
+  )
+
+  call form_overlap_site_tensor( &
+    bm,bl,dl, &
+    left_norm_state_tensor_1, &
+    left_norm_overlap_tensor_1 &
+  )
+
+  call form_overlap_site_tensor( &
+    br,bm,dr, &
+    right_norm_state_tensor_2, &
+    right_norm_overlap_tensor_2 &
+  )
+
+end subroutine
+!@-node:gcross.20091117140132.1802:form_norm_overlap_tensors
+!@-node:gcross.20091117140132.1799:Overlap tensor formation
 !@+node:gcross.20091116175016.1817:orthogonalize_projector_matrix
 subroutine orthogonalize_projector_matrix( &
   number_of_projectors, &
