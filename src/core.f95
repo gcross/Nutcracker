@@ -851,26 +851,26 @@ end function
 !@+node:gcross.20091110205054.1943:Normalization
 !@+node:gcross.20091110205054.1926:norm_denorm_going_left
 function norm_denorm_going_left( &
-  bll,bl,br, &
-  dl,d, &
+  bl,bm,br, &
+  dl,dr, &
   site_tensor_to_denormalize, &
   site_tensor_to_normalize, &
   denormalized_site_tensor, &
   normalized_site_tensor &
 ) result (info)
-  integer, intent(in) :: bll, bl, br, dl, d
+  integer, intent(in) :: bl, bm, br, dl, dr
   double complex, intent(in) :: &
-    site_tensor_to_denormalize(bl,bll,dl), &
-    site_tensor_to_normalize(br,bl,d)
+    site_tensor_to_denormalize(bm,bl,dl), &
+    site_tensor_to_normalize(br,bm,dr)
   double complex, intent(out) :: &
-    denormalized_site_tensor(bl,bll,dl), &
-    normalized_site_tensor(br,bl,d)
+    denormalized_site_tensor(bm,bl,dl), &
+    normalized_site_tensor(br,bm,dr)
   double complex :: &
-    denormalized_tensor_workspace(bl,bll,dl), &
-    normalized_tensor_workspace(bl,br,d)
+    denormalized_tensor_workspace(bm,bl,dl), &
+    normalized_tensor_workspace(bm,br,dr)
 
-  double complex :: u(bl,bl), vt(bl,br*d)
-  double precision :: s(bl)
+  double complex :: u(bm,bm), vt(bm,br*dr)
+  double precision :: s(bm)
   integer :: info, i, j
 
   integer :: mysvd
@@ -881,24 +881,24 @@ function norm_denorm_going_left( &
   denormalized_tensor_workspace = 0
   normalized_tensor_workspace = 0
 
-  if (br*d < bl) then
+  if (br*dr < bm) then
     print *, "Not enough degrees of freedom to normalize."
-    print *, br*d, "<", bl
+    print *, br*dr, "<", bm
     stop
   end if
 
   normalized_tensor_workspace = reshape(site_tensor_to_normalize,shape(normalized_tensor_workspace),order=(/2,1,3/))
 
-  info = mysvd(bl,br*d,bl,normalized_tensor_workspace,u,s,vt)
+  info = mysvd(bm,br*dr,bm,normalized_tensor_workspace,u,s,vt)
 
   call zgemm( &
     'N','N', &
-    bl,br*d,bl, &
+    bm,br*dr,bm, &
     (1d0,0d0), &
-    u, bl, &
-    vt, bl, &
+    u, bm, &
+    vt, bm, &
     (0d0,0d0), &
-    normalized_tensor_workspace, bl &
+    normalized_tensor_workspace, bm &
   )
 
   normalized_site_tensor = reshape(normalized_tensor_workspace,shape(normalized_site_tensor),order=(/2,1,3/))
@@ -907,51 +907,52 @@ function norm_denorm_going_left( &
 
   call zgemm( &
     'C','N', &
-    bl,bll*dl,bl, &
+    bm,bl*dl,bm, &
     (1d0,0d0), &
-    u, bl, &
-    site_tensor_to_denormalize, bl, &
+    u, bm, &
+    site_tensor_to_denormalize, bm, &
     (0d0,0d0), &
-    denormalized_tensor_workspace, bl &
+    denormalized_tensor_workspace, bm &
   )
 
-  forall (i=1:bll,j=1:dl) &
+  forall (i=1:bl,j=1:dl) &
     denormalized_tensor_workspace(:,i,j) = denormalized_tensor_workspace(:,i,j) * s(:)
 
   call zgemm( &
     'N','N', &
-    bl,bll*dl,bl, &
+    bm,bl*dl,bm, &
     (1d0,0d0), &
-    u, bl, &
-    denormalized_tensor_workspace, bl, &
+    u, bm, &
+    denormalized_tensor_workspace, bm, &
     (0d0,0d0), &
-    denormalized_site_tensor, bl &
+    denormalized_site_tensor, bm &
   )
 
 end function
+!@nonl
 !@-node:gcross.20091110205054.1926:norm_denorm_going_left
 !@+node:gcross.20091110205054.1935:norm_denorm_going_right
 function norm_denorm_going_right( &
-  bl,br,brr, &
-  d,dr, &
+  bl,bm,br, &
+  dl,dr, &
   site_tensor_to_normalize, &
   site_tensor_to_denormalize, &
   normalized_site_tensor, &
   denormalized_site_tensor &
 ) result (info)
-  integer, intent(in) :: bl, br, brr, dr, d
+  integer, intent(in) :: bl, bm, br, dl, dr
   double complex, intent(in) :: &
-    site_tensor_to_normalize(br,bl,d), &
-    site_tensor_to_denormalize(brr,br,dr)
+    site_tensor_to_normalize(bm,bl,dl), &
+    site_tensor_to_denormalize(br,bm,dr)
   double complex, intent(out) :: &
-    normalized_site_tensor(br,bl,d), &
-    denormalized_site_tensor(brr,br,dr)
+    normalized_site_tensor(bm,bl,dl), &
+    denormalized_site_tensor(br,bm,dr)
   double complex :: &
-    denormalized_tensor_workspace_1(br,brr,dr), &
-    denormalized_tensor_workspace_2(br,brr,dr)
+    denormalized_tensor_workspace_1(bm,br,dr), &
+    denormalized_tensor_workspace_2(bm,br,dr)
 
-  double complex :: u(br,br), vt(br,bl*d)
-  double precision :: s(br)
+  double complex :: u(bm,bm), vt(bm,bl*dl)
+  double precision :: s(bm)
   integer :: info, i, j
 
   integer :: mysvd
@@ -962,22 +963,22 @@ function norm_denorm_going_right( &
   denormalized_tensor_workspace_1 = 0
   denormalized_tensor_workspace_2 = 0
 
-  if (bl*d < br) then
+  if (bl*dl < bm) then
     print *, "Not enough degrees of freedom to normalize."
-    print *, bl*d, "<", br
+    print *, bl*dl, "<", bm
     stop
   end if
 
-  info = mysvd(br,bl*d,br,site_tensor_to_normalize,u,s,vt)
+  info = mysvd(bm,bl*dl,bm,site_tensor_to_normalize,u,s,vt)
 
   call zgemm( &
     'N','N', &
-    br,bl*d,br, &
+    bm,bl*dl,bm, &
     (1d0,0d0), &
-    u, br, &
-    vt, br, &
+    u, bm, &
+    vt, bm, &
     (0d0,0d0), &
-    normalized_site_tensor, br &
+    normalized_site_tensor, bm &
   )
 
   denormalized_tensor_workspace_1 = reshape( &
@@ -990,25 +991,25 @@ function norm_denorm_going_right( &
 
   call zgemm( &
     'C','N', &
-    br,brr*dr,br, &
+    bm,br*dr,bm, &
     (1d0,0d0), &
-    u, br, &
-    denormalized_tensor_workspace_1, br, &
+    u, bm, &
+    denormalized_tensor_workspace_1, bm, &
     (0d0,0d0), &
-    denormalized_tensor_workspace_2, br &
+    denormalized_tensor_workspace_2, bm &
   )
 
-  forall (i=1:brr,j=1:dr) &
+  forall (i=1:br,j=1:dr) &
     denormalized_tensor_workspace_2(:,i,j) = denormalized_tensor_workspace_2(:,i,j) * s(:)
 
   call zgemm( &
     'N','N', &
-    br,brr*dr,br, &
+    bm,br*dr,bm, &
     (1d0,0d0), &
-    u, br, &
-    denormalized_tensor_workspace_2, br, &
+    u, bm, &
+    denormalized_tensor_workspace_2, bm, &
     (0d0,0d0), &
-    denormalized_tensor_workspace_1, br &
+    denormalized_tensor_workspace_1, bm &
   )
 
   denormalized_site_tensor = reshape( &
