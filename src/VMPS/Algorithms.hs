@@ -94,21 +94,68 @@ performRepeatedSweepsUntilConvergence energy_change_convergence_criterion
 performRepeatedSweepsUntilConvergence_ = performRepeatedSweepsUntilConvergence 1e-7 0 1000
 -- @-node:gcross.20091118213523.1826:performRepeatedSweepsUntilConvergence
 -- @+node:gcross.20091118213523.1825:performRepeatedSweepsUntilConvergenceWithCallbacks
-performRepeatedSweepsUntilConvergenceWithCallbacks :: Monad m =>
-                                                      (Bool -> EnergyMinimizationChain -> m ()) ->
-                                                      (SweepDirection -> EnergyMinimizationChain -> m ()) ->
-                                                      Double ->
-                                                      Double ->
-                                                      Int ->
-                                                      EnergyMinimizationChain ->
-                                                      m EnergyMinimizationChain
-performRepeatedSweepsUntilConvergenceWithCallbacks callback_after_each_sweep
-                                                   callback_after_each_site
-                                                   energy_change_convergence_criterion
-                                                   tolerance
-                                                   maximum_number_of_iterations
-                                                   starting_chain
-    = go (chainEnergy starting_chain) starting_chain
+performRepeatedSweepsUntilConvergenceWithCallbacks ::
+    Monad m =>
+    (Bool -> EnergyMinimizationChain -> m ()) ->
+    (SweepDirection -> EnergyMinimizationChain -> m ()) ->
+    Double ->
+    Double ->
+    Int ->
+    EnergyMinimizationChain ->
+    m EnergyMinimizationChain
+performRepeatedSweepsUntilConvergenceWithCallbacks
+    callback_after_each_sweep
+    callback_after_each_site
+    energy_change_convergence_criterion
+    tolerance
+    maximum_number_of_iterations
+    old_chain
+    = performOptimizationSweepWithCallback
+        callback_after_each_site
+        tolerance
+        maximum_number_of_iterations
+        old_chain
+    >>=
+    \new_chain ->
+        let new_energy = chainEnergy new_chain
+            old_energy = chainEnergy old_chain
+        in if old_energy - new_energy <= energy_change_convergence_criterion
+            then callback_after_each_sweep True new_chain >> return new_chain
+            else
+                callback_after_each_sweep False new_chain
+                >>
+                performRepeatedSweepsUntilConvergenceWithCallbacks
+                    callback_after_each_sweep
+                    callback_after_each_site
+                    energy_change_convergence_criterion
+                    tolerance
+                    maximum_number_of_iterations
+                    new_chain
+-- @-node:gcross.20091118213523.1825:performRepeatedSweepsUntilConvergenceWithCallbacks
+-- @-node:gcross.20091118213523.1823:Multiple sweep optimization
+-- @+node:gcross.20091118213523.1844:Bandwidth increasing
+-- @+node:gcross.20091118213523.1846:increaseBandwidthAndSweepUntilConvergence
+{-
+increaseBandwidthAndSweepUntilConvergence ::
+    Monad m =>
+    (EnergyMinimizationChain -> m EnergyMinimizationChain)
+    (Bool -> EnergyMinimizationChain -> m ()) ->
+    (SweepDirection -> EnergyMinimizationChain -> m ()) ->
+    Double ->
+    Double ->
+    Int ->
+    EnergyMinimizationChain ->
+    m EnergyMinimizationChain
+increaseBandwidthAndSweepUntilConvergence
+    callback_to_increase_bandwidth
+    callback_after_each_sweep
+    callback_after_each_site
+    bandwidth_increase_energy_change_convergence_criterion
+    multisweep_energy_change_convergence_criterion
+    tolerance
+    maximum_number_of_iterations
+    starting_chain
+    = runOptimizerOn starting_chain >> go
   where
     go last_energy last_chain =
         performOptimizationSweepWithCallback callback_after_each_site
@@ -121,8 +168,9 @@ performRepeatedSweepsUntilConvergenceWithCallbacks callback_after_each_sweep
             in if last_energy - current_energy <= energy_change_convergence_criterion
                 then callback_after_each_sweep True current_chain >> return current_chain
                 else callback_after_each_sweep False current_chain >> go current_energy current_chain
--- @-node:gcross.20091118213523.1825:performRepeatedSweepsUntilConvergenceWithCallbacks
--- @-node:gcross.20091118213523.1823:Multiple sweep optimization
+-}
+-- @-node:gcross.20091118213523.1846:increaseBandwidthAndSweepUntilConvergence
+-- @-node:gcross.20091118213523.1844:Bandwidth increasing
 -- @-node:gcross.20091118213523.1814:Functions
 -- @-others
 -- @-node:gcross.20091118213523.1809:@thin Algorithms.hs
