@@ -622,6 +622,23 @@ increaseChainBandwidth
 
 increaseChainBandwidth _ _ _ = error "This algorithm is only designed to work when the chain is at its leftmost site."
 -- @-node:gcross.20091115105949.1744:increaseChainBandwidth
+-- @+node:gcross.20091118213523.1855:maximumBandwidthIn
+maximumBandwidthIn :: EnergyMinimizationChain -> Int
+maximumBandwidthIn chain =
+    maximum
+    .
+    case siteLeftNeighbors chain of
+        [] -> id
+        neighbors -> (:) (maximum . map (rightBandwidthOfState . leftNeighborState) $ neighbors)
+    .
+    case siteRightNeighbors chain of
+        [] -> id
+        neighbors -> (:) (maximum . map (leftBandwidthOfState . rightNeighborState) $ neighbors)
+    $
+    [   leftBandwidthOfState . siteStateTensor $ chain
+    ,   rightBandwidthOfState . siteStateTensor $ chain
+    ]
+-- @-node:gcross.20091118213523.1855:maximumBandwidthIn
 -- @-node:gcross.20091113142219.1678:Chain Functions
 -- @-others
 -- @-node:gcross.20091113142219.1659:@thin EnergyMinimizationChain.hs

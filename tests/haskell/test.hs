@@ -840,12 +840,7 @@ main = defaultMain
                     return . chainEnergy . performOptimizationSweep_
                     >>=
                     assertAlmostEqual "Is the optimal energy correct?" (-(toEnum number_of_sites))
-                  where
-                    magnetic_field =
-                        [(1 --> 1) 1.0 I
-                        ,(1 --> 2) 1.0 Z
-                        ,(2 --> 2) 1.0 I
-                        ]
+
                 -- @-node:gcross.20091114174920.1742:<< createMagneticFieldTest >>
                 -- @nl
                 in map (\(number_of_sites,bandwidth_dimension) ->
@@ -859,8 +854,14 @@ main = defaultMain
                     ,[ (10,b) | b <- [2,4,8,16]]
                     ]
             -- @-node:gcross.20091114174920.1741:magnetic field
+            -- @-others
+            ]
+        -- @-node:gcross.20091118213523.1827:performOptimizationSweep
+        -- @+node:gcross.20091119150241.1839:performRepeatedSweepsUntilConvergence
+        ,testGroup "performRepeatedSweepsUntilConvergence"
+            -- @    @+others
             -- @+node:gcross.20091118213523.1830:transverse ising model
-            ,testGroup "transverse ising model" $
+            [testGroup "transverse ising model" $
                 let 
                 -- @nonl
                 -- @<< createTransverseIsingModelTest >>
@@ -871,12 +872,11 @@ main = defaultMain
                                                correct_ground_state_energy =
                     generateRandomizedChain 
                         (
-                            [makeOperatorSiteTensorFromPaulis 1 3 . startingFrom $ transverse_ising_hamiltonian]
+                            [model_left_tensor]
                             ++
-                            (replicate (number_of_sites-2) $
-                                makeOperatorSiteTensorFromPaulis 3 3 $ transverse_ising_hamiltonian)
+                            (replicate (number_of_sites-2) model_middle_tensor)
                             ++
-                            [makeOperatorSiteTensorFromPaulis 3 1 . endingWith 3 $ transverse_ising_hamiltonian]
+                            [model_right_tensor]
                         )
                         2 bandwidth_dimension
                     >>=
@@ -884,13 +884,7 @@ main = defaultMain
                     >>=
                     assertAlmostEqual "Is the optimal energy correct?" correct_ground_state_energy
                   where
-                    transverse_ising_hamiltonian =
-                      [(1 --> 1) 1 I
-                      ,(1 --> 3) 1 Z
-                      ,(1 --> 2) 1 X
-                      ,(2 --> 3) (-perturbation_strength) X
-                      ,(3 --> 3) 1 I
-                      ]
+                    (model_left_tensor,model_middle_tensor,model_right_tensor) = makeTransverseIsingModel perturbation_strength
                 -- @-node:gcross.20091118213523.1831:<< createTransverseIsingModelTest >>
                 -- @nl
                 in map (\(number_of_sites,bandwidth_dimension,perturbation_strength,correct_ground_state_energy) ->
@@ -909,7 +903,52 @@ main = defaultMain
             -- @-node:gcross.20091118213523.1830:transverse ising model
             -- @-others
             ]
-        -- @-node:gcross.20091118213523.1827:performOptimizationSweep
+        -- @-node:gcross.20091119150241.1839:performRepeatedSweepsUntilConvergence
+        -- @+node:gcross.20091119150241.1843:increaseBandwidthAndSweepUntilConvergence
+        ,testGroup "increaseBandwidthAndSweepUntilConvergence"
+            -- @    @+others
+            -- @+node:gcross.20091119150241.1844:transverse ising model
+            [testGroup "transverse ising model" $
+                let 
+                -- @nonl
+                -- @<< createTransverseIsingModelTest >>
+                -- @+node:gcross.20091119150241.1845:<< createTransverseIsingModelTest >>
+                createTransverseIsingModelTest number_of_sites
+                                               bandwidth_dimension
+                                               perturbation_strength
+                                               correct_ground_state_energy =
+                    generateRandomizedChain 
+                        (
+                            [model_left_tensor]
+                            ++
+                            (replicate (number_of_sites-2) model_middle_tensor)
+                            ++
+                            [model_right_tensor]
+                        )
+                        2 bandwidth_dimension
+                    >>=
+                    increaseBandwidthAndSweepUntilConvergence_ 2
+                    >>=
+                    return . chainEnergy
+                    >>=
+                    assertAlmostEqual "Is the optimal energy correct?" correct_ground_state_energy
+                  where
+                    (model_left_tensor,model_middle_tensor,model_right_tensor) = makeTransverseIsingModel perturbation_strength
+                -- @-node:gcross.20091119150241.1845:<< createTransverseIsingModelTest >>
+                -- @nl
+                in map (\(number_of_sites,bandwidth_dimension,perturbation_strength,correct_ground_state_energy) ->
+                        testCase (printf "%i sites, bandwidth = %i, perturbation strength = %f" number_of_sites bandwidth_dimension perturbation_strength) $ 
+                            createTransverseIsingModelTest number_of_sites
+                                                           bandwidth_dimension
+                                                           perturbation_strength
+                                                           correct_ground_state_energy
+                ) $ [(10,2,1.0,-12.3814899997)
+                    ,(11,2,1.0,-13.6536435436)
+                    ]
+            -- @-node:gcross.20091119150241.1844:transverse ising model
+            -- @-others
+            ]
+        -- @-node:gcross.20091119150241.1843:increaseBandwidthAndSweepUntilConvergence
         -- @-others
         ]
     -- @-node:gcross.20091118213523.1816:VMPS.Algorithms

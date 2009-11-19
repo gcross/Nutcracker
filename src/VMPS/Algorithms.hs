@@ -12,6 +12,7 @@ module VMPS.Algorithms where
 -- @<< Import needed modules >>
 -- @+node:gcross.20091118213523.1812:<< Import needed modules >>
 import Control.Monad.Identity
+import Control.Monad.State
 
 import VMPS.EnergyMinimizationChain
 -- @-node:gcross.20091118213523.1812:<< Import needed modules >>
@@ -135,18 +136,56 @@ performRepeatedSweepsUntilConvergenceWithCallbacks
 -- @-node:gcross.20091118213523.1823:Multiple sweep optimization
 -- @+node:gcross.20091118213523.1844:Bandwidth increasing
 -- @+node:gcross.20091118213523.1846:increaseBandwidthAndSweepUntilConvergence
-{-
 increaseBandwidthAndSweepUntilConvergence ::
+    Double ->
+    Double ->
+    Double ->
+    Int ->
+    Int ->
+    EnergyMinimizationChain ->
+    IO EnergyMinimizationChain
+increaseBandwidthAndSweepUntilConvergence
+    bandwidth_increase_energy_change_convergence_criterion
+    multisweep_energy_change_convergence_criterion
+    tolerance
+    maximum_number_of_iterations
+    physical_dimension
+    chain
+    =
+    flip evalStateT (maximumBandwidthIn chain) $
+        increaseBandwidthAndSweepUntilConvergenceWithCallbacks
+            callback_to_increase_bandwidth
+            (\_ _ -> return ())
+            (\_ _ -> return ())
+            bandwidth_increase_energy_change_convergence_criterion
+            multisweep_energy_change_convergence_criterion
+            tolerance
+            maximum_number_of_iterations
+            chain
+  where
+    callback_to_increase_bandwidth chain = do
+        old_bandwidth <- get
+        let new_bandwidth = old_bandwidth+1
+        put new_bandwidth
+        liftIO $ increaseChainBandwidth chain physical_dimension new_bandwidth
+
+increaseBandwidthAndSweepUntilConvergence_ =
+    increaseBandwidthAndSweepUntilConvergence 1e-7 1e-7 0 1000
+-- @nonl
+-- @-node:gcross.20091118213523.1846:increaseBandwidthAndSweepUntilConvergence
+-- @+node:gcross.20091118213523.1854:increaseBandwidthAndSweepUntilConvergenceWithCallbacks
+increaseBandwidthAndSweepUntilConvergenceWithCallbacks ::
     Monad m =>
-    (EnergyMinimizationChain -> m EnergyMinimizationChain)
+    (EnergyMinimizationChain -> m EnergyMinimizationChain) ->
     (Bool -> EnergyMinimizationChain -> m ()) ->
     (SweepDirection -> EnergyMinimizationChain -> m ()) ->
+    Double ->
     Double ->
     Double ->
     Int ->
     EnergyMinimizationChain ->
     m EnergyMinimizationChain
-increaseBandwidthAndSweepUntilConvergence
+increaseBandwidthAndSweepUntilConvergenceWithCallbacks
     callback_to_increase_bandwidth
     callback_after_each_sweep
     callback_after_each_site
@@ -154,22 +193,29 @@ increaseBandwidthAndSweepUntilConvergence
     multisweep_energy_change_convergence_criterion
     tolerance
     maximum_number_of_iterations
-    starting_chain
-    = runOptimizerOn starting_chain >> go
+    = runOptimizer >=> go
   where
-    go last_energy last_chain =
-        performOptimizationSweepWithCallback callback_after_each_site
-                                             tolerance
-                                             maximum_number_of_iterations
-                                             starting_chain
+    go old_chain =
+        callback_to_increase_bandwidth old_chain
         >>=
-        \current_chain ->
-            let current_energy = chainEnergy current_chain
-            in if last_energy - current_energy <= energy_change_convergence_criterion
-                then callback_after_each_sweep True current_chain >> return current_chain
-                else callback_after_each_sweep False current_chain >> go current_energy current_chain
--}
--- @-node:gcross.20091118213523.1846:increaseBandwidthAndSweepUntilConvergence
+        runOptimizer
+        >>=
+        \new_chain ->
+            let new_energy = chainEnergy new_chain
+                old_energy = chainEnergy old_chain
+            in if old_energy - new_energy <= bandwidth_increase_energy_change_convergence_criterion
+                then return old_chain
+                else go new_chain
+
+    runOptimizer = 
+        performRepeatedSweepsUntilConvergenceWithCallbacks
+            callback_after_each_sweep
+            callback_after_each_site
+            multisweep_energy_change_convergence_criterion
+            tolerance
+            maximum_number_of_iterations
+
+-- @-node:gcross.20091118213523.1854:increaseBandwidthAndSweepUntilConvergenceWithCallbacks
 -- @-node:gcross.20091118213523.1844:Bandwidth increasing
 -- @-node:gcross.20091118213523.1814:Functions
 -- @-others
