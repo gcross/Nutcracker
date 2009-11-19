@@ -581,6 +581,90 @@ formProjectorMatrix projectors@(first_projector:_) =
                     p_projector
             ) >> go rest_projectors (p_projector `plusPtr` pointer_increment)
 -- @-node:gcross.20091116175016.1797:formProjectorMatrix
+-- @+node:gcross.20091118141720.1810:Overlap tensor formation
+-- @+node:gcross.20091118141720.1812:makeOverlapSiteTensor
+foreign import ccall unsafe "form_overlap_site_tensor" form_overlap_site_tensor :: 
+    Int -> -- rightmost bandwidth dimension
+    Int -> -- leftmost bandwidth dimension
+    Int -> -- physical dimension
+    Ptr (Complex Double) -> -- input: state site tensor
+    Ptr (Complex Double) -> -- output: overlap site tensor
+    IO ()
+
+makeOverlapSiteTensor ::
+    UnnormalizedStateSiteTensor ->
+    UnnormalizedOverlapSiteTensor
+makeOverlapSiteTensor state_site_tensor =
+    let br = rightBandwidthOfState state_site_tensor
+        bl = leftBandwidthOfState state_site_tensor
+        d = physicalDimensionOfState state_site_tensor
+    in snd . unsafePerformIO $
+            withPinnedTensor state_site_tensor $ \p_state_site_tensor ->
+            withNewPinnedTensor (d,bl,br) $ \p_overlap_site_tensor ->
+                form_overlap_site_tensor
+                    br
+                    bl
+                    d
+                    p_state_site_tensor
+                    p_overlap_site_tensor
+-- @-node:gcross.20091118141720.1812:makeOverlapSiteTensor
+-- @+node:gcross.20091118141720.1814:makeAndNormalizeOverlapSiteTensors
+foreign import ccall unsafe "form_norm_overlap_tensors" form_norm_overlap_tensors :: 
+    Int -> -- leftmost bandwidth dimension
+    Int -> -- middle bandwidth dimension
+    Int -> -- rightmost bandwidth dimension
+    Int -> -- left physical dimension
+    Int -> -- right physical dimension
+    Ptr (Complex Double) -> -- input: unnormalized state left site tensor
+    Ptr (Complex Double) -> -- input: right normalized state right site tensor
+    Ptr (Complex Double) -> -- output: left normalized overlap left site tensor
+    Ptr (Complex Double) -> -- output: unnormalized overlap left site tensor
+    Ptr (Complex Double) -> -- output: unnormalized state right site tensor
+    Ptr (Complex Double) -> -- output: right normalized overlap right site tensor
+    IO ()
+
+makeAndNormalizeOverlapSiteTensors ::
+    UnnormalizedStateSiteTensor ->
+    RightAbsorptionNormalizedStateSiteTensor ->
+    (LeftAbsorptionNormalizedOverlapSiteTensor
+    ,UnnormalizedOverlapSiteTensor
+    ,UnnormalizedStateSiteTensor
+    ,RightAbsorptionNormalizedOverlapSiteTensor
+    )
+makeAndNormalizeOverlapSiteTensors unnormalized_state_left_site_tensor right_normalized_state_right_site_tensor =
+    let bl = leftBandwidthOfState unnormalized_state_left_site_tensor
+        bm = unnormalized_state_left_site_tensor <-?-> right_normalized_state_right_site_tensor
+        br = rightBandwidthOfState right_normalized_state_right_site_tensor
+        dl = physicalDimensionOfState unnormalized_state_left_site_tensor
+        dr = physicalDimensionOfState right_normalized_state_right_site_tensor
+        (((((
+            ),right_normalized_overlap_right_site_tensor
+            ),unnormalized_state_right_site_tensor
+            ),unnormalized_overlap_left_site_tensor
+            ),left_normalized_overlap_left_site_tensor
+          ) = unsafePerformIO $
+            withPinnedTensor unnormalized_state_left_site_tensor $ \p_unnormalized_state_left_site_tensor ->
+            withPinnedTensor right_normalized_state_right_site_tensor $ \p_right_normalized_state_right_site_tensor ->
+            withNewPinnedTensor (dl,bl,bm) $ \p_left_normalized_overlap_left_site_tensor ->
+            withNewPinnedTensor (dl,bl,bm) $ \p_unnormalized_overlap_left_site_tensor ->
+            withNewPinnedTensor (dr,bm,br) $ \p_unnormalized_state_right_site_tensor ->
+            withNewPinnedTensor (dr,bm,br) $ \p_right_normalized_overlap_right_site_tensor ->
+                form_norm_overlap_tensors
+                    bl bm br
+                    dl dr
+                    p_unnormalized_state_left_site_tensor
+                    p_right_normalized_state_right_site_tensor
+                    p_left_normalized_overlap_left_site_tensor
+                    p_unnormalized_overlap_left_site_tensor
+                    p_unnormalized_state_right_site_tensor
+                    p_right_normalized_overlap_right_site_tensor
+    in (left_normalized_overlap_left_site_tensor
+       ,unnormalized_overlap_left_site_tensor
+       ,unnormalized_state_right_site_tensor
+       ,right_normalized_overlap_right_site_tensor
+       )
+-- @-node:gcross.20091118141720.1814:makeAndNormalizeOverlapSiteTensors
+-- @-node:gcross.20091118141720.1810:Overlap tensor formation
 -- @-node:gcross.20091113125544.1661:Wrapper functions
 -- @-others
 -- @-node:gcross.20091113125544.1653:@thin Wrappers.hs

@@ -289,6 +289,60 @@ computeProjectorMatrix chain =
              (siteRightOverlapBoundaryTensors chain)
              (map overlapUnnormalizedTensor . siteOverlapTrios $ chain)
 -- @-node:gcross.20091117140132.1797:computeProjectorMatrix
+-- @+node:gcross.20091117140132.1798:computeOverlapTriosFromStateTensors
+computeOverlapTriosFromStateTensors ::
+    UnnormalizedStateSiteTensor ->
+    [RightAbsorptionNormalizedStateSiteTensor] ->
+    [OverlapTensorTrio]
+computeOverlapTriosFromStateTensors _ [] = error "There needs to be more than one site to use this function!"
+computeOverlapTriosFromStateTensors
+    unnormalized_state_first_site_tensor
+    (right_normalized_state_second_site_tensor:right_normalized_state_rest_site_tensors)
+    =
+    let ( left_normalized_overlap_first_site_tensor
+         ,unnormalized_overlap_first_site_tensor
+         ,unnormalized_state_second_site_tensor
+         ,right_normalized_overlap_second_site_tensor
+         ) = makeAndNormalizeOverlapSiteTensors unnormalized_state_first_site_tensor
+                                                right_normalized_state_second_site_tensor
+    in (LeftSiteOverlapTensorTrio
+         unnormalized_overlap_first_site_tensor
+         left_normalized_overlap_first_site_tensor
+        ):go unnormalized_state_second_site_tensor
+             right_normalized_state_second_site_tensor
+             right_normalized_overlap_second_site_tensor
+             right_normalized_state_rest_site_tensors
+  where
+    go :: UnnormalizedStateSiteTensor ->
+          RightAbsorptionNormalizedStateSiteTensor ->
+          RightAbsorptionNormalizedOverlapSiteTensor ->
+          [RightAbsorptionNormalizedStateSiteTensor] ->
+          [OverlapTensorTrio]
+    go unnormalized_state_last_site_tensor
+       _
+       right_normalized_overlap_last_site_tensor
+       []
+        = let unnormalized_overlap_last_site_tensor = makeOverlapSiteTensor unnormalized_state_last_site_tensor
+          in [RightSiteOverlapTensorTrio unnormalized_overlap_last_site_tensor right_normalized_overlap_last_site_tensor]
+    go unnormalized_state_current_site_tensor
+       right_normalized_state_current_site_tensor
+       right_normalized_overlap_current_site_tensor
+       (right_normalized_state_next_site_tensor:normalized_state_rest_site_tensors)
+        = let ( left_normalized_overlap_current_site_tensor
+               ,unnormalized_overlap_current_site_tensor
+               ,unnormalized_state_next_site_tensor
+               ,right_normalized_overlap_next_site_tensor
+               ) = makeAndNormalizeOverlapSiteTensors unnormalized_state_current_site_tensor
+                                                      right_normalized_state_next_site_tensor
+          in (MiddleSiteOverlapTensorTrio
+                unnormalized_overlap_current_site_tensor
+                left_normalized_overlap_current_site_tensor
+                right_normalized_overlap_current_site_tensor
+              ):go unnormalized_state_next_site_tensor
+                   right_normalized_state_next_site_tensor
+                   right_normalized_overlap_next_site_tensor
+                   normalized_state_rest_site_tensors
+-- @-node:gcross.20091117140132.1798:computeOverlapTriosFromStateTensors
 -- @+node:gcross.20091113142219.1684:activateLeftNeighbor
 activateLeftNeighbor :: EnergyMinimizationChain -> EnergyMinimizationChain
 activateLeftNeighbor EnergyMinimizationChain { siteLeftNeighbors = [] } =

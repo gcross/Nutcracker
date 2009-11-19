@@ -387,6 +387,47 @@ void orthogonalize_projector_matrix(
     );
 }
 //@-node:gcross.20091116175016.1801:orthogonalize_projector_matrix
+//@+node:gcross.20091118141720.1801:form_overlap_site_tensor
+void form_overlap_site_tensor_(int* br, int* bl, int* d, double* state_site_tensor, double* overlap_site_tensor);
+
+void form_overlap_site_tensor(int br, int bl, int d, double* state_site_tensor, double* overlap_site_tensor) {
+    return form_overlap_site_tensor_(&br,&bl,&d,state_site_tensor,overlap_site_tensor);
+}
+//@-node:gcross.20091118141720.1801:form_overlap_site_tensor
+//@+node:gcross.20091118141720.1804:form_norm_overlap_tensors
+void form_norm_overlap_tensors_(
+  int* bl, int* bm, int* br,
+  int* dl, int* dr,
+  double* unnormalized_state_tensor_1,
+  double* right_norm_state_tensor_2,
+  double* left_norm_overlap_tensor_1,
+  double* unnormalized_overlap_tensor_1,
+  double* unnormalized_state_tensor_2,
+  double* right_norm_overlap_tensor_2
+);
+
+void form_norm_overlap_tensors(
+  int bl, int bm, int br,
+  int dl, int dr,
+  double* unnormalized_state_tensor_1,
+  double* right_norm_state_tensor_2,
+  double* left_norm_overlap_tensor_1,
+  double* unnormalized_overlap_tensor_1,
+  double* unnormalized_state_tensor_2,
+  double* right_norm_overlap_tensor_2
+) {
+    return form_norm_overlap_tensors_(
+      &bl, &bm, &br,
+      &dl, &dr,
+      unnormalized_state_tensor_1,
+      right_norm_state_tensor_2,
+      left_norm_overlap_tensor_1,
+      unnormalized_overlap_tensor_1,
+      unnormalized_state_tensor_2,
+      right_norm_overlap_tensor_2
+    );
+}
+//@-node:gcross.20091118141720.1804:form_norm_overlap_tensors
 //@-others
 //@-node:gcross.20091112145455.1619:@thin core-wrapper.c
 //@-leo
