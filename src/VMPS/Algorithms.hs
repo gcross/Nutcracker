@@ -18,12 +18,11 @@ import VMPS.EnergyMinimizationChain
 -- @nl
 
 -- @+others
--- @+node:gcross.20091118213523.1813:Types
+-- @+node:gcross.20091118213523.1814:Functions
+-- @+node:gcross.20091118213523.1822:Single sweep optimization
 -- @+node:gcross.20091118213523.1815:SweepDirection
 data SweepDirection = SweepingRight | SweepingLeft
 -- @-node:gcross.20091118213523.1815:SweepDirection
--- @-node:gcross.20091118213523.1813:Types
--- @+node:gcross.20091118213523.1814:Functions
 -- @+node:gcross.20091118213523.1817:performOptimizationSweep
 performOptimizationSweep :: Double -> Int -> EnergyMinimizationChain -> EnergyMinimizationChain
 performOptimizationSweep tolerance maximum_number_of_iterations starting_chain
@@ -71,6 +70,59 @@ performOptimizationSweepWithCallback callback tolerance maximum_number_of_iterat
             >>
            goLeft (n-1) (activateLeftNeighbor optimized_chain)
 -- @-node:gcross.20091118213523.1810:performOptimizationSweepWithCallback
+-- @-node:gcross.20091118213523.1822:Single sweep optimization
+-- @+node:gcross.20091118213523.1823:Multiple sweep optimization
+-- @+node:gcross.20091118213523.1826:performRepeatedSweepsUntilConvergence
+performRepeatedSweepsUntilConvergence :: Double ->
+                                         Double ->
+                                         Int ->
+                                         EnergyMinimizationChain ->
+                                         EnergyMinimizationChain
+performRepeatedSweepsUntilConvergence energy_change_convergence_criterion
+                                      tolerance
+                                      maximum_number_of_iterations
+                                      starting_chain
+    = runIdentity $
+          performRepeatedSweepsUntilConvergenceWithCallbacks
+            (\_ _ -> return ())
+            (\_ _ -> return ())
+            energy_change_convergence_criterion
+            tolerance
+            maximum_number_of_iterations
+            starting_chain
+
+performRepeatedSweepsUntilConvergence_ = performRepeatedSweepsUntilConvergence 1e-7 0 1000
+-- @-node:gcross.20091118213523.1826:performRepeatedSweepsUntilConvergence
+-- @+node:gcross.20091118213523.1825:performRepeatedSweepsUntilConvergenceWithCallbacks
+performRepeatedSweepsUntilConvergenceWithCallbacks :: Monad m =>
+                                                      (Bool -> EnergyMinimizationChain -> m ()) ->
+                                                      (SweepDirection -> EnergyMinimizationChain -> m ()) ->
+                                                      Double ->
+                                                      Double ->
+                                                      Int ->
+                                                      EnergyMinimizationChain ->
+                                                      m EnergyMinimizationChain
+performRepeatedSweepsUntilConvergenceWithCallbacks callback_after_each_sweep
+                                                   callback_after_each_site
+                                                   energy_change_convergence_criterion
+                                                   tolerance
+                                                   maximum_number_of_iterations
+                                                   starting_chain
+    = go (chainEnergy starting_chain) starting_chain
+  where
+    go last_energy last_chain =
+        performOptimizationSweepWithCallback callback_after_each_site
+                                             tolerance
+                                             maximum_number_of_iterations
+                                             starting_chain
+        >>=
+        \current_chain ->
+            let current_energy = chainEnergy current_chain
+            in if last_energy - current_energy <= energy_change_convergence_criterion
+                then callback_after_each_sweep True current_chain >> return current_chain
+                else callback_after_each_sweep False current_chain >> go current_energy current_chain
+-- @-node:gcross.20091118213523.1825:performRepeatedSweepsUntilConvergenceWithCallbacks
+-- @-node:gcross.20091118213523.1823:Multiple sweep optimization
 -- @-node:gcross.20091118213523.1814:Functions
 -- @-others
 -- @-node:gcross.20091118213523.1809:@thin Algorithms.hs

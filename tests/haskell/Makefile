@@ -12,6 +12,8 @@ OBJS = \
 	../../obj/VMPS/Algorithms.o \
 	../../obj/VMPS/EnergyMinimizationChain.o \
 	../../obj/VMPS/Miscellaneous.o \
+	../../obj/VMPS/OperatorConstruction.o \
+	../../obj/VMPS/Pauli.o \
 	../../obj/VMPS/Tensors.o \
 	../../obj/VMPS/Tensors/Implementation.o \
 	../../obj/VMPS/Wrappers.o \

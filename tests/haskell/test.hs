@@ -39,6 +39,8 @@ import System.IO.Unsafe
 import VMPS.Algorithms
 import VMPS.EnergyMinimizationChain
 import VMPS.Miscellaneous
+import VMPS.OperatorConstruction
+import VMPS.Pauli
 import VMPS.Tensors.Implementation
 import VMPS.Wrappers
 -- @-node:gcross.20091111171052.1610:<< Import needed modules >>
@@ -189,7 +191,7 @@ main = defaultMain
                     let left_boundary = trivial_left_boundary
                         right_boundary = trivial_right_boundary
                         state_site_tensor = UnnormalizedStateSiteTensor . StateSiteTensor 2 1 1 . complexTensorFromList (2,1,1) $ state
-                        operator_site_tensor = makeOperatorSiteTensorFromPaulis 1 1 [((1,1),Z)]
+                        operator_site_tensor = makeOperatorSiteTensorFromPaulis 1 1 [(1 --> 1) 1.0 Z]
                     in computeExpectation left_boundary state_site_tensor operator_site_tensor right_boundary
                 ) [[1,0],[0:+1,0],[0,1],[0,0:+1]]
             -- @nonl
@@ -268,44 +270,44 @@ main = defaultMain
                     assertBool "are the components correct?" (components ~= [0,0 :+ 1])
             -- @nonl
             -- @-node:gcross.20091112145455.1633:trivial, c = 2
+            -- @+node:gcross.20091112145455.1641:contractSOSRight
+            ,testGroup "contractSOSRight"
+                -- @    @+others
+                -- @+node:gcross.20091112145455.1642:trivial, all dimensions 1
+                [testCase "trivial, all dimensions 1" $
+                    let right_boundary = trivial_right_boundary
+                        state_site_tensor = RightAbsorptionNormalizedStateSiteTensor $ StateSiteTensor 1 1 1 trivial_complex_tensor
+                        operator_indices = unsafePerformIO $ newArray ((1,1),(1,2)) 1
+                        operator_matrices = unsafePerformIO $ newListArray ((1,1,1),(1,1,1)) [1]
+                        operator_site_tensor = OperatorSiteTensor 1 1 1 1 operator_indices operator_matrices
+                        RightBoundaryTensor (BoundaryTensor cr br actual_tensor) = contractSOSRight right_boundary state_site_tensor operator_site_tensor
+                        components = toListOfComplexNumbers actual_tensor
+                    in do
+                        assertEqual "is the new state bandwidth dimension correct?" (leftBandwidthOfState state_site_tensor) br
+                        assertEqual "is the new operator bandwidth dimension correct?" (operatorLeftBandwidth operator_site_tensor) cr
+                        assertBool "are the components correct?" (components ~= [1.0,0.0])
+                -- @nonl
+                -- @-node:gcross.20091112145455.1642:trivial, all dimensions 1
+                -- @+node:gcross.20091112145455.1643:trivial, c = 2
+                ,testCase "trivial, c = 2" $
+                    let right_boundary = trivial_right_boundary
+                        state_site_tensor = RightAbsorptionNormalizedStateSiteTensor $ StateSiteTensor 1 1 1 trivial_complex_tensor
+                        operator_indices = unsafePerformIO $ newListArray ((1,1),(1,2)) [2,1]
+                        operator_matrices = unsafePerformIO $ newListArray ((1,1,1),(1,1,1)) [0 :+ 1]
+                        operator_site_tensor = OperatorSiteTensor 2 1 1 1 operator_indices operator_matrices
+                        RightBoundaryTensor (BoundaryTensor cl bl actual_tensor) = contractSOSRight right_boundary state_site_tensor operator_site_tensor
+                        components = toListOfComplexNumbers actual_tensor
+                    in do
+                        assertEqual "is the new state bandwidth dimension correct?" (leftBandwidthOfState state_site_tensor) bl
+                        assertEqual "is the new operator bandwidth dimension correct?" (operatorLeftBandwidth operator_site_tensor) cl
+                        assertBool "are the components correct?" (components ~= [0,0 :+ 1])
+                -- @-node:gcross.20091112145455.1643:trivial, c = 2
+                -- @-others
+                ]
+            -- @-node:gcross.20091112145455.1641:contractSOSRight
             -- @-others
             ]
         -- @-node:gcross.20091112145455.1629:contractSOSLeft
-        -- @+node:gcross.20091112145455.1641:contractSOSRight
-        ,testGroup "contractSOSRight"
-            -- @    @+others
-            -- @+node:gcross.20091112145455.1642:trivial, all dimensions 1
-            [testCase "trivial, all dimensions 1" $
-                let right_boundary = trivial_right_boundary
-                    state_site_tensor = RightAbsorptionNormalizedStateSiteTensor $ StateSiteTensor 1 1 1 trivial_complex_tensor
-                    operator_indices = unsafePerformIO $ newArray ((1,1),(1,2)) 1
-                    operator_matrices = unsafePerformIO $ newListArray ((1,1,1),(1,1,1)) [1]
-                    operator_site_tensor = OperatorSiteTensor 1 1 1 1 operator_indices operator_matrices
-                    RightBoundaryTensor (BoundaryTensor cr br actual_tensor) = contractSOSRight right_boundary state_site_tensor operator_site_tensor
-                    components = toListOfComplexNumbers actual_tensor
-                in do
-                    assertEqual "is the new state bandwidth dimension correct?" (leftBandwidthOfState state_site_tensor) br
-                    assertEqual "is the new operator bandwidth dimension correct?" (operatorLeftBandwidth operator_site_tensor) cr
-                    assertBool "are the components correct?" (components ~= [1.0,0.0])
-            -- @nonl
-            -- @-node:gcross.20091112145455.1642:trivial, all dimensions 1
-            -- @+node:gcross.20091112145455.1643:trivial, c = 2
-            ,testCase "trivial, c = 2" $
-                let right_boundary = trivial_right_boundary
-                    state_site_tensor = RightAbsorptionNormalizedStateSiteTensor $ StateSiteTensor 1 1 1 trivial_complex_tensor
-                    operator_indices = unsafePerformIO $ newListArray ((1,1),(1,2)) [2,1]
-                    operator_matrices = unsafePerformIO $ newListArray ((1,1,1),(1,1,1)) [0 :+ 1]
-                    operator_site_tensor = OperatorSiteTensor 2 1 1 1 operator_indices operator_matrices
-                    RightBoundaryTensor (BoundaryTensor cl bl actual_tensor) = contractSOSRight right_boundary state_site_tensor operator_site_tensor
-                    components = toListOfComplexNumbers actual_tensor
-                in do
-                    assertEqual "is the new state bandwidth dimension correct?" (leftBandwidthOfState state_site_tensor) bl
-                    assertEqual "is the new operator bandwidth dimension correct?" (operatorLeftBandwidth operator_site_tensor) cl
-                    assertBool "are the components correct?" (components ~= [0,0 :+ 1])
-            -- @-node:gcross.20091112145455.1643:trivial, c = 2
-            -- @-others
-            ]
-        -- @-node:gcross.20091112145455.1641:contractSOSRight
         -- @+node:gcross.20091116175016.1776:contractSSLeft
         ,testGroup "contractSSLeft"
             -- @    @+others
@@ -725,7 +727,7 @@ main = defaultMain
             -- @<< createEnergyInvarianceTest >>
             -- @+node:gcross.20091114174920.1738:<< createEnergyInvarianceTest >>
             createEnergyInvarianceTest number_of_sites bandwidth_dimension = do
-                let operator_site_tensors = replicate number_of_sites $ makeOperatorSiteTensorFromPaulis 1 1 [((1,1),I)]
+                let operator_site_tensors = replicate number_of_sites $ makeOperatorSiteTensorFromPaulis 1 1 [((1,1),(1.0,I))]
                 chain <- generateRandomizedChain operator_site_tensors 2 bandwidth_dimension
                 let chains_going_right =
                         take number_of_sites
@@ -770,7 +772,7 @@ main = defaultMain
             -- @<< createBandwidthIncreaseTest >>
             -- @+node:gcross.20091115105949.1748:<< createBandwidthIncreaseTest >>
             createBandwidthIncreaseTest number_of_sites old_bandwidth_dimension new_bandwidth_dimension = do
-                let operator_site_tensors = replicate number_of_sites $ makeOperatorSiteTensorFromPaulis 1 1 [((1,1),Y)]
+                let operator_site_tensors = replicate number_of_sites $ makeOperatorSiteTensorFromPaulis 1 1 [((1,1),(1.0,Y))]
                 original_chain <- generateRandomizedChain operator_site_tensors 2 old_bandwidth_dimension
                 chain <- increaseChainBandwidth original_chain 2 new_bandwidth_dimension
                 let chains_going_right =
@@ -815,40 +817,99 @@ main = defaultMain
     -- @+node:gcross.20091118213523.1816:VMPS.Algorithms
     ,testGroup "VMPS.Algorithm"
         -- @    @+others
-        -- @+node:gcross.20091114174920.1741:magnetic field
-        [testGroup "magnetic field" $
-            let 
-            -- @nonl
-            -- @<< createMagneticFieldTest >>
-            -- @+node:gcross.20091114174920.1742:<< createMagneticFieldTest >>
-            createMagneticFieldTest number_of_sites bandwidth_dimension =
-                generateRandomizedChain 
-                    (
-                        [makeOperatorSiteTensorFromPaulis 1 2 [((1,1),I),((1,2),Z)]]
-                        ++
-                        (replicate (number_of_sites-2) $
-                            makeOperatorSiteTensorFromPaulis 2 2 [((1,1),I),((1,2),Z),((2,2),I)])
-                        ++
-                        [makeOperatorSiteTensorFromPaulis 2 1 [((1,1),Z),((2,1),I)]]
-                    )
-                    2 bandwidth_dimension
-                >>=
-                return . chainEnergy . performOptimizationSweep_
-                >>=
-                assertAlmostEqual "Is the optimal energy correct?" (-(toEnum number_of_sites))
-            -- @-node:gcross.20091114174920.1742:<< createMagneticFieldTest >>
-            -- @nl
-            in map (\(number_of_sites,bandwidth_dimension) ->
-                    testCase (printf "%i sites, bandwidth = %i" number_of_sites bandwidth_dimension) $ 
-                        createMagneticFieldTest number_of_sites bandwidth_dimension
-            ) $ concat
-                [[ ( 2,b) | b <- [2]]
-                ,[ ( 3,b) | b <- [2]]
-                ,[ ( 4,b) | b <- [2,4]]
-                ,[ ( 5,b) | b <- [2,4]]
-                ,[ (10,b) | b <- [2,4,8,16]]
-                ]
-        -- @-node:gcross.20091114174920.1741:magnetic field
+        -- @+node:gcross.20091118213523.1827:performOptimizationSweep
+        [testGroup "performOptimizationSweep"
+            -- @    @+others
+            -- @+node:gcross.20091114174920.1741:magnetic field
+            [testGroup "magnetic field" $
+                let 
+                -- @nonl
+                -- @<< createMagneticFieldTest >>
+                -- @+node:gcross.20091114174920.1742:<< createMagneticFieldTest >>
+                createMagneticFieldTest number_of_sites bandwidth_dimension =
+                    generateRandomizedChain 
+                        (
+                            [makeOperatorSiteTensorFromPaulis 1 2 . startingFrom $ magnetic_field]
+                            ++
+                            (replicate (number_of_sites-2) $ makeOperatorSiteTensorFromPaulis 2 2 magnetic_field)
+                            ++
+                            [makeOperatorSiteTensorFromPaulis 2 1 . endingWith 2 $ magnetic_field]
+                        )
+                        2 bandwidth_dimension
+                    >>=
+                    return . chainEnergy . performOptimizationSweep_
+                    >>=
+                    assertAlmostEqual "Is the optimal energy correct?" (-(toEnum number_of_sites))
+                  where
+                    magnetic_field =
+                        [(1 --> 1) 1.0 I
+                        ,(1 --> 2) 1.0 Z
+                        ,(2 --> 2) 1.0 I
+                        ]
+                -- @-node:gcross.20091114174920.1742:<< createMagneticFieldTest >>
+                -- @nl
+                in map (\(number_of_sites,bandwidth_dimension) ->
+                        testCase (printf "%i sites, bandwidth = %i" number_of_sites bandwidth_dimension) $ 
+                            createMagneticFieldTest number_of_sites bandwidth_dimension
+                ) $ concat
+                    [[ ( 2,b) | b <- [2]]
+                    ,[ ( 3,b) | b <- [2]]
+                    ,[ ( 4,b) | b <- [2,4]]
+                    ,[ ( 5,b) | b <- [2,4]]
+                    ,[ (10,b) | b <- [2,4,8,16]]
+                    ]
+            -- @-node:gcross.20091114174920.1741:magnetic field
+            -- @+node:gcross.20091118213523.1830:transverse ising model
+            ,testGroup "transverse ising model" $
+                let 
+                -- @nonl
+                -- @<< createTransverseIsingModelTest >>
+                -- @+node:gcross.20091118213523.1831:<< createTransverseIsingModelTest >>
+                createTransverseIsingModelTest number_of_sites
+                                               bandwidth_dimension
+                                               perturbation_strength
+                                               correct_ground_state_energy =
+                    generateRandomizedChain 
+                        (
+                            [makeOperatorSiteTensorFromPaulis 1 3 . startingFrom $ transverse_ising_hamiltonian]
+                            ++
+                            (replicate (number_of_sites-2) $
+                                makeOperatorSiteTensorFromPaulis 3 3 $ transverse_ising_hamiltonian)
+                            ++
+                            [makeOperatorSiteTensorFromPaulis 3 1 . endingWith 3 $ transverse_ising_hamiltonian]
+                        )
+                        2 bandwidth_dimension
+                    >>=
+                    return . chainEnergy . performRepeatedSweepsUntilConvergence_
+                    >>=
+                    assertAlmostEqual "Is the optimal energy correct?" correct_ground_state_energy
+                  where
+                    transverse_ising_hamiltonian =
+                      [(1 --> 1) 1 I
+                      ,(1 --> 3) 1 Z
+                      ,(1 --> 2) 1 X
+                      ,(2 --> 3) (-perturbation_strength) X
+                      ,(3 --> 3) 1 I
+                      ]
+                -- @-node:gcross.20091118213523.1831:<< createTransverseIsingModelTest >>
+                -- @nl
+                in map (\(number_of_sites,bandwidth_dimension,perturbation_strength,correct_ground_state_energy) ->
+                        testCase (printf "%i sites, bandwidth = %i, perturbation strength = %f" number_of_sites bandwidth_dimension perturbation_strength) $ 
+                            createTransverseIsingModelTest number_of_sites
+                                                           bandwidth_dimension
+                                                           perturbation_strength
+                                                           correct_ground_state_energy
+                ) $ [( 2,2,0.1,-2.00249843945)
+                    ,( 2,2,1.0,-2.2360679775)
+                    ,( 4,2,0.1,-4.00750155855)
+                    ,( 4,4,1.0,-4.75877048314)
+                    ,(10,2,0.1,-10.0225109571)
+                    ,(10,6,1.0,-12.3814899997)
+                    ]
+            -- @-node:gcross.20091118213523.1830:transverse ising model
+            -- @-others
+            ]
+        -- @-node:gcross.20091118213523.1827:performOptimizationSweep
         -- @-others
         ]
     -- @-node:gcross.20091118213523.1816:VMPS.Algorithms
