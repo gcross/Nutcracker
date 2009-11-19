@@ -9,6 +9,7 @@ include ../../paths.mk
 include ../../options.mk
 
 OBJS = \
+	../../obj/VMPS/Algorithms.o \
 	../../obj/VMPS/EnergyMinimizationChain.o \
 	../../obj/VMPS/Miscellaneous.o \
 	../../obj/VMPS/Tensors.o \

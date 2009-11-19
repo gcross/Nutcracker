@@ -20,11 +20,12 @@ obj/%.o: src/%.f Makefile
 	${FC} ${FFLAGS} -c $< -o $@
 
 OBJS = \
+	obj/VMPS/Algorithms.o \
+	obj/VMPS/EnergyMinimizationChain.o \
 	obj/VMPS/Miscellaneous.o \
 	obj/VMPS/Tensors/Implementation.o \
 	obj/VMPS/Tensors.o \
 	obj/VMPS/Wrappers.o \
-	obj/VMPS/EnergyMinimizationChain.o \
 	obj/core.o \
 	obj/core-wrapper.o \
 
