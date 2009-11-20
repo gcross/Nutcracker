@@ -853,6 +853,20 @@ class optimize(unittest.TestCase):
         self.assertTrue(allclose(result.ravel(),array([0,0,1,0])))
         self.assertAlmostEqual(-1,eigenvalue)
     #@-node:gcross.20091115201814.1735:test_orthogonalization_1
+    #@+node:gcross.20091119150241.1879:test_orthogonalization_1_complex
+    def test_orthogonalization_1_complex(self):
+        left_environment = ones((1,1,1),complex128)
+        right_environment = ones((1,1,1),complex128)
+        sparse_operator_indices = ones((2,1))
+        sparse_operator_matrices = diag([1,1,-1,-2])
+        sparse_operator_matrices = sparse_operator_matrices.reshape(sparse_operator_matrices.shape + (1,))
+        projectors = array([[0,0,0,1j]]).transpose()
+        info, result, eigenvalue = vmps.optimize(left_environment,sparse_operator_indices,sparse_operator_matrices,right_environment,projectors,"SR",0,10000,crand(1,1,4))
+        self.assertEqual(0,info)
+        result /= result[0,0,-2]
+        self.assertTrue(allclose(result.ravel(),array([0,0,1,0])))
+        self.assertAlmostEqual(-1,eigenvalue)
+    #@-node:gcross.20091119150241.1879:test_orthogonalization_1_complex
     #@+node:gcross.20091115201814.1738:test_orthogonalization_2
     def test_orthogonalization_2(self):
         left_environment = ones((1,1,1),complex128)
@@ -867,6 +881,20 @@ class optimize(unittest.TestCase):
         self.assertTrue(allclose(result.ravel(),array([0,1,0,0])))
         self.assertAlmostEqual(-2,eigenvalue)
     #@-node:gcross.20091115201814.1738:test_orthogonalization_2
+    #@+node:gcross.20091119150241.1877:test_orthogonalization_2_complex
+    def test_orthogonalization_2_complex(self):
+        left_environment = ones((1,1,1),complex128)
+        right_environment = ones((1,1,1),complex128)
+        sparse_operator_indices = ones((2,1))
+        sparse_operator_matrices = diag([-1,-2,-3,-4])
+        sparse_operator_matrices = sparse_operator_matrices.reshape(sparse_operator_matrices.shape + (1,))
+        projectors = array([[0,0,0,1j],[0,0,1j,0]]).transpose()
+        info, result, eigenvalue = vmps.optimize(left_environment,sparse_operator_indices,sparse_operator_matrices,right_environment,projectors,"SR",0,10000,crand(1,1,4))
+        self.assertEqual(0,info)
+        result /= result[0,0,1]
+        self.assertTrue(allclose(result.ravel(),array([0,1,0,0])))
+        self.assertAlmostEqual(-2,eigenvalue)
+    #@-node:gcross.20091119150241.1877:test_orthogonalization_2_complex
     #@-others
 #@-node:gcross.20091109182634.1543:optimize
 #@+node:gcross.20091110205054.1924:rand_norm_state_site_tensor
@@ -1052,7 +1080,7 @@ class form_overlap_site_tensor(unittest.TestCase):
     def testCorrectness(self,br=irange(2,4),bl=irange(2,4),d=irange(2,4)):
         state_site_tensor = crand(br,bl,d)
         overlap_site_tensor = vmps.form_overlap_site_tensor(state_site_tensor)
-        self.assertTrue(allclose(state_site_tensor.transpose(1,2,0),overlap_site_tensor))
+        self.assertTrue(allclose(state_site_tensor.transpose(1,2,0).conj(),overlap_site_tensor))
 #@-node:gcross.20091118141720.1807:form_overlap_site_tensor
 #@+node:gcross.20091118141720.1809:form_norm_overlap_tensors
 class form_norm_overlap_tensors(unittest.TestCase):
@@ -1068,9 +1096,9 @@ class form_norm_overlap_tensors(unittest.TestCase):
         unnormalized_overlap_tensor_1 = resulting_tensors[1]
         unnormalized_state_tensor_2 = resulting_tensors[2]
         right_norm_overlap_tensor_2 = resulting_tensors[3]
-        self.assertTrue(allclose(right_norm_state_tensor_2,right_norm_overlap_tensor_2.transpose(2,0,1)))
-        self.assertTrue(allclose(unnormalized_state_tensor_1,unnormalized_overlap_tensor_1.transpose(2,0,1)))
-        left_norm_state_tensor_1 = left_norm_overlap_tensor_1.transpose(2,0,1)
+        self.assertTrue(allclose(right_norm_state_tensor_2,right_norm_overlap_tensor_2.transpose(2,0,1).conj()))
+        self.assertTrue(allclose(unnormalized_state_tensor_1,unnormalized_overlap_tensor_1.transpose(2,0,1).conj()))
+        left_norm_state_tensor_1 = left_norm_overlap_tensor_1.transpose(2,0,1).conj()
         self.assertTrue(allclose(
             tensordot(unnormalized_state_tensor_1,right_norm_state_tensor_2,(0,1)),
             tensordot(left_norm_state_tensor_1,unnormalized_state_tensor_2,(0,1)),

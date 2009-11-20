@@ -11,10 +11,15 @@ module VMPS.Algorithms where
 
 -- @<< Import needed modules >>
 -- @+node:gcross.20091118213523.1812:<< Import needed modules >>
+import Control.Arrow
 import Control.Monad.Identity
 import Control.Monad.State
 
+import Data.List
+import Data.Maybe
+
 import VMPS.EnergyMinimizationChain
+import VMPS.Tensors
 -- @-node:gcross.20091118213523.1812:<< Import needed modules >>
 -- @nl
 
@@ -29,7 +34,7 @@ performOptimizationSweep :: Double -> Int -> EnergyMinimizationChain -> EnergyMi
 performOptimizationSweep tolerance maximum_number_of_iterations starting_chain
     = runIdentity $
           performOptimizationSweepWithCallback
-            (\_ _ -> return ())
+            ignoreSiteCallback
             tolerance
             maximum_number_of_iterations
             starting_chain
@@ -71,6 +76,9 @@ performOptimizationSweepWithCallback callback tolerance maximum_number_of_iterat
             >>
            goLeft (n-1) (activateLeftNeighbor optimized_chain)
 -- @-node:gcross.20091118213523.1810:performOptimizationSweepWithCallback
+-- @+node:gcross.20091119150241.1855:ignoreSiteCallback
+ignoreSiteCallback _ _ = return ()
+-- @-node:gcross.20091119150241.1855:ignoreSiteCallback
 -- @-node:gcross.20091118213523.1822:Single sweep optimization
 -- @+node:gcross.20091118213523.1823:Multiple sweep optimization
 -- @+node:gcross.20091118213523.1826:performRepeatedSweepsUntilConvergence
@@ -85,8 +93,8 @@ performRepeatedSweepsUntilConvergence energy_change_convergence_criterion
                                       starting_chain
     = runIdentity $
           performRepeatedSweepsUntilConvergenceWithCallbacks
-            (\_ _ -> return ())
-            (\_ _ -> return ())
+            ignoreSweepCallback
+            ignoreSiteCallback
             energy_change_convergence_criterion
             tolerance
             maximum_number_of_iterations
@@ -133,6 +141,9 @@ performRepeatedSweepsUntilConvergenceWithCallbacks
                     maximum_number_of_iterations
                     new_chain
 -- @-node:gcross.20091118213523.1825:performRepeatedSweepsUntilConvergenceWithCallbacks
+-- @+node:gcross.20091119150241.1857:ignoreSiteCallback
+ignoreSweepCallback _ _ = return ()
+-- @-node:gcross.20091119150241.1857:ignoreSiteCallback
 -- @-node:gcross.20091118213523.1823:Multiple sweep optimization
 -- @+node:gcross.20091118213523.1844:Bandwidth increasing
 -- @+node:gcross.20091118213523.1846:increaseBandwidthAndSweepUntilConvergence
@@ -154,20 +165,14 @@ increaseBandwidthAndSweepUntilConvergence
     =
     flip evalStateT (maximumBandwidthIn chain) $
         increaseBandwidthAndSweepUntilConvergenceWithCallbacks
-            callback_to_increase_bandwidth
-            (\_ _ -> return ())
-            (\_ _ -> return ())
+            (singleIncrementBandwidthIncreaser physical_dimension)
+            ignoreSweepCallback
+            ignoreSiteCallback
             bandwidth_increase_energy_change_convergence_criterion
             multisweep_energy_change_convergence_criterion
             tolerance
             maximum_number_of_iterations
             chain
-  where
-    callback_to_increase_bandwidth chain = do
-        old_bandwidth <- get
-        let new_bandwidth = old_bandwidth+1
-        put new_bandwidth
-        liftIO $ increaseChainBandwidth chain physical_dimension new_bandwidth
 
 increaseBandwidthAndSweepUntilConvergence_ =
     increaseBandwidthAndSweepUntilConvergence 1e-7 1e-7 0 1000
@@ -216,7 +221,161 @@ increaseBandwidthAndSweepUntilConvergenceWithCallbacks
             maximum_number_of_iterations
 
 -- @-node:gcross.20091118213523.1854:increaseBandwidthAndSweepUntilConvergenceWithCallbacks
+-- @+node:gcross.20091119150241.1854:singleIncrementBandwidthIncreaser
+singleIncrementBandwidthIncreaser physical_dimension chain = do
+    old_bandwidth <- get
+    let new_bandwidth = old_bandwidth+1
+    put new_bandwidth
+    liftIO $ increaseChainBandwidth physical_dimension new_bandwidth chain
+-- @-node:gcross.20091119150241.1854:singleIncrementBandwidthIncreaser
 -- @-node:gcross.20091118213523.1844:Bandwidth increasing
+-- @+node:gcross.20091119150241.1846:Multiple trials
+-- @+node:gcross.20091119150241.1847:runMultipleTrialsWithCallbacks
+runMultipleTrialsWithCallbacks ::
+    Monad m =>
+    (EnergyMinimizationChain -> m (Either EnergyMinimizationChain (Double,CanonicalStateRepresentation))) ->
+    (EnergyMinimizationChain -> m EnergyMinimizationChain) ->
+    (Bool -> EnergyMinimizationChain -> m ()) ->
+    (SweepDirection -> EnergyMinimizationChain -> m ()) ->
+    Double ->
+    Double ->
+    Double ->
+    Int ->
+    EnergyMinimizationChain ->
+    m (Double,CanonicalStateRepresentation)
+runMultipleTrialsWithCallbacks
+    callback_to_determine_whether_to_declare_victory
+    callback_to_increase_bandwidth
+    callback_after_each_sweep
+    callback_after_each_site
+    bandwidth_increase_energy_change_convergence_criterion
+    multisweep_energy_change_convergence_criterion
+    tolerance
+    maximum_number_of_iterations
+    =
+    increaseBandwidthAndSweepUntilConvergenceWithCallbacks
+        callback_to_increase_bandwidth
+        callback_after_each_sweep
+        callback_after_each_site
+        bandwidth_increase_energy_change_convergence_criterion
+        multisweep_energy_change_convergence_criterion
+        tolerance
+        maximum_number_of_iterations
+    >=>
+    callback_to_determine_whether_to_declare_victory
+    >=>
+    either
+        (runMultipleTrialsWithCallbacks
+            callback_to_determine_whether_to_declare_victory
+            callback_to_increase_bandwidth
+            callback_after_each_sweep
+            callback_after_each_site
+            bandwidth_increase_energy_change_convergence_criterion
+            multisweep_energy_change_convergence_criterion
+            tolerance
+            maximum_number_of_iterations)
+        return
+-- @-node:gcross.20091119150241.1847:runMultipleTrialsWithCallbacks
+-- @-node:gcross.20091119150241.1846:Multiple trials
+-- @+node:gcross.20091119150241.1851:Multiple levels
+-- @+node:gcross.20091119150241.1853:solveForMultipleLevels
+solveForMultipleLevels ::
+    Double ->
+    Double ->
+    Double ->
+    Int ->
+    Int ->
+    Int ->
+    [OperatorSiteTensor] ->
+    [[OverlapTensorTrio]] ->
+    IO [(Double,CanonicalStateRepresentation,[OverlapTensorTrio])]
+solveForMultipleLevels
+    bandwidth_increase_energy_change_convergence_criterion
+    multisweep_energy_change_convergence_criterion
+    tolerance
+    maximum_number_of_iterations
+    number_of_levels
+    physical_dimension
+    operator_site_tensors
+    projectors
+    = flip evalStateT undefined $
+        solveForMultipleLevelsWithCallbacks
+            (const . return $ True)
+            (\projectors ->
+                let configuration =
+                        case projectors of
+                            [] -> zip operator_site_tensors (repeat [])
+                            _ -> zip operator_site_tensors . transpose $ projectors
+                in put 2 >> (liftIO $ generateRandomizedChainWithOverlaps physical_dimension 2 configuration)
+            )
+            (singleIncrementBandwidthIncreaser physical_dimension)
+            ignoreSweepCallback
+            ignoreSiteCallback
+            bandwidth_increase_energy_change_convergence_criterion
+            multisweep_energy_change_convergence_criterion
+            tolerance
+            maximum_number_of_iterations
+            number_of_levels
+            projectors
+
+solveForMultipleLevels_ = solveForMultipleLevels 1e-7 1e-7 0 1000
+-- @-node:gcross.20091119150241.1853:solveForMultipleLevels
+-- @+node:gcross.20091119150241.1852:solveForMultipleLevelsWithCallbacks
+solveForMultipleLevelsWithCallbacks ::
+    Monad m =>
+    (EnergyMinimizationChain -> m Bool) ->
+    ([[OverlapTensorTrio]] -> m EnergyMinimizationChain) ->
+    (EnergyMinimizationChain -> m EnergyMinimizationChain) ->
+    (Bool -> EnergyMinimizationChain -> m ()) ->
+    (SweepDirection -> EnergyMinimizationChain -> m ()) ->
+    Double ->
+    Double ->
+    Double ->
+    Int ->
+    Int ->
+    [[OverlapTensorTrio]] ->
+    m [(Double,CanonicalStateRepresentation,[OverlapTensorTrio])]
+solveForMultipleLevelsWithCallbacks
+    callback_to_decide_whether_to_declare_victory_with_trial
+    callback_to_create_new_chain
+    callback_to_increase_bandwidth
+    callback_after_each_sweep
+    callback_after_each_site
+    bandwidth_increase_energy_change_convergence_criterion
+    multisweep_energy_change_convergence_criterion
+    tolerance
+    maximum_number_of_iterations
+    = go []
+  where
+    go levels 0 _ = (return . reverse) levels
+    go levels n projectors =
+        new_chain_factory
+        >>=
+        runMultipleTrialsWithCallbacks
+            my_callback
+            callback_to_increase_bandwidth
+            callback_after_each_sweep
+            callback_after_each_site
+            bandwidth_increase_energy_change_convergence_criterion
+            multisweep_energy_change_convergence_criterion
+            tolerance
+            maximum_number_of_iterations
+        >>=
+        \(energy,state) ->
+            let projector = computeOverlapTriosFromCanonicalStateRepresentation state
+            in go ((energy,state,projector):levels) (n-1) (projector:projectors)
+      where
+        new_chain_factory = callback_to_create_new_chain projectors
+
+        my_callback chain =
+            callback_to_decide_whether_to_declare_victory_with_trial chain
+            >>=
+            \declare_victory ->
+                if declare_victory 
+                    then return . Right . (chainEnergy &&& getCanonicalStateRepresentation) $ chain
+                    else new_chain_factory >>= return . Left
+-- @-node:gcross.20091119150241.1852:solveForMultipleLevelsWithCallbacks
+-- @-node:gcross.20091119150241.1851:Multiple levels
 -- @-node:gcross.20091118213523.1814:Functions
 -- @-others
 -- @-node:gcross.20091118213523.1809:@thin Algorithms.hs

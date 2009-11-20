@@ -727,8 +727,14 @@ main = defaultMain
             -- @<< createEnergyInvarianceTest >>
             -- @+node:gcross.20091114174920.1738:<< createEnergyInvarianceTest >>
             createEnergyInvarianceTest number_of_sites bandwidth_dimension = do
-                let operator_site_tensors = replicate number_of_sites $ makeOperatorSiteTensorFromPaulis 1 1 [((1,1),(1.0,I))]
-                chain <- generateRandomizedChain operator_site_tensors 2 bandwidth_dimension
+                chain <-
+                    generateRandomizedChain 2 bandwidth_dimension
+                    .
+                    replicate number_of_sites
+                    .
+                    makeOperatorSiteTensorFromPaulis 1 1 
+                    $
+                    [(1 --> 1) 1.0 I]
                 let chains_going_right =
                         take number_of_sites
                         .
@@ -772,9 +778,15 @@ main = defaultMain
             -- @<< createBandwidthIncreaseTest >>
             -- @+node:gcross.20091115105949.1748:<< createBandwidthIncreaseTest >>
             createBandwidthIncreaseTest number_of_sites old_bandwidth_dimension new_bandwidth_dimension = do
-                let operator_site_tensors = replicate number_of_sites $ makeOperatorSiteTensorFromPaulis 1 1 [((1,1),(1.0,Y))]
-                original_chain <- generateRandomizedChain operator_site_tensors 2 old_bandwidth_dimension
-                chain <- increaseChainBandwidth original_chain 2 new_bandwidth_dimension
+                original_chain <-
+                    generateRandomizedChain 2 old_bandwidth_dimension
+                    .
+                    replicate number_of_sites
+                    .
+                    makeOperatorSiteTensorFromPaulis 1 1
+                    $
+                    [(1 --> 1) 1.0 Y]
+                chain <- increaseChainBandwidth 2 new_bandwidth_dimension original_chain
                 let chains_going_right =
                         take number_of_sites
                         .
@@ -827,20 +839,11 @@ main = defaultMain
                 -- @<< createMagneticFieldTest >>
                 -- @+node:gcross.20091114174920.1742:<< createMagneticFieldTest >>
                 createMagneticFieldTest number_of_sites bandwidth_dimension =
-                    generateRandomizedChain 
-                        (
-                            [makeOperatorSiteTensorFromPaulis 1 2 . startingFrom $ magnetic_field]
-                            ++
-                            (replicate (number_of_sites-2) $ makeOperatorSiteTensorFromPaulis 2 2 magnetic_field)
-                            ++
-                            [makeOperatorSiteTensorFromPaulis 2 1 . endingWith 2 $ magnetic_field]
-                        )
-                        2 bandwidth_dimension
+                    generateRandomizedChain 2 bandwidth_dimension (makeMagneticFieldOperatorSiteTensors number_of_sites)
                     >>=
                     return . chainEnergy . performOptimizationSweep_
                     >>=
                     assertAlmostEqual "Is the optimal energy correct?" (-(toEnum number_of_sites))
-
                 -- @-node:gcross.20091114174920.1742:<< createMagneticFieldTest >>
                 -- @nl
                 in map (\(number_of_sites,bandwidth_dimension) ->
@@ -870,21 +873,12 @@ main = defaultMain
                                                bandwidth_dimension
                                                perturbation_strength
                                                correct_ground_state_energy =
-                    generateRandomizedChain 
-                        (
-                            [model_left_tensor]
-                            ++
-                            (replicate (number_of_sites-2) model_middle_tensor)
-                            ++
-                            [model_right_tensor]
-                        )
-                        2 bandwidth_dimension
+                    generateRandomizedChain 2 bandwidth_dimension
+                        (makeTransverseIsingModelOperatorSiteTensors number_of_sites perturbation_strength)
                     >>=
                     return . chainEnergy . performRepeatedSweepsUntilConvergence_
                     >>=
                     assertAlmostEqual "Is the optimal energy correct?" correct_ground_state_energy
-                  where
-                    (model_left_tensor,model_middle_tensor,model_right_tensor) = makeTransverseIsingModel perturbation_strength
                 -- @-node:gcross.20091118213523.1831:<< createTransverseIsingModelTest >>
                 -- @nl
                 in map (\(number_of_sites,bandwidth_dimension,perturbation_strength,correct_ground_state_energy) ->
@@ -917,23 +911,14 @@ main = defaultMain
                                                bandwidth_dimension
                                                perturbation_strength
                                                correct_ground_state_energy =
-                    generateRandomizedChain 
-                        (
-                            [model_left_tensor]
-                            ++
-                            (replicate (number_of_sites-2) model_middle_tensor)
-                            ++
-                            [model_right_tensor]
-                        )
-                        2 bandwidth_dimension
+                    generateRandomizedChain 2 bandwidth_dimension
+                        (makeTransverseIsingModelOperatorSiteTensors number_of_sites perturbation_strength)
                     >>=
                     increaseBandwidthAndSweepUntilConvergence_ 2
                     >>=
                     return . chainEnergy
                     >>=
                     assertAlmostEqual "Is the optimal energy correct?" correct_ground_state_energy
-                  where
-                    (model_left_tensor,model_middle_tensor,model_right_tensor) = makeTransverseIsingModel perturbation_strength
                 -- @-node:gcross.20091119150241.1845:<< createTransverseIsingModelTest >>
                 -- @nl
                 in map (\(number_of_sites,bandwidth_dimension,perturbation_strength,correct_ground_state_energy) ->
@@ -949,6 +934,36 @@ main = defaultMain
             -- @-others
             ]
         -- @-node:gcross.20091119150241.1843:increaseBandwidthAndSweepUntilConvergence
+        -- @+node:gcross.20091119150241.1861:solveForMultipleLevels
+        ,testGroup "solveForMultipleLevels"
+            -- @    @+others
+            -- @+node:gcross.20091119150241.1874:magnetic field
+            [testGroup "magnetic field" $
+                let 
+                -- @nonl
+                -- @<< createMagneticFieldTest >>
+                -- @+node:gcross.20091119150241.1875:<< createMagneticFieldTest >>
+                createMagneticFieldTest number_of_sites correct_energy_levels =
+                    solveForMultipleLevels_
+                        (length correct_energy_levels)
+                        2
+                        (makeMagneticFieldOperatorSiteTensors number_of_sites)
+                        []
+                    >>=
+                    assertAlmostEqual "Is the optimal energy correct?" correct_energy_levels
+                        .
+                        map (\(x,_,_) -> x)
+                -- @-node:gcross.20091119150241.1875:<< createMagneticFieldTest >>
+                -- @nl
+                in map (\(number_of_sites,correct_energy_levels) ->
+                        testCase (printf "%i sites" number_of_sites) $ 
+                            createMagneticFieldTest number_of_sites correct_energy_levels
+                       ) $ [( 4,[ -4,-2,-2,-2])
+                           ]
+            -- @-node:gcross.20091119150241.1874:magnetic field
+            -- @-others
+            ]
+        -- @-node:gcross.20091119150241.1861:solveForMultipleLevels
         -- @-others
         ]
     -- @-node:gcross.20091118213523.1816:VMPS.Algorithms

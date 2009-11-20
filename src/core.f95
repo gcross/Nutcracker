@@ -594,7 +594,7 @@ subroutine project(vector_size,number_of_projectors,projectors,vector)
     vector,1, &
     (0d0,0d0),projector_weights,1 &
   )
-  forall (i = 1:vector_size) vector(i) = vector(i) - dot_product(conjg(projectors(i,:)),projector_weights)
+  forall (i = 1:vector_size) vector(i) = vector(i) - dot_product(projectors(i,:),projector_weights)
 end subroutine
 !@-node:gcross.20091115201814.1736:project
 !@+node:gcross.20091109182634.1537:optimize
@@ -1188,11 +1188,11 @@ subroutine form_overlap_site_tensor(br, bl, d, state_site_tensor, overlap_site_t
   double complex, intent(out) :: overlap_site_tensor(bl,d,br)
 
   overlap_site_tensor = &
-    reshape( &
+    conjg(reshape( &
       state_site_tensor, &
       shape(overlap_site_tensor), &
       order=(/3,1,2/) &
-    )
+    ))
 
 end subroutine
 !@-node:gcross.20091117140132.1800:form_overlap_site_tensor

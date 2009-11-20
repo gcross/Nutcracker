@@ -33,15 +33,21 @@ endingWith ending_index list = [((index1,1),matrix) | ((index1,index2),matrix) <
 -- @-node:gcross.20091118213523.1836:-->
 -- @-node:gcross.20091118213523.1850:Functions
 -- @+node:gcross.20091118213523.1849:Models
--- @+node:gcross.20091118213523.1851:magnetic_field
-magnetic_field =
-    [(1 --> 1) 1.0 I
-    ,(1 --> 2) 1.0 Z
-    ,(2 --> 2) 1.0 I
-    ]
--- @-node:gcross.20091118213523.1851:magnetic_field
--- @+node:gcross.20091118213523.1852:makeTransverseIsingModel
-makeTransverseIsingModel coupling_stringth =
+-- @+node:gcross.20091118213523.1851:makeMagneticFieldOperatorSiteTensors
+makeMagneticFieldOperatorSiteTensors number_of_sites =
+    let middle_model =
+              [(1 --> 1) 1 I
+              ,(1 --> 2) 1 Z
+              ,(2 --> 2) 1 I
+              ]
+    in  [makeOperatorSiteTensorFromPaulis 1 2 . startingFrom $ middle_model]
+        ++
+        replicate (number_of_sites-2) (makeOperatorSiteTensorFromPaulis 2 2 $ middle_model)
+        ++
+        [makeOperatorSiteTensorFromPaulis 2 1 . endingWith 2 $ middle_model]
+-- @-node:gcross.20091118213523.1851:makeMagneticFieldOperatorSiteTensors
+-- @+node:gcross.20091118213523.1852:makeTransverseIsingOperatorSiteTensors
+makeTransverseIsingModelOperatorSiteTensors number_of_sites coupling_stringth =
     let middle_model =
               [(1 --> 1) 1 I
               ,(1 --> 3) 1 Z
@@ -49,11 +55,12 @@ makeTransverseIsingModel coupling_stringth =
               ,(2 --> 3) (-coupling_stringth) X
               ,(3 --> 3) 1 I
               ]
-    in  (makeOperatorSiteTensorFromPaulis 1 3 . startingFrom $ middle_model
-        ,makeOperatorSiteTensorFromPaulis 3 3 $ middle_model
-        ,makeOperatorSiteTensorFromPaulis 3 1 . endingWith 3 $ middle_model
-        )
--- @-node:gcross.20091118213523.1852:makeTransverseIsingModel
+    in  [makeOperatorSiteTensorFromPaulis 1 3 . startingFrom $ middle_model]
+        ++
+        replicate (number_of_sites-2) (makeOperatorSiteTensorFromPaulis 3 3 $ middle_model)
+        ++
+        [makeOperatorSiteTensorFromPaulis 3 1 . endingWith 3 $ middle_model]
+-- @-node:gcross.20091118213523.1852:makeTransverseIsingOperatorSiteTensors
 -- @-node:gcross.20091118213523.1849:Models
 -- @-others
 -- @-node:gcross.20091118213523.1839:@thin OperatorConstruction.hs

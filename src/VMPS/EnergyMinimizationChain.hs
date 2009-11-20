@@ -26,6 +26,8 @@ import VMPS.Tensors.Implementation
     ,unwrapUnnormalizedStateSiteTensor
     )
 import VMPS.Wrappers
+
+import Debug.Trace
 -- @-node:gcross.20091113142219.1663:<< Import needed modules >>
 -- @nl
 
@@ -246,6 +248,13 @@ data EnergyMinimizationChain = EnergyMinimizationChain
     ,   chainEnergy :: Double
     }
 -- @-node:gcross.20091113142219.1665:EnergyMinimizationChain
+-- @+node:gcross.20091119150241.1848:CanonicalStateRepresentation
+data CanonicalStateRepresentation =
+    CanonicalStateRepresentation
+        {   canonicalStateFirstSiteTensor :: UnnormalizedStateSiteTensor
+        ,   canonicalStateRestSiteTensors :: [RightAbsorptionNormalizedStateSiteTensor]
+        }
+-- @-node:gcross.20091119150241.1848:CanonicalStateRepresentation
 -- @-node:gcross.20091113142219.1664:Types
 -- @+node:gcross.20091116222034.2374:Utility Functions
 -- @+node:gcross.20091113142219.1699:computeBandwidthDimensionSequence
@@ -290,15 +299,14 @@ computeProjectorMatrix chain =
              (map overlapUnnormalizedTensor . siteOverlapTrios $ chain)
 -- @-node:gcross.20091117140132.1797:computeProjectorMatrix
 -- @+node:gcross.20091117140132.1798:computeOverlapTriosFromStateTensors
-computeOverlapTriosFromStateTensors ::
-    UnnormalizedStateSiteTensor ->
-    [RightAbsorptionNormalizedStateSiteTensor] ->
-    [OverlapTensorTrio]
-computeOverlapTriosFromStateTensors _ [] = error "There needs to be more than one site to use this function!"
-computeOverlapTriosFromStateTensors
-    unnormalized_state_first_site_tensor
-    (right_normalized_state_second_site_tensor:right_normalized_state_rest_site_tensors)
-    =
+computeOverlapTriosFromCanonicalStateRepresentation :: CanonicalStateRepresentation -> [OverlapTensorTrio]
+computeOverlapTriosFromCanonicalStateRepresentation (CanonicalStateRepresentation _ []) =
+    error "There needs to be more than one site to use this function!"
+computeOverlapTriosFromCanonicalStateRepresentation
+    (CanonicalStateRepresentation
+        unnormalized_state_first_site_tensor
+        (right_normalized_state_second_site_tensor:right_normalized_state_rest_site_tensors)
+    ) =
     let ( left_normalized_overlap_first_site_tensor
          ,unnormalized_overlap_first_site_tensor
          ,unnormalized_state_second_site_tensor
@@ -429,23 +437,24 @@ optimizeSite tolerance maximum_number_of_iterations chain =
                 SR
                 tolerance
                 maximum_number_of_iterations
-    in assert (imagPart eigenvalue ~= 0) $
-        (number_of_iterations, chain
-            {   siteStateTensor = optimal_site_tensor
-            ,   chainEnergy = realPart eigenvalue
-            }
-        )
+    in if (imagPart eigenvalue ~= 0)
+        then (number_of_iterations, chain
+                {   siteStateTensor = optimal_site_tensor
+                ,   chainEnergy = realPart eigenvalue
+                }
+             )
+        else error $ "Non-imaginary eigenvalue: " ++ (show eigenvalue)
 
 optimizeSite_ = optimizeSite 0 1000
 -- @-node:gcross.20091113142219.1687:optimizeSite
 -- @+node:gcross.20091117140132.1796:generateRandomizedChain
-generateRandomizedChain :: [OperatorSiteTensor] -> Int -> Int -> IO (EnergyMinimizationChain)
-generateRandomizedChain = generateRandomizedChainWithOverlaps . flip zip (repeat [])
+generateRandomizedChain :: Int -> Int -> [OperatorSiteTensor] -> IO (EnergyMinimizationChain)
+generateRandomizedChain d b = generateRandomizedChainWithOverlaps d b . flip zip (repeat [])
 -- @-node:gcross.20091117140132.1796:generateRandomizedChain
 -- @+node:gcross.20091113142219.2535:generateRandomizedChainWithOverlaps
-generateRandomizedChainWithOverlaps :: [(OperatorSiteTensor,[OverlapTensorTrio])] -> Int -> Int -> IO (EnergyMinimizationChain)
-generateRandomizedChainWithOverlaps [] _ _ = error "Must have at least one operator site tensor!"
-generateRandomizedChainWithOverlaps operator_site_tensors physical_dimension bandwidth_dimension =
+generateRandomizedChainWithOverlaps :: Int -> Int -> [(OperatorSiteTensor,[OverlapTensorTrio])] -> IO (EnergyMinimizationChain)
+generateRandomizedChainWithOverlaps _ _ [] = error "Must have at least one operator site tensor!"
+generateRandomizedChainWithOverlaps physical_dimension bandwidth_dimension operator_site_tensors =
     let number_of_sites = length operator_site_tensors
         number_of_projectors = length . snd . head $ operator_site_tensors
         normalized_randomizer = uncurry (generateRandomizedStateSiteTensor physical_dimension)
@@ -501,15 +510,15 @@ generateRandomizedChainWithOverlaps operator_site_tensors physical_dimension ban
             in chain
 -- @-node:gcross.20091113142219.2535:generateRandomizedChainWithOverlaps
 -- @+node:gcross.20091115105949.1744:increaseChainBandwidth
-increaseChainBandwidth :: EnergyMinimizationChain -> Int -> Int -> IO EnergyMinimizationChain
+increaseChainBandwidth :: Int -> Int -> EnergyMinimizationChain -> IO EnergyMinimizationChain
 increaseChainBandwidth
+    physical_dimension new_bandwidth
     chain@
     EnergyMinimizationChain
     {   siteRightNeighbors = neighbors
     ,   siteLeftNeighbors = []
     ,   chainNumberOfSites = number_of_sites
     }
-    physical_dimension new_bandwidth
  = (flip go1) []
     .
     zip (
@@ -639,6 +648,16 @@ maximumBandwidthIn chain =
     ,   rightBandwidthOfState . siteStateTensor $ chain
     ]
 -- @-node:gcross.20091118213523.1855:maximumBandwidthIn
+-- @+node:gcross.20091119150241.1849:getCanonicalStateRepresentation
+getCanonicalStateRepresentation :: EnergyMinimizationChain -> CanonicalStateRepresentation
+getCanonicalStateRepresentation chain
+    | siteNumber chain > 1
+        = error "The chain must be at the first site in order to extract the canonical state representation."
+    | otherwise
+        = CanonicalStateRepresentation
+            (siteStateTensor chain)
+            (map rightNeighborState . siteRightNeighbors $ chain)
+-- @-node:gcross.20091119150241.1849:getCanonicalStateRepresentation
 -- @-node:gcross.20091113142219.1678:Chain Functions
 -- @-others
 -- @-node:gcross.20091113142219.1659:@thin EnergyMinimizationChain.hs
