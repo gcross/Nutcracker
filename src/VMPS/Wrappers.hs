@@ -50,6 +50,10 @@ instance Show OptimizerSelectionStrategy where
 withStrategyAsCString :: OptimizerSelectionStrategy -> (CString -> IO a) -> IO a
 withStrategyAsCString = withCString . show
 -- @-node:gcross.20091111171052.1657:SelectionStrategy
+-- @+node:gcross.20091119150241.1880:OptimizerFailure
+data OptimizerFailureReason = OptimizerUnableToConverge
+    deriving (Show)
+-- @-node:gcross.20091119150241.1880:OptimizerFailure
 -- @-node:gcross.20091113125544.1660:Types
 -- @+node:gcross.20091113125544.1661:Wrapper functions
 -- @+node:gcross.20091113125544.1656:Contractors
@@ -393,7 +397,7 @@ computeOptimalSiteStateTensor ::
     OptimizerSelectionStrategy ->
     Double ->
     Int ->
-    (Int, Complex Double, UnnormalizedStateSiteTensor)
+    Either OptimizerFailureReason (Int, Complex Double, UnnormalizedStateSiteTensor)
 computeOptimalSiteStateTensor
     left_boundary_tensor
     state_site_tensor
@@ -442,9 +446,10 @@ computeOptimalSiteStateTensor
                             (peek p_number_of_iterations)
                             (peek p_eigenvalue)
             )
-    in if info /= 0
-        then error $ "Failed to converge! info = " ++ show info
-        else (number_of_iterations,eigenvalue,optimized_state_site_tensor)
+    in case info of
+        0 -> Right (number_of_iterations,eigenvalue,optimized_state_site_tensor)
+        -14 -> Left OptimizerUnableToConverge
+        _ -> error $ "Failed to converge! info = " ++ show info
 -- @-node:gcross.20091111171052.1656:computeOptimalSiteStateTensor
 -- @+node:gcross.20091115105949.1729:increaseBandwidthBetween
 foreign import ccall unsafe "increase_bandwidth_between" increase_bandwidth_between :: 

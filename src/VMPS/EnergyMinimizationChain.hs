@@ -425,25 +425,27 @@ activateRightNeighbor old_chain =
     in new_chain
 -- @-node:gcross.20091113142219.1686:activateRightNeighbor
 -- @+node:gcross.20091113142219.1687:optimizeSite
-optimizeSite :: Double -> Int -> EnergyMinimizationChain -> (Int,EnergyMinimizationChain)
+optimizeSite :: Double -> Int -> EnergyMinimizationChain -> Either OptimizerFailureReason (Int,EnergyMinimizationChain)
 optimizeSite tolerance maximum_number_of_iterations chain =
-    let (number_of_iterations, eigenvalue, optimal_site_tensor) =
-            computeOptimalSiteStateTensor
-                (siteLeftBoundaryTensor chain)
-                (siteStateTensor chain)
-                (siteHamiltonianTensor chain)
-                (siteRightBoundaryTensor chain)
-                (computeProjectorMatrix chain)
-                SR
-                tolerance
-                maximum_number_of_iterations
-    in if (imagPart eigenvalue ~= 0)
-        then (number_of_iterations, chain
-                {   siteStateTensor = optimal_site_tensor
-                ,   chainEnergy = realPart eigenvalue
-                }
-             )
-        else error $ "Non-imaginary eigenvalue: " ++ (show eigenvalue)
+    either Left postProcess $
+        computeOptimalSiteStateTensor
+            (siteLeftBoundaryTensor chain)
+            (siteStateTensor chain)
+            (siteHamiltonianTensor chain)
+            (siteRightBoundaryTensor chain)
+            (computeProjectorMatrix chain)
+            SR
+            tolerance
+            maximum_number_of_iterations
+  where
+    postProcess (number_of_iterations, eigenvalue, optimal_site_tensor) =
+        if (imagPart eigenvalue ~= 0)
+            then Right (number_of_iterations, chain
+                    {   siteStateTensor = optimal_site_tensor
+                    ,   chainEnergy = realPart eigenvalue
+                    }
+                 )
+            else error $ "Non-imaginary eigenvalue: " ++ (show eigenvalue)
 
 optimizeSite_ = optimizeSite 0 1000
 -- @-node:gcross.20091113142219.1687:optimizeSite

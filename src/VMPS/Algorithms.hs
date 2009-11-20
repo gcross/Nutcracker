@@ -20,10 +20,17 @@ import Data.Maybe
 
 import VMPS.EnergyMinimizationChain
 import VMPS.Tensors
+import VMPS.Wrappers
+-- @nonl
 -- @-node:gcross.20091118213523.1812:<< Import needed modules >>
 -- @nl
 
 -- @+others
+-- @+node:gcross.20091119150241.1881:Callback Types
+type SiteCallback m = Maybe OptimizerFailureReason -> SweepDirection -> EnergyMinimizationChain -> m ()
+type SweepCallback m = Bool -> EnergyMinimizationChain -> m ()
+type BandwidthIncreaseCallback m = EnergyMinimizationChain -> m EnergyMinimizationChain
+-- @-node:gcross.20091119150241.1881:Callback Types
 -- @+node:gcross.20091118213523.1814:Functions
 -- @+node:gcross.20091118213523.1822:Single sweep optimization
 -- @+node:gcross.20091118213523.1815:SweepDirection
@@ -45,7 +52,7 @@ performOptimizationSweep_ = performOptimizationSweep 0 1000
 -- @+node:gcross.20091118213523.1810:performOptimizationSweepWithCallback
 performOptimizationSweepWithCallback ::
     Monad m =>
-    (SweepDirection -> EnergyMinimizationChain -> m ()) ->
+    SiteCallback m ->
     Double ->
     Int ->
     EnergyMinimizationChain ->
@@ -64,20 +71,22 @@ performOptimizationSweepWithCallback callback tolerance maximum_number_of_iterat
 
     goRight 0 chain = goLeft (number_of_sites-1) chain
     goRight n chain =
-        let optimized_chain = snd . runOptimizerOn $ chain
-        in callback SweepingRight optimized_chain
-            >>
-           goRight (n-1) (activateRightNeighbor optimized_chain)
+        case runOptimizerOn $ chain of
+            Left failure_reason -> callback (Just failure_reason) SweepingRight chain >> return chain
+            Right (_,optimized_chain) -> callback Nothing SweepingRight optimized_chain >> return optimized_chain
+        >>=
+        goRight (n-1) . activateRightNeighbor
 
     goLeft 0 chain = return chain
     goLeft n chain =
-        let optimized_chain = snd . runOptimizerOn $ chain
-        in callback SweepingLeft optimized_chain
-            >>
-           goLeft (n-1) (activateLeftNeighbor optimized_chain)
+        case runOptimizerOn $ chain of
+            Left failure_reason -> callback (Just failure_reason) SweepingLeft chain >> return chain
+            Right (_,optimized_chain) -> callback Nothing SweepingLeft optimized_chain >> return optimized_chain
+        >>=
+        goLeft (n-1) . activateLeftNeighbor
 -- @-node:gcross.20091118213523.1810:performOptimizationSweepWithCallback
 -- @+node:gcross.20091119150241.1855:ignoreSiteCallback
-ignoreSiteCallback _ _ = return ()
+ignoreSiteCallback _ _ _ = return ()
 -- @-node:gcross.20091119150241.1855:ignoreSiteCallback
 -- @-node:gcross.20091118213523.1822:Single sweep optimization
 -- @+node:gcross.20091118213523.1823:Multiple sweep optimization
@@ -105,8 +114,8 @@ performRepeatedSweepsUntilConvergence_ = performRepeatedSweepsUntilConvergence 1
 -- @+node:gcross.20091118213523.1825:performRepeatedSweepsUntilConvergenceWithCallbacks
 performRepeatedSweepsUntilConvergenceWithCallbacks ::
     Monad m =>
-    (Bool -> EnergyMinimizationChain -> m ()) ->
-    (SweepDirection -> EnergyMinimizationChain -> m ()) ->
+    SweepCallback m ->
+    SiteCallback m ->
     Double ->
     Double ->
     Int ->
@@ -181,9 +190,9 @@ increaseBandwidthAndSweepUntilConvergence_ =
 -- @+node:gcross.20091118213523.1854:increaseBandwidthAndSweepUntilConvergenceWithCallbacks
 increaseBandwidthAndSweepUntilConvergenceWithCallbacks ::
     Monad m =>
-    (EnergyMinimizationChain -> m EnergyMinimizationChain) ->
-    (Bool -> EnergyMinimizationChain -> m ()) ->
-    (SweepDirection -> EnergyMinimizationChain -> m ()) ->
+    BandwidthIncreaseCallback m ->
+    SweepCallback m ->
+    SiteCallback m ->
     Double ->
     Double ->
     Double ->
@@ -234,9 +243,9 @@ singleIncrementBandwidthIncreaser physical_dimension chain = do
 runMultipleTrialsWithCallbacks ::
     Monad m =>
     (EnergyMinimizationChain -> m (Either EnergyMinimizationChain (Double,CanonicalStateRepresentation))) ->
-    (EnergyMinimizationChain -> m EnergyMinimizationChain) ->
-    (Bool -> EnergyMinimizationChain -> m ()) ->
-    (SweepDirection -> EnergyMinimizationChain -> m ()) ->
+    BandwidthIncreaseCallback m ->
+    SweepCallback m ->
+    SiteCallback m ->
     Double ->
     Double ->
     Double ->
@@ -325,9 +334,9 @@ solveForMultipleLevelsWithCallbacks ::
     Monad m =>
     (EnergyMinimizationChain -> m Bool) ->
     ([[OverlapTensorTrio]] -> m EnergyMinimizationChain) ->
-    (EnergyMinimizationChain -> m EnergyMinimizationChain) ->
-    (Bool -> EnergyMinimizationChain -> m ()) ->
-    (SweepDirection -> EnergyMinimizationChain -> m ()) ->
+    BandwidthIncreaseCallback m ->
+    SweepCallback m ->
+    SiteCallback m ->
     Double ->
     Double ->
     Double ->

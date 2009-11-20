@@ -215,7 +215,7 @@ main = defaultMain
                         , 0, 0, 0,-1
                         ]
                     operator_site_tensor = OperatorSiteTensor 1 1 4 1 operator_indices operator_matrices
-                    (_, eigenvalue, (UnnormalizedStateSiteTensor (StateSiteTensor d bl br actual_tensor))) =
+                    optimizer_result = 
                         computeOptimalSiteStateTensor
                             left_boundary
                             state_site_tensor
@@ -225,14 +225,16 @@ main = defaultMain
                             SR
                             0
                             10000
-                    components = toListOfComplexNumbers actual_tensor
-                in do
-                    assertEqual "is the new left bandwidth dimension the same?" (leftBandwidthOfState state_site_tensor) bl
-                    assertEqual "is the new right bandwidth dimension the same?" (rightBandwidthOfState state_site_tensor) br
-                    assertEqual "is the new physical dimension the same?" (physicalDimensionOfState state_site_tensor) d
-                    assertBool "are all but the last component of the state zero?" (take 3 components ~= replicate 3 0)
-                    assertBool "is the last components non-zero?" (last components /~ 0)
-                    assertBool "is the eigenvalue correct?" (eigenvalue ~= (-1))
+                in case optimizer_result of
+                    Left failure_reason -> assertFailure $ "Optimizer failed: " ++ (show failure_reason)
+                    Right (_, eigenvalue, (UnnormalizedStateSiteTensor (StateSiteTensor d bl br actual_tensor))) -> do
+                        let components = toListOfComplexNumbers actual_tensor
+                        assertEqual "is the new left bandwidth dimension the same?" (leftBandwidthOfState state_site_tensor) bl
+                        assertEqual "is the new right bandwidth dimension the same?" (rightBandwidthOfState state_site_tensor) br
+                        assertEqual "is the new physical dimension the same?" (physicalDimensionOfState state_site_tensor) d
+                        assertBool "are all but the last component of the state zero?" (take 3 components ~= replicate 3 0)
+                        assertBool "is the last components non-zero?" (last components /~ 0)
+                        assertBool "is the eigenvalue correct?" (eigenvalue ~= (-1))
             -- @-node:gcross.20091111171052.1661:trivial, d = 4
             -- @-others
             ]
@@ -928,7 +930,6 @@ main = defaultMain
                                                            perturbation_strength
                                                            correct_ground_state_energy
                 ) $ [(10,2,1.0,-12.3814899997)
-                    ,(11,2,1.0,-13.6536435436)
                     ]
             -- @-node:gcross.20091119150241.1844:transverse ising model
             -- @-others
@@ -959,8 +960,34 @@ main = defaultMain
                         testCase (printf "%i sites" number_of_sites) $ 
                             createMagneticFieldTest number_of_sites correct_energy_levels
                        ) $ [( 4,[ -4,-2,-2,-2])
+                           ,( 6,[ -6,-4,-4,-4])
+                           ,(10,[-10,-8,-8])
                            ]
             -- @-node:gcross.20091119150241.1874:magnetic field
+            -- @+node:gcross.20091119150241.1889:transverse ising model
+            ,testGroup "transverse ising model" $
+                let 
+                -- @nonl
+                -- @<< createTransverseIsingModelTest >>
+                -- @+node:gcross.20091119150241.1890:<< createTransverseIsingModelTest >>
+                createMagneticFieldTest number_of_sites coupling_strength correct_energy_levels =
+                    solveForMultipleLevels_
+                        (length correct_energy_levels)
+                        2
+                        (makeTransverseIsingModelOperatorSiteTensors number_of_sites coupling_strength)
+                        []
+                    >>=
+                    assertAlmostEqual "Is the optimal energy correct?" correct_energy_levels
+                        .
+                        map (\(x,_,_) -> x)
+                -- @-node:gcross.20091119150241.1890:<< createTransverseIsingModelTest >>
+                -- @nl
+                in map (\(number_of_sites,coupling_strength,correct_energy_levels) ->
+                        testCase (printf "%i sites" number_of_sites) $ 
+                            createMagneticFieldTest number_of_sites coupling_strength correct_energy_levels
+                       ) $ [(10,0.1,[-10.0225109571,-8.2137057257,-8.18819723717])
+                           ]
+            -- @-node:gcross.20091119150241.1889:transverse ising model
             -- @-others
             ]
         -- @-node:gcross.20091119150241.1861:solveForMultipleLevels
