@@ -159,7 +159,7 @@ performRepeatedSweepsUntilConvergenceWithCallbacks
         let new_energy = chainEnergy new_chain
             old_energy = chainEnergy old_chain
         in if old_energy - new_energy <= energy_change_convergence_criterion
-            then callback_after_each_sweep True new_chain >> return old_chain
+            then callback_after_each_sweep True new_chain >> return new_chain
             else
                 callback_after_each_sweep False new_chain
                 >>

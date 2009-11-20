@@ -500,12 +500,18 @@ generateRandomizedChainWithOverlaps physical_dimension bandwidth_dimension opera
                (reverse . tail $ zip state_site_bandwidth_dimensions operator_site_tensors)
         unnormalized_state_site_tensor <- unnormalized_randomizer . head $ state_site_bandwidth_dimensions
         return $
-            let chain = EnergyMinimizationChain
+            let left_overlap_boundaries = (replicate number_of_projectors trivial_left_overlap_boundary)
+                overlap_trios = snd . head $ operator_site_tensors
+                projector_matrix = formProjectorMatrix $
+                                        zip3 left_overlap_boundaries
+                                             right_overlap_boundaries
+                                             (map overlapUnnormalizedTensor overlap_trios)
+                chain = EnergyMinimizationChain
                     {   siteLeftBoundaryTensor = trivial_left_boundary
-                    ,   siteLeftOverlapBoundaryTensors = (replicate number_of_projectors trivial_left_overlap_boundary)
-                    ,   siteStateTensor = unnormalized_state_site_tensor
+                    ,   siteLeftOverlapBoundaryTensors = left_overlap_boundaries
+                    ,   siteStateTensor = applyProjectorMatrix projector_matrix unnormalized_state_site_tensor
                     ,   siteHamiltonianTensor = fst . head $ operator_site_tensors
-                    ,   siteOverlapTrios = snd . head $ operator_site_tensors
+                    ,   siteOverlapTrios = overlap_trios
                     ,   siteRightBoundaryTensor = right_boundary
                     ,   siteRightOverlapBoundaryTensors = right_overlap_boundaries
                     ,   siteLeftNeighbors = []

@@ -581,20 +581,20 @@ end subroutine
 !@-node:gcross.20091110205054.1916:compute_expectation
 !@-node:gcross.20091110205054.1940:Contractors
 !@+node:gcross.20091115201814.1736:project
-subroutine project(vector_size,number_of_projectors,projectors,vector)
+subroutine project(vector_size,number_of_projectors,projectors,input_vector,output_vector)
   integer, intent(in) :: number_of_projectors, vector_size
-  double complex, intent(in) :: projectors(vector_size,number_of_projectors)
-  double complex, intent(inout) :: vector(vector_size)
+  double complex, intent(in) :: projectors(vector_size,number_of_projectors), input_vector(vector_size)
+  double complex, intent(out) :: output_vector(vector_size)
   double complex :: projector_weights(number_of_projectors)
   integer :: i
   call zgemv( &
     'T', &
     vector_size,number_of_projectors, &
     (1d0,0d0),projectors,vector_size, &
-    vector,1, &
+    input_vector,1, &
     (0d0,0d0),projector_weights,1 &
   )
-  forall (i = 1:vector_size) vector(i) = vector(i) - dot_product(projectors(i,:),projector_weights)
+  forall (i = 1:vector_size) output_vector(i) = input_vector(i) - dot_product(projectors(i,:),projector_weights)
 end subroutine
 !@-node:gcross.20091115201814.1736:project
 !@+node:gcross.20091109182634.1537:optimize
@@ -748,7 +748,7 @@ function optimize( &
         iparam, ipntr, workd, workl, 3*ncv**2+5*ncv, rwork, info &
       ) 
       if (ido == -1 .or. ido == 1) then
-        call project(bl*br*d,number_of_projectors,projectors,workd(ipntr(1)))
+        call project(bl*br*d,number_of_projectors,projectors,workd(ipntr(1)),workd(ipntr(1)))
         call iteration_stage_2( &
           bl, br, cr, d, &
           iteration_stage_1_tensor, &
@@ -761,7 +761,7 @@ function optimize( &
           right_environment, &
           workd(ipntr(2)) &
         )
-        call project(bl*br*d,number_of_projectors,projectors,workd(ipntr(2)))
+        call project(bl*br*d,number_of_projectors,projectors,workd(ipntr(2)),workd(ipntr(2)))
       end if
     end do
   !@-node:gcross.20091115201814.1733:<< Main iteration >>
@@ -812,7 +812,7 @@ subroutine randomize_state_site_tensor(br, bl, d, state_site_tensor)
 end subroutine
 !@-node:gcross.20091110205054.1920:randomize_state_site_tensor
 !@+node:gcross.20091110205054.1922:rand_norm_state_site_tensor
-function rand_norm_state_site_tensor(br, bl, d, state_site_tensor) result (info)
+subroutine rand_norm_state_site_tensor(br, bl, d, state_site_tensor)
   integer, intent(in) :: br, bl, d
   double complex, intent(out) :: state_site_tensor(br,bl,d)
 
@@ -834,6 +834,10 @@ function rand_norm_state_site_tensor(br, bl, d, state_site_tensor) result (info)
   call randomize_state_site_tensor(bl, br, d, normalized_state_site_tensor)
 
   info = mysvd(bl,br*d,bl,normalized_state_site_tensor,u,s,vt)
+  if (info /= 0) then
+    print *, "Unable to create normalized random state site tensor!"
+    stop
+  end if
 
   call zgemm( &
     'N','N', &
@@ -847,8 +851,19 @@ function rand_norm_state_site_tensor(br, bl, d, state_site_tensor) result (info)
 
   state_site_tensor = reshape(normalized_state_site_tensor,shape(state_site_tensor),order=(/2,1,3/))
 
-end function
+end subroutine
 !@-node:gcross.20091110205054.1922:rand_norm_state_site_tensor
+!@+node:gcross.20091120134444.1600:rand_unnorm_state_site_tensor
+subroutine rand_unnorm_state_site_tensor(br, bl, d, state_site_tensor)
+  integer, intent(in) :: br, bl, d
+  double complex, intent(out) :: state_site_tensor(br,bl,d)
+
+  call randomize_state_site_tensor(bl, br, d, state_site_tensor)
+
+  state_site_tensor = state_site_tensor / sqrt(dble(real(sum(conjg(state_site_tensor(:,:,:))*state_site_tensor(:,:,:)))))
+
+end subroutine
+!@-node:gcross.20091120134444.1600:rand_unnorm_state_site_tensor
 !@-node:gcross.20091110205054.1942:Randomization
 !@+node:gcross.20091110205054.1943:Normalization
 !@+node:gcross.20091110205054.1926:norm_denorm_going_left

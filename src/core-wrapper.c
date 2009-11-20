@@ -267,13 +267,13 @@ void form_overlap_vector(
     );
 }
 //@-node:gcross.20091116175016.1799:form_overlap_vector
-//@+node:gcross.20091112145455.1655:randomize_state_site_tensor
-void randomize_state_site_tensor_(int* br, int* bl, int* d, double* state_site_tensor);
+//@+node:gcross.20091112145455.1655:rand_unnorm_state_site_tensor
+void rand_unnorm_state_site_tensor_(int* br, int* bl, int* d, double* state_site_tensor);
 
-void randomize_state_site_tensor(int br, int bl, int d, double* state_site_tensor) {
-    randomize_state_site_tensor_(&br,&bl,&d,state_site_tensor);
+void rand_unnorm_state_site_tensor(int br, int bl, int d, double* state_site_tensor) {
+    rand_unnorm_state_site_tensor_(&br,&bl,&d,state_site_tensor);
 }
-//@-node:gcross.20091112145455.1655:randomize_state_site_tensor
+//@-node:gcross.20091112145455.1655:rand_unnorm_state_site_tensor
 //@+node:gcross.20091112145455.1673:rand_norm_state_site_tensor
 void rand_norm_state_site_tensor_(int* br, int* bl, int* d, double* state_site_tensor);
 
@@ -428,6 +428,13 @@ void form_norm_overlap_tensors(
     );
 }
 //@-node:gcross.20091118141720.1804:form_norm_overlap_tensors
+//@+node:gcross.20091120134444.1596:project
+void project_(int* vector_size,int* number_of_projectors,double* projectors,double* input_vector,double* output_vector);
+
+void project(int vector_size,int number_of_projectors,double* projectors,double* input_vector,double* output_vector) {
+    project_(&vector_size,&number_of_projectors,projectors,input_vector,output_vector);
+}
+//@-node:gcross.20091120134444.1596:project
 //@-others
 //@-node:gcross.20091112145455.1619:@thin core-wrapper.c
 //@-leo

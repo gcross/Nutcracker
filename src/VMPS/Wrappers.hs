@@ -344,7 +344,7 @@ applyRandomizerAndReturnStateSiteTensor randomizer physical_dimension left_bandw
         br = right_bandwidth_dimension
     in fmap (snd) $ withNewPinnedTensor (d,bl,br) $ randomizer br bl d
 -- @+node:gcross.20091112145455.1674:unnormalized
-foreign import ccall unsafe "randomize_state_site_tensor" randomize_state_site_tensor :: 
+foreign import ccall unsafe "rand_unnorm_state_site_tensor" rand_unnorm_state_site_tensor :: 
     Int -> -- state right bandwidth dimension
     Int -> -- state left bandwidth dimension
     Int -> -- physical dimension
@@ -352,7 +352,7 @@ foreign import ccall unsafe "randomize_state_site_tensor" randomize_state_site_t
     IO ()
 
 instance RandomizableStateSiteTensor UnnormalizedStateSiteTensor where
-    generateRandomizedStateSiteTensor = applyRandomizerAndReturnStateSiteTensor randomize_state_site_tensor
+    generateRandomizedStateSiteTensor = applyRandomizerAndReturnStateSiteTensor rand_unnorm_state_site_tensor
 -- @-node:gcross.20091112145455.1674:unnormalized
 -- @+node:gcross.20091112145455.1675:normalized
 foreign import ccall unsafe "rand_norm_state_site_tensor" rand_norm_state_site_tensor :: 
@@ -586,6 +586,34 @@ formProjectorMatrix projectors@(first_projector:_) =
                     p_projector
             ) >> go rest_projectors (p_projector `plusPtr` pointer_increment)
 -- @-node:gcross.20091116175016.1797:formProjectorMatrix
+-- @+node:gcross.20091120134444.1598:applyProjectorMatrix
+foreign import ccall unsafe "project" project :: 
+    Int -> -- vector size
+    Int -> -- number of projectors
+    Ptr (Complex Double) -> -- input: projector matrix
+    Ptr (Complex Double) -> -- input: state site tensor
+    Ptr (Complex Double) -> -- output: projected state site tensor
+    IO ()
+
+applyProjectorMatrix ::
+    ProjectorMatrix ->
+    UnnormalizedStateSiteTensor ->
+    UnnormalizedStateSiteTensor
+applyProjectorMatrix NullProjectorMatrix state_site_tensor = state_site_tensor
+applyProjectorMatrix projector_matrix state_site_tensor =
+    let br = rightBandwidthOfState state_site_tensor
+        bl = leftBandwidthOfState state_site_tensor
+        d = physicalDimensionOfState state_site_tensor
+    in snd . unsafePerformIO $
+            withPinnedProjectorMatrix projector_matrix $ \number_of_projectors p_projector_matrix ->
+            withPinnedTensor state_site_tensor $ \p_state_site_tensor ->
+            withNewPinnedTensor (d,bl,br) $
+                project
+                    (br*bl*d)
+                    number_of_projectors
+                    p_projector_matrix
+                    p_state_site_tensor
+-- @-node:gcross.20091120134444.1598:applyProjectorMatrix
 -- @+node:gcross.20091118141720.1810:Overlap tensor formation
 -- @+node:gcross.20091118141720.1812:makeOverlapSiteTensor
 foreign import ccall unsafe "form_overlap_site_tensor" form_overlap_site_tensor :: 
