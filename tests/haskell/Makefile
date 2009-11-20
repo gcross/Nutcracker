@@ -8,19 +8,7 @@ default: test
 include ../../paths.mk
 include ../../options.mk
 
-OBJS = \
-	../../obj/VMPS/Algorithms.o \
-	../../obj/VMPS/EnergyMinimizationChain.o \
-	../../obj/VMPS/Miscellaneous.o \
-	../../obj/VMPS/OperatorConstruction.o \
-	../../obj/VMPS/Pauli.o \
-	../../obj/VMPS/Tensors.o \
-	../../obj/VMPS/Tensors/Implementation.o \
-	../../obj/VMPS/Wrappers.o \
-	../../obj/core.o \
-	../../obj/core-wrapper.o \
-
-LIBS = -lgfortran -lblas -llapack -larpack
+LIBS = -lvmps -lgfortran -lblas -llapack -larpack
 PACKAGES = \
 	-package HUnit \
 	-package test-framework \
@@ -28,8 +16,8 @@ PACKAGES = \
 	-package test-framework-hunit \
 	-package test-framework-quickcheck2 \
 
-test: test.hs ${OBJS} Makefile
-	ghc  -i../../obj test.hs ${OBJS} ${LIBS} ${PACKAGES} -o test
+test: test.hs ../../lib/libvmps.a Makefile
+	ghc  -i../../haskint -L../../lib test.hs ${LIBS} ${PACKAGES} -o test
 
 clean:
 	rm -f vmps.so

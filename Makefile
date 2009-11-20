@@ -3,7 +3,7 @@
 #@@language Makefile
 #@@tabwidth 4
 
-default: objects
+default: lib/libvmps.a
 
 include paths.mk
 include options.mk
@@ -11,7 +11,7 @@ include options.mk
 obj/%.o: src/%.c Makefile
 	${CC} ${CFLAGS} -c $< -o $@
 obj/%.o: src/%.hs Makefile
-	${HC} -iobj ${HFLAGS} -c $< -o $@ -ohi obj/$*.hi
+	${HC} -ihaskint ${HFLAGS} -c $< -o $@ -ohi haskint/$*.hi
 obj/%.o: src/%.f95 Makefile                 
 	${FC} ${FFLAGS} -c $< -o $@
 obj/%.o: src/%.f90 Makefile                 
@@ -33,7 +33,8 @@ OBJS = \
 
 LIBS = -lblas -llapack -larpack -lgfortran
 
-objects: ${OBJS}
+lib/libvmps.a: ${OBJS}
+	ar r lib/libvmps.a ${OBJS}
 
 clean:
 	rm -f mods/* obj/* obj/VMPS/* lib/* src/*.mod
