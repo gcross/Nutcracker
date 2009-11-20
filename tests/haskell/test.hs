@@ -876,7 +876,7 @@ main = defaultMain
                                                perturbation_strength
                                                correct_ground_state_energy =
                     generateRandomizedChain 2 bandwidth_dimension
-                        (makeTransverseIsingModelOperatorSiteTensors number_of_sites perturbation_strength)
+                        (makeTransverseIsingModelOperatorSiteTensors perturbation_strength number_of_sites)
                     >>=
                     return . chainEnergy . performRepeatedSweepsUntilConvergence_
                     >>=
@@ -914,7 +914,7 @@ main = defaultMain
                                                perturbation_strength
                                                correct_ground_state_energy =
                     generateRandomizedChain 2 bandwidth_dimension
-                        (makeTransverseIsingModelOperatorSiteTensors number_of_sites perturbation_strength)
+                        (makeTransverseIsingModelOperatorSiteTensors perturbation_strength number_of_sites)
                     >>=
                     increaseBandwidthAndSweepUntilConvergence_ 2
                     >>=
@@ -974,7 +974,7 @@ main = defaultMain
                     solveForMultipleLevels_
                         (length correct_energy_levels)
                         2
-                        (makeTransverseIsingModelOperatorSiteTensors number_of_sites coupling_strength)
+                        (makeTransverseIsingModelOperatorSiteTensors coupling_strength number_of_sites)
                         []
                     >>=
                     assertAlmostEqual "Is the optimal energy correct?" correct_energy_levels
