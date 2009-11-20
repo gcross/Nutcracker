@@ -31,6 +31,30 @@ type SiteCallback m = Maybe OptimizerFailureReason -> SweepDirection -> EnergyMi
 type SweepCallback m = Bool -> EnergyMinimizationChain -> m ()
 type BandwidthIncreaseCallback m = EnergyMinimizationChain -> m EnergyMinimizationChain
 -- @-node:gcross.20091119150241.1881:Callback Types
+-- @+node:gcross.20091120112621.1591:Predefined Callbacks
+-- @+node:gcross.20091120112621.1592:site callbacks
+-- @+node:gcross.20091119150241.1855:ignoreSiteCallback
+ignoreSiteCallback _ _ _ = return ()
+-- @-node:gcross.20091119150241.1855:ignoreSiteCallback
+-- @-node:gcross.20091120112621.1592:site callbacks
+-- @+node:gcross.20091120112621.1593:sweep callbacks
+-- @-node:gcross.20091120112621.1593:sweep callbacks
+-- @+node:gcross.20091120112621.1596:bandwidth increase callbacks
+-- @+node:gcross.20091120112621.1597:simpleBandwidthIncrease
+newChainCreator post_initialization operator_site_tensors physical_dimension initial_bandwidth =
+    return . makeConfiguration operator_site_tensors
+        >=>
+    liftIO . generateRandomizedChainWithOverlaps physical_dimension initial_bandwidth
+        >=>
+    \new_chain -> (post_initialization >> return new_chain)
+-- @-node:gcross.20091120112621.1597:simpleBandwidthIncrease
+-- @-node:gcross.20091120112621.1596:bandwidth increase callbacks
+-- @+node:gcross.20091120112621.1594:multi-level callbacks
+-- @+node:gcross.20091120112621.1595:alwaysDeclareVictory
+alwaysDeclareVictory = return . Just . (chainEnergy &&& getCanonicalStateRepresentation)
+-- @-node:gcross.20091120112621.1595:alwaysDeclareVictory
+-- @-node:gcross.20091120112621.1594:multi-level callbacks
+-- @-node:gcross.20091120112621.1591:Predefined Callbacks
 -- @+node:gcross.20091118213523.1814:Functions
 -- @+node:gcross.20091118213523.1822:Single sweep optimization
 -- @+node:gcross.20091118213523.1815:SweepDirection
@@ -85,9 +109,6 @@ performOptimizationSweepWithCallback callback tolerance maximum_number_of_iterat
         >>=
         goLeft (n-1) . activateLeftNeighbor
 -- @-node:gcross.20091118213523.1810:performOptimizationSweepWithCallback
--- @+node:gcross.20091119150241.1855:ignoreSiteCallback
-ignoreSiteCallback _ _ _ = return ()
--- @-node:gcross.20091119150241.1855:ignoreSiteCallback
 -- @-node:gcross.20091118213523.1822:Single sweep optimization
 -- @+node:gcross.20091118213523.1823:Multiple sweep optimization
 -- @+node:gcross.20091118213523.1826:performRepeatedSweepsUntilConvergence
@@ -361,13 +382,8 @@ solveForMultipleLevels
     projectors
     = flip evalStateT undefined $
         solveForMultipleLevelsWithCallbacks
-            (return . Just . (chainEnergy &&& getCanonicalStateRepresentation))
-            (return . makeConfiguration operator_site_tensors
-                >=>
-             liftIO . generateRandomizedChainWithOverlaps physical_dimension 2
-                >=>
-             \new_chain -> (put 2 >> return new_chain)
-            )
+            alwaysDeclareVictory
+            (newChainCreator (put 2) operator_site_tensors 2 2)
             (singleIncrementBandwidthIncreaser physical_dimension)
             ignoreSweepCallback
             ignoreSiteCallback
