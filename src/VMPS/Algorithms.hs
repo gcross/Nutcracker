@@ -138,7 +138,7 @@ performRepeatedSweepsUntilConvergenceWithCallbacks
         let new_energy = chainEnergy new_chain
             old_energy = chainEnergy old_chain
         in if old_energy - new_energy <= energy_change_convergence_criterion
-            then callback_after_each_sweep True new_chain >> return new_chain
+            then callback_after_each_sweep True new_chain >> return old_chain
             else
                 callback_after_each_sweep False new_chain
                 >>
@@ -150,9 +150,9 @@ performRepeatedSweepsUntilConvergenceWithCallbacks
                     maximum_number_of_iterations
                     new_chain
 -- @-node:gcross.20091118213523.1825:performRepeatedSweepsUntilConvergenceWithCallbacks
--- @+node:gcross.20091119150241.1857:ignoreSiteCallback
+-- @+node:gcross.20091119150241.1857:ignoreSweepCallback
 ignoreSweepCallback _ _ = return ()
--- @-node:gcross.20091119150241.1857:ignoreSiteCallback
+-- @-node:gcross.20091119150241.1857:ignoreSweepCallback
 -- @-node:gcross.20091118213523.1823:Multiple sweep optimization
 -- @+node:gcross.20091118213523.1844:Bandwidth increasing
 -- @+node:gcross.20091118213523.1846:increaseBandwidthAndSweepUntilConvergence
@@ -287,52 +287,10 @@ runMultipleTrialsWithCallbacks
 -- @-node:gcross.20091119150241.1847:runMultipleTrialsWithCallbacks
 -- @-node:gcross.20091119150241.1846:Multiple trials
 -- @+node:gcross.20091119150241.1851:Multiple levels
--- @+node:gcross.20091119150241.1853:solveForMultipleLevels
-solveForMultipleLevels ::
-    Double ->
-    Double ->
-    Double ->
-    Int ->
-    Int ->
-    Int ->
-    [OperatorSiteTensor] ->
-    [[OverlapTensorTrio]] ->
-    IO [(Double,CanonicalStateRepresentation,[OverlapTensorTrio])]
-solveForMultipleLevels
-    bandwidth_increase_energy_change_convergence_criterion
-    multisweep_energy_change_convergence_criterion
-    tolerance
-    maximum_number_of_iterations
-    number_of_levels
-    physical_dimension
-    operator_site_tensors
-    projectors
-    = flip evalStateT undefined $
-        solveForMultipleLevelsWithCallbacks
-            (const . return $ True)
-            (\projectors ->
-                let configuration =
-                        case projectors of
-                            [] -> zip operator_site_tensors (repeat [])
-                            _ -> zip operator_site_tensors . transpose $ projectors
-                in put 2 >> (liftIO $ generateRandomizedChainWithOverlaps physical_dimension 2 configuration)
-            )
-            (singleIncrementBandwidthIncreaser physical_dimension)
-            ignoreSweepCallback
-            ignoreSiteCallback
-            bandwidth_increase_energy_change_convergence_criterion
-            multisweep_energy_change_convergence_criterion
-            tolerance
-            maximum_number_of_iterations
-            number_of_levels
-            projectors
-
-solveForMultipleLevels_ = solveForMultipleLevels 1e-7 1e-7 0 1000
--- @-node:gcross.20091119150241.1853:solveForMultipleLevels
 -- @+node:gcross.20091119150241.1852:solveForMultipleLevelsWithCallbacks
 solveForMultipleLevelsWithCallbacks ::
     Monad m =>
-    (EnergyMinimizationChain -> m Bool) ->
+    (EnergyMinimizationChain -> m (Maybe (Double,CanonicalStateRepresentation))) ->
     ([[OverlapTensorTrio]] -> m EnergyMinimizationChain) ->
     BandwidthIncreaseCallback m ->
     SweepCallback m ->
@@ -379,11 +337,49 @@ solveForMultipleLevelsWithCallbacks
         my_callback chain =
             callback_to_decide_whether_to_declare_victory_with_trial chain
             >>=
-            \declare_victory ->
-                if declare_victory 
-                    then return . Right . (chainEnergy &&& getCanonicalStateRepresentation) $ chain
-                    else new_chain_factory >>= return . Left
+            maybe (new_chain_factory >>= return . Left) (return . Right)
 -- @-node:gcross.20091119150241.1852:solveForMultipleLevelsWithCallbacks
+-- @+node:gcross.20091119150241.1853:solveForMultipleLevels
+solveForMultipleLevels ::
+    Double ->
+    Double ->
+    Double ->
+    Int ->
+    Int ->
+    Int ->
+    [OperatorSiteTensor] ->
+    [[OverlapTensorTrio]] ->
+    IO [(Double,CanonicalStateRepresentation,[OverlapTensorTrio])]
+solveForMultipleLevels
+    bandwidth_increase_energy_change_convergence_criterion
+    multisweep_energy_change_convergence_criterion
+    tolerance
+    maximum_number_of_iterations
+    number_of_levels
+    physical_dimension
+    operator_site_tensors
+    projectors
+    = flip evalStateT undefined $
+        solveForMultipleLevelsWithCallbacks
+            (return . Just . (chainEnergy &&& getCanonicalStateRepresentation))
+            (return . makeConfiguration operator_site_tensors
+                >=>
+             liftIO . generateRandomizedChainWithOverlaps physical_dimension 2
+                >=>
+             \new_chain -> (put 2 >> return new_chain)
+            )
+            (singleIncrementBandwidthIncreaser physical_dimension)
+            ignoreSweepCallback
+            ignoreSiteCallback
+            bandwidth_increase_energy_change_convergence_criterion
+            multisweep_energy_change_convergence_criterion
+            tolerance
+            maximum_number_of_iterations
+            number_of_levels
+            projectors
+
+solveForMultipleLevels_ = solveForMultipleLevels 1e-7 1e-7 0 1000
+-- @-node:gcross.20091119150241.1853:solveForMultipleLevels
 -- @-node:gcross.20091119150241.1851:Multiple levels
 -- @-node:gcross.20091118213523.1814:Functions
 -- @-others

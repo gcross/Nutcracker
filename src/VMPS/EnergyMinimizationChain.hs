@@ -277,6 +277,11 @@ computeBandwidthDimensionsAtAllSites number_of_sites physical_dimension bandwidt
     uncurry zip . (id &&& tail) $
         computeBandwidthDimensionSequence number_of_sites physical_dimension bandwidth_dimension
 -- @-node:gcross.20091113142219.2519:computeBandwidthDimensionsAtAllSites
+-- @+node:gcross.20091120112621.1590:makeConfiguration
+makeConfiguration :: [OperatorSiteTensor] -> [[OverlapTensorTrio]] -> [(OperatorSiteTensor,[OverlapTensorTrio])]
+makeConfiguration operator_site_tensors [] = zip operator_site_tensors (repeat [])
+makeConfiguration operator_site_tensors projectors = zip operator_site_tensors . transpose $ projectors
+-- @-node:gcross.20091120112621.1590:makeConfiguration
 -- @-node:gcross.20091116222034.2374:Utility Functions
 -- @+node:gcross.20091113142219.1678:Chain Functions
 -- @+node:gcross.20091113142219.1679:computeEnergy
