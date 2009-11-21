@@ -3,7 +3,7 @@
 #@@language Makefile
 #@@tabwidth 4
 
-default: test
+default: test benchmark
 
 include ../../paths.mk
 include ../../options.mk
@@ -15,11 +15,12 @@ PACKAGES = \
 	-package QuickCheck \
 	-package test-framework-hunit \
 	-package test-framework-quickcheck2 \
+	-package criterion \
 
-test: test.hs ../../lib/libvmps.a Makefile
-	ghc  -i../../haskint -L../../lib test.hs ${LIBS} ${PACKAGES} -o test
+%: %.hs ../../lib/libvmps.a Makefile
+	ghc  -i../../haskint -L../../lib $< ${HFLAGS} ${LIBS} ${PACKAGES} -o $@
 
 clean:
-	rm -f vmps.so
+	rm -f test
 #@-node:gcross.20091111171052.1607:@thin Makefile
 #@-leo

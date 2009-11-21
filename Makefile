@@ -37,6 +37,6 @@ lib/libvmps.a: ${OBJS}
 	ar r lib/libvmps.a ${OBJS}
 
 clean:
-	rm -f mods/* obj/* obj/VMPS/* lib/* src/*.mod haskint/VMPS/* haskint/VMPS/Tensors/*
+	rm -f mods/*.mod obj/*.o obj/VMPS/*.o obj/VMPS/Tensors/*.o haskint/*.o haskint/VMPS/*.hi haskint/VMPS/Tensors/*.hi lib/*.a src/*.mod
 #@-node:gcross.20091106154604.9811:@thin Makefile
 #@-leo
