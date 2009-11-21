@@ -30,6 +30,8 @@ import VMPS.Wrappers
 type SiteCallback m = Maybe OptimizerFailureReason -> SweepDirection -> EnergyMinimizationChain -> m ()
 type SweepCallback m = Bool -> EnergyMinimizationChain -> m ()
 type BandwidthIncreaseCallback m = EnergyMinimizationChain -> m EnergyMinimizationChain
+type MultilevelVictoryDeterminationCallback m = EnergyMinimizationChain -> m (Maybe (Double,CanonicalStateRepresentation))
+-- @nonl
 -- @-node:gcross.20091119150241.1881:Callback Types
 -- @+node:gcross.20091120112621.1591:Predefined Callbacks
 -- @+node:gcross.20091120112621.1592:site callbacks
@@ -40,17 +42,18 @@ ignoreSiteCallback _ _ _ = return ()
 -- @+node:gcross.20091120112621.1593:sweep callbacks
 -- @-node:gcross.20091120112621.1593:sweep callbacks
 -- @+node:gcross.20091120112621.1596:bandwidth increase callbacks
--- @+node:gcross.20091120112621.1597:simpleBandwidthIncrease
+-- @+node:gcross.20091120112621.1597:newChainCreator
 newChainCreator post_initialization operator_site_tensors physical_dimension initial_bandwidth =
     return . makeConfiguration operator_site_tensors
         >=>
     liftIO . generateRandomizedChainWithOverlaps physical_dimension initial_bandwidth
         >=>
     \new_chain -> (post_initialization >> return new_chain)
--- @-node:gcross.20091120112621.1597:simpleBandwidthIncrease
+-- @-node:gcross.20091120112621.1597:newChainCreator
 -- @-node:gcross.20091120112621.1596:bandwidth increase callbacks
 -- @+node:gcross.20091120112621.1594:multi-level callbacks
 -- @+node:gcross.20091120112621.1595:alwaysDeclareVictory
+alwaysDeclareVictory :: Monad m => MultilevelVictoryDeterminationCallback m
 alwaysDeclareVictory = return . Just . (chainEnergy &&& getCanonicalStateRepresentation)
 -- @-node:gcross.20091120112621.1595:alwaysDeclareVictory
 -- @-node:gcross.20091120112621.1594:multi-level callbacks
@@ -311,7 +314,7 @@ runMultipleTrialsWithCallbacks
 -- @+node:gcross.20091119150241.1852:solveForMultipleLevelsWithCallbacks
 solveForMultipleLevelsWithCallbacks ::
     Monad m =>
-    (EnergyMinimizationChain -> m (Maybe (Double,CanonicalStateRepresentation))) ->
+    MultilevelVictoryDeterminationCallback m ->
     ([[OverlapTensorTrio]] -> m EnergyMinimizationChain) ->
     BandwidthIncreaseCallback m ->
     SweepCallback m ->
