@@ -393,8 +393,8 @@ data OperatorSiteTensor = OperatorSiteTensor
     ,   operatorRightBandwidth :: !Int
     ,   operatorPhysicalDimension :: !Int
     ,   operatorNumberOfMatrices :: !Int
-    ,   operatorIndices :: StorableArray (Int,Int) Int32
-    ,   operatorMatrices :: StorableArray (Int,Int,Int) (Complex Double)
+    ,   operatorIndices :: !(StorableArray (Int,Int) Int32)
+    ,   operatorMatrices :: !(StorableArray (Int,Int,Int) (Complex Double))
     }
 
 -- @+others

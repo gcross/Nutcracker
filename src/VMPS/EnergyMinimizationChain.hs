@@ -65,19 +65,19 @@ overlapRightAbsorptionNormalizedTensor (RightSiteOverlapTensorTrio _ x) = x
 -- @+others
 -- @+node:gcross.20091117140132.1791:Definitions
 data LeftNeighbor = LeftNeighbor
-    {   leftNeighborBoundary :: LeftBoundaryTensor
-    ,   leftNeighborState :: LeftAbsorptionNormalizedStateSiteTensor
-    ,   leftNeighborOperator :: OperatorSiteTensor
-    ,   leftNeighborOverlapBoundaries :: [LeftOverlapBoundaryTensor]
-    ,   leftNeighborOverlapTrios :: [OverlapTensorTrio]
+    {   leftNeighborBoundary :: !LeftBoundaryTensor
+    ,   leftNeighborState :: !LeftAbsorptionNormalizedStateSiteTensor
+    ,   leftNeighborOperator :: !OperatorSiteTensor
+    ,   leftNeighborOverlapBoundaries :: ![LeftOverlapBoundaryTensor]
+    ,   leftNeighborOverlapTrios :: ![OverlapTensorTrio]
     }
 
 data RightNeighbor = RightNeighbor
-    {   rightNeighborBoundary :: RightBoundaryTensor
-    ,   rightNeighborState :: RightAbsorptionNormalizedStateSiteTensor
-    ,   rightNeighborOperator :: OperatorSiteTensor
-    ,   rightNeighborOverlapBoundaries :: [RightOverlapBoundaryTensor]
-    ,   rightNeighborOverlapTrios :: [OverlapTensorTrio]
+    {   rightNeighborBoundary :: !RightBoundaryTensor
+    ,   rightNeighborState :: !RightAbsorptionNormalizedStateSiteTensor
+    ,   rightNeighborOperator :: !OperatorSiteTensor
+    ,   rightNeighborOverlapBoundaries :: ![RightOverlapBoundaryTensor]
+    ,   rightNeighborOverlapTrios :: ![OverlapTensorTrio]
     }
 -- @-node:gcross.20091117140132.1791:Definitions
 -- @+node:gcross.20091117140132.1792:absorbIntoNew___Neighbor
@@ -234,15 +234,15 @@ prepareAndAbsorbIntoNewLeftNeighbor
 -- @-node:gcross.20091115105949.1734:Neighbor
 -- @+node:gcross.20091113142219.1665:EnergyMinimizationChain
 data EnergyMinimizationChain = EnergyMinimizationChain
-    {   siteLeftBoundaryTensor :: LeftBoundaryTensor
-    ,   siteLeftOverlapBoundaryTensors :: [LeftOverlapBoundaryTensor]
-    ,   siteStateTensor :: UnnormalizedStateSiteTensor
-    ,   siteHamiltonianTensor :: OperatorSiteTensor
-    ,   siteOverlapTrios :: [OverlapTensorTrio]
-    ,   siteRightBoundaryTensor :: RightBoundaryTensor
-    ,   siteRightOverlapBoundaryTensors :: [RightOverlapBoundaryTensor]
-    ,   siteLeftNeighbors :: [LeftNeighbor]
-    ,   siteRightNeighbors :: [RightNeighbor]
+    {   siteLeftBoundaryTensor :: !LeftBoundaryTensor
+    ,   siteLeftOverlapBoundaryTensors :: ![LeftOverlapBoundaryTensor]
+    ,   siteStateTensor :: !UnnormalizedStateSiteTensor
+    ,   siteHamiltonianTensor :: !OperatorSiteTensor
+    ,   siteOverlapTrios :: ![OverlapTensorTrio]
+    ,   siteRightBoundaryTensor :: !RightBoundaryTensor
+    ,   siteRightOverlapBoundaryTensors :: ![RightOverlapBoundaryTensor]
+    ,   siteLeftNeighbors :: ![LeftNeighbor]
+    ,   siteRightNeighbors :: ![RightNeighbor]
     ,   siteNumber :: !Int
     ,   chainNumberOfSites :: !Int
     ,   chainEnergy :: Double
@@ -251,8 +251,8 @@ data EnergyMinimizationChain = EnergyMinimizationChain
 -- @+node:gcross.20091119150241.1848:CanonicalStateRepresentation
 data CanonicalStateRepresentation =
     CanonicalStateRepresentation
-        {   canonicalStateFirstSiteTensor :: UnnormalizedStateSiteTensor
-        ,   canonicalStateRestSiteTensors :: [RightAbsorptionNormalizedStateSiteTensor]
+        {   canonicalStateFirstSiteTensor :: !UnnormalizedStateSiteTensor
+        ,   canonicalStateRestSiteTensors :: ![RightAbsorptionNormalizedStateSiteTensor]
         }
 -- @-node:gcross.20091119150241.1848:CanonicalStateRepresentation
 -- @-node:gcross.20091113142219.1664:Types
@@ -537,21 +537,18 @@ increaseChainBandwidth
     zip (
         reverse
         .
-        (RightNeighbor
-            undefined
-            (
-                RightAbsorptionNormalizedStateSiteTensor
-                .
-                unwrapUnnormalizedStateSiteTensor
-                .
-                siteStateTensor
-                $
-                chain
-            )
-            undefined
-            undefined
-            undefined
-        :)
+        ((head neighbors) { 
+            rightNeighborState = 
+                (
+                    RightAbsorptionNormalizedStateSiteTensor
+                    .
+                    unwrapUnnormalizedStateSiteTensor
+                    .
+                    siteStateTensor
+                    $
+                    chain
+                )
+        }:)
         $
         neighbors
     )
