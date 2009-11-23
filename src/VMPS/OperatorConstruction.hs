@@ -36,12 +36,22 @@ endingWith ending_index list = [((index1,1),matrix) | ((index1,index2),matrix) <
 -- @+node:gcross.20091120112621.1587:makeSimpleModelOperatorSiteTensors
 makeSimpleModelOperatorSiteTensors :: Int -> PauliList -> Int -> [OperatorSiteTensor]
 makeSimpleModelOperatorSiteTensors bandwidth middle_model number_of_sites =
-    [makeOperatorSiteTensorFromPaulis 1 bandwidth . startingFrom $ middle_model]
+    makeModelWithSpecialEndpointsOperatorSiteTensors
+        bandwidth
+        (startingFrom middle_model)
+        middle_model
+        (endingWith bandwidth middle_model)
+        number_of_sites
+-- @-node:gcross.20091120112621.1587:makeSimpleModelOperatorSiteTensors
+-- @+node:gcross.20091123113033.1653:makeModelWithSpecialEndpointsOperatorSiteTensors
+makeModelWithSpecialEndpointsOperatorSiteTensors :: Int -> PauliList -> PauliList -> PauliList -> Int -> [OperatorSiteTensor]
+makeModelWithSpecialEndpointsOperatorSiteTensors bandwidth left_model middle_model right_model number_of_sites =
+    [makeOperatorSiteTensorFromPaulis 1 bandwidth $ left_model]
     ++
     replicate (number_of_sites-2) (makeOperatorSiteTensorFromPaulis bandwidth bandwidth $ middle_model)
     ++
-    [makeOperatorSiteTensorFromPaulis bandwidth 1 . endingWith bandwidth $ middle_model]
--- @-node:gcross.20091120112621.1587:makeSimpleModelOperatorSiteTensors
+    [makeOperatorSiteTensorFromPaulis bandwidth 1 $ right_model]
+-- @-node:gcross.20091123113033.1653:makeModelWithSpecialEndpointsOperatorSiteTensors
 -- @+node:gcross.20091118213523.1851:makeMagneticFieldOperatorSiteTensors
 makeMagneticFieldOperatorSiteTensors =
     makeSimpleModelOperatorSiteTensors 2
