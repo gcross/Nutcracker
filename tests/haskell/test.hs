@@ -41,6 +41,7 @@ import VMPS.EnergyMinimizationChain
 import VMPS.Miscellaneous
 import VMPS.OperatorConstruction
 import VMPS.Pauli
+import VMPS.States
 import VMPS.Tensors.Implementation
 import VMPS.Wrappers
 -- @-node:gcross.20091111171052.1610:<< Import needed modules >>
@@ -828,6 +829,24 @@ main = defaultMain
         -- @-others
         ]
     -- @-node:gcross.20091113142219.1701:VMPS.EnergyMinimizationChain
+    -- @+node:gcross.20091123113033.1636:VMPS.States
+    ,testGroup "VMPS.States"
+        -- @    @+others
+        -- @+node:gcross.20091123113033.1637:expectationOf
+        [testCase "expectationOf" $ do
+            let number_of_sites = 20
+                bandwidth_dimension = 8
+                operator_site_tensors = makeMagneticFieldOperatorSiteTensors number_of_sites
+            chain <- generateRandomizedChain 2 bandwidth_dimension operator_site_tensors
+            let chain_expectation = (computeEnergy chain :+ 0)
+                state_expectation = expectationOf operator_site_tensors . getCanonicalStateRepresentation $ chain
+            assertAlmostEqual "Was the expectation consistent with the chain energy?"
+                chain_expectation
+                state_expectation
+        -- @-node:gcross.20091123113033.1637:expectationOf
+        -- @-others
+        ]
+    -- @-node:gcross.20091123113033.1636:VMPS.States
     -- @+node:gcross.20091118213523.1816:VMPS.Algorithms
     ,testGroup "VMPS.Algorithm"
         -- @    @+others
