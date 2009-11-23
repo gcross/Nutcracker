@@ -35,6 +35,7 @@
 <v t="gcross.20091111171052.1605"><vh>@path haskell</vh>
 <v t="gcross.20091111171052.1607"><vh>@thin Makefile</vh></v>
 <v t="gcross.20091111171052.1608"><vh>@thin test.hs</vh></v>
+<v t="gcross.20091120134444.1970"><vh>@thin benchmark.hs</vh></v>
 </v>
 </v>
 </vnodes>
