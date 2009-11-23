@@ -9,8 +9,8 @@
 <preferences/>
 <find_panel_settings/>
 <vnodes>
-<v t="gcross.20091113142219.1658" str_leo_pos="2"><vh>@chapters</vh></v>
-<v t="gcross.20091106154604.9811"><vh>@thin Makefile</vh></v>
+<v t="gcross.20091113142219.1658" str_leo_pos="0"><vh>@chapters</vh></v>
+<v t="gcross.20091123113033.1620"><vh>@thin Setup.hs</vh></v>
 <v t="gcross.20091106154604.9812"><vh>@path src</vh>
 <v t="gcross.20091110205054.1939"><vh>@thin core.f95</vh></v>
 <v t="gcross.20091112145455.1619"><vh>@thin core-wrapper.c</vh></v>
@@ -45,7 +45,7 @@
 <t tx="gcross.20091111171052.1604"></t>
 <t tx="gcross.20091111171052.1605"></t>
 <t tx="gcross.20091113125544.1651"></t>
-<t tx="gcross.20091113142219.1658" str_leo_pos="2"></t>
+<t tx="gcross.20091113142219.1658" str_leo_pos="0"></t>
 <t tx="gcross.20091116222034.1778"></t>
 </tnodes>
 </leo_file>

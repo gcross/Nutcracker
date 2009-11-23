@@ -18,7 +18,7 @@ PACKAGES = \
 	-package criterion \
 
 %: %.hs ../../lib/libvmps.a Makefile
-	ghc  -i../../haskint -L../../lib $< ${HFLAGS} ${LIBS} ${PACKAGES} -o $@
+	ghc  -i../../haskell-interfaces -L../../lib $< ${HFLAGS} ${LIBS} ${PACKAGES} -o $@
 
 clean:
 	rm -f test
