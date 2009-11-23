@@ -20,8 +20,8 @@ import Data.Maybe
 
 import VMPS.EnergyMinimizationChain
 import VMPS.Tensors
+import VMPS.States
 import VMPS.Wrappers
--- @nonl
 -- @-node:gcross.20091118213523.1812:<< Import needed modules >>
 -- @nl
 

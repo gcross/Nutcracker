@@ -20,6 +20,7 @@ import Data.Function
 import Data.List
 
 import VMPS.Miscellaneous
+import VMPS.States
 import VMPS.Tensors
 import VMPS.Tensors.Implementation
     (RightAbsorptionNormalizedStateSiteTensor(..)
@@ -248,13 +249,6 @@ data EnergyMinimizationChain = EnergyMinimizationChain
     ,   chainEnergy :: Double
     }
 -- @-node:gcross.20091113142219.1665:EnergyMinimizationChain
--- @+node:gcross.20091119150241.1848:CanonicalStateRepresentation
-data CanonicalStateRepresentation =
-    CanonicalStateRepresentation
-        {   canonicalStateFirstSiteTensor :: !UnnormalizedStateSiteTensor
-        ,   canonicalStateRestSiteTensors :: ![RightAbsorptionNormalizedStateSiteTensor]
-        }
--- @-node:gcross.20091119150241.1848:CanonicalStateRepresentation
 -- @-node:gcross.20091113142219.1664:Types
 -- @+node:gcross.20091116222034.2374:Utility Functions
 -- @+node:gcross.20091113142219.1699:computeBandwidthDimensionSequence
