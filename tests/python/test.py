@@ -897,6 +897,7 @@ class optimize(unittest.TestCase):
     #@-node:gcross.20091119150241.1877:test_orthogonalization_2_complex
     #@-others
 #@-node:gcross.20091109182634.1543:optimize
+#@+node:gcross.20091123113033.1634:Randomization
 #@+node:gcross.20091110205054.1924:rand_norm_state_site_tensor
 class rand_norm_state_site_tensor(unittest.TestCase):
     #@    @+others
@@ -905,11 +906,22 @@ class rand_norm_state_site_tensor(unittest.TestCase):
     @with_checker
     def testCorrectness(self,bl=irange(2,4),br=irange(2,4)):
         d = 2
-        info, normalized_tensor = vmps.rand_norm_state_site_tensor(br,bl,d)
-        self.assertEqual(0,info)
+        normalized_tensor = vmps.rand_norm_state_site_tensor(br,bl,d)
         should_be_identity = tensordot(normalized_tensor.conj(),normalized_tensor,((0,2,),)*2)
         self.assertTrue(allclose(identity(bl),should_be_identity))
 #@-node:gcross.20091110205054.1924:rand_norm_state_site_tensor
+#@+node:gcross.20091123113033.1633:rand_unnorm_state_site_tensor
+class rand_unnorm_state_site_tensor(unittest.TestCase):
+    #@    @+others
+    #@-others
+
+    @with_checker
+    def testCorrectness(self,bl=irange(2,4),br=irange(2,4)):
+        d = 2
+        unnormalized_tensor = vmps.rand_unnorm_state_site_tensor(br,bl,d)
+        self.assertAlmostEqual(1,norm(unnormalized_tensor.ravel()))
+#@-node:gcross.20091123113033.1633:rand_unnorm_state_site_tensor
+#@-node:gcross.20091123113033.1634:Randomization
 #@+node:gcross.20091116175016.1815:orthogonalize_projector_matrix
 class orthogonalize_projector_matrix(unittest.TestCase):
     @with_checker
@@ -1124,6 +1136,7 @@ tests = [
     compute_expectation,
     optimize,
     rand_norm_state_site_tensor,
+    rand_unnorm_state_site_tensor,
     norm_denorm_going_left,
     norm_denorm_going_right,
     create_bandwidth_increase_matrix,
