@@ -24,7 +24,8 @@ import VMPS.Wrappers
 -- @+node:gcross.20091123113033.1631:CanonicalStateRepresentation
 data CanonicalStateRepresentation =
     CanonicalStateRepresentation
-        {   canonicalStateFirstSiteTensor :: !UnnormalizedStateSiteTensor
+        {   canonicalStateNumberOfSites :: !Int
+        ,   canonicalStateFirstSiteTensor :: !UnnormalizedStateSiteTensor
         ,   canonicalStateRestSiteTensors :: ![RightAbsorptionNormalizedStateSiteTensor]
         }
 -- @-node:gcross.20091123113033.1631:CanonicalStateRepresentation

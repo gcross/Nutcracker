@@ -299,10 +299,11 @@ computeProjectorMatrix chain =
 -- @-node:gcross.20091117140132.1797:computeProjectorMatrix
 -- @+node:gcross.20091117140132.1798:computeOverlapTriosFromStateTensors
 computeOverlapTriosFromCanonicalStateRepresentation :: CanonicalStateRepresentation -> [OverlapTensorTrio]
-computeOverlapTriosFromCanonicalStateRepresentation (CanonicalStateRepresentation _ []) =
+computeOverlapTriosFromCanonicalStateRepresentation (CanonicalStateRepresentation _ _ []) =
     error "There needs to be more than one site to use this function!"
 computeOverlapTriosFromCanonicalStateRepresentation
     (CanonicalStateRepresentation
+        _
         unnormalized_state_first_site_tensor
         (right_normalized_state_second_site_tensor:right_normalized_state_rest_site_tensors)
     ) =
@@ -659,6 +660,7 @@ getCanonicalStateRepresentation chain
         = error "The chain must be at the first site in order to extract the canonical state representation."
     | otherwise
         = CanonicalStateRepresentation
+            (chainNumberOfSites chain)
             (siteStateTensor chain)
             (map rightNeighborState . siteRightNeighbors $ chain)
 -- @-node:gcross.20091119150241.1849:getCanonicalStateRepresentation
