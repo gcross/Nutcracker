@@ -16,6 +16,7 @@ PACKAGES = \
 	-package test-framework-hunit \
 	-package test-framework-quickcheck2 \
 	-package criterion \
+	-package InfixApplicative \
 
 %: %.hs ../../lib/libvmps.a Makefile
 	ghc  -i../../haskell-interfaces -L../../lib $< ${HFLAGS} ${LIBS} ${PACKAGES} -o $@

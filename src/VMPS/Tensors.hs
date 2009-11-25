@@ -35,6 +35,8 @@ module VMPS.Tensors
     ,trivial_right_overlap_boundary
     ,OperatorSiteTensor
     ,makeOperatorSiteTensorFromPaulis
+    ,withPinnedTensorAsByteString
+    ,tensorFromByteString
     ) where
 
 import VMPS.Tensors.Implementation

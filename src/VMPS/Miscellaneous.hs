@@ -106,7 +106,7 @@ complexPtrToRealAndImagPtrs p_complex =
     in (p_real_part, p_imag_part)
 
 instance Storable (Complex Double) where
-    sizeOf _ = 2 * sizeOf (undefined :: Double)
+    sizeOf _ = doubleComplexSizeInBytes
     alignment _ = 2 * alignment (undefined :: Double)
     peek = uncurry (liftM2 (:+)) . (peek *** peek) . complexPtrToRealAndImagPtrs
     poke p_complex (real_part :+ imag_part) =
@@ -116,6 +116,11 @@ instance Storable (Complex Double) where
 nextComplexPtr = (`plusPtr` sizeOf (undefined :: Complex Double))
 -- @-node:gcross.20091116222034.1783:Storable (Complex a)
 -- @-node:gcross.20091116222034.1782:Instances
+-- @+node:gcross.20091124124443.1622:Values
+-- @+node:gcross.20091124124443.1623:doubleComplexSizeInBytes
+doubleComplexSizeInBytes = 2 * sizeOf (undefined :: Double)
+-- @-node:gcross.20091124124443.1623:doubleComplexSizeInBytes
+-- @-node:gcross.20091124124443.1622:Values
 -- @-others
 -- @-node:gcross.20091113142219.1688:@thin Miscellaneous.hs
 -- @-leo

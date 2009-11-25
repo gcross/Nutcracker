@@ -15,15 +15,19 @@ module VMPS.Tensors.Implementation where
 -- @<< Import needed modules >>
 -- @+node:gcross.20091111171052.1599:<< Import needed modules >>
 import Control.Arrow
+import Control.Applicative
+import Control.Applicative.Infix
 import Control.Exception
 import Control.Monad
 
 import Data.Array.Storable
 import Data.Array.Unboxed
+import Data.ByteString.Internal (ByteString(PS),fromForeignPtr,toForeignPtr,memcmp)
 import Data.Complex
 import Data.Function
 import Data.Int
 
+import Foreign.ForeignPtr
 import Foreign.Ptr
 import Foreign.Storable
 
@@ -41,6 +45,16 @@ import VMPS.Pauli
 -- @+node:gcross.20091111171052.1596:ComplexTensor
 newtype MyIx i => ComplexTensor i = ComplexTensor { unwrapComplexTensor :: StorableArray i (Complex Double) }
 
+instance MyIx i => Eq (ComplexTensor i) where
+    (ComplexTensor x) == (ComplexTensor y) = unsafePerformIO $ do
+        size1 <- fmap rangeSize (getBounds x)
+        size2 <- fmap rangeSize (getBounds y)
+        if size1 /= size2
+            then return False
+            else withStorableArray x $ \p_x ->
+                 withStorableArray y $ \p_y ->
+                    fmap (== 0) (memcmp (castPtr p_x) (castPtr p_y) (fromIntegral (size1*doubleComplexSizeInBytes)))
+
 withPinnedComplexTensor :: MyIx i => ComplexTensor i -> (Ptr (Complex Double) -> IO a) -> IO a
 withPinnedComplexTensor = withStorableArray . unwrapComplexTensor
 
@@ -51,6 +65,14 @@ withNewPinnedComplexTensor dimensions thunk = do
 
 complexTensorFromList :: MyIx i => i -> [Complex Double] -> ComplexTensor i
 complexTensorFromList dimensions = ComplexTensor . myListArray dimensions
+
+complexTensorFromForeignPtr :: MyIx i => i -> ForeignPtr (Complex Double) -> ComplexTensor i
+complexTensorFromForeignPtr upperBounds =
+    ComplexTensor
+    .
+    unsafePerformIO
+    .
+    flip unsafeForeignPtrToStorableArray (lowerBounds, upperBounds)
 
 trivial_complex_tensor :: MyIx i => ComplexTensor i
 trivial_complex_tensor = complexTensorFromList lowerBounds [1]
@@ -71,6 +93,12 @@ withNewPinnedBoundaryTensor (cl,bl) =
     fmap (second $ BoundaryTensor cl bl)
     .
     withNewPinnedComplexTensor (cl,bl,bl)
+boundaryTensorFromForeignPtr (cl,bl) =
+    BoundaryTensor cl bl
+    .
+    complexTensorFromForeignPtr (cl,bl,bl)
+
+sizeOfBoundaryTensor = boundaryOperatorBandwidth <^(*)^> boundaryStateBandwidth
 
 trivial_boundary = BoundaryTensor 1 1 trivial_complex_tensor
 
@@ -80,12 +108,17 @@ newtype LeftBoundaryTensor = LeftBoundaryTensor { unwrapLeftBoundaryTensor :: Bo
 
 instance Pinnable LeftBoundaryTensor where 
     withPinnedTensor = withPinnedBoundaryTensor . unwrapLeftBoundaryTensor
+    sizeOfTensor = sizeOfBoundaryTensor . unwrapLeftBoundaryTensor
 
 instance Creatable LeftBoundaryTensor (Int,Int) where
     withNewPinnedTensor bounds =
         fmap (second LeftBoundaryTensor)
         .
         withNewPinnedBoundaryTensor bounds
+    tensorFromForeignPtr bounds =
+        LeftBoundaryTensor
+        .
+        boundaryTensorFromForeignPtr bounds
 
 instance Connected LeftBoundaryTensor UnnormalizedStateSiteTensor where
     (<-?->) = makeConnectedTest
@@ -112,12 +145,17 @@ newtype RightBoundaryTensor = RightBoundaryTensor { unwrapRightBoundaryTensor ::
 
 instance Pinnable RightBoundaryTensor where 
     withPinnedTensor = withPinnedBoundaryTensor . unwrapRightBoundaryTensor
+    sizeOfTensor = sizeOfBoundaryTensor . unwrapRightBoundaryTensor
 
 instance Creatable RightBoundaryTensor (Int,Int) where
     withNewPinnedTensor bounds =
         fmap (second RightBoundaryTensor)
         .
         withNewPinnedBoundaryTensor bounds
+    tensorFromForeignPtr bounds =
+        RightBoundaryTensor
+        .
+        boundaryTensorFromForeignPtr bounds
 
 instance Connected UnnormalizedStateSiteTensor RightBoundaryTensor where
     (<-?->) = makeConnectedTest
@@ -149,10 +187,16 @@ data OverlapBoundaryTensor = OverlapBoundaryTensor
     }
 
 withPinnedOverlapBoundaryTensor = withPinnedComplexTensor . overlapData
-withNewPinnedOverlapBoundaryTensor (cl,bl) =
+withNewPinnedOverlapBoundaryTensor bounds@(cl,bl) =
     fmap (second $ OverlapBoundaryTensor cl bl)
     .
     withNewPinnedComplexTensor (cl,bl)
+overlapBoundaryTensorFromForeignPtr bounds@(cl,bl) =
+    OverlapBoundaryTensor cl bl
+    .
+    complexTensorFromForeignPtr bounds
+
+sizeOfOverlapBoundaryTensor = overlapOldStateBandwidth <^(*)^> overlapNewStateBandwidth
 
 trivial_overlap_boundary = OverlapBoundaryTensor 1 1 trivial_complex_tensor
 
@@ -165,12 +209,17 @@ newtype LeftOverlapBoundaryTensor = LeftOverlapBoundaryTensor { unwrapLeftOverla
 
 instance Pinnable LeftOverlapBoundaryTensor where 
     withPinnedTensor = withPinnedOverlapBoundaryTensor . unwrapLeftOverlapBoundaryTensor
+    sizeOfTensor = sizeOfOverlapBoundaryTensor . unwrapLeftOverlapBoundaryTensor
 
 instance Creatable LeftOverlapBoundaryTensor (Int,Int) where
     withNewPinnedTensor bounds =
         fmap (second LeftOverlapBoundaryTensor)
         .
         withNewPinnedOverlapBoundaryTensor bounds
+    tensorFromForeignPtr bounds =
+        LeftOverlapBoundaryTensor
+        .
+        overlapBoundaryTensorFromForeignPtr bounds
 
 instance OverlapBoundaryTensorClass LeftOverlapBoundaryTensor where
     getNewStateBandwidth = overlapNewStateBandwidth . unwrapLeftOverlapBoundaryTensor
@@ -206,12 +255,17 @@ newtype RightOverlapBoundaryTensor = RightOverlapBoundaryTensor { unwrapRightOve
 
 instance Pinnable RightOverlapBoundaryTensor where 
     withPinnedTensor = withPinnedOverlapBoundaryTensor . unwrapRightOverlapBoundaryTensor
+    sizeOfTensor = sizeOfOverlapBoundaryTensor . unwrapRightOverlapBoundaryTensor
 
 instance Creatable RightOverlapBoundaryTensor (Int,Int) where
     withNewPinnedTensor bounds =
         fmap (second RightOverlapBoundaryTensor)
         .
         withNewPinnedOverlapBoundaryTensor bounds
+    tensorFromForeignPtr bounds =
+        RightOverlapBoundaryTensor
+        .
+        overlapBoundaryTensorFromForeignPtr bounds
 
 instance OverlapBoundaryTensorClass RightOverlapBoundaryTensor where
     getNewStateBandwidth = overlapNewStateBandwidth . unwrapRightOverlapBoundaryTensor
@@ -251,13 +305,19 @@ data StateSiteTensor = StateSiteTensor
     ,   stateLeftBandwidth :: !Int
     ,   stateRightBandwidth :: !Int
     ,   stateData :: !(ComplexTensor (Int,Int,Int))
-    }
+    } deriving (Eq)
 
 withPinnedStateTensor = withPinnedComplexTensor . stateData
 withNewPinnedStateTensor bounds@(d,bl,br) =
     fmap (second $ StateSiteTensor d bl br)
     .
     withNewPinnedComplexTensor bounds
+siteStateTensorFromForeignPtr bounds@(d,bl,br) =
+    StateSiteTensor d bl br
+    .
+    complexTensorFromForeignPtr bounds
+
+sizeOfStateTensor = statePhysicalDimension <^(*)^> stateLeftBandwidth <^(*)^> stateRightBandwidth
 
 class StateSiteTensorClass a where
     leftBandwidthOfState :: a -> Int
@@ -296,31 +356,37 @@ instance Connected RightAbsorptionNormalizedOverlapSiteTensor RightAbsorptionNor
         physicalDimensionOfState
 -- @+node:gcross.20091116175016.1755:newtypes
 newtype UnnormalizedStateSiteTensor = UnnormalizedStateSiteTensor
-    { unwrapUnnormalizedStateSiteTensor :: StateSiteTensor }
+    { unwrapUnnormalizedStateSiteTensor :: StateSiteTensor } deriving (Eq)
 newtype LeftAbsorptionNormalizedStateSiteTensor = LeftAbsorptionNormalizedStateSiteTensor
-    { unwrapLeftAbsorptionNormalizedStateSiteTensor :: StateSiteTensor }
+    { unwrapLeftAbsorptionNormalizedStateSiteTensor :: StateSiteTensor } deriving (Eq)
 newtype RightAbsorptionNormalizedStateSiteTensor = RightAbsorptionNormalizedStateSiteTensor
-    { unwrapRightAbsorptionNormalizedStateSiteTensor :: StateSiteTensor }
+    { unwrapRightAbsorptionNormalizedStateSiteTensor :: StateSiteTensor } deriving (Eq)
 newtype UnnormalizedOverlapSiteTensor = UnnormalizedOverlapSiteTensor
-    { unwrapUnnormalizedOverlapSiteTensor :: StateSiteTensor }
+    { unwrapUnnormalizedOverlapSiteTensor :: StateSiteTensor } deriving (Eq)
 newtype LeftAbsorptionNormalizedOverlapSiteTensor = LeftAbsorptionNormalizedOverlapSiteTensor
-    { unwrapLeftAbsorptionNormalizedOverlapSiteTensor :: StateSiteTensor }
+    { unwrapLeftAbsorptionNormalizedOverlapSiteTensor :: StateSiteTensor } deriving (Eq)
 newtype RightAbsorptionNormalizedOverlapSiteTensor = RightAbsorptionNormalizedOverlapSiteTensor
-    { unwrapRightAbsorptionNormalizedOverlapSiteTensor :: StateSiteTensor }
+    { unwrapRightAbsorptionNormalizedOverlapSiteTensor :: StateSiteTensor } deriving (Eq)
 -- @-node:gcross.20091116175016.1755:newtypes
 -- @+node:gcross.20091116175016.1756:Pinnable instances
 instance Pinnable UnnormalizedStateSiteTensor where
     withPinnedTensor = withPinnedStateTensor . unwrapUnnormalizedStateSiteTensor
+    sizeOfTensor = sizeOfStateTensor . unwrapUnnormalizedStateSiteTensor
 instance Pinnable LeftAbsorptionNormalizedStateSiteTensor where
     withPinnedTensor = withPinnedStateTensor . unwrapLeftAbsorptionNormalizedStateSiteTensor
+    sizeOfTensor = sizeOfStateTensor . unwrapLeftAbsorptionNormalizedStateSiteTensor
 instance Pinnable RightAbsorptionNormalizedStateSiteTensor where 
     withPinnedTensor = withPinnedStateTensor . unwrapRightAbsorptionNormalizedStateSiteTensor
+    sizeOfTensor = sizeOfStateTensor . unwrapRightAbsorptionNormalizedStateSiteTensor
 instance Pinnable UnnormalizedOverlapSiteTensor where
     withPinnedTensor = withPinnedStateTensor . unwrapUnnormalizedOverlapSiteTensor
+    sizeOfTensor = sizeOfStateTensor . unwrapUnnormalizedOverlapSiteTensor
 instance Pinnable LeftAbsorptionNormalizedOverlapSiteTensor where
     withPinnedTensor = withPinnedStateTensor . unwrapLeftAbsorptionNormalizedOverlapSiteTensor
+    sizeOfTensor = sizeOfStateTensor . unwrapLeftAbsorptionNormalizedOverlapSiteTensor
 instance Pinnable RightAbsorptionNormalizedOverlapSiteTensor where 
     withPinnedTensor = withPinnedStateTensor . unwrapRightAbsorptionNormalizedOverlapSiteTensor
+    sizeOfTensor = sizeOfStateTensor . unwrapRightAbsorptionNormalizedOverlapSiteTensor
 -- @-node:gcross.20091116175016.1756:Pinnable instances
 -- @+node:gcross.20091116175016.1757:Creatable instances
 instance Creatable UnnormalizedStateSiteTensor (Int,Int,Int) where
@@ -328,31 +394,55 @@ instance Creatable UnnormalizedStateSiteTensor (Int,Int,Int) where
         fmap (second UnnormalizedStateSiteTensor)
         .
         withNewPinnedStateTensor bounds
+    tensorFromForeignPtr bounds =
+        UnnormalizedStateSiteTensor
+        .
+        siteStateTensorFromForeignPtr bounds
 instance Creatable LeftAbsorptionNormalizedStateSiteTensor (Int,Int,Int) where
     withNewPinnedTensor bounds =
         fmap (second LeftAbsorptionNormalizedStateSiteTensor)
         .
         withNewPinnedStateTensor bounds
+    tensorFromForeignPtr bounds =
+        LeftAbsorptionNormalizedStateSiteTensor
+        .
+        siteStateTensorFromForeignPtr bounds
 instance Creatable RightAbsorptionNormalizedStateSiteTensor (Int,Int,Int) where
     withNewPinnedTensor bounds =
         fmap (second RightAbsorptionNormalizedStateSiteTensor)
         .
         withNewPinnedStateTensor bounds
+    tensorFromForeignPtr bounds =
+        RightAbsorptionNormalizedStateSiteTensor
+        .
+        siteStateTensorFromForeignPtr bounds
 instance Creatable UnnormalizedOverlapSiteTensor (Int,Int,Int) where
     withNewPinnedTensor bounds =
         fmap (second UnnormalizedOverlapSiteTensor)
         .
         withNewPinnedStateTensor bounds
+    tensorFromForeignPtr bounds =
+        UnnormalizedOverlapSiteTensor
+        .
+        siteStateTensorFromForeignPtr bounds
 instance Creatable LeftAbsorptionNormalizedOverlapSiteTensor (Int,Int,Int) where
     withNewPinnedTensor bounds =
         fmap (second LeftAbsorptionNormalizedOverlapSiteTensor)
         .
         withNewPinnedStateTensor bounds
+    tensorFromForeignPtr bounds =
+        LeftAbsorptionNormalizedOverlapSiteTensor
+        .
+        siteStateTensorFromForeignPtr bounds
 instance Creatable RightAbsorptionNormalizedOverlapSiteTensor (Int,Int,Int) where
     withNewPinnedTensor bounds =
         fmap (second RightAbsorptionNormalizedOverlapSiteTensor)
         .
         withNewPinnedStateTensor bounds
+    tensorFromForeignPtr bounds =
+        RightAbsorptionNormalizedOverlapSiteTensor
+        .
+        siteStateTensorFromForeignPtr bounds
 -- @-node:gcross.20091116175016.1757:Creatable instances
 -- @+node:gcross.20091116175016.1758:StateSiteTensorClass instances
 instance StateSiteTensorClass UnnormalizedStateSiteTensor where
@@ -502,10 +592,12 @@ makeConnectedTest message fetch_left_dimension fetch_right_dimension x y =
 -- @+node:gcross.20091112145455.1648:Pinnable
 class Pinnable a where
     withPinnedTensor :: a -> (Ptr (Complex Double) -> IO b) -> IO b
+    sizeOfTensor :: a -> Int
 -- @-node:gcross.20091112145455.1648:Pinnable
 -- @+node:gcross.20091116132159.1754:Creatable
 class MyIx i => Creatable a i where
     withNewPinnedTensor :: i -> (Ptr (Complex Double) -> IO b) -> IO (b,a)
+    tensorFromForeignPtr :: i -> ForeignPtr (Complex Double) -> a
 -- @-node:gcross.20091116132159.1754:Creatable
 -- @+node:gcross.20091116132159.1750:MyIx
 class Ix a => MyIx a where
@@ -522,6 +614,26 @@ myListArray :: MyIx i => i -> [Complex Double] -> StorableArray i (Complex Doubl
 myListArray dimensions = unsafePerformIO . newListArray (lowerBounds,dimensions)
 -- @-node:gcross.20091116132159.1750:MyIx
 -- @-node:gcross.20091111171052.1601:Classes
+-- @+node:gcross.20091124124443.1616:Functions
+-- @+node:gcross.20091124124443.1617:withPinnedTensorAsByteString
+withPinnedTensorAsByteString :: Pinnable a => a -> (ByteString -> IO b) -> IO b
+withPinnedTensorAsByteString tensor thunk =
+    withPinnedTensor tensor $
+        newForeignPtr_ . castPtr
+        >=>
+        (\fptr -> thunk $ fromForeignPtr fptr 0 (doubleComplexSizeInBytes * sizeOfTensor tensor))
+-- @-node:gcross.20091124124443.1617:withPinnedTensorAsByteString
+-- @+node:gcross.20091124153705.1620:tensorFromByteString
+tensorFromByteString :: Creatable a i => i -> ByteString -> a
+tensorFromByteString upperBounds (PS fptr offset size)
+    | offset /= 0
+        = error "offset of ByteString being converted into tensor must be 0"
+    | size /= rangeSize (lowerBounds,upperBounds) * doubleComplexSizeInBytes
+        = error "size of ByteString does not match size of tensor"
+    | otherwise
+        = tensorFromForeignPtr upperBounds (castForeignPtr fptr)
+-- @-node:gcross.20091124153705.1620:tensorFromByteString
+-- @-node:gcross.20091124124443.1616:Functions
 -- @-others
 -- @-node:gcross.20091110205054.1969:@thin Implementation.hs
 -- @-leo

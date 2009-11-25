@@ -23,6 +23,8 @@ main = do
             ["base"
             ,"mtl"
             ,"array"
+            ,"bytestring"
+            ,"InfixApplicative"
             ]
         compiled_resources =
             gccCompileAllFortran

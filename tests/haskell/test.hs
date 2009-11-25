@@ -17,6 +17,7 @@ import Control.Monad
 
 import Data.Array.Storable
 import Data.Array.Unboxed
+import Data.ByteString (copy)
 import Data.Complex
 import Data.Int
 
@@ -1013,6 +1014,23 @@ main = defaultMain
         -- @-others
         ]
     -- @-node:gcross.20091118213523.1816:VMPS.Algorithms
+    -- @+node:gcross.20091124153705.1626:VMPS.Tensors.Implementation
+    ,testGroup "VMPS.Tensors.Implementation"
+        -- @    @+others
+        -- @+node:gcross.20091124153705.1630:serialize/deserialize
+        [testProperty "serialize/deserialize" $
+            \(PDI d) (UTI bl) (UTI br) ->
+            unsafePerformIO $ do
+                original_state_site_tensor <- generateRandomizedStateSiteTensor d bl br
+                copied_state_site_tensor :: UnnormalizedStateSiteTensor <-
+                    withPinnedTensorAsByteString
+                        original_state_site_tensor
+                        (return . tensorFromByteString (d,bl,br) . copy)
+                return (original_state_site_tensor == copied_state_site_tensor)
+        -- @-node:gcross.20091124153705.1630:serialize/deserialize
+        -- @-others
+        ]
+    -- @-node:gcross.20091124153705.1626:VMPS.Tensors.Implementation
     -- @-others
     -- @-node:gcross.20091111171052.1640:<< Tests >>
     -- @nl
