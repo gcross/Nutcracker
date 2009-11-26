@@ -629,7 +629,7 @@ tensorFromByteString upperBounds (PS fptr offset size)
     | offset /= 0
         = error "offset of ByteString being converted into tensor must be 0"
     | size /= rangeSize (lowerBounds,upperBounds) * doubleComplexSizeInBytes
-        = error "size of ByteString does not match size of tensor"
+        = error $ printf "size of ByteString does not match size of tensor (%i /= %i)" size (rangeSize (lowerBounds,upperBounds) * doubleComplexSizeInBytes)
     | otherwise
         = tensorFromForeignPtr upperBounds (castForeignPtr fptr)
 -- @-node:gcross.20091124153705.1620:tensorFromByteString

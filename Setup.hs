@@ -25,6 +25,10 @@ main = do
             ,"array"
             ,"bytestring"
             ,"InfixApplicative"
+            ,"HDBC"
+            ,"uuid"
+            ,"random"
+            ,"stream-fusion"
             ]
         compiled_resources =
             gccCompileAllFortran

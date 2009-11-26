@@ -26,6 +26,7 @@ module VMPS.Tensors
     ,RightOverlapBoundaryTensor
     ,withPinnedOperatorSiteTensor
     ,Creatable()
+    ,Pinnable()
     ,operatorLeftBandwidth
     ,operatorRightBandwidth
     ,getNewStateBandwidth
