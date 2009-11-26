@@ -9,7 +9,7 @@
 <preferences/>
 <find_panel_settings/>
 <vnodes>
-<v t="gcross.20091113142219.1658" str_leo_pos="3"><vh>@chapters</vh></v>
+<v t="gcross.20091113142219.1658" str_leo_pos="0"><vh>@chapters</vh></v>
 <v t="gcross.20091123113033.1620"><vh>@thin Setup.hs</vh></v>
 <v t="gcross.20091106154604.9812"><vh>@path src</vh>
 <v t="gcross.20091110205054.1939"><vh>@thin core.f95</vh></v>
@@ -17,10 +17,6 @@
 <v t="gcross.20091113125544.1651"><vh>@path VMPS</vh>
 <v t="gcross.20091118213523.1809"><vh>@thin Algorithms.hs</vh></v>
 <v t="gcross.20091113142219.1659"><vh>@thin EnergyMinimizationChain.hs</vh></v>
-<v t="gcross.20091124153705.2067"><vh>@thin HDBC.hs</vh></v>
-<v t="gcross.20091124193852.1634"><vh>@path HDBC</vh>
-<v t="gcross.20091124193852.1643"><vh>@thin PostgreSQL.hs</vh></v>
-</v>
 <v t="gcross.20091113142219.1688"><vh>@thin Miscellaneous.hs</vh></v>
 <v t="gcross.20091118213523.1832"><vh>@thin Pauli.hs</vh></v>
 <v t="gcross.20091123113033.1622"><vh>@thin States.hs</vh></v>
@@ -52,6 +48,5 @@
 <t tx="gcross.20091113125544.1651"></t>
 <t tx="gcross.20091113142219.1658" str_leo_pos="3"></t>
 <t tx="gcross.20091116222034.1778"></t>
-<t tx="gcross.20091124193852.1634"></t>
 </tnodes>
 </leo_file>

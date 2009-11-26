@@ -12,18 +12,13 @@
 -- @<< Import needed modules >>
 -- @+node:gcross.20091111171052.1610:<< Import needed modules >>
 import Control.Arrow
-import Control.Applicative.Infix
 import Control.Exception
 import Control.Monad
 
 import Data.Array.Storable
 import Data.Array.Unboxed
-import Data.ByteString (ByteString,copy,pack)
-import qualified Data.ByteString as B
-import Data.Char
 import Data.Complex
 import Data.Int
-import Data.Word
 
 import Debug.Trace
 
@@ -43,7 +38,6 @@ import System.IO.Unsafe
 
 import VMPS.Algorithms
 import VMPS.EnergyMinimizationChain
-import VMPS.HDBC.PostgreSQL
 import VMPS.Miscellaneous
 import VMPS.OperatorConstruction
 import VMPS.Pauli
@@ -79,15 +73,6 @@ instance Arbitrary PhysicalDimensionInt where
 instance Arbitrary (Complex Double) where
     arbitrary = liftM2 (:+) arbitrary arbitrary
 -- @-node:gcross.20091116175016.1812:Complex Double
--- @+node:gcross.20091124193852.1665:Word8
-instance Arbitrary Word8 where
-    arbitrary = fmap (fromIntegral . ord) (arbitrary :: Gen Char)
--- @nonl
--- @-node:gcross.20091124193852.1665:Word8
--- @+node:gcross.20091124193852.1669:ByteString
-instance Arbitrary ByteString where
-    arbitrary = fmap pack arbitrary 
--- @-node:gcross.20091124193852.1669:ByteString
 -- @-node:gcross.20091113142219.2499:Generators
 -- @+node:gcross.20091113142219.2508:Helpers
 -- @+node:gcross.20091114174920.1734:assertAlmostEqual
@@ -1028,41 +1013,6 @@ main = defaultMain
         -- @-others
         ]
     -- @-node:gcross.20091118213523.1816:VMPS.Algorithms
-    -- @+node:gcross.20091124153705.1626:VMPS.Tensors.Implementation
-    ,testGroup "VMPS.Tensors.Implementation"
-        -- @    @+others
-        -- @+node:gcross.20091124153705.1630:serialize/deserialize
-        [testProperty "serialize/deserialize" $
-            \(PDI d) (UTI bl) (UTI br) ->
-            unsafePerformIO $ do
-                original_state_site_tensor <- generateRandomizedStateSiteTensor d bl br
-                copied_state_site_tensor :: UnnormalizedStateSiteTensor <-
-                    withPinnedTensorAsByteString
-                        original_state_site_tensor
-                        (return . tensorFromByteString (d,bl,br) . copy)
-                return (original_state_site_tensor == copied_state_site_tensor)
-        -- @-node:gcross.20091124153705.1630:serialize/deserialize
-        -- @-others
-        ]
-    -- @-node:gcross.20091124153705.1626:VMPS.Tensors.Implementation
-    -- @+node:gcross.20091124193852.1661:VMPS.HDBC.PostgreSQL
-    ,testGroup "VMPS.HDBC.PostgreSQL"
-        -- @    @+others
-        -- @+node:gcross.20091124193852.1662:toOctet/fromOctet
-        [testProperty "toOctet/fromOctet" $
-            (\c -> let [c1,c2,c3] = toOctet c in fromOctet c1 c2 c3) <^(==)^> id
-        -- @-node:gcross.20091124193852.1662:toOctet/fromOctet
-        -- @+node:gcross.20091124193852.1667:escape/unescape
-        ,testProperty "escape/unescape" $
-            (unescape . escape) <^(==)^> id
-        -- @-node:gcross.20091124193852.1667:escape/unescape
-        -- @+node:gcross.20091124193852.1671:escape correctly qualifies string
-        ,testProperty "escape correctly qualifies string" $
-            B.all ( (> 31) <^(&&)^> (< 127) ) . escape
-        -- @-node:gcross.20091124193852.1671:escape correctly qualifies string
-        -- @-others
-        ]
-    -- @-node:gcross.20091124193852.1661:VMPS.HDBC.PostgreSQL
     -- @-others
     -- @-node:gcross.20091111171052.1640:<< Tests >>
     -- @nl
