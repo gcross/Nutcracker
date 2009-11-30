@@ -1,6 +1,0 @@
-CC = gcc
-FC = gfortran
-F2PY = f2py
-FLAGS = -fPIC -O3 -ffast-math -funroll-loops
-CFLAGS = -I ${NUMPYDIR}/include -I ${PYTHONINCDIR} -I src/wrappers
-FFLAGS = -cpp -Jmods -fbounds-check

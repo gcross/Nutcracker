@@ -5,20 +5,8 @@
 
 default: test benchmark
 
-include ../../paths.mk
-include ../../options.mk
-
-LIBS = -lvmps -lgfortran -lblas -llapack -larpack
-PACKAGES = \
-	-package HUnit \
-	-package test-framework \
-	-package QuickCheck \
-	-package test-framework-hunit \
-	-package test-framework-quickcheck2 \
-	-package criterion \
-
-%: %.hs ../../lib/libvmps.a Makefile
-	ghc  -i../../haskell-interfaces -L../../lib $< ${HFLAGS} ${LIBS} ${PACKAGES} -o $@
+%: %.hs Makefile
+	ghc --make $< -O2 -lvmps -lgfortran -lblas -llapack -larpack
 
 clean:
 	rm -f test

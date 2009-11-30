@@ -5,7 +5,12 @@ logs
 *.hi
 *.o
 *.so
-obj
-lib
-mods
+objects
+libraries
+fortran-interfaces
+haskell-interfaces
+digest-cache
 tmp
+tests/haskell/test
+tests/haskell/benchmark
+Setup

@@ -259,12 +259,6 @@ withNewPinnedStateTensor bounds@(d,bl,br) =
     .
     withNewPinnedComplexTensor bounds
 
-class StateSiteTensorClass a where
-    leftBandwidthOfState :: a -> Int
-    rightBandwidthOfState :: a -> Int
-    physicalDimensionOfState :: a -> Int
-    unnormalize :: a -> UnnormalizedStateSiteTensor
-
 instance Connected LeftAbsorptionNormalizedStateSiteTensor UnnormalizedStateSiteTensor where
     (<-?->) = makeConnectedTest
         "State site tensors disagree over the bandwidth dimension!"
@@ -354,7 +348,13 @@ instance Creatable RightAbsorptionNormalizedOverlapSiteTensor (Int,Int,Int) wher
         .
         withNewPinnedStateTensor bounds
 -- @-node:gcross.20091116175016.1757:Creatable instances
--- @+node:gcross.20091116175016.1758:StateSiteTensorClass instances
+-- @+node:gcross.20091116175016.1758:StateSiteTensorClass + instances
+class StateSiteTensorClass a where
+    leftBandwidthOfState :: a -> Int
+    rightBandwidthOfState :: a -> Int
+    physicalDimensionOfState :: a -> Int
+    unnormalize :: a -> UnnormalizedStateSiteTensor
+
 instance StateSiteTensorClass UnnormalizedStateSiteTensor where
     leftBandwidthOfState = stateLeftBandwidth . unwrapUnnormalizedStateSiteTensor
     rightBandwidthOfState = stateRightBandwidth . unwrapUnnormalizedStateSiteTensor
@@ -385,7 +385,7 @@ instance StateSiteTensorClass RightAbsorptionNormalizedOverlapSiteTensor where
     rightBandwidthOfState = stateRightBandwidth . unwrapRightAbsorptionNormalizedOverlapSiteTensor
     physicalDimensionOfState = statePhysicalDimension . unwrapRightAbsorptionNormalizedOverlapSiteTensor
     unnormalize = undefined
--- @-node:gcross.20091116175016.1758:StateSiteTensorClass instances
+-- @-node:gcross.20091116175016.1758:StateSiteTensorClass + instances
 -- @-node:gcross.20091111171052.1597:State Site Tensor
 -- @+node:gcross.20091111171052.1598:Operator Site Tensor
 data OperatorSiteTensor = OperatorSiteTensor

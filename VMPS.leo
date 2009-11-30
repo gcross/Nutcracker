@@ -9,9 +9,10 @@
 <preferences/>
 <find_panel_settings/>
 <vnodes>
-<v t="gcross.20091113142219.1658" str_leo_pos="0"><vh>@chapters</vh></v>
-<v t="gcross.20091123113033.1620"><vh>@thin Setup.hs</vh></v>
-<v t="gcross.20091106154604.9812"><vh>@path src</vh>
+<v t="gcross.20091113142219.1658" str_leo_pos="2"><vh>@chapters</vh></v>
+<v t="gcross.20091130053756.1986"><vh>@thin VMPS.cabal</vh></v>
+<v t="gcross.20091130053756.1966"><vh>@thin Setup.hs</vh></v>
+<v t="gcross.20091106154604.9812"><vh>@path sources</vh>
 <v t="gcross.20091110205054.1939"><vh>@thin core.f95</vh></v>
 <v t="gcross.20091112145455.1619"><vh>@thin core-wrapper.c</vh></v>
 <v t="gcross.20091113125544.1651"><vh>@path VMPS</vh>
