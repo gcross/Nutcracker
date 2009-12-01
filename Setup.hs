@@ -108,7 +108,6 @@ targets =
             ,"haskell-interfaces"
             ,"libraries"
             ]
-            targets
     ,target "distclean" $
         makeDistCleanTarget
             [configurationFilePath
@@ -117,7 +116,7 @@ targets =
     ]
 -- @+node:gcross.20091130053756.1979:configure
 configure :: Either ErrorMessage Configuration
-configure = parseCommandLineOptions options >>= \(_,options) -> runConfigurer "Blueprint.cfg" options $ do
+configure = parseCommandLineOptions options >>= \(_,options) -> runConfigurer "VMPS.cfg" options $ do
     configurations@
         (ghc_configuration
         ,gcc_configuration
