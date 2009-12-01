@@ -7,6 +7,8 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE DeriveDataTypeable #-}
+
 -- @-node:gcross.20091111171052.1600:<< Language extensions >>
 -- @nl
 
@@ -23,6 +25,7 @@ import Data.Array.Unboxed
 import Data.Complex
 import Data.Function
 import Data.Int
+import Data.Typeable
 
 import Foreign.Ptr
 import Foreign.Storable
@@ -251,7 +254,8 @@ data StateSiteTensor = StateSiteTensor
     ,   stateLeftBandwidth :: !Int
     ,   stateRightBandwidth :: !Int
     ,   stateData :: !(ComplexTensor (Int,Int,Int))
-    }
+    } deriving (Typeable)
+
 
 withPinnedStateTensor = withPinnedComplexTensor . stateData
 withNewPinnedStateTensor bounds@(d,bl,br) =
@@ -291,16 +295,22 @@ instance Connected RightAbsorptionNormalizedOverlapSiteTensor RightAbsorptionNor
 -- @+node:gcross.20091116175016.1755:newtypes
 newtype UnnormalizedStateSiteTensor = UnnormalizedStateSiteTensor
     { unwrapUnnormalizedStateSiteTensor :: StateSiteTensor }
+    deriving (Typeable)
 newtype LeftAbsorptionNormalizedStateSiteTensor = LeftAbsorptionNormalizedStateSiteTensor
     { unwrapLeftAbsorptionNormalizedStateSiteTensor :: StateSiteTensor }
+    deriving (Typeable)
 newtype RightAbsorptionNormalizedStateSiteTensor = RightAbsorptionNormalizedStateSiteTensor
     { unwrapRightAbsorptionNormalizedStateSiteTensor :: StateSiteTensor }
+    deriving (Typeable)
 newtype UnnormalizedOverlapSiteTensor = UnnormalizedOverlapSiteTensor
     { unwrapUnnormalizedOverlapSiteTensor :: StateSiteTensor }
+    deriving (Typeable)
 newtype LeftAbsorptionNormalizedOverlapSiteTensor = LeftAbsorptionNormalizedOverlapSiteTensor
     { unwrapLeftAbsorptionNormalizedOverlapSiteTensor :: StateSiteTensor }
+    deriving (Typeable)
 newtype RightAbsorptionNormalizedOverlapSiteTensor = RightAbsorptionNormalizedOverlapSiteTensor
     { unwrapRightAbsorptionNormalizedOverlapSiteTensor :: StateSiteTensor }
+    deriving (Typeable)
 -- @-node:gcross.20091116175016.1755:newtypes
 -- @+node:gcross.20091116175016.1756:Pinnable instances
 instance Pinnable UnnormalizedStateSiteTensor where

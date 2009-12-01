@@ -4,6 +4,7 @@
 
 -- @<< Language extensions >>
 -- @+node:gcross.20091123113033.1623:<< Language extensions >>
+{-# LANGUAGE DeriveDataTypeable #-}
 -- @-node:gcross.20091123113033.1623:<< Language extensions >>
 -- @nl
 
@@ -13,6 +14,7 @@ module VMPS.States where
 -- @+node:gcross.20091123113033.1628:<< Import needed modules >>
 import Data.Complex
 import Data.List
+import Data.Typeable
 
 import VMPS.Tensors
 import VMPS.Wrappers
@@ -28,7 +30,8 @@ data CanonicalStateRepresentation =
         {   canonicalStateNumberOfSites :: !Int
         ,   canonicalStateFirstSiteTensor :: !UnnormalizedStateSiteTensor
         ,   canonicalStateRestSiteTensors :: ![RightAbsorptionNormalizedStateSiteTensor]
-        }
+        } deriving (Typeable)
+
 -- @-node:gcross.20091123113033.1631:CanonicalStateRepresentation
 -- @-node:gcross.20091123113033.1629:Types
 -- @+node:gcross.20091123113033.1626:Functions
