@@ -107,8 +107,6 @@ targets =
             ,"digest-cache"
             ,"haskell-interfaces"
             ,"libraries"
-            ,"haddock"
-            ,"bootstrap"
             ]
             targets
     ,target "distclean" $
