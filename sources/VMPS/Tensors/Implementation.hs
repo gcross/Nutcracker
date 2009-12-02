@@ -26,6 +26,7 @@ import Data.Complex
 import Data.Function
 import Data.Int
 import Data.Typeable
+import Data.Vec ((:.)(..))
 
 import Foreign.Ptr
 import Foreign.Storable
@@ -35,7 +36,7 @@ import System.IO.Unsafe
 import Text.Printf
 
 import VMPS.Miscellaneous
-import VMPS.Pauli
+import VMPS.Operators
 -- @-node:gcross.20091111171052.1599:<< Import needed modules >>
 -- @nl
 
@@ -420,32 +421,27 @@ withPinnedOperatorSiteTensor operator_site_tensor thunk =
 makeOperatorSiteTensorFromPaulis ::
     Int ->
     Int ->
-    PauliList ->
+    OperatorSpecification ->
     OperatorSiteTensor
 makeOperatorSiteTensorFromPaulis left_bandwidth right_bandwidth elements =
     let number_of_elements = length elements
     in unsafePerformIO $ do
         operator_indices <- newArray ((1,1),(number_of_elements,2)) 0
         operator_matrices <- newArray ((1,1,1),(number_of_elements,2,2)) 0
-        let go :: Int -> [((Int32,Int32),(Double,Pauli))] -> IO ()
+        let go :: Int -> [((Int32,Int32),SingleQubitOperator)] -> IO ()
             go _ [] = return ()
-            go index (((left_index,right_index),(coefficient,pauli)):rest) = do
-                writeArray operator_indices (index,1) left_index
-                writeArray operator_indices (index,2) right_index
-                case pauli of
-                    I -> do
-                        writeArray operator_matrices (index,1,1) (coefficient :+ 0)
-                        writeArray operator_matrices (index,2,2) (coefficient :+ 0)
-                    X -> do
-                        writeArray operator_matrices (index,1,2) (coefficient :+ 0)
-                        writeArray operator_matrices (index,2,1) (coefficient :+ 0)
-                    Y -> do
-                        writeArray operator_matrices (index,1,2) (0 :+ (-coefficient))
-                        writeArray operator_matrices (index,2,1) (0 :+ ( coefficient))
-                    Z -> do
-                        writeArray operator_matrices (index,1,1) (( coefficient) :+ 0)
-                        writeArray operator_matrices (index,2,2) ((-coefficient) :+ 0)
-                go (index+1) rest
+            go index (((left_index,right_index),pauli):rest) =
+                let SQO (    p11 :. p12
+                          :. p21 :. p22
+                          :. () ) = pauli
+                in do
+                    writeArray operator_indices (index,1) left_index
+                    writeArray operator_indices (index,2) right_index
+                    writeArray operator_matrices (index,1,1) p11
+                    writeArray operator_matrices (index,1,2) p12
+                    writeArray operator_matrices (index,2,1) p21
+                    writeArray operator_matrices (index,2,2) p22
+                    go (index+1) rest
         go 1 elements
         return OperatorSiteTensor
             {   operatorLeftBandwidth = left_bandwidth

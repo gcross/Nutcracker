@@ -39,8 +39,9 @@ import System.IO.Unsafe
 import VMPS.Algorithms
 import VMPS.EnergyMinimizationChain
 import VMPS.Miscellaneous
-import VMPS.OperatorConstruction
-import VMPS.Pauli
+import VMPS.Operators
+import VMPS.Models
+import VMPS.Paulis
 import VMPS.States
 import VMPS.Tensors.Implementation
 import VMPS.Wrappers
@@ -192,7 +193,7 @@ main = defaultMain
                     let left_boundary = trivial_left_boundary
                         right_boundary = trivial_right_boundary
                         state_site_tensor = UnnormalizedStateSiteTensor . StateSiteTensor 2 1 1 . complexTensorFromList (2,1,1) $ state
-                        operator_site_tensor = makeOperatorSiteTensorFromPaulis 1 1 [(1 --> 1) 1.0 Z]
+                        operator_site_tensor = makeOperatorSiteTensorFromPaulis 1 1 [(1 --> 1) pZ]
                     in computeExpectation left_boundary state_site_tensor operator_site_tensor right_boundary
                 ) [[1,0],[0:+1,0],[0,1],[0,0:+1]]
             -- @nonl
@@ -737,7 +738,7 @@ main = defaultMain
                     .
                     makeOperatorSiteTensorFromPaulis 1 1 
                     $
-                    [(1 --> 1) 1.0 I]
+                    [(1 --> 1) pI]
                 let chains_going_right =
                         take number_of_sites
                         .
@@ -788,7 +789,7 @@ main = defaultMain
                     .
                     makeOperatorSiteTensorFromPaulis 1 1
                     $
-                    [(1 --> 1) 1.0 Y]
+                    [(1 --> 1) pY]
                 chain <- increaseChainBandwidth 2 new_bandwidth_dimension original_chain
                 let chains_going_right =
                         take number_of_sites
@@ -903,7 +904,7 @@ main = defaultMain
                 -- @-node:gcross.20091118213523.1831:<< createTransverseIsingModelTest >>
                 -- @nl
                 in map (\(number_of_sites,bandwidth_dimension,perturbation_strength,correct_ground_state_energy) ->
-                        testCase (printf "%i sites, bandwidth = %i, perturbation strength = %f" number_of_sites bandwidth_dimension perturbation_strength) $ 
+                        testCase (printf "%i sites, bandwidth = %i, perturbation strength = %f" number_of_sites bandwidth_dimension (realPart perturbation_strength)) $ 
                             createTransverseIsingModelTest number_of_sites
                                                            bandwidth_dimension
                                                            perturbation_strength
@@ -943,7 +944,7 @@ main = defaultMain
                 -- @-node:gcross.20091119150241.1845:<< createTransverseIsingModelTest >>
                 -- @nl
                 in map (\(number_of_sites,bandwidth_dimension,perturbation_strength,correct_ground_state_energy) ->
-                        testCase (printf "%i sites, bandwidth = %i, perturbation strength = %f" number_of_sites bandwidth_dimension perturbation_strength) $ 
+                        testCase (printf "%i sites, bandwidth = %i, perturbation strength = %f" number_of_sites bandwidth_dimension (realPart perturbation_strength)) $ 
                             createTransverseIsingModelTest number_of_sites
                                                            bandwidth_dimension
                                                            perturbation_strength

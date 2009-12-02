@@ -16,8 +16,7 @@ import Criterion.Main
 import VMPS.Algorithms
 import VMPS.EnergyMinimizationChain
 import VMPS.Miscellaneous
-import VMPS.OperatorConstruction
-import VMPS.Pauli
+import VMPS.Models
 -- @-node:gcross.20091120134444.1974:<< Import needed modules >>
 -- @nl
 

@@ -22,15 +22,18 @@ import Data.ConfigFile hiding (options)
 import Data.Either.Unwrap
 import Data.Maybe
 import qualified Data.Map as Map
+import qualified Data.Set as Set
 import Data.Version
 
 import Distribution.Package
 import qualified Distribution.PackageDescription as Package
 
 import System.Directory
+import System.FilePath
 import System.IO.Unsafe
+import System.Process
 
-import Text.PrettyPrint.ANSI.Leijen hiding ((<$>))
+import Text.PrettyPrint.ANSI.Leijen hiding ((<$>),(</>))
 
 import Blueprint.Configuration
 import Blueprint.Error
@@ -59,7 +62,8 @@ options =
     ]
 -- @-node:gcross.20091130053756.1969:Options
 -- @+node:gcross.20091130053756.1970:Flags
-ghc_flags = ["-O2","-fvia-C","-optc=-O3","-package-name="++qualified_package_name]
+ghc_flags = testing_ghc_flags ++ ["-package-name="++qualified_package_name]
+testing_ghc_flags = ["-O2","-fvia-C","-optc=-O3"]
 
 flags = ["-O3","-ffast-math","-funroll-loops"]
 gcc_flags = flags
@@ -75,12 +79,13 @@ data Configuration = Configuration
     ,   ldConfiguration :: LdConfiguration
     ,   installerConfiguration :: InstallerConfiguration
     ,   packageDependencies :: [String]
+    ,   packageModules :: PackageModules
     }
 -- @-node:gcross.20091130053756.1972:Configuration
 -- @-node:gcross.20091130053756.1971:Types
 -- @+node:gcross.20091130053756.1973:Values
 -- @+node:gcross.20091130053756.1974:source resources
-source_resources = resourcesIn "sources"
+source_resources = sourceResourcesIn "sources"
 -- @-node:gcross.20091130053756.1974:source resources
 -- @+node:gcross.20091130053756.1975:package description
 package_description = readPackageDescription "VMPS.cabal"
@@ -107,12 +112,24 @@ targets =
             ,"digest-cache"
             ,"haskell-interfaces"
             ,"libraries"
+            ,"tests/haskell/objects"
+            ,"tests/haskell/digest-cache"
+            ,"tests/haskell/haskell-interfaces"
             ]
     ,target "distclean" $
         makeDistCleanTarget
             [configurationFilePath
             ]
             targets
+    ,target "test" test
+    ,target "retest" $
+        makeCleanTarget
+            ["tests/haskell/objects"
+            ,"tests/haskell/digest-cache"
+            ,"tests/haskell/haskell-interfaces"
+            ]
+        `thenTarget`
+        toTarget test
     ]
 -- @+node:gcross.20091130053756.1979:configure
 configure :: Either ErrorMessage Configuration
@@ -132,6 +149,7 @@ configure = parseCommandLineOptions options >>= \(_,options) -> runConfigurer "V
             <*> (configureUsingSection "Binutils")
             <*> (configureUsingSection "Installation Directories")
     package_dependencies <- configurePackageResolutions ghc_configuration package_description "GHC"
+    package_modules <- configurePackageModules ghc_configuration package_dependencies "ZZZ - Please do not edit this unless you know what you are doing."
     return $
         Configuration
             ghc_configuration
@@ -141,41 +159,86 @@ configure = parseCommandLineOptions options >>= \(_,options) -> runConfigurer "V
             ld_configuration
             install_configuration
             package_dependencies
+            package_modules
 -- @-node:gcross.20091130053756.1979:configure
+-- @+node:gcross.20091201134050.1635:test
+test = configure >>= \configuration -> do
+    let more_package_dependencies =
+            ["HUnit"
+            ,"QuickCheck"
+            ,"test-framework"
+            ,"test-framework-hunit"
+            ,"test-framework-quickcheck2"
+            ,"criterion"
+            ]
+    more_package_modules <- runConfigurer "VMPS.cfg" noOptions $
+        configurePackageModules
+            (ghcConfiguration configuration)
+            more_package_dependencies
+            "ZZZZ - Please do not edit this unless you know what you are doing."
+    attemptGetDigests $
+        ghcLinkPrograms
+            (ghcConfiguration configuration)
+            "tests/haskell/digest-cache"
+            ("-lblas":"-llapack":"-larpack":"-lgfortran":testing_ghc_flags)
+            (packageDependencies configuration ++ more_package_dependencies)
+            "tests/haskell"
+            [[("test","o"),("core","o"),("core-wrapper","o")]
+            ,[("benchmark","o"),("core","o"),("core-wrapper","o")]
+            ]
+        .
+        gfortranCompileAll
+            (gfortranConfiguration configuration)
+            "tests/haskell/digest-cache"
+            gfortran_flags
+            "tests/haskell/objects"
+            "tests/haskell/fortran-interfaces"
+        .
+        gccCompileAll
+            (gccConfiguration configuration)
+            "tests/haskell/digest-cache"
+            gcc_flags
+            "tests/haskell/objects"
+        .
+        ghcCompileAll
+            (ghcConfiguration configuration)
+            "tests/haskell/digest-cache"
+            testing_ghc_flags
+            (packageModules configuration `Set.union` more_package_modules)
+            "tests/haskell/objects"
+            "tests/haskell/haskell-interfaces"
+        .
+        addResources (sourceResourcesIn ("tests" </> "haskell"))
+        $
+        source_resources
+    unsafePerformIO (system "tests/haskell/test") `pseq` return ()
+-- @-node:gcross.20091201134050.1635:test
 -- @+node:gcross.20091130053756.1980:build
 build = configure >>= \configuration ->
-    let Right package_modules = getPackages <$> ghcConfiguration <*> packageDependencies $ configuration
-        compiled_resources = 
+    let compiled_resources = 
             gfortranCompileAll
                 (gfortranConfiguration configuration)
+                "digest-cache"
                 gfortran_flags
                 "objects"
                 "fortran-interfaces"
-                "digest-cache"
             .
             gccCompileAll
                 (gccConfiguration configuration)
+                "digest-cache"
                 gcc_flags
                 "objects"
-                "digest-cache"
             .
             ghcCompileAll
                 (ghcConfiguration configuration)
+                "digest-cache"
                 ghc_flags
-                package_modules
+                (packageModules configuration)
                 "objects"
                 "haskell-interfaces"
-                "digest-cache"
             $
             source_resources
-        object_resources =
-            map snd
-            .
-            filter ((=="o"). snd . fst)
-            .
-            Map.toList
-            $
-            compiled_resources
+        object_resources = selectResourcesOfTypeAsList "o" compiled_resources
         library = formStaticLibrary
             (arConfiguration configuration)
             "digest-cache"
@@ -197,7 +260,7 @@ build = configure >>= \configuration ->
 install = do
     configuration <- configure
     (library_resource,ghci_library_resource,compiled_resources) <- build
-    let interface_resources = filter ((=="hi") . resourceType) . Map.elems $ compiled_resources
+    let interface_resources = selectResourcesOfTypeAsList "hi" compiled_resources
         installation_result =
             installSimplePackage
                 (ghcConfiguration configuration)
