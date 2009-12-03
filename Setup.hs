@@ -169,7 +169,6 @@ test = configure >>= \configuration -> do
             ,"test-framework"
             ,"test-framework-hunit"
             ,"test-framework-quickcheck2"
-            ,"criterion"
             ]
     more_package_modules <- runConfigurer "VMPS.cfg" noOptions $
         configurePackageModules
@@ -184,7 +183,6 @@ test = configure >>= \configuration -> do
             (packageDependencies configuration ++ more_package_dependencies)
             "tests/haskell"
             [[("test","o"),("core","o"),("core-wrapper","o")]
-            ,[("benchmark","o"),("core","o"),("core-wrapper","o")]
             ]
         .
         gfortranCompileAll
