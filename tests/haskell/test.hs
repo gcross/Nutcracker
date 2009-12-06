@@ -193,7 +193,7 @@ main = defaultMain
                     let left_boundary = trivial_left_boundary
                         right_boundary = trivial_right_boundary
                         state_site_tensor = UnnormalizedStateSiteTensor . StateSiteTensor 2 1 1 . complexTensorFromList (2,1,1) $ state
-                        operator_site_tensor = makeOperatorSiteTensorFromPaulis 1 1 [(1 --> 1) pZ]
+                        operator_site_tensor = makeOperatorSiteTensorFromSpecification 1 1 [(1 --> 1) pZ]
                     in computeExpectation left_boundary state_site_tensor operator_site_tensor right_boundary
                 ) [[1,0],[0:+1,0],[0,1],[0,0:+1]]
             -- @nonl
@@ -736,7 +736,7 @@ main = defaultMain
                     .
                     replicate number_of_sites
                     .
-                    makeOperatorSiteTensorFromPaulis 1 1 
+                    makeOperatorSiteTensorFromSpecification 1 1 
                     $
                     [(1 --> 1) pI]
                 let chains_going_right =
@@ -787,7 +787,7 @@ main = defaultMain
                     .
                     replicate number_of_sites
                     .
-                    makeOperatorSiteTensorFromPaulis 1 1
+                    makeOperatorSiteTensorFromSpecification 1 1
                     $
                     [(1 --> 1) pY]
                 chain <- increaseChainBandwidth 2 new_bandwidth_dimension original_chain

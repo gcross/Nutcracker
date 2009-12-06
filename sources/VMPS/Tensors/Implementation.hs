@@ -418,12 +418,12 @@ withPinnedOperatorSiteTensor operator_site_tensor thunk =
 -- @nonl
 -- @-node:gcross.20091114174920.1715:withPinnedOperatorSiteTensor
 -- @+node:gcross.20091114174920.1716:makeOperatorSiteTensorFromPaulis
-makeOperatorSiteTensorFromPaulis ::
+makeOperatorSiteTensorFromSpecification ::
     Int ->
     Int ->
     OperatorSpecification ->
     OperatorSiteTensor
-makeOperatorSiteTensorFromPaulis left_bandwidth right_bandwidth elements =
+makeOperatorSiteTensorFromSpecification left_bandwidth right_bandwidth elements =
     let number_of_elements = length elements
     in unsafePerformIO $ do
         operator_indices <- newArray ((1,1),(number_of_elements,2)) 0

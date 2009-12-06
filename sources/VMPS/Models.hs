@@ -47,11 +47,11 @@ makeSimpleModelOperatorSiteTensors bandwidth middle_model number_of_sites =
 -- @+node:gcross.20091123113033.1653:makeModelWithSpecialEndpointsOperatorSiteTensors
 makeModelWithSpecialEndpointsOperatorSiteTensors :: Int -> OperatorSpecification -> OperatorSpecification -> OperatorSpecification -> Int -> [OperatorSiteTensor]
 makeModelWithSpecialEndpointsOperatorSiteTensors bandwidth left_model middle_model right_model number_of_sites =
-    [makeOperatorSiteTensorFromPaulis 1 bandwidth $ left_model]
+    [makeOperatorSiteTensorFromSpecification 1 bandwidth $ left_model]
     ++
-    replicate (number_of_sites-2) (makeOperatorSiteTensorFromPaulis bandwidth bandwidth $ middle_model)
+    replicate (number_of_sites-2) (makeOperatorSiteTensorFromSpecification bandwidth bandwidth $ middle_model)
     ++
-    [makeOperatorSiteTensorFromPaulis bandwidth 1 $ right_model]
+    [makeOperatorSiteTensorFromSpecification bandwidth 1 $ right_model]
 -- @-node:gcross.20091123113033.1653:makeModelWithSpecialEndpointsOperatorSiteTensors
 -- @+node:gcross.20091118213523.1851:makeMagneticFieldOperatorSiteTensors
 makeMagneticFieldOperatorSiteTensors =
