@@ -14,11 +14,11 @@ Homepage:       http://github.com/gcross/VMPS
 Category:       Physics
 Synopsis:       Variational Monte Carlo
 Build-Type:     Custom
-Build-Depends:  base == 4.1.*,
-                array == 0.2.*,
-                mtl == 1.1.*,
-                Vec == 0.9.*
 
 Library
+    Build-Depends:  base == 4.1.*,
+                    array == 0.2.*,
+                    mtl == 1.1.*,
+                    Vec == 0.9.*
 -- @-node:gcross.20091130053756.1986:@thin VMPS.cabal
 -- @-leo
