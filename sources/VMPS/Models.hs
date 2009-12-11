@@ -34,6 +34,10 @@ endingWith ending_index list = [((index1,1),matrix) | ((index1,index2),matrix) <
 -- @-node:gcross.20091118213523.1836:-->
 -- @-node:gcross.20091118213523.1850:Functions
 -- @+node:gcross.20091118213523.1849:Models
+-- @+node:gcross.20091210184845.1636:makeLocalOperatorSiteTensors
+makeLocalOperatorSiteTensors :: [SingleQubitOperator] -> [OperatorSiteTensor]
+makeLocalOperatorSiteTensors = map (makeOperatorSiteTensorFromSpecification 1 1 . (:[]) . (1 --> 1))
+-- @-node:gcross.20091210184845.1636:makeLocalOperatorSiteTensors
 -- @+node:gcross.20091120112621.1587:makeSimpleModelOperatorSiteTensors
 makeSimpleModelOperatorSiteTensors :: Int -> OperatorSpecification -> Int -> [OperatorSiteTensor]
 makeSimpleModelOperatorSiteTensors bandwidth middle_model number_of_sites =

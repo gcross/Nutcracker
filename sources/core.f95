@@ -580,6 +580,35 @@ subroutine compute_expectation( &
 end subroutine
 !@-node:gcross.20091110205054.1916:compute_expectation
 !@-node:gcross.20091110205054.1940:Contractors
+!@+node:gcross.20091211120042.1683:apply_single_site_operator
+subroutine apply_single_site_operator( &
+  bl, & ! state left bandwidth dimension
+  br, & ! state right bandwidth dimension
+  d, &  ! physical dimension
+  state_site_tensor, &
+  operator, &
+  new_state_site_tensor &
+)
+  integer, intent(in) :: bl, br, d
+  double complex, intent(in) :: &
+    state_site_tensor(br,bl,d), &
+    operator
+  double complex, intent(out) :: new_state_site_tensor(br,bl,d)
+
+  external :: zgemm
+
+  call zgemm( &
+      'N','T', &
+      br*bl,d,d, &
+      (1d0,0d0), &
+      state_site_tensor, br*bl, &
+      operator, d, &
+      (0d0,0d0), &
+      new_state_site_tensor, br*bl &
+  )
+
+end subroutine
+!@-node:gcross.20091211120042.1683:apply_single_site_operator
 !@+node:gcross.20091115201814.1736:project
 subroutine project(vector_size,number_of_projectors,projectors,input_vector,output_vector)
   integer, intent(in) :: number_of_projectors, vector_size

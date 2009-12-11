@@ -848,6 +848,69 @@ main = defaultMain
         -- @-others
         ]
     -- @-node:gcross.20091123113033.1636:VMPS.States
+    -- @+node:gcross.20091211120042.1694:VMPS.Operators
+    ,testGroup "VMPS.Operators"
+        -- @    @+others
+        -- @+node:gcross.20091211120042.1695:bit-flip test
+        [testCase "bit-flip test" $ do
+            let number_of_sites = 20
+                bandwidth_dimension = 8
+                operator_site_tensors = makeMagneticFieldOperatorSiteTensors number_of_sites
+            chain <- generateRandomizedChain 2 bandwidth_dimension operator_site_tensors
+            let chain_expectation = (computeEnergy chain :+ 0)
+                new_state_expectation =
+                    expectationOf operator_site_tensors
+                    .
+                    applySingleSiteOperators (repeat pX)
+                    .
+                    getCanonicalStateRepresentation
+                    $
+                    chain
+            assertAlmostEqual "Did flipping the bits negate the energy?"
+                chain_expectation
+                (-new_state_expectation)
+        -- @-node:gcross.20091211120042.1695:bit-flip test
+        -- @+node:gcross.20091211120042.1698:phase-flip test
+        ,testCase "phase-flip test" $ do
+            let number_of_sites = 20
+                bandwidth_dimension = 8
+                operator_site_tensors = makeMagneticFieldOperatorSiteTensors number_of_sites
+            chain <- generateRandomizedChain 2 bandwidth_dimension operator_site_tensors
+            let chain_expectation = (computeEnergy chain :+ 0)
+                new_state_expectation =
+                    expectationOf operator_site_tensors
+                    .
+                    applySingleSiteOperators (repeat pZ)
+                    .
+                    getCanonicalStateRepresentation
+                    $
+                    chain
+            assertAlmostEqual "Did flipping the phase keep the energy constant?"
+                chain_expectation
+                new_state_expectation
+        -- @-node:gcross.20091211120042.1698:phase-flip test
+        -- @+node:gcross.20091211120042.1700:both-flip test
+        ,testCase "both-flip test" $ do
+            let number_of_sites = 20
+                bandwidth_dimension = 8
+                operator_site_tensors = makeMagneticFieldOperatorSiteTensors number_of_sites
+            chain <- generateRandomizedChain 2 bandwidth_dimension operator_site_tensors
+            let chain_expectation = (computeEnergy chain :+ 0)
+                new_state_expectation =
+                    expectationOf operator_site_tensors
+                    .
+                    applySingleSiteOperators (repeat pY)
+                    .
+                    getCanonicalStateRepresentation
+                    $
+                    chain
+            assertAlmostEqual "Did flipping the phase and the bit negate the energy?"
+                chain_expectation
+                (-new_state_expectation)
+        -- @-node:gcross.20091211120042.1700:both-flip test
+        -- @-others
+        ]
+    -- @-node:gcross.20091211120042.1694:VMPS.Operators
     -- @+node:gcross.20091118213523.1816:VMPS.Algorithms
     ,testGroup "VMPS.Algorithm"
         -- @    @+others

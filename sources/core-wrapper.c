@@ -435,6 +435,13 @@ void project(int vector_size,int number_of_projectors,double* projectors,double*
     project_(&vector_size,&number_of_projectors,projectors,input_vector,output_vector);
 }
 //@-node:gcross.20091120134444.1596:project
+//@+node:gcross.20091211120042.1691:apply_single_site_operator
+void apply_single_site_operator_(int* br, int* bl, int* d, double* state_site_tensor, double* operator, double* new_state_site_tensor);
+
+void apply_single_site_operator(int br, int bl, int d, double* state_site_tensor, double* operator, double* new_state_site_tensor) {
+    return apply_single_site_operator_(&br,&bl,&d,state_site_tensor,operator,new_state_site_tensor);
+}
+//@-node:gcross.20091211120042.1691:apply_single_site_operator
 //@-others
 //@-node:gcross.20091112145455.1619:@thin core-wrapper.c
 //@-leo

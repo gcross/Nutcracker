@@ -34,6 +34,7 @@ import Text.Printf
 import System.IO.Unsafe
 
 import VMPS.Miscellaneous
+import VMPS.Operators
 import VMPS.Tensors
 -- @-node:gcross.20091113125544.1659:<< Import needed modules >>
 -- @nl
@@ -698,6 +699,37 @@ makeAndNormalizeOverlapSiteTensors unnormalized_state_left_site_tensor right_nor
        )
 -- @-node:gcross.20091118141720.1814:makeAndNormalizeOverlapSiteTensors
 -- @-node:gcross.20091118141720.1810:Overlap tensor formation
+-- @+node:gcross.20091211120042.1685:applySingleSiteOperator
+foreign import ccall unsafe "apply_single_site_operator" apply_single_site_operator :: 
+    Int -> -- rightmost bandwidth dimension
+    Int -> -- leftmost bandwidth dimension
+    Int -> -- physical dimension
+    Ptr (Complex Double) -> -- input: state site tensor
+    Ptr (Complex Double) -> -- input: operator
+    Ptr (Complex Double) -> -- output: new state site tensor
+    IO ()
+
+applySingleSiteOperator ::
+    (Pinnable a, Creatable a (Int,Int,Int), StateSiteTensorClass a) =>
+    SingleQubitOperator ->
+    a ->
+    a
+applySingleSiteOperator operator state_site_tensor =
+    let br = rightBandwidthOfState state_site_tensor
+        bl = leftBandwidthOfState state_site_tensor
+        d = physicalDimensionOfState state_site_tensor
+    in snd . unsafePerformIO $
+            withPinnedTensor state_site_tensor $ \p_state_site_tensor ->
+            withPinnedTensor operator $ \p_operator ->
+            withNewPinnedTensor (d,bl,br) $ \p_new_state_site_tensor ->
+                apply_single_site_operator
+                    br
+                    bl
+                    d
+                    p_state_site_tensor
+                    p_operator
+                    p_new_state_site_tensor
+-- @-node:gcross.20091211120042.1685:applySingleSiteOperator
 -- @-node:gcross.20091113125544.1661:Wrapper functions
 -- @-others
 -- @-node:gcross.20091113125544.1653:@thin Wrappers.hs

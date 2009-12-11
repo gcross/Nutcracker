@@ -505,10 +505,6 @@ makeConnectedTest message fetch_left_dimension fetch_right_dimension x y =
         d2 = fetch_right_dimension y
     in if d1 == d2 then d1 else error $ message ++ (printf " (%i != %i)\n" d1 d2)
 -- @-node:gcross.20091111171052.1602:Connected
--- @+node:gcross.20091112145455.1648:Pinnable
-class Pinnable a where
-    withPinnedTensor :: a -> (Ptr (Complex Double) -> IO b) -> IO b
--- @-node:gcross.20091112145455.1648:Pinnable
 -- @+node:gcross.20091116132159.1754:Creatable
 class MyIx i => Creatable a i where
     withNewPinnedTensor :: i -> (Ptr (Complex Double) -> IO b) -> IO (b,a)

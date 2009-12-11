@@ -3,8 +3,7 @@
 -- @@language Haskell
 
 module VMPS.Tensors
-    (withPinnedTensor
-    ,withNewPinnedTensor
+    (withNewPinnedTensor
     ,(<-?->)
     ,leftBandwidthOfState
     ,rightBandwidthOfState
@@ -25,7 +24,6 @@ module VMPS.Tensors
     ,LeftOverlapBoundaryTensor
     ,RightOverlapBoundaryTensor
     ,withPinnedOperatorSiteTensor
-    ,Pinnable()
     ,Creatable()
     ,operatorLeftBandwidth
     ,operatorRightBandwidth

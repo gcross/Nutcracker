@@ -41,6 +41,10 @@ instance (AlmostEq a, RealFloat a) => AlmostEq (Complex a) where
 
 x /~ y = not (x ~= y)
 -- @-node:gcross.20091113142219.1692:AlmostEq
+-- @+node:gcross.20091211120042.1687:Pinnable
+class Pinnable a where
+    withPinnedTensor :: a -> (Ptr (Complex Double) -> IO b) -> IO b
+-- @-node:gcross.20091211120042.1687:Pinnable
 -- @-node:gcross.20091113142219.1691:Classes
 -- @+node:gcross.20091114174920.1744:Functions
 -- @+node:gcross.20091114174920.1746:echo
