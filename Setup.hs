@@ -148,7 +148,7 @@ configure = parseCommandLineOptions options >>= \(_,options) -> runConfigurer "V
             <*> (configureUsingSection "Binutils")
             <*> (configureUsingSection "Binutils")
             <*> (configureUsingSection "Installation Directories")
-    package_dependencies <- configurePackageResolutions ghc_configuration package_description "GHC"
+    package_dependencies <- configurePackageResolutions ghc_configuration (Package.buildDepends package_description) "GHC"
     package_modules <- configurePackageModules ghc_configuration package_dependencies "ZZZ - Please do not edit this unless you know what you are doing."
     return $
         Configuration
@@ -164,7 +164,11 @@ configure = parseCommandLineOptions options >>= \(_,options) -> runConfigurer "V
 -- @+node:gcross.20091201134050.1635:test
 test = configure >>= \configuration -> do
     let more_package_dependencies =
-            ["HUnit"
+            ["base"
+            ,"array"
+            ,"mtl"
+            ,"Vec"
+            ,"HUnit"
             ,"QuickCheck"
             ,"test-framework"
             ,"test-framework-hunit"
