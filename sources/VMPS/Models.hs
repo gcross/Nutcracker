@@ -58,10 +58,11 @@ makeModelWithSpecialEndpointsOperatorSiteTensors bandwidth left_model middle_mod
     [makeOperatorSiteTensorFromSpecification bandwidth 1 $ right_model]
 -- @-node:gcross.20091123113033.1653:makeModelWithSpecialEndpointsOperatorSiteTensors
 -- @+node:gcross.20091118213523.1851:makeMagneticFieldOperatorSiteTensors
-makeMagneticFieldOperatorSiteTensors =
+makeMagneticFieldOperatorSiteTensors :: SingleQubitOperator -> Int -> [OperatorSiteTensor]
+makeMagneticFieldOperatorSiteTensors field_operator =
     makeSimpleModelOperatorSiteTensors 2
         [(1 --> 1) pI
-        ,(1 --> 2) pZ
+        ,(1 --> 2) field_operator
         ,(2 --> 2) pI
         ]
 -- @-node:gcross.20091118213523.1851:makeMagneticFieldOperatorSiteTensors

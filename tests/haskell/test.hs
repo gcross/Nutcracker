@@ -837,7 +837,7 @@ main = defaultMain
         [testCase "expectationOf" $ do
             let number_of_sites = 20
                 bandwidth_dimension = 8
-                operator_site_tensors = makeMagneticFieldOperatorSiteTensors number_of_sites
+                operator_site_tensors = makeMagneticFieldOperatorSiteTensors pZ number_of_sites
             chain <- generateRandomizedChain 2 bandwidth_dimension operator_site_tensors
             let chain_expectation = (computeEnergy chain :+ 0)
                 state_expectation = expectationOf operator_site_tensors . getCanonicalStateRepresentation $ chain
@@ -855,7 +855,7 @@ main = defaultMain
         [testCase "bit-flip test" $ do
             let number_of_sites = 20
                 bandwidth_dimension = 8
-                operator_site_tensors = makeMagneticFieldOperatorSiteTensors number_of_sites
+                operator_site_tensors = makeMagneticFieldOperatorSiteTensors pZ number_of_sites
             chain <- generateRandomizedChain 2 bandwidth_dimension operator_site_tensors
             let chain_expectation = (computeEnergy chain :+ 0)
                 new_state_expectation =
@@ -874,7 +874,7 @@ main = defaultMain
         ,testCase "phase-flip test" $ do
             let number_of_sites = 20
                 bandwidth_dimension = 8
-                operator_site_tensors = makeMagneticFieldOperatorSiteTensors number_of_sites
+                operator_site_tensors = makeMagneticFieldOperatorSiteTensors pZ number_of_sites
             chain <- generateRandomizedChain 2 bandwidth_dimension operator_site_tensors
             let chain_expectation = (computeEnergy chain :+ 0)
                 new_state_expectation =
@@ -893,7 +893,7 @@ main = defaultMain
         ,testCase "both-flip test" $ do
             let number_of_sites = 20
                 bandwidth_dimension = 8
-                operator_site_tensors = makeMagneticFieldOperatorSiteTensors number_of_sites
+                operator_site_tensors = makeMagneticFieldOperatorSiteTensors pZ number_of_sites
             chain <- generateRandomizedChain 2 bandwidth_dimension operator_site_tensors
             let chain_expectation = (computeEnergy chain :+ 0)
                 new_state_expectation =
@@ -924,7 +924,7 @@ main = defaultMain
                 -- @<< createMagneticFieldTest >>
                 -- @+node:gcross.20091114174920.1742:<< createMagneticFieldTest >>
                 createMagneticFieldTest number_of_sites bandwidth_dimension =
-                    generateRandomizedChain 2 bandwidth_dimension (makeMagneticFieldOperatorSiteTensors number_of_sites)
+                    generateRandomizedChain 2 bandwidth_dimension (makeMagneticFieldOperatorSiteTensors pZ number_of_sites)
                     >>=
                     return . chainEnergy . performOptimizationSweep_
                     >>=
@@ -1031,7 +1031,7 @@ main = defaultMain
                     solveForMultipleLevels_
                         (length correct_energy_levels)
                         2
-                        (makeMagneticFieldOperatorSiteTensors number_of_sites)
+                        (makeMagneticFieldOperatorSiteTensors pZ number_of_sites)
                         []
                     >>=
                     assertAlmostEqual "Is the optimal energy correct?" correct_energy_levels
