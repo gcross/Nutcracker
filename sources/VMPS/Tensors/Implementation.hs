@@ -417,7 +417,7 @@ withPinnedOperatorSiteTensor operator_site_tensor thunk =
     thunk (operatorNumberOfMatrices operator_site_tensor) p_indices . castPtr
 -- @nonl
 -- @-node:gcross.20091114174920.1715:withPinnedOperatorSiteTensor
--- @+node:gcross.20091114174920.1716:makeOperatorSiteTensorFromPaulis
+-- @+node:gcross.20091114174920.1716:makeOperatorSiteTensorFromSpecification
 makeOperatorSiteTensorFromSpecification ::
     Int ->
     Int ->
@@ -451,7 +451,7 @@ makeOperatorSiteTensorFromSpecification left_bandwidth right_bandwidth elements 
             ,   operatorIndices = operator_indices
             ,   operatorMatrices = operator_matrices
             }
--- @-node:gcross.20091114174920.1716:makeOperatorSiteTensorFromPaulis
+-- @-node:gcross.20091114174920.1716:makeOperatorSiteTensorFromSpecification
 -- @+node:gcross.20091114174920.1717:(Connected instances)
 instance Connected OperatorSiteTensor UnnormalizedStateSiteTensor where
     (<-?->) = makeConnectedTest
