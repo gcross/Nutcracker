@@ -17,6 +17,7 @@
 <v t="gcross.20091112145455.1619"><vh>@thin core-wrapper.c</vh></v>
 <v t="gcross.20091113125544.1651"><vh>@path VMPS</vh>
 <v t="gcross.20091118213523.1809"><vh>@thin Algorithms.hs</vh></v>
+<v t="gcross.20091211162553.1666"><vh>@thin Database.hs</vh></v>
 <v t="gcross.20091113142219.1659"><vh>@thin EnergyMinimizationChain.hs</vh></v>
 <v t="gcross.20091113142219.1688"><vh>@thin Miscellaneous.hs</vh></v>
 <v t="gcross.20091118213523.1839"><vh>@thin Models.hs</vh></v>
