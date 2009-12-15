@@ -15,6 +15,7 @@ import VMPS.Miscellaneous
 
 newtype SingleQubitOperator = SQO (Vec4 (Complex Double)) deriving (Num,Eq,Show)
 
+infix 5 *:
 (*:) :: Complex Double -> SingleQubitOperator -> SingleQubitOperator
 (*:) c (SQO v) = SQO (Vec.map (c*) v)
 
