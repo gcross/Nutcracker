@@ -77,7 +77,6 @@ performOptimizationSweep tolerance maximum_number_of_iterations starting_chain
             starting_chain
 
 performOptimizationSweep_ = performOptimizationSweep 0 1000
--- @nonl
 -- @-node:gcross.20091118213523.1817:performOptimizationSweep
 -- @+node:gcross.20091118213523.1810:performOptimizationSweepWithCallback
 performOptimizationSweepWithCallback ::
@@ -114,6 +113,8 @@ performOptimizationSweepWithCallback callback tolerance maximum_number_of_iterat
             Right (number_of_iterations,optimized_chain) -> callback (Right number_of_iterations) SweepingLeft optimized_chain >> return optimized_chain
         >>=
         goLeft (n-1) . activateLeftNeighbor
+{-# INLINE performOptimizationSweepWithCallback #-}
+-- @nonl
 -- @-node:gcross.20091118213523.1810:performOptimizationSweepWithCallback
 -- @-node:gcross.20091118213523.1822:Single sweep optimization
 -- @+node:gcross.20091118213523.1823:Multiple sweep optimization
@@ -176,6 +177,9 @@ performRepeatedSweepsUntilConvergenceWithCallbacks
                     tolerance
                     maximum_number_of_iterations
                     new_chain
+
+{-# INLINE performRepeatedSweepsUntilConvergenceWithCallbacks #-}
+-- @nonl
 -- @-node:gcross.20091118213523.1825:performRepeatedSweepsUntilConvergenceWithCallbacks
 -- @-node:gcross.20091118213523.1823:Multiple sweep optimization
 -- @+node:gcross.20091118213523.1844:Bandwidth increasing
@@ -253,6 +257,7 @@ increaseBandwidthAndSweepUntilConvergenceWithCallbacks
             tolerance
             maximum_number_of_iterations
 
+{-# INLINE increaseBandwidthAndSweepUntilConvergenceWithCallbacks #-}
 -- @-node:gcross.20091118213523.1854:increaseBandwidthAndSweepUntilConvergenceWithCallbacks
 -- @+node:gcross.20091119150241.1854:singleIncrementBandwidthIncreaser
 singleIncrementBandwidthIncreaser physical_dimension chain = do
@@ -308,6 +313,8 @@ runMultipleTrialsWithCallbacks
             tolerance
             maximum_number_of_iterations)
         return
+
+{-# INLINE runMultipleTrialsWithCallbacks #-}
 -- @-node:gcross.20091119150241.1847:runMultipleTrialsWithCallbacks
 -- @-node:gcross.20091119150241.1846:Multiple trials
 -- @+node:gcross.20091119150241.1851:Multiple levels
@@ -362,6 +369,8 @@ solveForMultipleLevelsWithCallbacks
             callback_to_decide_whether_to_declare_victory_with_trial chain
             >>=
             maybe (new_chain_factory >>= return . Left) (return . Right)
+
+{-# INLINE solveForMultipleLevelsWithCallbacks #-}
 -- @-node:gcross.20091119150241.1852:solveForMultipleLevelsWithCallbacks
 -- @+node:gcross.20091119150241.1853:solveForMultipleLevels
 solveForMultipleLevels ::
