@@ -27,7 +27,7 @@ import VMPS.Wrappers
 
 -- @+others
 -- @+node:gcross.20091119150241.1881:Callback Types
-type SiteCallback m = Maybe OptimizerFailureReason -> SweepDirection -> EnergyMinimizationChain -> m ()
+type SiteCallback m = Either OptimizerFailureReason Int -> SweepDirection -> EnergyMinimizationChain -> m ()
 type SweepCallback m = Bool -> EnergyMinimizationChain -> m ()
 type BandwidthIncreaseCallback m = EnergyMinimizationChain -> m EnergyMinimizationChain
 type MultilevelVictoryDeterminationCallback m = EnergyMinimizationChain -> m (Maybe (Double,CanonicalStateRepresentation))
@@ -40,6 +40,9 @@ ignoreSiteCallback _ _ _ = return ()
 -- @-node:gcross.20091119150241.1855:ignoreSiteCallback
 -- @-node:gcross.20091120112621.1592:site callbacks
 -- @+node:gcross.20091120112621.1593:sweep callbacks
+-- @+node:gcross.20100204150305.1689:ignoreSweepCallback
+ignoreSweepCallback _ _ = return ()
+-- @-node:gcross.20100204150305.1689:ignoreSweepCallback
 -- @-node:gcross.20091120112621.1593:sweep callbacks
 -- @+node:gcross.20091120112621.1596:bandwidth increase callbacks
 -- @+node:gcross.20091120112621.1597:newChainCreator
@@ -99,16 +102,16 @@ performOptimizationSweepWithCallback callback tolerance maximum_number_of_iterat
     goRight 0 chain = goLeft (number_of_sites-1) chain
     goRight n chain =
         case runOptimizerOn $ chain of
-            Left failure_reason -> callback (Just failure_reason) SweepingRight chain >> return chain
-            Right (_,optimized_chain) -> callback Nothing SweepingRight optimized_chain >> return optimized_chain
+            Left failure_reason -> callback (Left failure_reason) SweepingRight chain >> return chain
+            Right (number_of_iterations,optimized_chain) -> callback (Right number_of_iterations) SweepingRight optimized_chain >> return optimized_chain
         >>=
         goRight (n-1) . activateRightNeighbor
 
     goLeft 0 chain = return chain
     goLeft n chain =
         case runOptimizerOn $ chain of
-            Left failure_reason -> callback (Just failure_reason) SweepingLeft chain >> return chain
-            Right (_,optimized_chain) -> callback Nothing SweepingLeft optimized_chain >> return optimized_chain
+            Left failure_reason -> callback (Left failure_reason) SweepingLeft chain >> return chain
+            Right (number_of_iterations,optimized_chain) -> callback (Right number_of_iterations) SweepingLeft optimized_chain >> return optimized_chain
         >>=
         goLeft (n-1) . activateLeftNeighbor
 -- @-node:gcross.20091118213523.1810:performOptimizationSweepWithCallback
@@ -174,9 +177,6 @@ performRepeatedSweepsUntilConvergenceWithCallbacks
                     maximum_number_of_iterations
                     new_chain
 -- @-node:gcross.20091118213523.1825:performRepeatedSweepsUntilConvergenceWithCallbacks
--- @+node:gcross.20091119150241.1857:ignoreSweepCallback
-ignoreSweepCallback _ _ = return ()
--- @-node:gcross.20091119150241.1857:ignoreSweepCallback
 -- @-node:gcross.20091118213523.1823:Multiple sweep optimization
 -- @+node:gcross.20091118213523.1844:Bandwidth increasing
 -- @+node:gcross.20091118213523.1846:increaseBandwidthAndSweepUntilConvergence
