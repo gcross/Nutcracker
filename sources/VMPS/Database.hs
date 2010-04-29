@@ -246,6 +246,9 @@ insertRows name statement type_ids rows =
             ++ show (length rows) ++
             " rows."
 -- @-node:gcross.20091211162553.1685:insertRows
+-- @+node:gcross.20100312175547.1835:insertRow
+insertRow name statement type_ids = insertRows name statement type_ids . (:[])
+-- @-node:gcross.20100312175547.1835:insertRow
 -- @+node:gcross.20091211162553.1686:storeState
 storeState (CanonicalStateRepresentation number_of_sites first_tensor rest_tensors) =
     generateRandomUUIDAsString
