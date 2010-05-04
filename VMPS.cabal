@@ -17,13 +17,13 @@ Build-Type:     Custom
 
 Library
     Build-Depends:  Blueprint >= 0.2,
-                    base == 4.1.*,
-                    array == 0.2.*,
+                    base >= 4.1 && < 4.3,
+                    array >= 0.2 && < 0.4,
                     filepath == 1.*,
                     mtl == 1.1.*,
                     random == 1.*,
                     Vec == 0.9.*,
-                    InfixApplicative == 1.0.*,
+                    InfixApplicative >= 1.0 && < 1.2,
                     deepseq == 1.1.*,
                     bytestring == 0.9.*,
                     ConfigFile == 1.*,
