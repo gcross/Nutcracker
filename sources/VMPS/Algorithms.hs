@@ -46,12 +46,16 @@ ignoreSweepCallback _ _ = return ()
 -- @-node:gcross.20091120112621.1593:sweep callbacks
 -- @+node:gcross.20091120112621.1596:bandwidth increase callbacks
 -- @+node:gcross.20091120112621.1597:newChainCreator
-newChainCreator post_initialization operator_site_tensors physical_dimension initial_bandwidth =
-    return . makeConfiguration operator_site_tensors
-        >=>
-    liftIO . generateRandomizedChainWithOverlaps physical_dimension initial_bandwidth
-        >=>
-    \new_chain -> (post_initialization >> return new_chain)
+newChainCreator :: MonadIO m => m a -> Int -> [OperatorSiteTensor] -> [[OverlapTensorTrio]] -> m EnergyMinimizationChain
+newChainCreator post_initialization initial_bandwidth operator_site_tensors overlap_tensor_trios = do
+    new_chain <-
+        liftIO
+        .
+        generateRandomizedChainWithOverlaps initial_bandwidth
+        $
+        makeConfiguration operator_site_tensors overlap_tensor_trios
+    post_initialization
+    return new_chain
 -- @-node:gcross.20091120112621.1597:newChainCreator
 -- @-node:gcross.20091120112621.1596:bandwidth increase callbacks
 -- @+node:gcross.20091120112621.1594:multi-level callbacks
@@ -189,7 +193,6 @@ increaseBandwidthAndSweepUntilConvergence ::
     Double ->
     Double ->
     Int ->
-    Int ->
     EnergyMinimizationChain ->
     IO EnergyMinimizationChain
 increaseBandwidthAndSweepUntilConvergence
@@ -197,12 +200,11 @@ increaseBandwidthAndSweepUntilConvergence
     multisweep_energy_change_convergence_criterion
     tolerance
     maximum_number_of_iterations
-    physical_dimension
     chain
     =
     flip evalStateT (maximumBandwidthIn chain) $
         increaseBandwidthAndSweepUntilConvergenceWithCallbacks
-            (singleIncrementBandwidthIncreaser physical_dimension)
+            singleIncrementBandwidthIncreaser
             ignoreSweepCallback
             ignoreSiteCallback
             bandwidth_increase_energy_change_convergence_criterion
@@ -260,11 +262,11 @@ increaseBandwidthAndSweepUntilConvergenceWithCallbacks
 {-# INLINE increaseBandwidthAndSweepUntilConvergenceWithCallbacks #-}
 -- @-node:gcross.20091118213523.1854:increaseBandwidthAndSweepUntilConvergenceWithCallbacks
 -- @+node:gcross.20091119150241.1854:singleIncrementBandwidthIncreaser
-singleIncrementBandwidthIncreaser physical_dimension chain = do
+singleIncrementBandwidthIncreaser chain = do
     old_bandwidth <- get
     let new_bandwidth = old_bandwidth+1
     put new_bandwidth
-    liftIO $ increaseChainBandwidth physical_dimension new_bandwidth chain
+    liftIO $ increaseChainBandwidth new_bandwidth chain
 -- @-node:gcross.20091119150241.1854:singleIncrementBandwidthIncreaser
 -- @-node:gcross.20091118213523.1844:Bandwidth increasing
 -- @+node:gcross.20091119150241.1846:Multiple trials
@@ -395,8 +397,8 @@ solveForMultipleLevels
     = flip evalStateT undefined $
         solveForMultipleLevelsWithCallbacks
             alwaysDeclareVictory
-            (newChainCreator (put 2) operator_site_tensors 2 2)
-            (singleIncrementBandwidthIncreaser physical_dimension)
+            (newChainCreator (put initial_bandwidth) initial_bandwidth operator_site_tensors)
+            singleIncrementBandwidthIncreaser
             ignoreSweepCallback
             ignoreSiteCallback
             bandwidth_increase_energy_change_convergence_criterion
@@ -405,6 +407,8 @@ solveForMultipleLevels
             maximum_number_of_iterations
             number_of_levels
             projectors
+  where
+    initial_bandwidth = 2
 
 solveForMultipleLevels_ = solveForMultipleLevels 1e-7 1e-7 0 1000
 -- @-node:gcross.20091119150241.1853:solveForMultipleLevels

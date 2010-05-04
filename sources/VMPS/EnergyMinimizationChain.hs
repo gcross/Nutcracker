@@ -63,8 +63,6 @@ overlapRightAbsorptionNormalizedTensor (MiddleSiteOverlapTensorTrio _ _ x) = x
 overlapRightAbsorptionNormalizedTensor (RightSiteOverlapTensorTrio _ x) = x
 -- @-node:gcross.20091117140132.1795:OverlapTensorTrio
 -- @+node:gcross.20091115105949.1734:Neighbor
--- @+others
--- @+node:gcross.20091117140132.1791:Definitions
 data LeftNeighbor = LeftNeighbor
     {   leftNeighborBoundary :: !LeftBoundaryTensor
     ,   leftNeighborState :: !LeftAbsorptionNormalizedStateSiteTensor
@@ -80,7 +78,8 @@ data RightNeighbor = RightNeighbor
     ,   rightNeighborOverlapBoundaries :: ![RightOverlapBoundaryTensor]
     ,   rightNeighborOverlapTrios :: ![OverlapTensorTrio]
     }
--- @-node:gcross.20091117140132.1791:Definitions
+
+-- @+others
 -- @+node:gcross.20091117140132.1792:absorbIntoNew___Neighbor
 absorbIntoNewRightNeighbor ::
     RightBoundaryTensor ->
@@ -252,25 +251,45 @@ data EnergyMinimizationChain = EnergyMinimizationChain
 -- @-node:gcross.20091113142219.1664:Types
 -- @+node:gcross.20091116222034.2374:Utility Functions
 -- @+node:gcross.20091113142219.1699:computeBandwidthDimensionSequence
-computeBandwidthDimensionSequence :: Int -> Int -> Int -> [Int]
-computeBandwidthDimensionSequence number_of_sites physical_dimension bandwidth_dimension =
-    let go :: Int -> Int -> [Int] -> (Int,[Int])
-        go list_length next_bandwidth_dimension list
-            | next_bandwidth_dimension >= bandwidth_dimension
-                = (list_length,list)
-            | otherwise
-                = go (list_length+1) (next_bandwidth_dimension*physical_dimension) (next_bandwidth_dimension:list)
-        (prefix_list_length,prefix_list) = go 0 1 []
-        filler_length = number_of_sites - 2 * prefix_list_length + 1
-    in if filler_length < 1 then error "The supplied bandwidth dimension is too large for the given physical dimension and number of sites."
-        else reverse prefix_list ++ replicate filler_length bandwidth_dimension ++ prefix_list 
+computeBandwidthDimensionSequence :: Int -> [Int] -> [Int]
+computeBandwidthDimensionSequence requested_bandwidth_dimension physical_dimensions =
+    let computeSequence physical_dimensions = 1:go 1 physical_dimensions
+          where
+            go :: Int -> [Int] -> [Int]
+            go _ [] = []
+            go last_bandwidth_dimension (current_physical_dimension:remaining_physical_dimensions)
+               | current_bandwidth_dimension >= requested_bandwidth_dimension
+                = []
+               | otherwise
+                = current_bandwidth_dimension : go current_bandwidth_dimension remaining_physical_dimensions
+              where
+                current_bandwidth_dimension = last_bandwidth_dimension*current_physical_dimension
+        left_sequence = computeSequence physical_dimensions
+        right_sequence = reverse . computeSequence . reverse $ physical_dimensions
+        requested_length = length physical_dimensions + 1
+        minimal_length_without_center = length left_sequence + length right_sequence
+    in if minimal_length_without_center >= requested_length
+        then error "The supplied bandwidth dimension is too large for the given physical dimension and number of sites."
+        else
+            left_sequence
+            ++
+            replicate (requested_length - minimal_length_without_center) requested_bandwidth_dimension
+            ++
+            right_sequence
 -- @-node:gcross.20091113142219.1699:computeBandwidthDimensionSequence
--- @+node:gcross.20091113142219.2519:computeBandwidthDimensionsAtAllSites
-computeBandwidthDimensionsAtAllSites :: Int -> Int -> Int -> [(Int,Int)]
-computeBandwidthDimensionsAtAllSites number_of_sites physical_dimension bandwidth_dimension =
-    uncurry zip . (id &&& tail) $
-        computeBandwidthDimensionSequence number_of_sites physical_dimension bandwidth_dimension
--- @-node:gcross.20091113142219.2519:computeBandwidthDimensionsAtAllSites
+-- @+node:gcross.20091113142219.2519:computeSiteDimensionSequence
+computeSiteDimensionSequence :: Int -> [Int] -> [(Int,Int,Int)]
+computeSiteDimensionSequence requested_bandwidth_dimension physical_dimensions =
+    zip3
+        physical_dimensions
+        bandwidth_dimension_sequence
+        (tail bandwidth_dimension_sequence)
+  where
+    bandwidth_dimension_sequence =
+        computeBandwidthDimensionSequence
+            requested_bandwidth_dimension
+            physical_dimensions
+-- @-node:gcross.20091113142219.2519:computeSiteDimensionSequence
 -- @+node:gcross.20091120112621.1590:makeConfiguration
 makeConfiguration :: [OperatorSiteTensor] -> [[OverlapTensorTrio]] -> [(OperatorSiteTensor,[OverlapTensorTrio])]
 makeConfiguration operator_site_tensors [] = zip operator_site_tensors (repeat [])
@@ -450,19 +469,22 @@ optimizeSite tolerance maximum_number_of_iterations chain =
 optimizeSite_ = optimizeSite 0 1000
 -- @-node:gcross.20091113142219.1687:optimizeSite
 -- @+node:gcross.20091117140132.1796:generateRandomizedChain
-generateRandomizedChain :: Int -> Int -> [OperatorSiteTensor] -> IO (EnergyMinimizationChain)
-generateRandomizedChain d b = generateRandomizedChainWithOverlaps d b . flip zip (repeat [])
+generateRandomizedChain :: Int -> [OperatorSiteTensor] -> IO (EnergyMinimizationChain)
+generateRandomizedChain requested_bandwidth_dimension =
+    generateRandomizedChainWithOverlaps requested_bandwidth_dimension . flip zip (repeat [])
 -- @-node:gcross.20091117140132.1796:generateRandomizedChain
 -- @+node:gcross.20091113142219.2535:generateRandomizedChainWithOverlaps
-generateRandomizedChainWithOverlaps :: Int -> Int -> [(OperatorSiteTensor,[OverlapTensorTrio])] -> IO (EnergyMinimizationChain)
-generateRandomizedChainWithOverlaps _ _ [] = error "Must have at least one operator site tensor!"
-generateRandomizedChainWithOverlaps physical_dimension bandwidth_dimension operator_site_tensors =
+generateRandomizedChainWithOverlaps :: Int -> [(OperatorSiteTensor,[OverlapTensorTrio])] -> IO (EnergyMinimizationChain)
+generateRandomizedChainWithOverlaps _ [] = error "Must have at least one operator site tensor!"
+generateRandomizedChainWithOverlaps requested_bandwidth_dimension operator_site_tensors =
     let number_of_sites = length operator_site_tensors
         number_of_projectors = length . snd . head $ operator_site_tensors
-        normalized_randomizer = uncurry (generateRandomizedStateSiteTensor physical_dimension)
-        unnormalized_randomizer = uncurry (generateRandomizedStateSiteTensor physical_dimension)
-        state_site_bandwidth_dimensions =
-            computeBandwidthDimensionsAtAllSites number_of_sites physical_dimension bandwidth_dimension
+        sequence_of_site_dimensions =
+            computeSiteDimensionSequence requested_bandwidth_dimension
+            .
+            map (operatorPhysicalDimension . fst)
+            $
+            operator_site_tensors
         go final_right_boundary
            final_right_overlap_boundaries
            final_neighbors
@@ -471,8 +493,8 @@ generateRandomizedChainWithOverlaps physical_dimension bandwidth_dimension opera
         go right_boundary
            right_overlap_boundaries
            current_neighbors
-           ((bandwidth_dimensions,(operator_site_tensor,overlap_trios)):remaining) 
-           = normalized_randomizer bandwidth_dimensions
+           (((d,bl,br),(operator_site_tensor,overlap_trios)):remaining) 
+           = generateRandomizedStateSiteTensor d bl br
              >>=
              \site_state_tensor ->
                  let (new_right_boundary,new_right_overlap_boundaries,new_neighbor) =
@@ -486,14 +508,15 @@ generateRandomizedChainWithOverlaps physical_dimension bandwidth_dimension opera
                        new_right_overlap_boundaries
                        (new_neighbor:current_neighbors)
                        remaining
-        (first_site_left_bandwidth_dimension, first_site_right_bandwidth_dimension) = head state_site_bandwidth_dimensions
     in do
         (right_neighbors,right_boundary,right_overlap_boundaries) <-
             go trivial_right_boundary
                (replicate number_of_projectors trivial_right_overlap_boundary)
                []
-               (reverse . tail $ zip state_site_bandwidth_dimensions operator_site_tensors)
-        unnormalized_state_site_tensor <- unnormalized_randomizer . head $ state_site_bandwidth_dimensions
+               (reverse . tail $ zip sequence_of_site_dimensions operator_site_tensors)
+        unnormalized_state_site_tensor <-
+            let (d,bl,br) = head sequence_of_site_dimensions
+            in generateRandomizedStateSiteTensor d bl br
         return $
             let left_overlap_boundaries = (replicate number_of_projectors trivial_left_overlap_boundary)
                 overlap_trios = snd . head $ operator_site_tensors
@@ -517,10 +540,19 @@ generateRandomizedChainWithOverlaps physical_dimension bandwidth_dimension opera
                     }
             in chain
 -- @-node:gcross.20091113142219.2535:generateRandomizedChainWithOverlaps
+-- @+node:gcross.20100503130440.1689:chainPhysicalDimensions
+chainPhysicalDimensions :: EnergyMinimizationChain -> [Int]
+chainPhysicalDimensions chain =
+    reverse (map (physicalDimensionOfState . leftNeighborState) (siteLeftNeighbors chain))
+    ++
+    [physicalDimensionOfState . siteStateTensor $ chain]
+    ++
+    map (physicalDimensionOfState . rightNeighborState) (siteRightNeighbors chain)
+-- @-node:gcross.20100503130440.1689:chainPhysicalDimensions
 -- @+node:gcross.20091115105949.1744:increaseChainBandwidth
-increaseChainBandwidth :: Int -> Int -> EnergyMinimizationChain -> IO EnergyMinimizationChain
+increaseChainBandwidth :: Int -> EnergyMinimizationChain -> IO EnergyMinimizationChain
 increaseChainBandwidth
-    physical_dimension new_bandwidth
+    new_bandwidth
     chain@
     EnergyMinimizationChain
     {   siteRightNeighbors = neighbors
@@ -549,8 +581,12 @@ increaseChainBandwidth
     )
     .
     tail
+    .
+    computeBandwidthDimensionSequence new_bandwidth
+    .
+    chainPhysicalDimensions
     $
-    computeBandwidthDimensionSequence number_of_sites physical_dimension new_bandwidth
+    chain
   where
     go1 ::
         [(RightNeighbor,Int)] ->
@@ -634,7 +670,7 @@ increaseChainBandwidth
                 remaining_neighbors_to_process
                 (new_neighbor:new_neighbors)
 
-increaseChainBandwidth _ _ _ = error "This algorithm is only designed to work when the chain is at its leftmost site."
+increaseChainBandwidth _ _ = error "This algorithm is only designed to work when the chain is at its leftmost site."
 -- @-node:gcross.20091115105949.1744:increaseChainBandwidth
 -- @+node:gcross.20091118213523.1855:maximumBandwidthIn
 maximumBandwidthIn :: EnergyMinimizationChain -> Int

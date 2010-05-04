@@ -14,6 +14,7 @@
 import Control.Arrow
 import Control.Exception
 import Control.Monad
+import Control.Spoon
 
 import Data.Array.Storable
 import Data.Array.Unboxed
@@ -669,61 +670,63 @@ main = defaultMain
         -- @+node:gcross.20091113142219.1853:computeBandwidthDimensionSequence
         [testGroup "computeBandwidthDimensionSequence"
             -- @    @+others
-            -- @+node:gcross.20091113142219.2505:gets there eventually
-            [testProperty "gets there eventually" $
-                \(PDI physical_dimension) (BI bandwith_dimension) (NOSI number_of_sites) ->
-                    maximum (computeBandwidthDimensionSequence number_of_sites physical_dimension bandwith_dimension) == bandwith_dimension
-            -- @-node:gcross.20091113142219.2505:gets there eventually
             -- @+node:gcross.20091113142219.2507:has the right number of entries
-            ,testProperty "has the right number of entries" $
-                \(PDI physical_dimension) (BI bandwith_dimension) (NOSI number_of_sites) ->
-                    length (computeBandwidthDimensionSequence number_of_sites physical_dimension bandwith_dimension) == number_of_sites + 1
+            [testProperty "has the right number of entries" $ do
+                requested_bandwidth_dimension <- choose (1,100000)
+                number_of_sites <- choose (20,1000)
+                physical_dimensions <- vectorOf number_of_sites (choose (2,10))
+                return $
+                    length (computeBandwidthDimensionSequence requested_bandwidth_dimension physical_dimensions) == number_of_sites + 1
             -- @-node:gcross.20091113142219.2507:has the right number of entries
+            -- @+node:gcross.20091113142219.2505:gets there eventually
+            ,testProperty "gets to the requested bandwidth eventually" $ do
+                requested_bandwidth_dimension <- choose (1,100000)
+                number_of_sites <- choose (20,1000)
+                physical_dimensions <- vectorOf number_of_sites (choose (2,10))
+                return $
+                    maximum (computeBandwidthDimensionSequence requested_bandwidth_dimension physical_dimensions) == requested_bandwidth_dimension
+            -- @-node:gcross.20091113142219.2505:gets there eventually
             -- @-others
             ]
         -- @-node:gcross.20091113142219.1853:computeBandwidthDimensionSequence
-        -- @+node:gcross.20091113142219.2532:computeBandwidthDimensionsAtAllSites
-        ,testGroup "computeBandwidthDimensionsAtAllSites"
+        -- @+node:gcross.20091113142219.2532:computeSiteDimensionSequence
+        ,testGroup "computeSiteDimensionSequence"
             -- @    @+others
             -- @+node:gcross.20091113142219.2534:has the right number of entries
-            [testProperty "has the right number of entries" $
-                \(PDI physical_dimension) (BI bandwith_dimension) (NOSI number_of_sites) ->
-                    length (computeBandwidthDimensionsAtAllSites number_of_sites physical_dimension bandwith_dimension) == number_of_sites
+            [testProperty "has the right number of entries" $ do
+                requested_bandwidth_dimension <- choose (1,100000)
+                number_of_sites <- choose (20,1000)
+                physical_dimensions <- vectorOf number_of_sites (choose (2,10))
+                return $
+                    length (computeSiteDimensionSequence requested_bandwidth_dimension physical_dimensions) == number_of_sites
             -- @-node:gcross.20091113142219.2534:has the right number of entries
             -- @+node:gcross.20091113142219.2516:doesn't grow too fast from the left
-            ,testProperty "doesn't grow too fast from the left" $
-                \(PDI physical_dimension) (BI bandwith_dimension) (NOSI number_of_sites) ->
-                    all (\(x,y) -> y <= physical_dimension * x) $
-                        computeBandwidthDimensionsAtAllSites number_of_sites physical_dimension bandwith_dimension
+            ,testProperty "doesn't grow too fast from the left" $ do
+                requested_bandwidth_dimension <- choose (1,100000)
+                number_of_sites <- choose (20,1000)
+                physical_dimensions <- vectorOf number_of_sites (choose (2,10))
+                return . all (\(d,bl,br) -> br <= d*bl) $
+                    computeSiteDimensionSequence requested_bandwidth_dimension physical_dimensions
             -- @-node:gcross.20091113142219.2516:doesn't grow too fast from the left
             -- @+node:gcross.20091113142219.2518:doesn't grow too fast from the right
-            ,testProperty "doesn't grow too fast from the right" $
-                \(PDI physical_dimension) (BI bandwith_dimension) (NOSI number_of_sites) ->
-                    all (\(x,y) -> x <= physical_dimension * y) $
-                        computeBandwidthDimensionsAtAllSites number_of_sites physical_dimension bandwith_dimension
+            ,testProperty "doesn't grow too fast from the right" $ do
+                requested_bandwidth_dimension <- choose (1,100000)
+                number_of_sites <- choose (20,1000)
+                physical_dimensions <- vectorOf number_of_sites (choose (2,10))
+                return . all (\(d,bl,br) -> bl <= d*br) $
+                    computeSiteDimensionSequence requested_bandwidth_dimension physical_dimensions
             -- @-node:gcross.20091113142219.2518:doesn't grow too fast from the right
             -- @+node:gcross.20091113142219.2511:complains if too large
-            ,testProperty "complains if too large" $
-                \(PDI physical_dimension) (UTI number_of_sites) -> unsafePerformIO $
-                    Control.Exception.catch
-                        ((evaluate
-                            .
-                            computeBandwidthDimensionSequence number_of_sites physical_dimension
-                            .
-                            product
-                            .
-                            replicate (number_of_sites `div` 2 + 1)
-                            $
-                            physical_dimension)
-                        >>=
-                        putStrLn . show
-                        >>
-                        return False)
-                        (\(_ :: ErrorCall) -> return True)
+            ,testProperty "complains if too large" $ do
+                number_of_sites <- choose (10,20)
+                physical_dimensions <- vectorOf number_of_sites (choose (2,10))
+                let requested_bandwidth_dimension = 2 * product physical_dimensions
+                return . (== Nothing) . spoon $
+                    computeSiteDimensionSequence requested_bandwidth_dimension physical_dimensions
             -- @-node:gcross.20091113142219.2511:complains if too large
             -- @-others
             ]
-        -- @-node:gcross.20091113142219.2532:computeBandwidthDimensionsAtAllSites
+        -- @-node:gcross.20091113142219.2532:computeSiteDimensionSequence
         -- @+node:gcross.20091114174920.1728:Chain energy invariant under movement
         ,testGroup "Chain energy invariant under movement" $
             let 
@@ -732,7 +735,7 @@ main = defaultMain
             -- @+node:gcross.20091114174920.1738:<< createEnergyInvarianceTest >>
             createEnergyInvarianceTest number_of_sites bandwidth_dimension = do
                 chain <-
-                    generateRandomizedChain 2 bandwidth_dimension
+                    generateRandomizedChain bandwidth_dimension
                     .
                     replicate number_of_sites
                     .
@@ -783,14 +786,14 @@ main = defaultMain
             -- @+node:gcross.20091115105949.1748:<< createBandwidthIncreaseTest >>
             createBandwidthIncreaseTest number_of_sites old_bandwidth_dimension new_bandwidth_dimension = do
                 original_chain <-
-                    generateRandomizedChain 2 old_bandwidth_dimension
+                    generateRandomizedChain old_bandwidth_dimension
                     .
                     replicate number_of_sites
                     .
                     makeOperatorSiteTensorFromSpecification 1 1
                     $
                     [(1 --> 1) pY]
-                chain <- increaseChainBandwidth 2 new_bandwidth_dimension original_chain
+                chain <- increaseChainBandwidth new_bandwidth_dimension original_chain
                 let chains_going_right =
                         take number_of_sites
                         .
@@ -838,7 +841,7 @@ main = defaultMain
             let number_of_sites = 20
                 bandwidth_dimension = 8
                 operator_site_tensors = makeMagneticFieldOperatorSiteTensors pZ number_of_sites
-            chain <- generateRandomizedChain 2 bandwidth_dimension operator_site_tensors
+            chain <- generateRandomizedChain bandwidth_dimension operator_site_tensors
             let chain_expectation = (computeEnergy chain :+ 0)
                 state_expectation = expectationOf operator_site_tensors . getCanonicalStateRepresentation $ chain
             assertAlmostEqual "Was the expectation consistent with the chain energy?"
@@ -856,7 +859,7 @@ main = defaultMain
             let number_of_sites = 20
                 bandwidth_dimension = 8
                 operator_site_tensors = makeMagneticFieldOperatorSiteTensors pZ number_of_sites
-            chain <- generateRandomizedChain 2 bandwidth_dimension operator_site_tensors
+            chain <- generateRandomizedChain bandwidth_dimension operator_site_tensors
             let chain_expectation = (computeEnergy chain :+ 0)
                 new_state_expectation =
                     expectationOf operator_site_tensors
@@ -875,7 +878,7 @@ main = defaultMain
             let number_of_sites = 20
                 bandwidth_dimension = 8
                 operator_site_tensors = makeMagneticFieldOperatorSiteTensors pZ number_of_sites
-            chain <- generateRandomizedChain 2 bandwidth_dimension operator_site_tensors
+            chain <- generateRandomizedChain bandwidth_dimension operator_site_tensors
             let chain_expectation = (computeEnergy chain :+ 0)
                 new_state_expectation =
                     expectationOf operator_site_tensors
@@ -894,7 +897,7 @@ main = defaultMain
             let number_of_sites = 20
                 bandwidth_dimension = 8
                 operator_site_tensors = makeMagneticFieldOperatorSiteTensors pZ number_of_sites
-            chain <- generateRandomizedChain 2 bandwidth_dimension operator_site_tensors
+            chain <- generateRandomizedChain bandwidth_dimension operator_site_tensors
             let chain_expectation = (computeEnergy chain :+ 0)
                 new_state_expectation =
                     expectationOf operator_site_tensors
@@ -924,7 +927,7 @@ main = defaultMain
                 -- @<< createMagneticFieldTest >>
                 -- @+node:gcross.20091114174920.1742:<< createMagneticFieldTest >>
                 createMagneticFieldTest number_of_sites bandwidth_dimension =
-                    generateRandomizedChain 2 bandwidth_dimension (makeMagneticFieldOperatorSiteTensors pZ number_of_sites)
+                    generateRandomizedChain bandwidth_dimension (makeMagneticFieldOperatorSiteTensors pZ number_of_sites)
                     >>=
                     return . chainEnergy . performOptimizationSweep_
                     >>=
@@ -958,7 +961,7 @@ main = defaultMain
                                                bandwidth_dimension
                                                perturbation_strength
                                                correct_ground_state_energy =
-                    generateRandomizedChain 2 bandwidth_dimension
+                    generateRandomizedChain bandwidth_dimension
                         (makeTransverseIsingModelOperatorSiteTensors perturbation_strength number_of_sites)
                     >>=
                     return . chainEnergy . performRepeatedSweepsUntilConvergence_
@@ -996,10 +999,10 @@ main = defaultMain
                                                bandwidth_dimension
                                                perturbation_strength
                                                correct_ground_state_energy =
-                    generateRandomizedChain 2 bandwidth_dimension
+                    generateRandomizedChain bandwidth_dimension
                         (makeTransverseIsingModelOperatorSiteTensors perturbation_strength number_of_sites)
                     >>=
-                    increaseBandwidthAndSweepUntilConvergence_ 2
+                    increaseBandwidthAndSweepUntilConvergence_
                     >>=
                     return . chainEnergy
                     >>=

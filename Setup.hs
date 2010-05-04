@@ -83,6 +83,7 @@ main =
            ,[("core","o"),("core-wrapper","o")]
            ,["HUnit == 1.*"
             ,"QuickCheck == 2.*"
+            ,"spoon == 0.3.*"
             ,"test-framework == 0.2.*"
             ,"test-framework-hunit == 0.2.*"
             ,"test-framework-quickcheck2 == 0.2.*"
