@@ -2,12 +2,12 @@
 -- @+node:gcross.20091118213523.1832:@thin Paulis.hs
 -- @@language Haskell
 
-module VMPS.Paulis (pI,pX,pY,pZ) where
+module VMPS.Qubits.Paulis (pI,pX,pY,pZ) where
 
 import Data.Complex
 import Data.Vec
 
-import VMPS.Operators
+import VMPS.Qubits.Operators
 
 i :: Complex Double
 i = (0 :+ 1)

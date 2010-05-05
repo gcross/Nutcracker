@@ -4,8 +4,9 @@
 
 -- @<< Language extensions >>
 -- @+node:gcross.20091113142219.2512:<< Language extensions >>
-{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 -- @-node:gcross.20091113142219.2512:<< Language extensions >>
 -- @nl
 
@@ -40,9 +41,9 @@ import System.IO.Unsafe
 import VMPS.Algorithms
 import VMPS.EnergyMinimizationChain
 import VMPS.Miscellaneous
-import VMPS.Operators
-import VMPS.Models
-import VMPS.Paulis
+import VMPS.Qubits.Models
+import VMPS.Qubits.Operators
+import VMPS.Qubits.Paulis
 import VMPS.States
 import VMPS.Tensors.Implementation
 import VMPS.Wrappers

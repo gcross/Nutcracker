@@ -36,7 +36,6 @@ import System.IO.Unsafe
 import Text.Printf
 
 import VMPS.Miscellaneous
-import VMPS.Operators
 -- @-node:gcross.20091111171052.1599:<< Import needed modules >>
 -- @nl
 
@@ -417,41 +416,6 @@ withPinnedOperatorSiteTensor operator_site_tensor thunk =
     thunk (operatorNumberOfMatrices operator_site_tensor) p_indices . castPtr
 -- @nonl
 -- @-node:gcross.20091114174920.1715:withPinnedOperatorSiteTensor
--- @+node:gcross.20091114174920.1716:makeOperatorSiteTensorFromSpecification
-makeOperatorSiteTensorFromSpecification ::
-    Int ->
-    Int ->
-    OperatorSpecification ->
-    OperatorSiteTensor
-makeOperatorSiteTensorFromSpecification left_bandwidth right_bandwidth elements =
-    let number_of_elements = length elements
-    in unsafePerformIO $ do
-        operator_indices <- newArray ((1,1),(number_of_elements,2)) 0
-        operator_matrices <- newArray ((1,1,1),(number_of_elements,2,2)) 0
-        let go :: Int -> [((Int32,Int32),SingleQubitOperator)] -> IO ()
-            go _ [] = return ()
-            go index (((left_index,right_index),pauli):rest) =
-                let SQO (    p11 :. p12
-                          :. p21 :. p22
-                          :. () ) = pauli
-                in do
-                    writeArray operator_indices (index,1) left_index
-                    writeArray operator_indices (index,2) right_index
-                    writeArray operator_matrices (index,1,1) p11
-                    writeArray operator_matrices (index,1,2) p12
-                    writeArray operator_matrices (index,2,1) p21
-                    writeArray operator_matrices (index,2,2) p22
-                    go (index+1) rest
-        go 1 elements
-        return OperatorSiteTensor
-            {   operatorLeftBandwidth = left_bandwidth
-            ,   operatorRightBandwidth = right_bandwidth
-            ,   operatorPhysicalDimension = 2
-            ,   operatorNumberOfMatrices = number_of_elements
-            ,   operatorIndices = operator_indices
-            ,   operatorMatrices = operator_matrices
-            }
--- @-node:gcross.20091114174920.1716:makeOperatorSiteTensorFromSpecification
 -- @+node:gcross.20091114174920.1717:(Connected instances)
 instance Connected OperatorSiteTensor UnnormalizedStateSiteTensor where
     (<-?->) = makeConnectedTest

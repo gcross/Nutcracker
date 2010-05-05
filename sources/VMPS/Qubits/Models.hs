@@ -7,14 +7,14 @@
 -- @-node:gcross.20091118213523.1840:<< Language extensions >>
 -- @nl
 
-module VMPS.Models where
+module VMPS.Qubits.Models where
 
 -- @<< Import needed modules >>
 -- @+node:gcross.20091118213523.1841:<< Import needed modules >>
 import Data.Int
 
-import VMPS.Operators
-import VMPS.Paulis
+import VMPS.Qubits.Operators
+import VMPS.Qubits.Paulis
 import VMPS.Tensors
 -- @-node:gcross.20091118213523.1841:<< Import needed modules >>
 -- @nl

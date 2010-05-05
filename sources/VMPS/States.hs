@@ -18,7 +18,6 @@ import Data.Complex
 import Data.List
 import Data.Typeable
 
-import VMPS.Operators
 import VMPS.Tensors
 import VMPS.Wrappers
 -- @-node:gcross.20091123113033.1628:<< Import needed modules >>
@@ -37,20 +36,6 @@ data CanonicalStateRepresentation =
 -- @-node:gcross.20091123113033.1631:CanonicalStateRepresentation
 -- @-node:gcross.20091123113033.1629:Types
 -- @+node:gcross.20091123113033.1626:Functions
--- @+node:gcross.20091211120042.1696:applySingleSiteOperators
-applySingleSiteOperators :: [SingleQubitOperator] -> CanonicalStateRepresentation -> CanonicalStateRepresentation
-applySingleSiteOperators operators old_state = assert (length operators >= canonicalStateNumberOfSites old_state) $
-    old_state
-        {   canonicalStateFirstSiteTensor =
-                applySingleSiteOperator
-                    (head operators)
-                    (canonicalStateFirstSiteTensor old_state)
-        ,   canonicalStateRestSiteTensors =
-                zipWith applySingleSiteOperator
-                    (tail operators)
-                    (canonicalStateRestSiteTensors old_state)
-        }
--- @-node:gcross.20091211120042.1696:applySingleSiteOperators
 -- @+node:gcross.20091123113033.1635:expectationOf
 expectationOf :: [OperatorSiteTensor] -> CanonicalStateRepresentation -> Complex Double
 expectationOf operator_site_tensors state

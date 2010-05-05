@@ -34,7 +34,6 @@ module VMPS.Tensors
     ,trivial_left_overlap_boundary
     ,trivial_right_overlap_boundary
     ,OperatorSiteTensor
-    ,makeOperatorSiteTensorFromSpecification
     ) where
 
 import VMPS.Tensors.Implementation
