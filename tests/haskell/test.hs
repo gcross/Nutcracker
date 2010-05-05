@@ -41,9 +41,10 @@ import System.IO.Unsafe
 import VMPS.Algorithms
 import VMPS.EnergyMinimizationChain
 import VMPS.Miscellaneous
+import VMPS.Models
+import VMPS.Operators
 import VMPS.Qubits.Models
 import VMPS.Qubits.Operators
-import VMPS.Qubits.Paulis
 import VMPS.States
 import VMPS.Tensors.Implementation
 import VMPS.Wrappers

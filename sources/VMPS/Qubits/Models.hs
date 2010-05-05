@@ -13,51 +13,17 @@ module VMPS.Qubits.Models where
 -- @+node:gcross.20091118213523.1841:<< Import needed modules >>
 import Data.Int
 
+import VMPS.Operators
+import VMPS.Operators.Dimensions
+import VMPS.Models
 import VMPS.Qubits.Operators
-import VMPS.Qubits.Paulis
 import VMPS.Tensors
 -- @-node:gcross.20091118213523.1841:<< Import needed modules >>
 -- @nl
 
 -- @+others
--- @+node:gcross.20091118213523.1850:Functions
--- @+node:gcross.20091118213523.1843:startingFrom/endingWith
-startingFrom :: OperatorSpecification -> OperatorSpecification
-startingFrom = filter $ (== 1) . fst . fst
-
-endingWith :: Int -> OperatorSpecification -> OperatorSpecification
-endingWith ending_index list = [((index1,1),matrix) | ((index1,index2),matrix) <- list, index2 == toEnum ending_index]
--- @-node:gcross.20091118213523.1843:startingFrom/endingWith
--- @+node:gcross.20091118213523.1836:-->
-(-->) :: Int32 -> Int32 -> SingleQubitOperator -> ((Int32,Int32),SingleQubitOperator)
-(-->) i j sqo = ((i,j),sqo)
--- @-node:gcross.20091118213523.1836:-->
--- @-node:gcross.20091118213523.1850:Functions
--- @+node:gcross.20091118213523.1849:Models
--- @+node:gcross.20091210184845.1636:makeLocalOperatorSiteTensors
-makeLocalOperatorSiteTensors :: [SingleQubitOperator] -> [OperatorSiteTensor]
-makeLocalOperatorSiteTensors = map (makeOperatorSiteTensorFromSpecification 1 1 . (:[]) . (1 --> 1))
--- @-node:gcross.20091210184845.1636:makeLocalOperatorSiteTensors
--- @+node:gcross.20091120112621.1587:makeSimpleModelOperatorSiteTensors
-makeSimpleModelOperatorSiteTensors :: Int -> OperatorSpecification -> Int -> [OperatorSiteTensor]
-makeSimpleModelOperatorSiteTensors bandwidth middle_model number_of_sites =
-    makeModelWithSpecialEndpointsOperatorSiteTensors
-        bandwidth
-        (startingFrom middle_model)
-        middle_model
-        (endingWith bandwidth middle_model)
-        number_of_sites
--- @-node:gcross.20091120112621.1587:makeSimpleModelOperatorSiteTensors
--- @+node:gcross.20091123113033.1653:makeModelWithSpecialEndpointsOperatorSiteTensors
-makeModelWithSpecialEndpointsOperatorSiteTensors :: Int -> OperatorSpecification -> OperatorSpecification -> OperatorSpecification -> Int -> [OperatorSiteTensor]
-makeModelWithSpecialEndpointsOperatorSiteTensors bandwidth left_model middle_model right_model number_of_sites =
-    [makeOperatorSiteTensorFromSpecification 1 bandwidth $ left_model]
-    ++
-    replicate (number_of_sites-2) (makeOperatorSiteTensorFromSpecification bandwidth bandwidth $ middle_model)
-    ++
-    [makeOperatorSiteTensorFromSpecification bandwidth 1 $ right_model]
--- @-node:gcross.20091123113033.1653:makeModelWithSpecialEndpointsOperatorSiteTensors
--- @+node:gcross.20091118213523.1851:makeMagneticFieldOperatorSiteTensors
+-- @+node:gcross.20100505152919.1741:Models
+-- @+node:gcross.20100505152919.1745:makeMagneticFieldOperatorSiteTensors
 makeMagneticFieldOperatorSiteTensors :: SingleQubitOperator -> Int -> [OperatorSiteTensor]
 makeMagneticFieldOperatorSiteTensors field_operator =
     makeSimpleModelOperatorSiteTensors 2
@@ -65,8 +31,8 @@ makeMagneticFieldOperatorSiteTensors field_operator =
         ,(1 --> 2) field_operator
         ,(2 --> 2) pI
         ]
--- @-node:gcross.20091118213523.1851:makeMagneticFieldOperatorSiteTensors
--- @+node:gcross.20091118213523.1852:makeTransverseIsingOperatorSiteTensors
+-- @-node:gcross.20100505152919.1745:makeMagneticFieldOperatorSiteTensors
+-- @+node:gcross.20100505152919.1743:makeTransverseIsingOperatorSiteTensors
 makeTransverseIsingModelOperatorSiteTensors coupling_stringth =
     makeSimpleModelOperatorSiteTensors 3
         [(1 --> 1) pI
@@ -75,8 +41,8 @@ makeTransverseIsingModelOperatorSiteTensors coupling_stringth =
         ,(2 --> 3) (-coupling_stringth *: pX)
         ,(3 --> 3) pI
         ]
--- @-node:gcross.20091118213523.1852:makeTransverseIsingOperatorSiteTensors
--- @-node:gcross.20091118213523.1849:Models
+-- @-node:gcross.20100505152919.1743:makeTransverseIsingOperatorSiteTensors
+-- @-node:gcross.20100505152919.1741:Models
 -- @-others
 -- @-node:gcross.20091118213523.1839:@thin Models.hs
 -- @-leo
