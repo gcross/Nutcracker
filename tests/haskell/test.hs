@@ -21,6 +21,8 @@ import Data.Array.Storable
 import Data.Array.Unboxed
 import Data.Complex
 import Data.Int
+import Data.Vec ((:.)(..))
+import Data.Vec.Nat
 
 import Debug.Trace
 
@@ -732,105 +734,145 @@ main = defaultMain
         -- @+node:gcross.20091114174920.1728:Chain energy invariant under movement
         ,testGroup "Chain energy invariant under movement" $
             let 
-            -- @nonl
-            -- @<< createEnergyInvarianceTest >>
-            -- @+node:gcross.20091114174920.1738:<< createEnergyInvarianceTest >>
-            createEnergyInvarianceTest number_of_sites bandwidth_dimension = do
-                chain <-
-                    generateRandomizedChain bandwidth_dimension
-                    .
-                    replicate number_of_sites
-                    .
-                    makeOperatorSiteTensorFromSpecification 1 1 
-                    $
-                    [(1 --> 1) pI]
-                let chains_going_right =
-                        take number_of_sites
+                -- @        @+others
+                -- @+node:gcross.20091114174920.1738:createEnergyInvarianceTest
+                createEnergyInvarianceTest :: OperatorDimension n => SingleSiteOperator n -> Int -> Int -> Assertion
+                createEnergyInvarianceTest identity_operator number_of_sites bandwidth_dimension = do
+                    chain <-
+                        generateRandomizedChain bandwidth_dimension
                         .
-                        iterate activateRightNeighbor
+                        replicate number_of_sites
+                        .
+                        makeOperatorSiteTensorFromSpecification 1 1 
                         $
-                        chain
-                    chains_going_left =
-                        take number_of_sites
-                        .
-                        iterate activateLeftNeighbor
-                        .
-                        last
-                        $
-                        chains_going_right
-                    correct_energy = chainEnergy chain
-                forM_ (zip [1..] . map chainEnergy $ chains_going_right) $ \(site_number::Int,energy) ->
-                    assertAlmostEqual
-                        (printf "Did the energy change after moving right to site %i?" site_number)
-                        correct_energy energy
-                forM_ (zip [number_of_sites,number_of_sites-1..] . map chainEnergy $ chains_going_left) $ \(site_number,energy) ->
-                    assertAlmostEqual
-                        (printf "Did the energy change after moving left to site %i?" site_number)
-                        correct_energy energy
-            -- @-node:gcross.20091114174920.1738:<< createEnergyInvarianceTest >>
-            -- @nl
-            in map (\(number_of_sites,bandwidth_dimension) ->
-                    testCase (printf "%i sites, bandwidth = %i" number_of_sites bandwidth_dimension) $ 
-                        createEnergyInvarianceTest number_of_sites bandwidth_dimension
-            ) $ concat
-                [[ ( 2,b) | b <- [1,2]]
-                ,[ ( 3,b) | b <- [1,2]]
-                ,[ ( 4,b) | b <- [1,2,4]]
-                ,[ ( 5,b) | b <- [1,2,4]]
-                ,[ (10,b) | b <- [1,2,4,8,16]]
+                        [(1 --> 1) identity_operator]
+                    let chains_going_right =
+                            take number_of_sites
+                            .
+                            iterate activateRightNeighbor
+                            $
+                            chain
+                        chains_going_left =
+                            take number_of_sites
+                            .
+                            iterate activateLeftNeighbor
+                            .
+                            last
+                            $
+                            chains_going_right
+                        correct_energy = chainEnergy chain
+                    forM_ (zip [1..] . map chainEnergy $ chains_going_right) $ \(site_number::Int,energy) ->
+                        assertAlmostEqual
+                            (printf "Did the energy change after moving right to site %i?" site_number)
+                            correct_energy energy
+                    forM_ (zip [number_of_sites,number_of_sites-1..] . map chainEnergy $ chains_going_left) $ \(site_number,energy) ->
+                        assertAlmostEqual
+                            (printf "Did the energy change after moving left to site %i?" site_number)
+                            correct_energy energy
+                -- @-node:gcross.20091114174920.1738:createEnergyInvarianceTest
+                -- @+node:gcross.20100505180122.1723:runTestsForPhysicalDimension
+                runTestsForPhysicalDimension :: OperatorDimension n => SingleSiteOperator n -> Test.Framework.Test
+                runTestsForPhysicalDimension identity_operator =
+                    let physical_dimension = physicalDimensionOfSingleSiteOperator identity_operator
+                    in testGroup (printf "physical dimension = %i" physical_dimension) $
+                       map (\(number_of_sites,bandwidth_dimension) ->
+                            testCase (printf "%i sites, bandwidth = %i" number_of_sites bandwidth_dimension) $ 
+                                createEnergyInvarianceTest identity_operator number_of_sites bandwidth_dimension
+                       ) $
+                       concat
+                        [[ ( 2,b) | b <- [1,2]]
+                        ,[ ( 3,b) | b <- [1,2]]
+                        ,[ ( 4,b) | b <- [1,2,4]]
+                        ,[ ( 5,b) | b <- [1,2,4]]
+                        ,[ (10,b) | b <- [1,2,4,8,16]]
+                        ]
+                -- @-node:gcross.20100505180122.1723:runTestsForPhysicalDimension
+                -- @-others
+            in  [runTestsForPhysicalDimension (identity :: SingleSiteOperator N1)
+                ,runTestsForPhysicalDimension (identity :: SingleSiteOperator N2)
+                ,runTestsForPhysicalDimension (identity :: SingleSiteOperator N3)
+                ,runTestsForPhysicalDimension (identity :: SingleSiteOperator N4)
+                ,runTestsForPhysicalDimension (identity :: SingleSiteOperator N5)
                 ]
         -- @-node:gcross.20091114174920.1728:Chain energy invariant under movement
         -- @+node:gcross.20091115105949.1747:Chain energy invariant under bandwidth increase
         ,testGroup "Chain energy invariant under bandwidth increase" $
-            let 
-            -- @nonl
-            -- @<< createBandwidthIncreaseTest >>
-            -- @+node:gcross.20091115105949.1748:<< createBandwidthIncreaseTest >>
-            createBandwidthIncreaseTest number_of_sites old_bandwidth_dimension new_bandwidth_dimension = do
-                original_chain <-
-                    generateRandomizedChain old_bandwidth_dimension
-                    .
-                    replicate number_of_sites
-                    .
-                    makeOperatorSiteTensorFromSpecification 1 1
-                    $
-                    [(1 --> 1) pY]
-                chain <- increaseChainBandwidth new_bandwidth_dimension original_chain
-                let chains_going_right =
-                        take number_of_sites
+            let
+                -- @        @+others
+                -- @+node:gcross.20091115105949.1748:createBandwidthIncreaseTest
+                createBandwidthIncreaseTest :: OperatorDimension n => SingleSiteOperator n -> Int -> Int -> Int -> Assertion
+                createBandwidthIncreaseTest operator number_of_sites old_bandwidth_dimension new_bandwidth_dimension = do
+                    original_chain <-
+                        generateRandomizedChain old_bandwidth_dimension
                         .
-                        iterate activateRightNeighbor
+                        replicate number_of_sites
+                        .
+                        makeOperatorSiteTensorFromSpecification 1 1
                         $
-                        chain
-                    chains_going_left =
-                        take number_of_sites
-                        .
-                        iterate activateLeftNeighbor
-                        .
-                        last
-                        $
-                        chains_going_right
-                    correct_energy = chainEnergy original_chain
-                forM_ (zip [1..] . map chainEnergy $ chains_going_right) $ \(site_number::Int,energy) ->
-                    assertAlmostEqual
-                        (printf "Did the energy change at site %i?" site_number)
-                        correct_energy energy
-                forM_ (zip [number_of_sites,number_of_sites-1..] . map chainEnergy $ chains_going_left) $ \(site_number,energy) ->
-                    assertAlmostEqual
-                        (printf "Did the energy change at site %i?" site_number)
-                        correct_energy energy
-            -- @-node:gcross.20091115105949.1748:<< createBandwidthIncreaseTest >>
-            -- @nl
-            in map (\(number_of_sites,old_bandwidth_dimension,new_bandwidth_dimension) ->
-                    testCase (printf "%i sites, bandwidth => %i -> %i" number_of_sites old_bandwidth_dimension new_bandwidth_dimension) $ 
-                        createBandwidthIncreaseTest number_of_sites old_bandwidth_dimension new_bandwidth_dimension
-            ) $ concat
-                [[ ( 2,old_b,new_b) | (old_b,new_b) <- [(1,2)]]
-                ,[ ( 3,old_b,new_b) | (old_b,new_b) <- [(1,2)]]
-                ,[ ( 4,old_b,new_b) | (old_b,new_b) <- [(1,2),(1,3),(1,4),(2,4)]]
-                ,[ ( 5,old_b,new_b) | (old_b,new_b) <- [(1,2),(1,4),(2,4)]]
-                ,[ (10,old_b,new_b) | (old_b,new_b) <- [(1,2),(2,4),(4,8),(8,16)]]
+                        [(1 --> 1) operator]
+                    chain <- increaseChainBandwidth new_bandwidth_dimension original_chain
+                    let chains_going_right =
+                            take number_of_sites
+                            .
+                            iterate activateRightNeighbor
+                            $
+                            chain
+                        chains_going_left =
+                            take number_of_sites
+                            .
+                            iterate activateLeftNeighbor
+                            .
+                            last
+                            $
+                            chains_going_right
+                        correct_energy = chainEnergy original_chain
+                    forM_ (zip [1..] . map chainEnergy $ chains_going_right) $ \(site_number::Int,energy) ->
+                        assertAlmostEqual
+                            (printf "Did the energy change at site %i?" site_number)
+                            correct_energy energy
+                    forM_ (zip [number_of_sites,number_of_sites-1..] . map chainEnergy $ chains_going_left) $ \(site_number,energy) ->
+                        assertAlmostEqual
+                            (printf "Did the energy change at site %i?" site_number)
+                            correct_energy energy
+                -- @-node:gcross.20091115105949.1748:createBandwidthIncreaseTest
+                -- @+node:gcross.20100505180122.1725:runTestsForPhysicalDimension
+                runTestsForPhysicalDimension :: OperatorDimension n => SingleSiteOperator n -> Test.Framework.Test
+                runTestsForPhysicalDimension operator =
+                    let physical_dimension = physicalDimensionOfSingleSiteOperator operator
+                    in testGroup (printf "physical dimension = %i" physical_dimension) $
+                       map (\(number_of_sites,old_bandwidth_dimension,new_bandwidth_dimension) ->
+                            testCase (printf "%i sites, bandwidth => %i -> %i" number_of_sites old_bandwidth_dimension new_bandwidth_dimension) $ 
+                                createBandwidthIncreaseTest operator number_of_sites old_bandwidth_dimension new_bandwidth_dimension
+                       ) $
+                       concat
+                        [[ ( 2,old_b,new_b) | (old_b,new_b) <- [(1,2)]]
+                        ,[ ( 3,old_b,new_b) | (old_b,new_b) <- [(1,2)]]
+                        ,[ ( 4,old_b,new_b) | (old_b,new_b) <- [(1,2),(1,3),(1,4),(2,4)]]
+                        ,[ ( 5,old_b,new_b) | (old_b,new_b) <- [(1,2),(1,4),(2,4)]]
+                        ,[ (10,old_b,new_b) | (old_b,new_b) <- [(1,2),(2,4),(4,8),(8,16)]]
+                        ]
+                -- @-node:gcross.20100505180122.1725:runTestsForPhysicalDimension
+                -- @-others
+            in  [runTestsForPhysicalDimension (
+                    SingleSiteOperator $
+                    (0.5 :. ()) :.
+                    () :: SingleSiteOperator N1
+                 )
+                ,runTestsForPhysicalDimension (
+                    SingleSiteOperator $
+                    (0 :. (0 :+ 1) :. ()) :.
+                    ((0 :+ (-1)) :. 0 :. ()) :.
+                    () :: SingleSiteOperator N2
+                 )
+                ,runTestsForPhysicalDimension (
+                    SingleSiteOperator $
+                    (0 :. 1 :. 3 :. ()) :.
+                    (1 :. 2 :. 1 :. ()) :.
+                    (3 :. 1 :. 0 :. ()) :.
+                    () :: SingleSiteOperator N3
+                 )
                 ]
+        -- @nonl
         -- @-node:gcross.20091115105949.1747:Chain energy invariant under bandwidth increase
         -- @-others
         ]
@@ -922,31 +964,46 @@ main = defaultMain
         -- @+node:gcross.20091118213523.1827:performOptimizationSweep
         [testGroup "performOptimizationSweep"
             -- @    @+others
-            -- @+node:gcross.20091114174920.1741:magnetic field
-            [testGroup "magnetic field" $
-                let 
-                -- @nonl
-                -- @<< createMagneticFieldTest >>
-                -- @+node:gcross.20091114174920.1742:<< createMagneticFieldTest >>
-                createMagneticFieldTest number_of_sites bandwidth_dimension =
-                    generateRandomizedChain bandwidth_dimension (makeExternalFieldOperatorSiteTensors pZ number_of_sites)
-                    >>=
-                    return . chainEnergy . performOptimizationSweep_
-                    >>=
-                    assertAlmostEqual "Is the optimal energy correct?" (-(toEnum number_of_sites))
-                -- @-node:gcross.20091114174920.1742:<< createMagneticFieldTest >>
-                -- @nl
-                in map (\(number_of_sites,bandwidth_dimension) ->
-                        testCase (printf "%i sites, bandwidth = %i" number_of_sites bandwidth_dimension) $ 
-                            createMagneticFieldTest number_of_sites bandwidth_dimension
-                ) $ concat
-                    [[ ( 2,b) | b <- [2]]
-                    ,[ ( 3,b) | b <- [2]]
-                    ,[ ( 4,b) | b <- [2,4]]
-                    ,[ ( 5,b) | b <- [2,4]]
-                    ,[ (10,b) | b <- [2,4,8,16]]
-                    ]
-            -- @-node:gcross.20091114174920.1741:magnetic field
+            -- @+node:gcross.20091114174920.1741:external field
+            [testGroup "external field" $
+                let runExternalFieldTests :: OperatorDimension n => SingleSiteOperator n -> Test.Framework.Test
+                    runExternalFieldTests field_operator =
+                        let physical_dimension = physicalDimensionOfSingleSiteOperator field_operator
+                            createExternalFieldTest number_of_sites bandwidth_dimension =
+                                generateRandomizedChain bandwidth_dimension (makeExternalFieldOperatorSiteTensors field_operator number_of_sites)
+                                >>=
+                                return . chainEnergy . performOptimizationSweep_
+                                >>=
+                                assertAlmostEqual "Is the optimal energy correct?" (-(toEnum number_of_sites))
+                        in testGroup (printf "physical dimension = %i" physical_dimension) $
+                           map (\(number_of_sites,bandwidth_dimension) ->
+                                testCase (printf "%i sites, bandwidth = %i" number_of_sites bandwidth_dimension) $ 
+                                    createExternalFieldTest number_of_sites bandwidth_dimension
+                           ) $
+                           concat
+                            [[ ( 2,b) | b <- [2]]
+                            ,[ ( 3,b) | b <- [2]]
+                            ,[ ( 4,b) | b <- [2,4]]
+                            ,[ ( 5,b) | b <- [2,4]]
+                            ,[ (10,b) | b <- [2,4,8,16]]
+                            ]
+                in [runExternalFieldTests $
+                      (SingleSiteOperator $
+                        (1 :.   0 :. ()) :.
+                        (0 :. (-1):. ()) :.
+                                         ()
+                        :: SingleSiteOperator N2
+                      )
+                   ,runExternalFieldTests $
+                      (SingleSiteOperator $
+                        (1 :. 0 :.   0 :. ()) :.
+                        (0 :. 0 :.   0 :. ()) :.
+                        (0 :. 0 :. (-1):. ()) :.
+                                              ()
+                        :: SingleSiteOperator N3
+                      )
+                   ]
+            -- @-node:gcross.20091114174920.1741:external field
             -- @-others
             ]
         -- @-node:gcross.20091118213523.1827:performOptimizationSweep
