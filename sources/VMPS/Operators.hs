@@ -197,7 +197,7 @@ makeOperatorSiteTensorFromSpecification left_bandwidth right_bandwidth elements@
         return OperatorSiteTensor
             {   operatorLeftBandwidth = left_bandwidth
             ,   operatorRightBandwidth = right_bandwidth
-            ,   operatorPhysicalDimension = 2
+            ,   operatorPhysicalDimension = n
             ,   operatorNumberOfMatrices = number_of_elements
             ,   operatorIndices = operator_indices
             ,   operatorMatrices = operator_matrices

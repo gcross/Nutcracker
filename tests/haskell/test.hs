@@ -214,14 +214,16 @@ main = defaultMain
                 let left_boundary = trivial_left_boundary
                     right_boundary = trivial_right_boundary
                     state_site_tensor = UnnormalizedStateSiteTensor . StateSiteTensor 4 1 1 . complexTensorFromList (4,1,1) $ replicate (4*2) 1
-                    operator_indices = unsafePerformIO $ newArray ((1,1),(1,2)) 1
-                    operator_matrices = unsafePerformIO $ newListArray ((1,1,1),(1,4,4))
-                        [ 1, 0, 0, 0
-                        , 0, 1, 0, 0
-                        , 0, 0, 1, 0
-                        , 0, 0, 0,-1
-                        ]
-                    operator_site_tensor = OperatorSiteTensor 1 1 4 1 operator_indices operator_matrices
+                    operator_site_tensor =
+                        makeOperatorSiteTensorFromSpecification 1 1
+                            [(1 --> 1) $
+                              (SingleSiteOperator $
+                                (1 :. 0 :. 0 :.   0 :. ()) :.
+                                (0 :. 1 :. 0 :.   0 :. ()) :.
+                                (0 :. 0 :. 1 :.   0 :. ()) :.
+                                (0 :. 0 :. 0 :. (-1):. ()) :.
+                              () :: SingleSiteOperator N4 )
+                             ]
                     optimizer_result = 
                         computeOptimalSiteStateTensor
                             left_boundary
@@ -770,9 +772,9 @@ main = defaultMain
                             (printf "Did the energy change after moving left to site %i?" site_number)
                             correct_energy energy
                 -- @-node:gcross.20091114174920.1738:createEnergyInvarianceTest
-                -- @+node:gcross.20100505180122.1723:runTestsForPhysicalDimension
-                runTestsForPhysicalDimension :: OperatorDimension n => SingleSiteOperator n -> Test.Framework.Test
-                runTestsForPhysicalDimension identity_operator =
+                -- @+node:gcross.20100505180122.1723:runTestsForIdentityOperator
+                runTestsForIdentityOperator :: OperatorDimension n => SingleSiteOperator n -> Test.Framework.Test
+                runTestsForIdentityOperator identity_operator =
                     let physical_dimension = physicalDimensionOfSingleSiteOperator identity_operator
                     in testGroup (printf "physical dimension = %i" physical_dimension) $
                        map (\(number_of_sites,bandwidth_dimension) ->
@@ -786,13 +788,12 @@ main = defaultMain
                         ,[ ( 5,b) | b <- [1,2,4]]
                         ,[ (10,b) | b <- [1,2,4,8,16]]
                         ]
-                -- @-node:gcross.20100505180122.1723:runTestsForPhysicalDimension
+                -- @-node:gcross.20100505180122.1723:runTestsForIdentityOperator
                 -- @-others
-            in  [runTestsForPhysicalDimension (identity :: SingleSiteOperator N1)
-                ,runTestsForPhysicalDimension (identity :: SingleSiteOperator N2)
-                ,runTestsForPhysicalDimension (identity :: SingleSiteOperator N3)
-                ,runTestsForPhysicalDimension (identity :: SingleSiteOperator N4)
-                ,runTestsForPhysicalDimension (identity :: SingleSiteOperator N5)
+            in  [runTestsForIdentityOperator (identity :: SingleSiteOperator N2)
+                ,runTestsForIdentityOperator (identity :: SingleSiteOperator N3)
+                ,runTestsForIdentityOperator (identity :: SingleSiteOperator N4)
+                ,runTestsForIdentityOperator (identity :: SingleSiteOperator N5)
                 ]
         -- @-node:gcross.20091114174920.1728:Chain energy invariant under movement
         -- @+node:gcross.20091115105949.1747:Chain energy invariant under bandwidth increase
@@ -835,9 +836,9 @@ main = defaultMain
                             (printf "Did the energy change at site %i?" site_number)
                             correct_energy energy
                 -- @-node:gcross.20091115105949.1748:createBandwidthIncreaseTest
-                -- @+node:gcross.20100505180122.1725:runTestsForPhysicalDimension
-                runTestsForPhysicalDimension :: OperatorDimension n => SingleSiteOperator n -> Test.Framework.Test
-                runTestsForPhysicalDimension operator =
+                -- @+node:gcross.20100505180122.1725:runTestsForOperator
+                runTestsForOperator :: OperatorDimension n => SingleSiteOperator n -> Test.Framework.Test
+                runTestsForOperator operator =
                     let physical_dimension = physicalDimensionOfSingleSiteOperator operator
                     in testGroup (printf "physical dimension = %i" physical_dimension) $
                        map (\(number_of_sites,old_bandwidth_dimension,new_bandwidth_dimension) ->
@@ -851,20 +852,15 @@ main = defaultMain
                         ,[ ( 5,old_b,new_b) | (old_b,new_b) <- [(1,2),(1,4),(2,4)]]
                         ,[ (10,old_b,new_b) | (old_b,new_b) <- [(1,2),(2,4),(4,8),(8,16)]]
                         ]
-                -- @-node:gcross.20100505180122.1725:runTestsForPhysicalDimension
+                -- @-node:gcross.20100505180122.1725:runTestsForOperator
                 -- @-others
-            in  [runTestsForPhysicalDimension (
-                    SingleSiteOperator $
-                    (0.5 :. ()) :.
-                    () :: SingleSiteOperator N1
-                 )
-                ,runTestsForPhysicalDimension (
+            in  [runTestsForOperator (
                     SingleSiteOperator $
                     (0 :. (0 :+ 1) :. ()) :.
                     ((0 :+ (-1)) :. 0 :. ()) :.
                     () :: SingleSiteOperator N2
                  )
-                ,runTestsForPhysicalDimension (
+                ,runTestsForOperator (
                     SingleSiteOperator $
                     (0 :. 1 :. 3 :. ()) :.
                     (1 :. 2 :. 1 :. ()) :.
@@ -991,17 +987,20 @@ main = defaultMain
                       (SingleSiteOperator $
                         (1 :.   0 :. ()) :.
                         (0 :. (-1):. ()) :.
-                                         ()
-                        :: SingleSiteOperator N2
-                      )
+                      () :: SingleSiteOperator N2 )
                    ,runExternalFieldTests $
                       (SingleSiteOperator $
                         (1 :. 0 :.   0 :. ()) :.
-                        (0 :. 0 :.   0 :. ()) :.
+                        (0 :. 1 :.   0 :. ()) :.
                         (0 :. 0 :. (-1):. ()) :.
-                                              ()
-                        :: SingleSiteOperator N3
-                      )
+                      () :: SingleSiteOperator N3 )
+                   ,runExternalFieldTests $
+                      (SingleSiteOperator $
+                        (1 :. 0 :. 0 :.   0 :. ()) :.
+                        (0 :. 1 :. 0 :.   0 :. ()) :.
+                        (0 :. 0 :. 1 :.   0 :. ()) :.
+                        (0 :. 0 :. 0 :. (-1):. ()) :.
+                      () :: SingleSiteOperator N4 )
                    ]
             -- @-node:gcross.20091114174920.1741:external field
             -- @-others
@@ -1083,32 +1082,46 @@ main = defaultMain
         -- @+node:gcross.20091119150241.1861:solveForMultipleLevels
         ,testGroup "solveForMultipleLevels"
             -- @    @+others
-            -- @+node:gcross.20091119150241.1874:magnetic field
-            [testGroup "magnetic field" $
-                let 
-                -- @nonl
-                -- @<< createMagneticFieldTest >>
-                -- @+node:gcross.20091119150241.1875:<< createMagneticFieldTest >>
-                createMagneticFieldTest number_of_sites correct_energy_levels =
-                    solveForMultipleLevels_
-                        (length correct_energy_levels)
-                        2
-                        (makeExternalFieldOperatorSiteTensors pZ number_of_sites)
-                        []
-                    >>=
-                    assertAlmostEqual "Is the optimal energy correct?" correct_energy_levels
-                        .
-                        map (\(x,_,_) -> x)
-                -- @-node:gcross.20091119150241.1875:<< createMagneticFieldTest >>
-                -- @nl
-                in map (\(number_of_sites,correct_energy_levels) ->
-                        testCase (printf "%i sites" number_of_sites) $ 
-                            createMagneticFieldTest number_of_sites correct_energy_levels
-                       ) $ [( 4,[ -4,-2,-2,-2])
-                           ,( 6,[ -6,-4,-4,-4])
-                           ,(10,[-10,-8,-8])
-                           ]
-            -- @-node:gcross.20091119150241.1874:magnetic field
+            -- @+node:gcross.20091119150241.1874:external field
+            [testGroup "external field" $
+                let
+                    -- @        @+others
+                    -- @+node:gcross.20091119150241.1875:createExternalFieldTest
+                    createExternalFieldTest :: OperatorDimension n => SingleSiteOperator n -> Int -> [Double] -> Assertion
+                    createExternalFieldTest field_operator number_of_sites correct_energy_levels =
+                        solveForMultipleLevels_
+                            (length correct_energy_levels)
+                            2
+                            (makeExternalFieldOperatorSiteTensors field_operator number_of_sites)
+                            []
+                        >>=
+                        assertAlmostEqual "Is the optimal energy correct?" correct_energy_levels
+                            .
+                            map (\(x,_,_) -> x)
+                    -- @-node:gcross.20091119150241.1875:createExternalFieldTest
+                    -- @+node:gcross.20100505180122.1726:runTestsForFieldOperator
+                    runTestsForFieldOperator :: OperatorDimension n => SingleSiteOperator n -> Test.Framework.Test
+                    runTestsForFieldOperator field_operator =
+                        let physical_dimension = physicalDimensionOfSingleSiteOperator field_operator
+                        in testGroup (printf "physical dimension = %i" physical_dimension) $
+                           map (\(number_of_sites,correct_energy_levels) ->
+                            testCase (printf "%i sites" number_of_sites) $ 
+                                createExternalFieldTest field_operator number_of_sites correct_energy_levels
+                           ) $ [( 4,[ -4,-2,-2,-2])
+                               ,( 6,[ -6,-4,-4,-4])
+                               ,(10,[-10,-8,-8])
+                               ]
+                    -- @-node:gcross.20100505180122.1726:runTestsForFieldOperator
+                    -- @-others
+                in [runTestsForFieldOperator pZ
+                   ,runTestsForFieldOperator
+                      (SingleSiteOperator $
+                        (1 :. 0 :.   0 :. ()) :.
+                        (0 :. 1 :.   0 :. ()) :.
+                        (0 :. 0 :. (-1):. ()) :.
+                        () :: SingleSiteOperator N3 )
+                   ]
+            -- @-node:gcross.20091119150241.1874:external field
             -- @+node:gcross.20091119150241.1889:transverse ising model
             ,testGroup "transverse ising model" $
                 let 
