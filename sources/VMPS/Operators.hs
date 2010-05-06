@@ -53,6 +53,8 @@ class (Nat n
       ) => OperatorDimension n
   where
     identity :: SingleSiteOperator n
+    physicalDimensionOfSingleSiteOperator :: SingleSiteOperator n -> Int
+    physicalDimensionOfSingleSiteOperator _ = nat (undefined :: n)
 -- @-node:gcross.20100505152919.1754:OperatorDimension
 -- @-node:gcross.20100505152919.1753:Classes
 -- @+node:gcross.20100505152547.1700:Type Families
@@ -88,17 +90,13 @@ type OperatorSiteSpecification n = [((Int32,Int32),SingleSiteOperator n)]
 instance OperatorDimension n => Pinnable (SingleSiteOperator n)
   where
     withPinnedTensor single_site_operator thunk = do
-        let n = Vec.length single_site_operator
+        let n = physicalDimensionOfSingleSiteOperator single_site_operator
         operator <- newArray ((1,1),(n,n)) 0
         forM_ (enumerateSingleSiteOperator single_site_operator) $
             \(row,columns) -> forM_ columns $
                 \(column,value) -> writeArray operator (row,column) value
         withStorableArray operator thunk
 -- @-node:gcross.20100504143114.1694:Pinnable SingleSiteOperator
--- @+node:gcross.20100505152919.1708:Length SingleSiteOperator
-instance Nat n => Vec.Length (SingleSiteOperator n) n where
-    length _ = nat (undefined :: n)
--- @-node:gcross.20100505152919.1708:Length SingleSiteOperator
 -- @-node:gcross.20100504143114.1693:Instances
 -- @+node:gcross.20100504143114.1695:Functions
 -- @+node:gcross.20100504143114.1696:(*:)
@@ -134,7 +132,7 @@ applySingleSiteOperator operator state_site_tensor =
     let br = rightBandwidthOfState state_site_tensor
         bl = leftBandwidthOfState state_site_tensor
         d = physicalDimensionOfState state_site_tensor
-    in assert (d == Vec.length operator) $
+    in assert (d == physicalDimensionOfSingleSiteOperator operator) $
        snd . unsafePerformIO $
             withPinnedTensor state_site_tensor $ \p_state_site_tensor ->
             withPinnedTensor operator $ \p_operator ->
@@ -184,7 +182,7 @@ makeOperatorSiteTensorFromSpecification _ _ [] = error "The specification must b
 makeOperatorSiteTensorFromSpecification left_bandwidth right_bandwidth elements@((_,o):_) =
     let number_of_elements = length elements
     in unsafePerformIO $ do
-        let n = Vec.length o
+        let n = physicalDimensionOfSingleSiteOperator o
         operator_indices <- newArray ((1,1),(number_of_elements,2)) 0
         operator_matrices <- newArray ((1,1,1),(number_of_elements,n,n)) 0
         let go _ [] = return ()
