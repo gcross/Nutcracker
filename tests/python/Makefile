@@ -5,7 +5,7 @@
 
 test: vmps.so
 
-vmps.so: ../../src/core.f95 Makefile
+vmps.so: ../../sources/core.f95 Makefile
 	f2py -m vmps $< -c -lgfortran -lblas -llapack -larpack
 
 clean:
