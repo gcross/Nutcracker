@@ -23,15 +23,6 @@ import VMPS.Tensors
 
 -- @+others
 -- @+node:gcross.20100505152919.1741:Models
--- @+node:gcross.20100505152919.1745:makeMagneticFieldOperatorSiteTensors
-makeMagneticFieldOperatorSiteTensors :: SingleQubitOperator -> Int -> [OperatorSiteTensor]
-makeMagneticFieldOperatorSiteTensors field_operator =
-    makeSimpleModelOperatorSiteTensors 2
-        [(1 --> 1) pI
-        ,(1 --> 2) field_operator
-        ,(2 --> 2) pI
-        ]
--- @-node:gcross.20100505152919.1745:makeMagneticFieldOperatorSiteTensors
 -- @+node:gcross.20100505152919.1743:makeTransverseIsingOperatorSiteTensors
 makeTransverseIsingModelOperatorSiteTensors coupling_stringth =
     makeSimpleModelOperatorSiteTensors 3

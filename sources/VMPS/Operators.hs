@@ -51,7 +51,8 @@ class (Nat n
       ,Vec.Fold (ComplexVector n) (Data.Complex.Complex Double)
       ,Vec.Fold (ComplexMatrix n n) (ComplexVector n)
       ) => OperatorDimension n
-
+  where
+    identity :: SingleSiteOperator n
 -- @-node:gcross.20100505152919.1754:OperatorDimension
 -- @-node:gcross.20100505152919.1753:Classes
 -- @+node:gcross.20100505152547.1700:Type Families
