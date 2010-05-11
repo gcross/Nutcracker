@@ -28,8 +28,9 @@ endingWith :: Int -> OperatorSiteSpecification n -> OperatorSiteSpecification n
 endingWith ending_index list = [((index1,1),matrix) | ((index1,index2),matrix) <- list, index2 == toEnum ending_index]
 -- @-node:gcross.20100505152919.1733:startingFrom/endingWith
 -- @+node:gcross.20100505152919.1734:-->
-(-->) :: Int32 -> Int32 -> SingleSiteOperator n -> ((Int32,Int32),SingleSiteOperator n)
-(-->) i j sqo = ((i,j),sqo)
+infix 5 -->
+(-->) :: Int -> Int -> SingleSiteOperator n -> ((Int,Int),SingleSiteOperator n)
+(-->) i j sqo = ((fromIntegral i,fromIntegral j),sqo)
 -- @-node:gcross.20100505152919.1734:-->
 -- @-node:gcross.20100505152919.1732:Functions
 -- @+node:gcross.20100505152919.1735:Models

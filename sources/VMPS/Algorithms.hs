@@ -4,6 +4,7 @@
 
 -- @<< Language extensions >>
 -- @+node:gcross.20091118213523.1811:<< Language extensions >>
+{-# LANGUAGE DeriveDataTypeable #-}
 -- @-node:gcross.20091118213523.1811:<< Language extensions >>
 -- @nl
 
@@ -12,11 +13,15 @@ module VMPS.Algorithms where
 -- @<< Import needed modules >>
 -- @+node:gcross.20091118213523.1812:<< Import needed modules >>
 import Control.Arrow
+import Control.Exception
 import Control.Monad.Identity
 import Control.Monad.State
 
 import Data.List
 import Data.Maybe
+import Data.Typeable
+
+import Text.Printf
 
 import VMPS.EnergyMinimizationChain
 import VMPS.Tensors
@@ -65,11 +70,33 @@ alwaysDeclareVictory = return . Just . (chainEnergy &&& getCanonicalStateReprese
 -- @-node:gcross.20091120112621.1595:alwaysDeclareVictory
 -- @-node:gcross.20091120112621.1594:multi-level callbacks
 -- @-node:gcross.20091120112621.1591:Predefined Callbacks
--- @+node:gcross.20091118213523.1814:Functions
--- @+node:gcross.20091118213523.1822:Single sweep optimization
+-- @+node:gcross.20100506200958.2697:Exceptions
+-- @+node:gcross.20100506200958.2698:EnergyChangedAfterMoveError
+data EnergyChangedAfterMoveError = EnergyChangedAfterMoveError SweepDirection Int Double Double deriving Typeable
+
+instance Show EnergyChangedAfterMoveError where
+    show (EnergyChangedAfterMoveError sweep_direction old_site_number new_energy old_energy) =
+        printf "EnergyChangedAfterMoveError:  When moving from site %i to site %i, the energy changed from %f to %f."
+            old_site_number
+            new_site_number
+            old_energy
+            new_energy
+      where
+        new_site_number =
+            case sweep_direction of
+                SweepingLeft -> old_site_number-1
+                SweepingRight -> old_site_number+1
+
+instance Exception EnergyChangedAfterMoveError
+-- @-node:gcross.20100506200958.2698:EnergyChangedAfterMoveError
+-- @-node:gcross.20100506200958.2697:Exceptions
+-- @+node:gcross.20100506200958.2696:Types
 -- @+node:gcross.20091118213523.1815:SweepDirection
 data SweepDirection = SweepingRight | SweepingLeft
 -- @-node:gcross.20091118213523.1815:SweepDirection
+-- @-node:gcross.20100506200958.2696:Types
+-- @+node:gcross.20091118213523.1814:Functions
+-- @+node:gcross.20091118213523.1822:Single sweep optimization
 -- @+node:gcross.20091118213523.1817:performOptimizationSweep
 performOptimizationSweep :: Double -> Int -> EnergyMinimizationChain -> EnergyMinimizationChain
 performOptimizationSweep tolerance maximum_number_of_iterations starting_chain
@@ -108,7 +135,7 @@ performOptimizationSweepWithCallback callback tolerance maximum_number_of_iterat
             Left failure_reason -> callback (Left failure_reason) SweepingRight chain >> return chain
             Right (number_of_iterations,optimized_chain) -> callback (Right number_of_iterations) SweepingRight optimized_chain >> return optimized_chain
         >>=
-        goRight (n-1) . activateRightNeighbor
+        goRight (n-1) . confirmEnergyUnchanged SweepingRight activateRightNeighbor
 
     goLeft 0 chain = return chain
     goLeft n chain =
@@ -116,9 +143,18 @@ performOptimizationSweepWithCallback callback tolerance maximum_number_of_iterat
             Left failure_reason -> callback (Left failure_reason) SweepingLeft chain >> return chain
             Right (number_of_iterations,optimized_chain) -> callback (Right number_of_iterations) SweepingLeft optimized_chain >> return optimized_chain
         >>=
-        goLeft (n-1) . activateLeftNeighbor
+        goLeft (n-1) . confirmEnergyUnchanged SweepingLeft activateLeftNeighbor
+
+    confirmEnergyUnchanged sweep_direction activateNeighbor old_chain
+        | new_energy - old_energy > 1e-7
+            = throw $ EnergyChangedAfterMoveError sweep_direction (siteNumber old_chain) new_energy old_energy
+        | otherwise
+            = new_chain
+      where
+        old_energy = chainEnergy old_chain
+        new_chain = activateNeighbor old_chain
+        new_energy = chainEnergy new_chain
 {-# INLINE performOptimizationSweepWithCallback #-}
--- @nonl
 -- @-node:gcross.20091118213523.1810:performOptimizationSweepWithCallback
 -- @-node:gcross.20091118213523.1822:Single sweep optimization
 -- @+node:gcross.20091118213523.1823:Multiple sweep optimization
@@ -381,7 +417,6 @@ solveForMultipleLevels ::
     Double ->
     Int ->
     Int ->
-    Int ->
     [OperatorSiteTensor] ->
     [[OverlapTensorTrio]] ->
     IO [(Double,CanonicalStateRepresentation,[OverlapTensorTrio])]
@@ -391,7 +426,6 @@ solveForMultipleLevels
     tolerance
     maximum_number_of_iterations
     number_of_levels
-    physical_dimension
     operator_site_tensors
     projectors
     = flip evalStateT undefined $

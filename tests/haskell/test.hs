@@ -1091,7 +1091,6 @@ main = defaultMain
                     createExternalFieldTest field_operator number_of_sites correct_energy_levels =
                         solveForMultipleLevels_
                             (length correct_energy_levels)
-                            2
                             (makeExternalFieldOperatorSiteTensors field_operator number_of_sites)
                             []
                         >>=
@@ -1131,7 +1130,6 @@ main = defaultMain
                 createMagneticFieldTest number_of_sites coupling_strength correct_energy_levels =
                     solveForMultipleLevels_
                         (length correct_energy_levels)
-                        2
                         (makeTransverseIsingModelOperatorSiteTensors coupling_strength number_of_sites)
                         []
                     >>=

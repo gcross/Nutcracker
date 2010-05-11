@@ -4,6 +4,7 @@
 
 -- @<< Language extensions >>
 -- @+node:gcross.20091113142219.1661:<< Language extensions >>
+{-# LANGUAGE DeriveDataTypeable #-}
 -- @-node:gcross.20091113142219.1661:<< Language extensions >>
 -- @nl
 
@@ -18,6 +19,9 @@ import Control.Monad
 import Data.Complex
 import Data.Function
 import Data.List
+import Data.Typeable
+
+import Text.Printf
 
 import VMPS.Miscellaneous
 import VMPS.States
@@ -33,6 +37,24 @@ import Debug.Trace
 -- @nl
 
 -- @+others
+-- @+node:gcross.20100506200958.2694:Exceptions
+-- @+node:gcross.20100506200958.2695:ConvergenceError
+data ConvergenceError = ImaginaryEigenvalue Int (Complex Double) | EnergyIncreased Int Double Double deriving (Typeable)
+
+instance Show ConvergenceError where
+    show (ImaginaryEigenvalue site_number eigenvalue) =
+        printf "ConvergenceError (at site %i): Non-real eigenvalue (%s)"
+            site_number
+            (show eigenvalue)
+    show (EnergyIncreased site_number new_energy old_energy) =
+        printf "ConvergenceError (at site %i): New energy (%f) is larger than the old energy (%f)"
+            site_number
+            new_energy
+            old_energy
+
+instance Exception ConvergenceError
+-- @-node:gcross.20100506200958.2695:ConvergenceError
+-- @-node:gcross.20100506200958.2694:Exceptions
 -- @+node:gcross.20091113142219.1664:Types
 -- @+node:gcross.20091117140132.1795:OverlapTensorTrio
 data OverlapTensorTrio = 
@@ -457,14 +479,21 @@ optimizeSite tolerance maximum_number_of_iterations chain =
             tolerance
             maximum_number_of_iterations
   where
-    postProcess (number_of_iterations, eigenvalue, optimal_site_tensor) =
-        if (imagPart eigenvalue ~= 0)
-            then Right (number_of_iterations, chain
-                    {   siteStateTensor = optimal_site_tensor
-                    ,   chainEnergy = realPart eigenvalue
-                    }
-                 )
-            else error $ "Non-imaginary eigenvalue: " ++ (show eigenvalue)
+    postProcess (number_of_iterations, eigenvalue, optimal_site_tensor)
+        | not (imagPart eigenvalue ~= 0) =
+            throw $ ImaginaryEigenvalue site_number eigenvalue
+        | new_energy - old_energy > 1e-7 =
+            throw $ EnergyIncreased site_number new_energy old_energy
+        | otherwise =
+            Right (number_of_iterations, chain
+                {   siteStateTensor = optimal_site_tensor
+                ,   chainEnergy = new_energy
+                }
+            )
+      where
+        site_number = siteNumber chain
+        new_energy = realPart eigenvalue
+        old_energy = chainEnergy chain
 
 optimizeSite_ = optimizeSite 0 1000
 -- @-node:gcross.20091113142219.1687:optimizeSite
@@ -581,6 +610,8 @@ increaseChainBandwidth
     )
     .
     tail
+    .
+    reverse
     .
     computeBandwidthDimensionSequence new_bandwidth
     .

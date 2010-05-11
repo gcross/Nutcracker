@@ -4,6 +4,7 @@
 
 -- @<< Language extensions >>
 -- @+node:gcross.20100504143114.1704:<< Language extensions >>
+{-# LANGUAGE DeriveDataTypeable #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE ForeignFunctionInterface #-}
@@ -29,6 +30,7 @@ import Control.Monad
 import Data.Array.Storable
 import Data.Complex
 import Data.Int
+import Data.Typeable
 import Data.Vec ((:.)(..))
 import qualified Data.Vec as Vec
 import Data.Vec.Nat
@@ -36,6 +38,8 @@ import Data.Vec.Nat
 import Foreign.Ptr
 
 import System.IO.Unsafe
+
+import Text.Printf
 
 import VMPS.States
 import VMPS.Tensors
@@ -57,6 +61,31 @@ class (Nat n
     physicalDimensionOfSingleSiteOperator _ = nat (undefined :: n)
 -- @-node:gcross.20100505152919.1754:OperatorDimension
 -- @-node:gcross.20100505152919.1753:Classes
+-- @+node:gcross.20100506200958.2692:Exceptions
+-- @+node:gcross.20100506200958.2693:SignalOutOfRange
+data SignalDirection = IncomingSignal | OutgoingSignal
+
+instance Show SignalDirection where
+    show IncomingSignal = "incoming"
+    show OutgoingSignal = "outgoing"
+
+data SignalOutsideBandwidthException = SignalTooLow SignalDirection Int | SignalTooHigh SignalDirection Int Int deriving Typeable
+
+instance Show SignalOutsideBandwidthException where
+    show (SignalTooLow direction signal) =
+        printf "SignalOutsideBandwidthException: An %s signal had a value (%i) that is less than 1."
+            (show direction)
+            signal
+    show (SignalTooHigh direction signal bandwidth) =
+        printf "SignalOutsideBandwidthException: An %s signal had a value (%i) that was greater than the total %s bandwidth (%i)."
+            (show direction)
+            signal
+            (show direction)
+            bandwidth
+
+instance Exception SignalOutsideBandwidthException
+-- @-node:gcross.20100506200958.2693:SignalOutOfRange
+-- @-node:gcross.20100506200958.2692:Exceptions
 -- @+node:gcross.20100505152547.1700:Type Families
 -- @+node:gcross.20100505152547.1702:ComplexMatrix
 type family ComplexMatrix n m
@@ -82,7 +111,7 @@ deriving instance Show (ComplexMatrix n n) => Show (SingleSiteOperator n)
 deriving instance Num (ComplexMatrix n n) => Num (SingleSiteOperator n)
 -- @-node:gcross.20100504143114.1697:SingleSiteOperator
 -- @+node:gcross.20100504143114.1699:OperatorSiteSpecification
-type OperatorSiteSpecification n = [((Int32,Int32),SingleSiteOperator n)]
+type OperatorSiteSpecification n = [((Int,Int),SingleSiteOperator n)]
 -- @-node:gcross.20100504143114.1699:OperatorSiteSpecification
 -- @-node:gcross.20100504143114.1692:Types
 -- @+node:gcross.20100504143114.1693:Instances
@@ -187,11 +216,20 @@ makeOperatorSiteTensorFromSpecification left_bandwidth right_bandwidth elements@
         operator_matrices <- newArray ((1,1,1),(number_of_elements,n,n)) 0
         let go _ [] = return ()
             go index (((left_index,right_index),single_site_operator):rest) = do
-                writeArray operator_indices (index,1) left_index
-                writeArray operator_indices (index,2) right_index
+                when (left_index < 1) $
+                    throwIO $ SignalTooLow IncomingSignal left_index
+                when (right_index < 1) $
+                    throwIO $ SignalTooLow OutgoingSignal right_index
+                when (left_index > left_bandwidth) $
+                    throwIO $ SignalTooHigh IncomingSignal left_index left_bandwidth
+                when (right_index > right_bandwidth) $
+                    throwIO $ SignalTooHigh OutgoingSignal right_index right_bandwidth
+                writeArray operator_indices (index,1) (fromIntegral left_index)
+                writeArray operator_indices (index,2) (fromIntegral right_index)
                 forM_ (enumerateSingleSiteOperator single_site_operator) $
                     \(row,columns) -> forM_ columns $
-                        \(column,value) -> writeArray operator_matrices (index,row,column) value
+                        \(column,value) ->
+                            writeArray operator_matrices (index,row,column) value
                 go (index+1) rest
         go 1 elements
         return OperatorSiteTensor
