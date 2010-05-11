@@ -4,8 +4,8 @@
 #@+node:gcross.20091115094257.1715:<< Import needed modules >>
 import unittest
 from paycheck import *
-from numpy import array, zeros, all, double, tensordot, multiply, complex128, allclose, ones, diag, identity, dot
-from numpy.linalg import norm
+from numpy import array, zeros, all, double, tensordot, multiply, complex128, allclose, ones, diag, identity, dot, argmin
+from numpy.linalg import norm, eigh
 from numpy.random import rand
 from random import randint, choice
 import random
@@ -232,6 +232,7 @@ def crand(*shape):
 def generate_random_sparse_matrices(cl,cr,d):
     sparse_operator_indices = array([(randint(1,cl),randint(1,cr)) for _ in xrange(randint(2,cl+cr))]).transpose()
     sparse_operator_matrices = crand(d,d,sparse_operator_indices.shape[-1])
+    sparse_operator_matrices += sparse_operator_matrices.transpose(1,0,2).conj()
     operator_site_tensor = zeros((d,d,cr,cl),complex128)
     for (index1,index2),matrix in zip(sparse_operator_indices.transpose(),sparse_operator_matrices.transpose(2,0,1)):
         operator_site_tensor[...,index2-1,index1-1] += matrix
@@ -826,6 +827,53 @@ class compute_expectation(unittest.TestCase):
 #@+node:gcross.20091109182634.1543:optimize
 class optimize(unittest.TestCase):
     #@    @+others
+    #@+node:gcross.20100506200958.2699:optimization_matrix_contractor
+    optimization_matrix_contractor = form_contractor([
+        ("L1","O1"),
+        ("L2","M5"),
+        ("L3","M2"),
+        ("R1","O2"),
+        ("R2","M3"),
+        ("R3","M6"),
+        ("O3","M4"),
+        ("O4","M1"),
+    ], [
+        ("L",3),
+        ("O",4),
+        ("R",3),
+    ], ("M",6)
+    )
+    optimization_matrix_contractor = staticmethod(optimization_matrix_contractor)
+    #@-node:gcross.20100506200958.2699:optimization_matrix_contractor
+    #@+node:gcross.20100506200958.2701:test_correct_result_for_arbitrary_operator
+    @with_checker(number_of_calls=10)
+    def test_correct_result_for_arbitrary_operator(self,
+        d = irange(2,4),
+        bl = irange(2,5),
+        br = irange(2,5),
+        cl = irange(2,5),
+        cr = irange(2,5),
+    ):
+        left_environment = crand(bl,bl,cl)
+        left_environment += left_environment.transpose(1,0,2).conj()
+        right_environment = crand(br,br,cr)
+        right_environment += right_environment.transpose(1,0,2).conj()
+        sparse_operator_indices, sparse_operator_matrices, operator_site_tensor = generate_random_sparse_matrices(cl,cr,d)
+        optimization_matrix = self.optimization_matrix_contractor(left_environment,operator_site_tensor,right_environment).reshape(d*bl*br,d*bl*br)
+        self.assertTrue(allclose(optimization_matrix,optimization_matrix.conj().transpose()))
+        info, result, actual_eigenvalue = \
+            vmps.optimize(left_environment,sparse_operator_indices,sparse_operator_matrices,right_environment,zeros((0,0)),"SR",0,10000,crand(br,bl,d))
+        correct_eigenvalues, correct_eigenvectors = eigh(optimization_matrix)
+        correct_eigenvectors = correct_eigenvectors.transpose()
+        correct_solution_index = argmin(correct_eigenvalues)
+        correct_eigenvalue = correct_eigenvalues[correct_solution_index]
+        self.assertAlmostEqual(actual_eigenvalue,correct_eigenvalue)
+        actual_eigenvector = result.ravel()
+        actual_eigenvector /= actual_eigenvector[0]
+        correct_eigenvector = correct_eigenvectors[correct_solution_index]
+        correct_eigenvector /= correct_eigenvector[0]
+        self.assertTrue(allclose(actual_eigenvector,correct_eigenvector))
+    #@-node:gcross.20100506200958.2701:test_correct_result_for_arbitrary_operator
     #@+node:gcross.20091109182634.1546:test_correct_result_for_simple_operator
     def test_correct_result_for_simple_operator(self):
         left_environment = ones((1,1,1),complex128)
