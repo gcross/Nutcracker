@@ -70,31 +70,11 @@ alwaysDeclareVictory = return . Just . (chainEnergy &&& getCanonicalStateReprese
 -- @-node:gcross.20091120112621.1595:alwaysDeclareVictory
 -- @-node:gcross.20091120112621.1594:multi-level callbacks
 -- @-node:gcross.20091120112621.1591:Predefined Callbacks
--- @+node:gcross.20100506200958.2697:Exceptions
--- @+node:gcross.20100506200958.2698:EnergyChangedAfterMoveError
-data EnergyChangedAfterMoveError = EnergyChangedAfterMoveError SweepDirection Int Double Double deriving Typeable
-
-instance Show EnergyChangedAfterMoveError where
-    show (EnergyChangedAfterMoveError sweep_direction old_site_number new_energy old_energy) =
-        printf "EnergyChangedAfterMoveError:  When moving from site %i to site %i, the energy changed from %f to %f."
-            old_site_number
-            new_site_number
-            old_energy
-            new_energy
-      where
-        new_site_number =
-            case sweep_direction of
-                SweepingLeft -> old_site_number-1
-                SweepingRight -> old_site_number+1
-
-instance Exception EnergyChangedAfterMoveError
--- @-node:gcross.20100506200958.2698:EnergyChangedAfterMoveError
--- @-node:gcross.20100506200958.2697:Exceptions
--- @+node:gcross.20100506200958.2696:Types
+-- @+node:gcross.20100512154636.1737:Types
 -- @+node:gcross.20091118213523.1815:SweepDirection
 data SweepDirection = SweepingRight | SweepingLeft
 -- @-node:gcross.20091118213523.1815:SweepDirection
--- @-node:gcross.20100506200958.2696:Types
+-- @-node:gcross.20100512154636.1737:Types
 -- @+node:gcross.20091118213523.1814:Functions
 -- @+node:gcross.20091118213523.1822:Single sweep optimization
 -- @+node:gcross.20091118213523.1817:performOptimizationSweep
@@ -135,7 +115,7 @@ performOptimizationSweepWithCallback callback tolerance maximum_number_of_iterat
             Left failure_reason -> callback (Left failure_reason) SweepingRight chain >> return chain
             Right (number_of_iterations,optimized_chain) -> callback (Right number_of_iterations) SweepingRight optimized_chain >> return optimized_chain
         >>=
-        goRight (n-1) . confirmEnergyUnchanged SweepingRight activateRightNeighbor
+        goRight (n-1) .  activateRightNeighborWithSanityCheck 1e-7
 
     goLeft 0 chain = return chain
     goLeft n chain =
@@ -143,17 +123,8 @@ performOptimizationSweepWithCallback callback tolerance maximum_number_of_iterat
             Left failure_reason -> callback (Left failure_reason) SweepingLeft chain >> return chain
             Right (number_of_iterations,optimized_chain) -> callback (Right number_of_iterations) SweepingLeft optimized_chain >> return optimized_chain
         >>=
-        goLeft (n-1) . confirmEnergyUnchanged SweepingLeft activateLeftNeighbor
+        goLeft (n-1) . activateLeftNeighborWithSanityCheck 1e-7
 
-    confirmEnergyUnchanged sweep_direction activateNeighbor old_chain
-        | new_energy - old_energy > 1e-7
-            = throw $ EnergyChangedAfterMoveError sweep_direction (siteNumber old_chain) new_energy old_energy
-        | otherwise
-            = new_chain
-      where
-        old_energy = chainEnergy old_chain
-        new_chain = activateNeighbor old_chain
-        new_energy = chainEnergy new_chain
 {-# INLINE performOptimizationSweepWithCallback #-}
 -- @-node:gcross.20091118213523.1810:performOptimizationSweepWithCallback
 -- @-node:gcross.20091118213523.1822:Single sweep optimization
@@ -251,7 +222,6 @@ increaseBandwidthAndSweepUntilConvergence
 
 increaseBandwidthAndSweepUntilConvergence_ =
     increaseBandwidthAndSweepUntilConvergence 1e-7 1e-7 0 1000
--- @nonl
 -- @-node:gcross.20091118213523.1846:increaseBandwidthAndSweepUntilConvergence
 -- @+node:gcross.20091118213523.1854:increaseBandwidthAndSweepUntilConvergenceWithCallbacks
 increaseBandwidthAndSweepUntilConvergenceWithCallbacks ::
@@ -276,7 +246,14 @@ increaseBandwidthAndSweepUntilConvergenceWithCallbacks
     = runOptimizer >=> go
   where
     go old_chain =
-        callback_to_increase_bandwidth old_chain
+        liftM (throwIfEnergyChanged 1e-7 old_chain $
+            \old_chain new_chain ->
+                EnergyChangedAfterBandwidthIncreaseError
+                    (maximumBandwidthIn old_chain)
+                    (maximumBandwidthIn new_chain)
+                    (chainEnergy old_chain)
+                    (chainEnergy new_chain)
+        ) (callback_to_increase_bandwidth old_chain)
         >>=
         runOptimizer
         >>=

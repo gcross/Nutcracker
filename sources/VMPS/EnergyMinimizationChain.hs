@@ -54,6 +54,33 @@ instance Show ConvergenceError where
 
 instance Exception ConvergenceError
 -- @-node:gcross.20100506200958.2695:ConvergenceError
+-- @+node:gcross.20100512151146.1738:SanityCheckFailed
+data SanityCheckFailed =
+    EnergyChangedAfterMoveError (Either () ()) Int Double Double
+  | EnergyChangedAfterBandwidthIncreaseError Int Int Double Double
+  deriving Typeable
+
+instance Show SanityCheckFailed where
+    show (EnergyChangedAfterMoveError sweep_direction old_site_number old_energy new_energy) =
+        printf "SanityCheckFailed:  When moving from site %i to site %i, the energy changed from %f to %f."
+            old_site_number
+            new_site_number
+            old_energy
+            new_energy
+      where
+        new_site_number =
+            case sweep_direction of
+                Left () -> old_site_number-1
+                Right () -> old_site_number+1
+    show (EnergyChangedAfterBandwidthIncreaseError old_bandwidth new_bandwidth old_energy new_energy) =
+        printf "SanityCheckFailed:  When increasing the bandwidth from %i to %i, the energy changed from %f to %f."
+            old_bandwidth
+            new_bandwidth
+            old_energy
+            new_energy
+
+instance Exception SanityCheckFailed
+-- @-node:gcross.20100512151146.1738:SanityCheckFailed
 -- @-node:gcross.20100506200958.2694:Exceptions
 -- @+node:gcross.20091113142219.1664:Types
 -- @+node:gcross.20091117140132.1795:OverlapTensorTrio
@@ -317,6 +344,19 @@ makeConfiguration :: [OperatorSiteTensor] -> [[OverlapTensorTrio]] -> [(Operator
 makeConfiguration operator_site_tensors [] = zip operator_site_tensors (repeat [])
 makeConfiguration operator_site_tensors projectors = zip operator_site_tensors . transpose $ projectors
 -- @-node:gcross.20091120112621.1590:makeConfiguration
+-- @+node:gcross.20100512154636.1738:throwIfEnergyChanged
+throwIfEnergyChanged ::
+    Double ->
+    EnergyMinimizationChain ->
+    (EnergyMinimizationChain -> EnergyMinimizationChain -> SanityCheckFailed) ->
+    EnergyMinimizationChain ->
+    EnergyMinimizationChain
+throwIfEnergyChanged tolerance old_chain createException new_chain
+ | abs (chainEnergy new_chain - chainEnergy old_chain) > tolerance
+    = throw $ createException old_chain new_chain
+ | otherwise
+    = new_chain
+-- @-node:gcross.20100512154636.1738:throwIfEnergyChanged
 -- @-node:gcross.20091116222034.2374:Utility Functions
 -- @+node:gcross.20091113142219.1678:Chain Functions
 -- @+node:gcross.20091113142219.1679:computeEnergy
@@ -392,6 +432,21 @@ computeOverlapTriosFromCanonicalStateRepresentation
                    right_normalized_overlap_next_site_tensor
                    normalized_state_rest_site_tensors
 -- @-node:gcross.20091117140132.1798:computeOverlapTriosFromStateTensors
+-- @+node:gcross.20100512151146.1740:checkSanityAfterActivatingNeighbor
+checkSanityAfterActivatingNeighbor activateNeighbor direction tolerance old_chain =
+    throwIfEnergyChanged tolerance old_chain (
+        \old_chain new_chain ->
+            EnergyChangedAfterMoveError
+                direction
+                (siteNumber old_chain)
+                (chainEnergy old_chain)
+                (chainEnergy new_chain)
+    )
+    .
+    activateNeighbor
+    $
+    old_chain
+-- @-node:gcross.20100512151146.1740:checkSanityAfterActivatingNeighbor
 -- @+node:gcross.20091113142219.1684:activateLeftNeighbor
 activateLeftNeighbor :: EnergyMinimizationChain -> EnergyMinimizationChain
 activateLeftNeighbor EnergyMinimizationChain { siteLeftNeighbors = [] } =
@@ -429,6 +484,9 @@ activateLeftNeighbor old_chain =
     in new_chain
 
 -- @-node:gcross.20091113142219.1684:activateLeftNeighbor
+-- @+node:gcross.20100512151146.1739:activateLeftNeighborWithSanityCheck
+activateLeftNeighborWithSanityCheck = checkSanityAfterActivatingNeighbor activateLeftNeighbor (Left ())
+-- @-node:gcross.20100512151146.1739:activateLeftNeighborWithSanityCheck
 -- @+node:gcross.20091113142219.1686:activateRightNeighbor
 activateRightNeighbor :: EnergyMinimizationChain -> EnergyMinimizationChain
 activateRightNeighbor EnergyMinimizationChain { siteRightNeighbors = [] } =
@@ -465,6 +523,9 @@ activateRightNeighbor old_chain =
                 }
     in new_chain
 -- @-node:gcross.20091113142219.1686:activateRightNeighbor
+-- @+node:gcross.20100512151146.1743:activateRightNeighborWithSanityCheck
+activateRightNeighborWithSanityCheck = checkSanityAfterActivatingNeighbor activateRightNeighbor (Right ())
+-- @-node:gcross.20100512151146.1743:activateRightNeighborWithSanityCheck
 -- @+node:gcross.20091113142219.1687:optimizeSite
 optimizeSite :: Double -> Int -> EnergyMinimizationChain -> Either OptimizerFailureReason (Int,EnergyMinimizationChain)
 optimizeSite tolerance maximum_number_of_iterations chain =
@@ -703,6 +764,17 @@ increaseChainBandwidth
 
 increaseChainBandwidth _ _ = error "This algorithm is only designed to work when the chain is at its leftmost site."
 -- @-node:gcross.20091115105949.1744:increaseChainBandwidth
+-- @+node:gcross.20100512151146.1745:increaseChainBandwithWithSanityCheck
+increaseChainBandwidthWithSanityCheck tolerance new_bandwidth old_chain =
+    increaseChainBandwidth new_bandwidth old_chain
+    >>=
+    \new_chain ->
+        let new_energy = chainEnergy new_chain
+            old_energy = chainEnergy old_chain
+        in if abs (new_energy - old_energy) > tolerance
+            then throwIO $ EnergyChangedAfterBandwidthIncreaseError (maximumBandwidthIn old_chain) new_bandwidth old_energy new_energy
+            else return new_chain
+-- @-node:gcross.20100512151146.1745:increaseChainBandwithWithSanityCheck
 -- @+node:gcross.20091118213523.1855:maximumBandwidthIn
 maximumBandwidthIn :: EnergyMinimizationChain -> Int
 maximumBandwidthIn chain =
