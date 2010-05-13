@@ -7,19 +7,19 @@
 !@+node:gcross.20100512172859.1739:Utility Functions
 !@+node:gcross.20091110205054.1929:mysvd
 function mysvd ( &
-  n, m, rank, &
+  m, n, rank, &
   matrix, &
   u, s, vt &
 ) result (info)
-  integer, intent(in) :: n, m, rank
-  double complex, intent(in) :: matrix(n,m)
-  double complex, intent(out) :: u(n,rank), vt(rank,m)
+  integer, intent(in) :: m, n, rank
+  double complex, intent(in) :: matrix(m,n)
+  double complex, intent(out) :: u(m,rank), vt(rank,n)
   double precision :: s(rank)
 
   double complex, allocatable :: work(:)
   integer :: iwork(8*rank)
   double precision :: rwork(5*rank*rank + 5*rank)
-  double complex :: optimal_lwork, a(n,m)
+  double complex :: optimal_lwork, a(m,n)
   integer :: lwork, info
 
   external :: zgesdd
@@ -29,10 +29,10 @@ function mysvd ( &
   a = matrix
 
   call zgesdd( &
-    'S', n, m, &
-    a, n, &
+    'S', m, n, &
+    a, m, &
     s, &
-    u, n, &
+    u, m, &
     vt, rank, &
     optimal_lwork, lwork, &
     rwork, &
@@ -45,10 +45,10 @@ function mysvd ( &
   allocate(work(lwork))
 
   call zgesdd( &
-    'S', n, m, &
-    a, n, &
+    'S', m, n, &
+    a, m, &
     s, &
-    u, n, &
+    u, m, &
     vt, rank, &
     work, lwork, &
     rwork, &
