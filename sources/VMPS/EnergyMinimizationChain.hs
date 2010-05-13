@@ -38,22 +38,6 @@ import Debug.Trace
 
 -- @+others
 -- @+node:gcross.20100506200958.2694:Exceptions
--- @+node:gcross.20100506200958.2695:ConvergenceError
-data ConvergenceError = ImaginaryEigenvalue Int (Complex Double) | EnergyIncreased Int Double Double deriving (Typeable)
-
-instance Show ConvergenceError where
-    show (ImaginaryEigenvalue site_number eigenvalue) =
-        printf "ConvergenceError (at site %i): Non-real eigenvalue (%s)"
-            site_number
-            (show eigenvalue)
-    show (EnergyIncreased site_number new_energy old_energy) =
-        printf "ConvergenceError (at site %i): New energy (%f) is larger than the old energy (%f)"
-            site_number
-            new_energy
-            old_energy
-
-instance Exception ConvergenceError
--- @-node:gcross.20100506200958.2695:ConvergenceError
 -- @+node:gcross.20100512151146.1738:SanityCheckFailed
 data SanityCheckFailed =
     EnergyChangedAfterMoveError (Either () ()) Int Double Double
@@ -785,21 +769,12 @@ optimizeSite tolerance maximum_number_of_iterations chain =
             tolerance
             maximum_number_of_iterations
   where
-    postProcess (number_of_iterations, eigenvalue, optimal_site_tensor)
-        | not (imagPart eigenvalue ~= 0) =
-            throw $ ImaginaryEigenvalue site_number eigenvalue
-        | new_energy - old_energy > 1e-7 =
-            throw $ EnergyIncreased site_number new_energy old_energy
-        | otherwise =
-            Right (number_of_iterations, chain
-                {   siteStateTensor = optimal_site_tensor
-                ,   chainEnergy = new_energy
-                }
-            )
-      where
-        site_number = siteNumber chain
-        new_energy = realPart eigenvalue
-        old_energy = chainEnergy chain
+    postProcess (number_of_iterations,new_energy,optimal_site_tensor) =
+        Right (number_of_iterations, chain
+            {   siteStateTensor = optimal_site_tensor
+            ,   chainEnergy = new_energy
+            }
+        )
 
 optimizeSite_ = optimizeSite 0 1000
 -- @-node:gcross.20091113142219.1687:optimizeSite

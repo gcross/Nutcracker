@@ -401,7 +401,7 @@ computeOptimalSiteStateTensor ::
     OptimizerSelectionStrategy ->
     Double ->
     Int ->
-    Either OptimizerFailureReason (Int, Complex Double, UnnormalizedStateSiteTensor)
+    Either OptimizerFailureReason (Int, Double, UnnormalizedStateSiteTensor)
 computeOptimalSiteStateTensor
     left_boundary_tensor
     state_site_tensor
@@ -451,7 +451,7 @@ computeOptimalSiteStateTensor
                             (peek p_eigenvalue)
             )
     in case info of
-        0 -> Right (number_of_iterations,eigenvalue,optimized_state_site_tensor)
+        0 -> Right (number_of_iterations,realPart eigenvalue,optimized_state_site_tensor)
         -14 -> Left OptimizerUnableToConverge
         1 -> Left $ OptimizedObtainedComplexEigenvalue eigenvalue
         2 -> Left $ OptimizerObtainedVanishingEigenvector (realPart eigenvalue)
