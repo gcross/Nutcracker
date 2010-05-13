@@ -1302,30 +1302,30 @@ end subroutine
 !@-node:gcross.20091117140132.1799:Overlap tensor formation
 !@+node:gcross.20091116175016.1817:orthogonalize_projector_matrix
 subroutine orthogonalize_projector_matrix( &
-  number_of_projectors, &
-  projector_length, &
-  projector_matrix &
+  n, &
+  m, &
+  matrix &
 )
-  integer, intent(in) :: number_of_projectors, projector_length
-  double complex, intent(inout) :: projector_matrix(projector_length,number_of_projectors)
+  integer, intent(in) :: n, m
+  double complex, intent(inout) :: matrix(m,n)
 
-  integer :: jpvt(number_of_projectors), info, lwork
-  double complex :: tau(number_of_projectors), lwork_as_complex
-  double precision :: rwork(2*number_of_projectors)
+  integer :: jpvt(n), info, lwork
+  double complex :: tau(n), lwork_as_complex
+  double precision :: rwork(2*n)
 
   double complex, allocatable :: work(:)
 
   external :: zgeqp3, zungqr
 
-  if (number_of_projectors >= projector_length) then
+  if (n >= m) then
     print *, "There are too many projectors and too few degrees of freedom!"
     stop
   end if
 
   lwork = -1
   call zgeqp3( &
-    projector_length, number_of_projectors, &
-    projector_matrix, projector_length, &
+    m, n, &
+    matrix, m, &
     jpvt, &
     tau, &
     lwork_as_complex, lwork, &
@@ -1340,8 +1340,8 @@ subroutine orthogonalize_projector_matrix( &
   lwork = int(real(lwork_as_complex))
   allocate(work(lwork))
   call zgeqp3( &
-    projector_length, number_of_projectors, &
-    projector_matrix, projector_length, &
+    m, n, &
+    matrix, m, &
     jpvt, &
     tau, &
     work, lwork, &
@@ -1354,8 +1354,8 @@ subroutine orthogonalize_projector_matrix( &
   end if
 
   call zungqr( &
-    projector_length, number_of_projectors, number_of_projectors, &
-    projector_matrix, projector_length, &
+    m, n, n, &
+    matrix, m, &
     tau, &
     work, lwork, &
     info &
