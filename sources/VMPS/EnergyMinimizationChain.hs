@@ -17,6 +17,7 @@ import Control.Exception
 import Control.Monad
 
 import Data.Complex
+import Data.Either.Unwrap
 import Data.Function
 import Data.List
 import Data.Typeable
@@ -758,7 +759,7 @@ maximumBandwidthIn chain =
 -- @+node:gcross.20091113142219.1687:optimizeSite
 optimizeSite :: Double -> Int -> EnergyMinimizationChain -> Either OptimizerFailureReason (Int,EnergyMinimizationChain)
 optimizeSite tolerance maximum_number_of_iterations chain =
-    either Left postProcess $
+    mapRight postProcess $
         computeOptimalSiteStateTensor
             (siteLeftBoundaryTensor chain)
             (siteStateTensor chain)
@@ -770,7 +771,8 @@ optimizeSite tolerance maximum_number_of_iterations chain =
             maximum_number_of_iterations
   where
     postProcess (number_of_iterations,new_energy,optimal_site_tensor) =
-        Right (number_of_iterations, chain
+        (number_of_iterations
+        ,chain
             {   siteStateTensor = optimal_site_tensor
             ,   chainEnergy = new_energy
             }
