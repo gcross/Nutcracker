@@ -77,8 +77,8 @@ subroutine orthogonalize_matrix_in_place( &
 
   external :: zgeqp3, zungqr
 
-  if (n >= m) then
-    print *, "There are too many projectors and too few degrees of freedom!"
+  if (m < n) then
+    print *, "The input matrix has too many columns and not enough rows (column-major ordering) to orthogonalize!"
     stop
   end if
 
@@ -904,7 +904,7 @@ subroutine randomize_state_site_tensor(br, bl, d, state_site_tensor)
   do i = 1, br
   do j = 1, bl
   do k = 1, d
-    state_site_tensor(i,j,k) = rand()*(1d0,0d0) + rand()*(0d0,1d0)
+    state_site_tensor(i,j,k) = (0.5d0,0d0)-rand()*(1d0,0d0) + (0,0.5d0)-rand()*(0d0,1d0)
   end do
   end do
   end do
@@ -915,14 +915,7 @@ subroutine rand_norm_state_site_tensor(br, bl, d, state_site_tensor)
   integer, intent(in) :: br, bl, d
   double complex, intent(out) :: state_site_tensor(br,bl,d)
 
-  double complex :: u(bl,bl), vt(bl,br*d)
-  double precision :: s(bl)
-  integer :: info
-
-  double complex :: normalized_state_site_tensor(bl,br*d)
-
-  integer :: mysvd
-  external :: zgemm
+  double complex :: workspace(br,d,bl)
 
   if (br*d < bl) then
     print *, "Not enough degrees of freedom to normalize."
@@ -930,25 +923,11 @@ subroutine rand_norm_state_site_tensor(br, bl, d, state_site_tensor)
     stop
   end if
 
-  call randomize_state_site_tensor(bl, br, d, normalized_state_site_tensor)
+  call randomize_state_site_tensor(br, d, bl, workspace)
 
-  info = mysvd(bl,br*d,bl,normalized_state_site_tensor,u,s,vt)
-  if (info /= 0) then
-    print *, "Unable to create normalized random state site tensor!"
-    stop
-  end if
+  call orthogonalize_matrix_in_place(br*d, bl, workspace)
 
-  call zgemm( &
-    'N','N', &
-    bl,br*d,bl, &
-    (1d0,0d0), &
-    u, bl, &
-    vt, bl, &
-    (0d0,0d0), &
-    normalized_state_site_tensor, bl &
-  )
-
-  state_site_tensor = reshape(normalized_state_site_tensor,shape(state_site_tensor),order=(/2,1,3/))
+  state_site_tensor = reshape(workspace,shape(state_site_tensor),order=(/1,3,2/))
 
 end subroutine
 !@-node:gcross.20091110205054.1922:rand_norm_state_site_tensor
@@ -1143,35 +1122,15 @@ subroutine create_bandwidth_increase_matrix(old_bandwidth,new_bandwidth,matrix)
   integer, intent(in) :: old_bandwidth, new_bandwidth
   double complex, intent(out) :: matrix(new_bandwidth,old_bandwidth)
 
-  integer :: info, mysvd, i, j
-  double complex :: &
-    u(new_bandwidth,old_bandwidth), &
-    s(old_bandwidth), &
-    vt(old_bandwidth,old_bandwidth), &
-    dummy(new_bandwidth,old_bandwidth)
-
-  matrix = 0
+  integer :: i, j
 
   do j = 1, old_bandwidth
   do i = 1, new_bandwidth
-    dummy(i,j) = rand()*(1d0,0d0) + rand()*(0d0,1d0)
+    matrix(i,j) = (0.5d0,0d0)-rand()*(1d0,0d0) + (0,0.5d0)-rand()*(0d0,1d0)
   end do
   end do
 
-  info = mysvd(new_bandwidth,old_bandwidth,old_bandwidth,dummy,u,s,vt)
-  if (info /= 0) then
-    print *, "Error creating bandwidth increase matrix!  info = ",info
-  end if
-
-  call zgemm( &
-    'N','N', &
-    new_bandwidth,old_bandwidth,old_bandwidth, &
-    (1d0,0d0), &
-    u, new_bandwidth, &
-    vt, old_bandwidth, &
-    (0d0,0d0), &
-    matrix, new_bandwidth &
-  )
+  call orthogonalize_matrix_in_place(new_bandwidth,old_bandwidth,matrix)
 
 end subroutine
 !@-node:gcross.20091115094257.1712:create_bandwidth_increase_matrix
