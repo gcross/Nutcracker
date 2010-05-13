@@ -50,11 +50,14 @@ instance Show OptimizerSelectionStrategy where
 withStrategyAsCString :: OptimizerSelectionStrategy -> (CString -> IO a) -> IO a
 withStrategyAsCString = withCString . show
 -- @-node:gcross.20091111171052.1657:SelectionStrategy
--- @+node:gcross.20091119150241.1880:OptimizerFailure
+-- @+node:gcross.20091119150241.1880:OptimizerFailureReason
 data OptimizerFailureReason =
     OptimizerUnableToConverge
+  | OptimizedObtainedComplexEigenvalue (Complex Double)
+  | OptimizerObtainedVanishingEigenvector Double
+  | UnknownOptimizerFailureCode Int
   deriving (Show)
--- @-node:gcross.20091119150241.1880:OptimizerFailure
+-- @-node:gcross.20091119150241.1880:OptimizerFailureReason
 -- @-node:gcross.20091113125544.1660:Types
 -- @+node:gcross.20091113125544.1661:Wrapper functions
 -- @+node:gcross.20091113125544.1656:Contractors
@@ -450,7 +453,9 @@ computeOptimalSiteStateTensor
     in case info of
         0 -> Right (number_of_iterations,eigenvalue,optimized_state_site_tensor)
         -14 -> Left OptimizerUnableToConverge
-        _ -> error $ "Failed to converge! info = " ++ show info
+        1 -> Left $ OptimizedObtainedComplexEigenvalue eigenvalue
+        2 -> Left $ OptimizerObtainedVanishingEigenvector (realPart eigenvalue)
+        _ -> Left $ UnknownOptimizerFailureCode (fromIntegral info)
 -- @-node:gcross.20091111171052.1656:computeOptimalSiteStateTensor
 -- @+node:gcross.20091115105949.1729:increaseBandwidthBetween
 foreign import ccall unsafe "increase_bandwidth_between" increase_bandwidth_between :: 

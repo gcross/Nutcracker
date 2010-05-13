@@ -890,7 +890,6 @@ function optimize( &
               v, br*bl*d, iparam, ipntr, workd, workl, 3*ncv**2+5*ncv, &
               rwork, info)
 
-  result = reshape(v(:,1),shape(result))
   eigenvalue = eigenvalues(1)
 
   if (abs(imag(eigenvalue)) > 1e-7) then
@@ -898,13 +897,16 @@ function optimize( &
     return
   end if
 
-  norm_of_result = dznrm2(d*bl*br,result(1,1,1),1)
+  norm_of_result = dznrm2(d*bl*br,v(1,1),1)
 
   if (norm_of_result < 1-1e-7) then
     info = 2
     eigenvalue = norm_of_result*(1d0,0d0)
     return
   end if
+
+  result = reshape(v(:,1),shape(result))
+
   !@-node:gcross.20091115201814.1728:<< Post-processing >>
   !@nl
 
