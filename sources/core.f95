@@ -821,27 +821,27 @@ function optimize( &
   !@-at
   !@@c
 
-    call iteration_stage_1( &
-      bl, cl, cr, d, &
-      left_environment, &
-      number_of_matrices, sparse_operator_indices, sparse_operator_matrices, &
-      iteration_stage_1_tensor &
-    )
+  call iteration_stage_1( &
+    bl, cl, cr, d, &
+    left_environment, &
+    number_of_matrices, sparse_operator_indices, sparse_operator_matrices, &
+    iteration_stage_1_tensor &
+  )
 
   !@+at
   ! Set up the solver.
   !@-at
   !@@c
 
-    iparam = 0
-    ido = 0
-    info = 1
+  iparam = 0
+  ido = 0
+  info = 1
 
-    iparam(1) = 1
-    iparam(3) = number_of_iterations
-    iparam(7) = 1
+  iparam(1) = 1
+  iparam(3) = number_of_iterations
+  iparam(7) = 1
 
-    resid = guess
+  resid = guess
   !@-node:gcross.20091115201814.1732:<< Setup >>
   !@nl
 
@@ -852,28 +852,28 @@ function optimize( &
   !@-at
   !@@c
 
-    do while (ido /= 99)
-      call znaupd ( &
-        ido, 'I', d*bl*br, which, nev, tol, resid, ncv, v, br*bl*d, &
-        iparam, ipntr, workd, workl, 3*ncv**2+5*ncv, rwork, info &
-      ) 
-      if (ido == -1 .or. ido == 1) then
-        call project(bl*br*d,number_of_projectors,projectors,workd(ipntr(1)),workd(ipntr(1)))
-        call iteration_stage_2( &
-          bl, br, cr, d, &
-          iteration_stage_1_tensor, &
-          workd(ipntr(1)), &
-          iteration_stage_2_tensor &
-        )
-        call iteration_stage_3( &
-          bl, br, cr, d, &
-          iteration_stage_2_tensor, &
-          right_environment, &
-          workd(ipntr(2)) &
-        )
-        call project(bl*br*d,number_of_projectors,projectors,workd(ipntr(2)),workd(ipntr(2)))
-      end if
-    end do
+  do while (ido /= 99)
+    call znaupd ( &
+      ido, 'I', d*bl*br, which, nev, tol, resid, ncv, v, br*bl*d, &
+      iparam, ipntr, workd, workl, 3*ncv**2+5*ncv, rwork, info &
+    ) 
+    if (ido == -1 .or. ido == 1) then
+      call project(bl*br*d,number_of_projectors,projectors,workd(ipntr(1)),workd(ipntr(1)))
+      call iteration_stage_2( &
+        bl, br, cr, d, &
+        iteration_stage_1_tensor, &
+        workd(ipntr(1)), &
+        iteration_stage_2_tensor &
+      )
+      call iteration_stage_3( &
+        bl, br, cr, d, &
+        iteration_stage_2_tensor, &
+        right_environment, &
+        workd(ipntr(2)) &
+      )
+      call project(bl*br*d,number_of_projectors,projectors,workd(ipntr(2)),workd(ipntr(2)))
+    end if
+  end do
   !@-node:gcross.20091115201814.1733:<< Main iteration >>
   !@nl
 
