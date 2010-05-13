@@ -770,6 +770,14 @@ function optimize( &
 
     end subroutine
     !@-node:gcross.20091109182634.1539:zneupd
+    !@+node:gcross.20100513000837.1740:dznrm2
+    function dznrm2 (n,x,incx)
+      integer, intent(in) :: n, incx
+      double complex, intent(in) :: x
+
+      double precision :: dznrm2
+    end function
+    !@-node:gcross.20100513000837.1740:dznrm2
     !@-others
   end interface
   !@-node:gcross.20091109182634.1538:Interface
@@ -785,6 +793,9 @@ function optimize( &
     eigenvalues(nev+1), &
     workev(2*ncv), &
     resid(br,bl,d)
+
+  double precision :: &
+    norm_of_result
 
   integer :: &
     iparam(11), &
@@ -870,7 +881,7 @@ function optimize( &
   !@+node:gcross.20091115201814.1728:<< Post-processing >>
   number_of_iterations = iparam(3)
 
-  if( info < 0 ) then
+  if ( info < 0 ) then
     return
   end if
 
@@ -881,7 +892,19 @@ function optimize( &
 
   result = reshape(v(:,1),shape(result))
   eigenvalue = eigenvalues(1)
-  !@nonl
+
+  if (abs(imag(eigenvalue)) > 1e-7) then
+    info = 1
+    return
+  end if
+
+  norm_of_result = dznrm2(d*bl*br,result(1,1,1),1)
+
+  if (norm_of_result < 1-1e-7) then
+    info = 2
+    eigenvalue = norm_of_result*(1d0,0d0)
+    return
+  end if
   !@-node:gcross.20091115201814.1728:<< Post-processing >>
   !@nl
 

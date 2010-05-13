@@ -51,8 +51,9 @@ withStrategyAsCString :: OptimizerSelectionStrategy -> (CString -> IO a) -> IO a
 withStrategyAsCString = withCString . show
 -- @-node:gcross.20091111171052.1657:SelectionStrategy
 -- @+node:gcross.20091119150241.1880:OptimizerFailure
-data OptimizerFailureReason = OptimizerUnableToConverge
-    deriving (Show)
+data OptimizerFailureReason =
+    OptimizerUnableToConverge
+  deriving (Show)
 -- @-node:gcross.20091119150241.1880:OptimizerFailure
 -- @-node:gcross.20091113125544.1660:Types
 -- @+node:gcross.20091113125544.1661:Wrapper functions
