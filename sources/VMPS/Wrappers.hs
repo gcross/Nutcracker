@@ -524,7 +524,7 @@ foreign import ccall unsafe "form_overlap_vector" form_overlap_vector ::
     Ptr (Complex Double) -> -- output overlap vector
     IO ()
 
-foreign import ccall unsafe "orthogonalize_projector_matrix" orthogonalize_projector_matrix :: 
+foreign import ccall unsafe "orthogonalize_matrix_in_place" orthogonalize_matrix_in_place :: 
     Int -> -- number of projectors
     Int -> -- projector length
     Ptr (Complex Double) -> -- projector matrix
@@ -550,9 +550,9 @@ formProjectorMatrix projectors@(first_projector:_) =
                             p_projector_matrix
                             (plusPtr p_projector_matrix pointer_increment)
                     _ -> 
-                     do orthogonalize_projector_matrix
-                            number_of_projectors
+                     do orthogonalize_matrix_in_place
                             projector_length
+                            number_of_projectors
                             p_projector_matrix
   where
     number_of_projectors = length projectors

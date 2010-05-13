@@ -971,12 +971,12 @@ class rand_unnorm_state_site_tensor(unittest.TestCase):
 #@-node:gcross.20091123113033.1633:rand_unnorm_state_site_tensor
 #@-node:gcross.20091123113033.1634:Randomization
 #@+node:gcross.20091116175016.1815:orthogonalize_projector_matrix
-class orthogonalize_projector_matrix(unittest.TestCase):
+class orthogonalize_matrix_in_place(unittest.TestCase):
     @with_checker
     def testCorrectness(self,projector_length=irange(8,20),number_of_projectors=irange(1,7)):
         original_vectors = crand(number_of_projectors,projector_length)
         projector_matrix = array(original_vectors.transpose(),order='Fortran',copy=True)
-        vmps.orthogonalize_projector_matrix(projector_matrix)
+        vmps.orthogonalize_matrix_in_place(projector_matrix)
         projector_matrix = projector_matrix.transpose()
         for i, projector in enumerate(projector_matrix):
             self.assertAlmostEqual(1,norm(projector))
@@ -1191,7 +1191,7 @@ tests = [
     absorb_bi_matrix_from_left,
     absorb_bi_matrix_from_right,
     increase_bandwidth_between,
-    orthogonalize_projector_matrix,
+    orthogonalize_matrix_in_place,
     form_overlap_site_tensor,
     form_norm_overlap_tensors,
 ]

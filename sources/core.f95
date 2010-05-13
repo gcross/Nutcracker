@@ -4,13 +4,14 @@
 !@@tabwidth -2
 
 !@+others
+!@+node:gcross.20100512172859.1739:Utility Functions
 !@+node:gcross.20091110205054.1929:mysvd
 function mysvd ( &
   n, m, rank, &
   matrix, &
   u, s, vt &
 ) result (info)
-  integer, intent(in) :: N, M, rank
+  integer, intent(in) :: n, m, rank
   double complex, intent(in) :: matrix(n,m)
   double complex, intent(out) :: u(n,rank), vt(rank,m)
   double precision :: s(rank)
@@ -60,6 +61,75 @@ function mysvd ( &
 end function
 !@nonl
 !@-node:gcross.20091110205054.1929:mysvd
+!@+node:gcross.20100512172859.1741:orthogonalize_matrix_in_place
+subroutine orthogonalize_matrix_in_place( &
+  m, n, &
+  matrix &
+)
+  integer, intent(in) :: n, m
+  double complex, intent(inout) :: matrix(m,n)
+
+  integer :: jpvt(n), info, lwork
+  double complex :: tau(n), lwork_as_complex
+  double precision :: rwork(2*n)
+
+  double complex, allocatable :: work(:)
+
+  external :: zgeqp3, zungqr
+
+  if (n >= m) then
+    print *, "There are too many projectors and too few degrees of freedom!"
+    stop
+  end if
+
+  lwork = -1
+  call zgeqp3( &
+    m, n, &
+    matrix, m, &
+    jpvt, &
+    tau, &
+    lwork_as_complex, lwork, &
+    rwork, &
+    info &
+  )
+
+  if (info /= 0) then
+    print *, "Unable to factorize matrix (zgeqp3, workspace query); info =", info
+  end if
+
+  lwork = int(real(lwork_as_complex))
+  allocate(work(lwork))
+  call zgeqp3( &
+    m, n, &
+    matrix, m, &
+    jpvt, &
+    tau, &
+    work, lwork, &
+    rwork, &
+    info &
+  )
+
+  if (info /= 0) then
+    print *, "Unable to factorize matrix (zgeqp3); info =", info
+  end if
+
+  call zungqr( &
+    m, n, n, &
+    matrix, m, &
+    tau, &
+    work, lwork, &
+    info &
+  )
+
+  if (info /= 0) then
+    print *, "Unable to factorize matrix (zungqr); info =", info
+  end if
+
+  deallocate(work)
+
+end subroutine
+!@-node:gcross.20100512172859.1741:orthogonalize_matrix_in_place
+!@-node:gcross.20100512172859.1739:Utility Functions
 !@+node:gcross.20091110205054.1940:Contractors
 !@+node:gcross.20091110205054.1910:Main iteration
 !@+node:gcross.20091106154604.1512:iteration_stage_1
@@ -1300,75 +1370,6 @@ subroutine form_norm_overlap_tensors( &
 end subroutine
 !@-node:gcross.20091117140132.1802:form_norm_overlap_tensors
 !@-node:gcross.20091117140132.1799:Overlap tensor formation
-!@+node:gcross.20091116175016.1817:orthogonalize_projector_matrix
-subroutine orthogonalize_projector_matrix( &
-  n, &
-  m, &
-  matrix &
-)
-  integer, intent(in) :: n, m
-  double complex, intent(inout) :: matrix(m,n)
-
-  integer :: jpvt(n), info, lwork
-  double complex :: tau(n), lwork_as_complex
-  double precision :: rwork(2*n)
-
-  double complex, allocatable :: work(:)
-
-  external :: zgeqp3, zungqr
-
-  if (n >= m) then
-    print *, "There are too many projectors and too few degrees of freedom!"
-    stop
-  end if
-
-  lwork = -1
-  call zgeqp3( &
-    m, n, &
-    matrix, m, &
-    jpvt, &
-    tau, &
-    lwork_as_complex, lwork, &
-    rwork, &
-    info &
-  )
-
-  if (info /= 0) then
-    print *, "Unable to factorize matrix (zgeqp3, workspace query); info =", info
-  end if
-
-  lwork = int(real(lwork_as_complex))
-  allocate(work(lwork))
-  call zgeqp3( &
-    m, n, &
-    matrix, m, &
-    jpvt, &
-    tau, &
-    work, lwork, &
-    rwork, &
-    info &
-  )
-
-  if (info /= 0) then
-    print *, "Unable to factorize matrix (zgeqp3); info =", info
-  end if
-
-  call zungqr( &
-    m, n, n, &
-    matrix, m, &
-    tau, &
-    work, lwork, &
-    info &
-  )
-
-  if (info /= 0) then
-    print *, "Unable to factorize matrix (zungqr); info =", info
-  end if
-
-  deallocate(work)
-
-end subroutine
-!@-node:gcross.20091116175016.1817:orthogonalize_projector_matrix
 !@-others
 !@-node:gcross.20091110205054.1939:@thin core.f95
 !@-leo

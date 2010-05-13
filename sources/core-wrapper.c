@@ -369,21 +369,21 @@ int increase_bandwidth_between(
 }
 //@-node:gcross.20091115105949.1731:increase_bandwidth_between
 //@+node:gcross.20091116175016.1801:orthogonalize_projector_matrix
-void orthogonalize_projector_matrix_(
-  int* number_of_projectors,
-  int* projector_length,
-  double* projector_matrix
+void orthogonalize_matrix_in_place_(
+  int* n,
+  int* m,
+  double* matrix
 );
 
-void orthogonalize_projector_matrix(
-  int number_of_projectors,
-  int projector_length,
-  double* projector_matrix
+void orthogonalize_matrix_in_place(
+  int n,
+  int m,
+  double* matrix
 ) {
-    orthogonalize_projector_matrix_(
-        &number_of_projectors,
-        &projector_length,
-        projector_matrix
+    orthogonalize_matrix_in_place_(
+        &n,
+        &m,
+        matrix
     );
 }
 //@-node:gcross.20091116175016.1801:orthogonalize_projector_matrix
