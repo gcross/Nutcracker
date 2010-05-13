@@ -686,6 +686,9 @@ subroutine project(vector_size,number_of_projectors,projectors,input_vector,outp
   double complex, intent(out) :: output_vector(vector_size)
   double complex :: projector_weights(number_of_projectors)
   integer :: i
+  if (number_of_projectors == 0) then
+    return
+  end if
   call zgemv( &
     'T', &
     vector_size,number_of_projectors, &
@@ -815,6 +818,11 @@ function optimize( &
 
   !@  << Setup >>
   !@+node:gcross.20091115201814.1732:<< Setup >>
+  if (number_of_projectors + 1 >= d*bl*br ) then
+    info = 10
+    return
+  end if
+
   !@+at
   ! First do the stage 1 contraction, since it is independent of the state 
   ! site tensor.
@@ -886,14 +894,22 @@ function optimize( &
 
   norm_of_result = dznrm2(d*bl*br,v(1,1),1)
 
-  if (norm_of_result < 1-1e-7) then
+  if (abs(norm_of_result-1) > 1e-7) then
     info = 2
     eigenvalue = norm_of_result*(1d0,0d0)
     return
   end if
 
-  result = reshape(v(:,1),shape(result))
+  call project(bl*br*d,number_of_projectors,projectors,v(1,1),v(1,1))
 
+  norm_of_result = dznrm2(d*bl*br,v(1,1),1)
+
+  if (abs(norm_of_result-1) > 1e-7) then
+    info = 3
+    return
+  end if
+
+  result = reshape(v(:,1),shape(result))
   !@-node:gcross.20091115201814.1728:<< Post-processing >>
   !@nl
 

@@ -32,15 +32,23 @@ import VMPS.Wrappers
 
 -- @+others
 -- @+node:gcross.20091119150241.1881:Callback Types
-type SiteCallback m = Either OptimizerFailureReason Int -> SweepDirection -> EnergyMinimizationChain -> m ()
+type SiteCallback m = Either OptimizerFailure Int -> SweepDirection -> EnergyMinimizationChain -> m ()
 type SweepCallback m = Bool -> EnergyMinimizationChain -> m ()
 type BandwidthIncreaseCallback m = EnergyMinimizationChain -> m EnergyMinimizationChain
 type MultilevelVictoryDeterminationCallback m = EnergyMinimizationChain -> m (Maybe (Double,CanonicalStateRepresentation))
--- @nonl
 -- @-node:gcross.20091119150241.1881:Callback Types
+-- @+node:gcross.20100513000837.1741:Exceptions
+-- @+node:gcross.20100513000837.1742:SweepFailure
+data SweepFailure = OptimizerFailureAtSite SweepDirection Int OptimizerFailure
+    deriving (Typeable,Show)
+
+instance Exception SweepFailure
+-- @-node:gcross.20100513000837.1742:SweepFailure
+-- @-node:gcross.20100513000837.1741:Exceptions
 -- @+node:gcross.20091120112621.1591:Predefined Callbacks
 -- @+node:gcross.20091120112621.1592:site callbacks
 -- @+node:gcross.20091119150241.1855:ignoreSiteCallback
+ignoreSiteCallback (Left e) direction chain = throw $ OptimizerFailureAtSite direction (siteNumber chain) e
 ignoreSiteCallback _ _ _ = return ()
 -- @-node:gcross.20091119150241.1855:ignoreSiteCallback
 -- @-node:gcross.20091120112621.1592:site callbacks
@@ -72,7 +80,7 @@ alwaysDeclareVictory = return . Just . (chainEnergy &&& getCanonicalStateReprese
 -- @-node:gcross.20091120112621.1591:Predefined Callbacks
 -- @+node:gcross.20100512154636.1737:Types
 -- @+node:gcross.20091118213523.1815:SweepDirection
-data SweepDirection = SweepingRight | SweepingLeft
+data SweepDirection = SweepingRight | SweepingLeft deriving (Show,Typeable)
 -- @-node:gcross.20091118213523.1815:SweepDirection
 -- @-node:gcross.20100512154636.1737:Types
 -- @+node:gcross.20091118213523.1814:Functions
@@ -112,7 +120,7 @@ performOptimizationSweepWithCallback callback tolerance maximum_number_of_iterat
     goRight 0 chain = goLeft (number_of_sites-1) chain
     goRight n chain =
         case runOptimizerOn $ chain of
-            Left failure_reason -> callback (Left failure_reason) SweepingRight chain >> return chain
+            Left failure_reason -> callback (Left failure_reason) SweepingRight chain >>= \() -> return chain
             Right (number_of_iterations,optimized_chain) -> callback (Right number_of_iterations) SweepingRight optimized_chain >> return optimized_chain
         >>=
         goRight (n-1) .  activateRightNeighborWithSanityCheck 1e-7
@@ -120,7 +128,7 @@ performOptimizationSweepWithCallback callback tolerance maximum_number_of_iterat
     goLeft 0 chain = return chain
     goLeft n chain =
         case runOptimizerOn $ chain of
-            Left failure_reason -> callback (Left failure_reason) SweepingLeft chain >> return chain
+            Left failure_reason -> callback (Left failure_reason) SweepingLeft chain >>= \() -> return chain
             Right (number_of_iterations,optimized_chain) -> callback (Right number_of_iterations) SweepingLeft optimized_chain >> return optimized_chain
         >>=
         goLeft (n-1) . activateLeftNeighborWithSanityCheck 1e-7

@@ -4,6 +4,7 @@
 
 -- @<< Language extensions >>
 -- @+node:gcross.20091113125544.1655:<< Language extensions >>
+{-# LANGUAGE DeriveDataTypeable #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE ForeignFunctionInterface #-}
@@ -22,6 +23,7 @@ import Data.Array.Storable
 import Data.Array.Unboxed
 import Data.Complex
 import Data.Int
+import Data.Typeable
 
 import Foreign.C.String
 import Foreign.Marshal.Alloc
@@ -50,14 +52,18 @@ instance Show OptimizerSelectionStrategy where
 withStrategyAsCString :: OptimizerSelectionStrategy -> (CString -> IO a) -> IO a
 withStrategyAsCString = withCString . show
 -- @-node:gcross.20091111171052.1657:SelectionStrategy
--- @+node:gcross.20091119150241.1880:OptimizerFailureReason
-data OptimizerFailureReason =
+-- @+node:gcross.20091119150241.1880:OptimizerFailure
+data OptimizerFailure =
     OptimizerUnableToConverge
   | OptimizedObtainedComplexEigenvalue (Complex Double)
   | OptimizerObtainedVanishingEigenvector Double
+  | OptimizerObtainedEigenvectorInProjectorSpace
+  | OptimizerGivenTooManyProjectors Int Int Int Int
   | UnknownOptimizerFailureCode Int
-  deriving (Show)
--- @-node:gcross.20091119150241.1880:OptimizerFailureReason
+  deriving (Show,Typeable)
+
+instance Exception OptimizerFailure
+-- @-node:gcross.20091119150241.1880:OptimizerFailure
 -- @-node:gcross.20091113125544.1660:Types
 -- @+node:gcross.20091113125544.1661:Wrapper functions
 -- @+node:gcross.20091113125544.1656:Contractors
@@ -401,7 +407,7 @@ computeOptimalSiteStateTensor ::
     OptimizerSelectionStrategy ->
     Double ->
     Int ->
-    Either OptimizerFailureReason (Int, Double, UnnormalizedStateSiteTensor)
+    Either OptimizerFailure (Int, Double, UnnormalizedStateSiteTensor)
 computeOptimalSiteStateTensor
     left_boundary_tensor
     state_site_tensor
@@ -455,6 +461,8 @@ computeOptimalSiteStateTensor
         -14 -> Left OptimizerUnableToConverge
         1 -> Left $ OptimizedObtainedComplexEigenvalue eigenvalue
         2 -> Left $ OptimizerObtainedVanishingEigenvector (realPart eigenvalue)
+        3 -> Left $ OptimizerObtainedEigenvectorInProjectorSpace
+        10 -> Left $ OptimizerGivenTooManyProjectors (projectorCount projector_matrix) d bl br
         _ -> Left $ UnknownOptimizerFailureCode (fromIntegral info)
 -- @-node:gcross.20091111171052.1656:computeOptimalSiteStateTensor
 -- @+node:gcross.20091115105949.1729:increaseBandwidthBetween

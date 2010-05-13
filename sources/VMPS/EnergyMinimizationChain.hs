@@ -757,7 +757,7 @@ maximumBandwidthIn chain =
     ]
 -- @-node:gcross.20091118213523.1855:maximumBandwidthIn
 -- @+node:gcross.20091113142219.1687:optimizeSite
-optimizeSite :: Double -> Int -> EnergyMinimizationChain -> Either OptimizerFailureReason (Int,EnergyMinimizationChain)
+optimizeSite :: Double -> Int -> EnergyMinimizationChain -> Either OptimizerFailure (Int,EnergyMinimizationChain)
 optimizeSite tolerance maximum_number_of_iterations chain =
     mapRight postProcess $
         computeOptimalSiteStateTensor
