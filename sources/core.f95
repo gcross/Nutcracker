@@ -858,20 +858,7 @@ function optimize( &
       iparam, ipntr, workd, workl, 3*ncv**2+5*ncv, rwork, info &
     ) 
     if (ido == -1 .or. ido == 1) then
-      call project(bl*br*d,number_of_projectors,projectors,workd(ipntr(1)),workd(ipntr(1)))
-      call iteration_stage_2( &
-        bl, br, cr, d, &
-        iteration_stage_1_tensor, &
-        workd(ipntr(1)), &
-        iteration_stage_2_tensor &
-      )
-      call iteration_stage_3( &
-        bl, br, cr, d, &
-        iteration_stage_2_tensor, &
-        right_environment, &
-        workd(ipntr(2)) &
-      )
-      call project(bl*br*d,number_of_projectors,projectors,workd(ipntr(2)),workd(ipntr(2)))
+      call operate_on(workd(ipntr(1)),workd(ipntr(2)))
     end if
   end do
   !@-node:gcross.20091115201814.1733:<< Main iteration >>
@@ -909,6 +896,31 @@ function optimize( &
 
   !@-node:gcross.20091115201814.1728:<< Post-processing >>
   !@nl
+
+contains
+
+  !@  @+others
+  !@+node:gcross.20100513000837.1743:operate_on
+  subroutine operate_on(input,output)
+    double complex :: input(bl*br*d), output(bl*br*d)
+
+    call project(bl*br*d,number_of_projectors,projectors,input,input)
+    call iteration_stage_2( &
+      bl, br, cr, d, &
+      iteration_stage_1_tensor, &
+      input, &
+      iteration_stage_2_tensor &
+    )
+    call iteration_stage_3( &
+      bl, br, cr, d, &
+      iteration_stage_2_tensor, &
+      right_environment, &
+      output &
+    )
+    call project(bl*br*d,number_of_projectors,projectors,output,output)
+  end subroutine
+  !@-node:gcross.20100513000837.1743:operate_on
+  !@-others
 
 end function
 !@-node:gcross.20091109182634.1537:optimize
