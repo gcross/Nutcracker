@@ -252,8 +252,8 @@ def form_contractor(edges,input_tensors,output_tensor):
 
     output_name, output_size = output_tensor
     return make_contractor_from_implicit_joins(
-        [[e[input_name+str(index)] for index in reversed(xrange(1,input_size+1))] for (input_name,input_size) in input_tensors],
-        [e[output_name+str(index)] for index in reversed(xrange(1,output_size+1))],
+        [[e[input_name+str(index)] for index in xrange(1,input_size+1)] for (input_name,input_size) in input_tensors],
+        [e[output_name+str(index)] for index in xrange(1,output_size+1)],
     )
 #@-node:gcross.20091110135225.1559:form_contractor
 #@-node:gcross.20091108152444.1533:Functions
@@ -263,12 +263,12 @@ def form_contractor(edges,input_tensors,output_tensor):
 #@+node:gcross.20091110135225.1567:iteration
 #@+node:gcross.20091106154604.1986:iteration_stage_1
 iteration_stage_1_correct_contractor = form_contractor([
-    ("L1","O1"),
-    ("L2","I2"),
-    ("L3","I5"),
-    ("O2","I3"),
-    ("O3","I1"),
-    ("O4","I4"),
+    ("L3","O4"),
+    ("L2","I4"),
+    ("L1","I1"),
+    ("O3","I3"),
+    ("O2","I5"),
+    ("O1","I2"),
 ], [
     ("L",3),
     ("O",4),
@@ -292,12 +292,12 @@ class iteration_stage_1(unittest.TestCase):
 #@-node:gcross.20091106154604.1986:iteration_stage_1
 #@+node:gcross.20091107163338.1531:iteration_stage_2
 iteration_stage_2_correct_contractor = form_contractor([
-    ("I2","O2"),
-    ("I1","O1"),
-    ("I3","O3"),
-    ("I4","S1"),
-    ("I5","S2"),
-    ("S3","O4"),
+    ("I4","O3"),
+    ("I5","O4"),
+    ("I3","O2"),
+    ("I2","S3"),
+    ("I1","S2"),
+    ("S1","O1"),
 ], [
     ("I",5),
     ("S",3),
@@ -321,11 +321,11 @@ class iteration_stage_2(unittest.TestCase):
 #@-node:gcross.20091107163338.1531:iteration_stage_2
 #@+node:gcross.20091110011014.1555:iteration_stage_3
 iteration_stage_3_correct_contractor = form_contractor([
-    ("I2","O2"),
-    ("I1","O1"),
-    ("I3","R1"),
-    ("I4","R2"),
-    ("R3","O3"),
+    ("I3","O2"),
+    ("I4","O3"),
+    ("I2","R3"),
+    ("I1","R2"),
+    ("R1","O1"),
 ], [
     ("I",4),
     ("R",3),
@@ -347,97 +347,18 @@ class iteration_stage_3(unittest.TestCase):
         correct_output_tensor = iteration_stage_3_correct_contractor(iteration_stage_2_tensor,right_environment)
         self.assertTrue(allclose(actual_output_tensor,correct_output_tensor))
 #@-node:gcross.20091110011014.1555:iteration_stage_3
-#@+node:gcross.20091108152444.1537:combined_iteration
-#@<< Correct contractor >>
-#@+node:gcross.20091109182634.1547:<< Correct contractor >>
-combined_iteration_correct_contractor = form_contractor([
-    ("L1","O1"),
-    ("L2","S*2"),
-    ("L3","S2"),
-    ("R1","O2"),
-    ("R2","S3"),
-    ("R3","S*3"),
-    ("O3","S*1"),
-    ("O4","S1"),
-], [
-    ("L",3),
-    ("O",4),
-    ("S",3),
-    ("R",3),
-], ("S*",3)
-)
-#@-node:gcross.20091109182634.1547:<< Correct contractor >>
-#@nl
-
-class combined_iteration(unittest.TestCase):
-    #@    @+others
-    #@+node:gcross.20091109182634.1548:test_correct_contractor
-    @with_checker(number_of_calls=10)
-    def test_correct_contractor(self,
-        bl = irange(2,20),
-        br = irange(2,20),
-        cl = irange(2,10),
-        cr = irange(2,10),
-    ):
-        d = 2
-        left_environment = crand(bl,bl,cl)
-        state_site_tensor = crand(br,bl,d)
-        right_environment = crand(br,br,cr)
-        operator_site_tensor = crand(d,d,cr,cl)
-        correct_output_tensor = iteration_correct_contractor(pre_iteration_correct_contractor(left_environment,operator_site_tensor),state_site_tensor,right_environment)
-        actual_output_tensor = combined_iteration_correct_contractor(left_environment,operator_site_tensor,state_site_tensor,right_environment)
-        self.assertTrue(allclose(actual_output_tensor,correct_output_tensor))
-    #@-node:gcross.20091109182634.1548:test_correct_contractor
-    #@+node:gcross.20091109182634.1549:test_agreement_with_contractor
-    @with_checker(number_of_calls=10)
-    def test_agreement_with_contractor(self,
-        bl = irange(2,20),
-        br = irange(2,20),
-        cl = irange(2,10),
-        cr = irange(2,10),
-    ):
-        d = 2
-        left_environment = crand(bl,bl,c)
-        state_site_tensor = crand(br,bl,d)
-        right_environment = crand(br,br,c)
-        sparse_operator_indices, sparse_operator_matrices, operator_site_tensor = generate_random_sparse_matrices(cl,cr,d)
-        iteration_tensor = vmps.pre_iteration(left_environment,sparse_operator_indices,sparse_operator_matrices)
-        _, actual_output_tensor = vmps.iteration(iteration_tensor,state_site_tensor,right_environment)
-        correct_output_tensor = combined_iteration_correct_contractor(left_environment,operator_site_tensor,state_site_tensor,right_environment)
-        self.assertTrue(allclose(actual_output_tensor,correct_output_tensor))
-    #@-node:gcross.20091109182634.1549:test_agreement_with_contractor
-    #@+node:gcross.20091109182634.1551:test_single_Z_operator
-    @with_checker(number_of_calls=10)
-    def test_single_Z_operator(self):
-        d = 2
-        left_environment = ones((1,1,1),complex128)
-        right_environment = ones((1,1,1),complex128)
-        sparse_operator_indices = ones((2,1))
-        sparse_operator_matrices = Z.reshape(2,2,1)
-        state_site_tensor = array(crand(1,1,2),order='Fortran')
-
-        iteration_tensor = vmps.pre_iteration(left_environment,sparse_operator_indices,sparse_operator_matrices)
-        _, actual_output_tensor = vmps.iteration(iteration_tensor,state_site_tensor,right_environment)
-
-        correct_output_tensor = state_site_tensor.copy()
-        correct_output_tensor[...,1] *= -1
-
-        self.assertTrue(allclose(actual_output_tensor,correct_output_tensor))
-    #@-node:gcross.20091109182634.1551:test_single_Z_operator
-    #@-others
-#@-node:gcross.20091108152444.1537:combined_iteration
 #@-node:gcross.20091110135225.1567:iteration
 #@+node:gcross.20091110135225.1568:contract_sos
 #@+node:gcross.20091110011014.1557:contract_sos_left
 contract_sos_left_correct_contractor = form_contractor([
     ("L2","S*2"),
-    ("L1","O1"),
-    ("L3","S2"),
-    ("O3","S*1"),
-    ("O4","S1"),
-    ("O2","N1"),
-    ("S3","N3"),
-    ("S*3","N2"),
+    ("L3","O4"),
+    ("L1","S2"),
+    ("O1","S3"),
+    ("O2","S*3"),
+    ("O3","N3"),
+    ("S1","N1"),
+    ("S*1","N2"),
 ], [
     ("L",3),
     ("O",4),
@@ -475,11 +396,11 @@ class contract_sos_left(unittest.TestCase):
 #@-node:gcross.20091110011014.1557:contract_sos_left
 #@+node:gcross.20091110135225.1563:contract_sos_right_stage_1
 contract_sos_right_stage_1_correct_contractor = form_contractor([
-    ("R3","S*3"),
-    ("R1","O1"),
-    ("R2","O2"),
-    ("S*1","O3"),
-    ("S*2","O4"),
+    ("R1","S*1"),
+    ("R3","O4"),
+    ("R2","O3"),
+    ("S*3","O2"),
+    ("S*2","O1"),
 ], [
     ("R",3),
     ("S*",3),
@@ -509,10 +430,10 @@ class contract_sos_right_stage_1(unittest.TestCase):
 #@-node:gcross.20091110135225.1563:contract_sos_right_stage_1
 #@+node:gcross.20091110135225.1574:contract_sos_right_stage_2a
 contract_sos_right_stage_2a_correct_contractor = form_contractor([
-    ("O1","I2"),
-    ("O2","S1"),
-    ("S2","I3"),
-    ("S3","I1"),
+    ("O2","I2"),
+    ("O1","S3"),
+    ("S2","I1"),
+    ("S1","I3"),
 ], [
     ("O",2),
     ("S",3),
@@ -542,10 +463,10 @@ class contract_sos_right_stage_2a(unittest.TestCase):
 #@-node:gcross.20091110135225.1574:contract_sos_right_stage_2a
 #@+node:gcross.20091110135225.1576:contract_sos_right_stage_2b
 contract_sos_right_stage_2b_correct_contractor = form_contractor([
-    ("A1","B1"),
+    ("A3","B3"),
     ("A2","B2"),
-    ("A3","C2"),
-    ("B3","C1"),
+    ("A1","C1"),
+    ("B1","C2"),
 ], [
     ("A",3),
     ("B",3),
@@ -569,12 +490,12 @@ class contract_sos_right_stage_2b(unittest.TestCase):
 #@-node:gcross.20091110135225.1576:contract_sos_right_stage_2b
 #@+node:gcross.20091110135225.1566:contract_sos_right_stage_2
 contract_sos_right_stage_2_correct_contractor = form_contractor([
-    ("I1","O2"),
-    ("I2","S3"),
-    ("I3","O3"),
-    ("I4","R3"),
-    ("S1","O4"),
-    ("O1","R1"),
+    ("I1","R1"),
+    ("I2","O2"),
+    ("I3","S1"),
+    ("I4","O3"),
+    ("S3","O1"),
+    ("O4","R3"),
     ("S2","R2"),
 ], [
     ("I",4),
@@ -611,14 +532,14 @@ class contract_sos_right_stage_2(unittest.TestCase):
 #@-node:gcross.20091110135225.1566:contract_sos_right_stage_2
 #@+node:gcross.20091110205054.1909:contract_sos_right
 contract_sos_right_correct_contractor = form_contractor([
-    ("R3","S*3"),
-    ("R1","O2"),
-    ("R2","S3"),
-    ("O3","S*1"),
-    ("O4","S1"),
-    ("O1","N1"),
+    ("R1","S*1"),
+    ("R3","O3"),
+    ("R2","S1"),
+    ("O2","S*3"),
+    ("O1","S3"),
+    ("O4","N3"),
     ("S2","N2"),
-    ("S*2","N3"),
+    ("S*2","N1"),
 ], [
     ("R",3),
     ("O",4),
@@ -658,11 +579,11 @@ class contract_sos_right(unittest.TestCase):
 #@+node:gcross.20091116094945.1741:contract_ss
 #@+node:gcross.20091116094945.1740:contract_ss_left
 contract_ss_left_correct_contractor = form_contractor([
-    ("L1","O3"),
-    ("L2","N2"),
-    ("O2","N1"),
-    ("O1","L'1"),
-    ("N3","L'2"),
+    ("L2","O1"),
+    ("L1","N2"),
+    ("O2","N3"),
+    ("O3","L'2"),
+    ("N1","L'1"),
 ], [
     ("L",2),
     ("O",3),
@@ -697,11 +618,11 @@ class contract_ss_left(unittest.TestCase):
 #@-node:gcross.20091116094945.1740:contract_ss_left
 #@+node:gcross.20091116094945.1745:contract_ss_right
 contract_ss_right_correct_contractor = form_contractor([
-    ("R2","O1"),
-    ("R1","N3"),
-    ("O2","N1"),
-    ("O3","R'2"),
-    ("N2","R'1"),
+    ("R1","O3"),
+    ("R2","N1"),
+    ("O2","N3"),
+    ("O1","R'1"),
+    ("N2","R'2"),
 ], [
     ("R",2),
     ("O",3),
@@ -736,11 +657,11 @@ class contract_ss_right(unittest.TestCase):
 #@-node:gcross.20091116094945.1745:contract_ss_right
 #@+node:gcross.20091116094945.1750:form_overlap_vector
 form_overlap_vector_correct_contractor = form_contractor([
-    ("R2","O1"),
-    ("R1","N3"),
-    ("O2","N1"),
-    ("O3","L1"),
-    ("L2","N2"),
+    ("R1","O3"),
+    ("R2","N1"),
+    ("O2","N3"),
+    ("O1","L2"),
+    ("L1","N2"),
 ], [
     ("L",2),
     ("R",2),
@@ -777,13 +698,13 @@ class form_overlap_vector(unittest.TestCase):
 #@+node:gcross.20091110205054.1918:compute_expectation
 compute_expectation_correct_contractor = form_contractor([
     ("L2","S*2"),
-    ("L1","O1"),
-    ("L3","S2"),
-    ("R3","S*3"),
-    ("R1","O2"),
-    ("R2","S3"),
-    ("O3","S*1"),
-    ("O4","S1"),
+    ("L3","O4"),
+    ("L1","S2"),
+    ("R1","S*1"),
+    ("R3","O3"),
+    ("R2","S1"),
+    ("O2","S*3"),
+    ("O1","S3"),
 ], [
     ("L",3),
     ("S",3),
@@ -829,14 +750,14 @@ class optimize(unittest.TestCase):
     #@    @+others
     #@+node:gcross.20100506200958.2699:optimization_matrix_contractor
     optimization_matrix_contractor = form_contractor([
-        ("L1","O1"),
-        ("L2","M5"),
-        ("L3","M2"),
-        ("R1","O2"),
-        ("R2","M3"),
-        ("R3","M6"),
-        ("O3","M4"),
-        ("O4","M1"),
+        ("L1","M5"),
+        ("L2","M2"),
+        ("L3","O4"),
+        ("R1","M1"),
+        ("R2","M4"),
+        ("R3","O3"),
+        ("O1","M6"),
+        ("O2","M3"),
     ], [
         ("L",3),
         ("O",4),

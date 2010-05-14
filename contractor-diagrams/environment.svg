@@ -13,7 +13,7 @@
    height="360"
    id="svg2"
    sodipodi:version="0.32"
-   inkscape:version="0.47pre4 r22446"
+   inkscape:version="0.47 r22583"
    version="1.0"
    sodipodi:docname="environment.svg"
    inkscape:output_extension="org.inkscape.output.svg.inkscape">
@@ -37,7 +37,7 @@
      objecttolerance="10"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="0.98994949"
+     inkscape:zoom="1.4"
      inkscape:cx="248.94819"
      inkscape:cy="203.26325"
      inkscape:document-units="px"
@@ -246,7 +246,7 @@
          sodipodi:role="line"
          id="tspan3712"
          x="80.812202"
-         y="185.203">1</tspan></text>
+         y="185.203">3</tspan></text>
     <text
        sodipodi:linespacing="125%"
        id="text3714"
@@ -257,7 +257,7 @@
          y="305.203"
          x="80.812202"
          id="tspan3716"
-         sodipodi:role="line">3</tspan></text>
+         sodipodi:role="line">1</tspan></text>
     <text
        xml:space="preserve"
        style="font-size:12px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans;-inkscape-font-specification:Bitstream Vera Sans"
@@ -294,7 +294,7 @@
          y="185.203"
          x="270.81219"
          id="tspan3730"
-         sodipodi:role="line">1</tspan></text>
+         sodipodi:role="line">3</tspan></text>
     <text
        xml:space="preserve"
        style="font-size:12px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans;-inkscape-font-specification:Bitstream Vera Sans"
@@ -305,7 +305,7 @@
          sodipodi:role="line"
          id="tspan3734"
          x="270.81219"
-         y="65.203003">3</tspan></text>
+         y="65.203003">1</tspan></text>
     <text
        sodipodi:linespacing="125%"
        id="text3736"
@@ -359,7 +359,7 @@
          sodipodi:role="line"
          id="tspan3754"
          x="210.81219"
-         y="65.203003">3</tspan></text>
+         y="65.203003">1</tspan></text>
     <text
        sodipodi:linespacing="125%"
        id="text3756"
@@ -370,7 +370,7 @@
          y="305.203"
          x="210.81219"
          id="tspan3758"
-         sodipodi:role="line">3</tspan></text>
+         sodipodi:role="line">1</tspan></text>
     <path
        sodipodi:nodetypes="cssc"
        id="path3760"
@@ -406,7 +406,7 @@
          y="99.203003"
          x="176.81219"
          id="tspan3772"
-         sodipodi:role="line">1</tspan></text>
+         sodipodi:role="line">3</tspan></text>
     <text
        xml:space="preserve"
        style="font-size:12px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans;-inkscape-font-specification:Bitstream Vera Sans"
@@ -417,7 +417,7 @@
          sodipodi:role="line"
          id="tspan3776"
          x="176.81219"
-         y="269.203">1</tspan></text>
+         y="269.203">3</tspan></text>
     <text
        sodipodi:linespacing="125%"
        id="text3782"
@@ -428,7 +428,7 @@
          y="185.203"
          x="148.81219"
          id="tspan3784"
-         sodipodi:role="line">1</tspan></text>
+         sodipodi:role="line">4</tspan></text>
     <text
        xml:space="preserve"
        style="font-size:12px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans;-inkscape-font-specification:Bitstream Vera Sans"
@@ -439,7 +439,7 @@
          sodipodi:role="line"
          x="204.81219"
          y="185.203"
-         id="tspan3790">2</tspan></text>
+         id="tspan3790">3</tspan></text>
     <text
        sodipodi:linespacing="125%"
        id="text3794"
@@ -450,7 +450,7 @@
          y="157.203"
          x="176.81219"
          id="tspan3796"
-         sodipodi:role="line">3</tspan></text>
+         sodipodi:role="line">2</tspan></text>
     <text
        xml:space="preserve"
        style="font-size:12px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans;-inkscape-font-specification:Bitstream Vera Sans"
@@ -461,6 +461,14 @@
          sodipodi:role="line"
          id="tspan3800"
          x="176.81219"
-         y="211.203">4</tspan></text>
+         y="211.203">1</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:14px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Serif;-inkscape-font-specification:Bitstream Vera Serif"
+       x="179.80714"
+       y="155.94919"
+       id="text3291"><tspan
+         sodipodi:role="line"
+         id="tspan3293"></tspan></text>
   </g>
 </svg>
