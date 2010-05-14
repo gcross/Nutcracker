@@ -423,6 +423,9 @@ activateRightNeighbor old_chain =
 -- @+node:gcross.20100512151146.1743:activateRightNeighborWithSanityCheck
 activateRightNeighborWithSanityCheck = checkSanityAfterActivatingNeighbor activateRightNeighbor (Right ())
 -- @-node:gcross.20100512151146.1743:activateRightNeighborWithSanityCheck
+-- @+node:gcross.20100513131210.1743:chainNumberOfProjectors
+chainNumberOfProjectors = length . siteOverlapTrios
+-- @-node:gcross.20100513131210.1743:chainNumberOfProjectors
 -- @+node:gcross.20100503130440.1689:chainPhysicalDimensions
 chainPhysicalDimensions :: EnergyMinimizationChain -> [Int]
 chainPhysicalDimensions chain =

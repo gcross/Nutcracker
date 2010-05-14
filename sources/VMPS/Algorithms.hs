@@ -21,6 +21,8 @@ import Data.List
 import Data.Maybe
 import Data.Typeable
 
+import Debug.Trace
+
 import Text.Printf
 
 import VMPS.EnergyMinimizationChain
@@ -48,7 +50,15 @@ instance Exception SweepFailure
 -- @+node:gcross.20091120112621.1591:Predefined Callbacks
 -- @+node:gcross.20091120112621.1592:site callbacks
 -- @+node:gcross.20091119150241.1855:ignoreSiteCallback
-ignoreSiteCallback (Left e) direction chain = throw $ OptimizerFailureAtSite direction (siteNumber chain) e
+-- ignoreSiteCallback (Left e) direction chain = throw $ OptimizerFailureAtSite direction (siteNumber chain) e
+ignoreSiteCallback (Left e) direction chain =
+    trace (
+        printf "WARNING -- Problem while optimizing site %i while %s with %i projectors: %s"
+            (siteNumber chain)
+            (show direction)
+            (chainNumberOfProjectors chain)
+            (show e)
+    ) $ return ()
 ignoreSiteCallback _ _ _ = return ()
 -- @-node:gcross.20091119150241.1855:ignoreSiteCallback
 -- @-node:gcross.20091120112621.1592:site callbacks
