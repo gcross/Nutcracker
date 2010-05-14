@@ -61,6 +61,94 @@ function mysvd ( &
 end function
 !@nonl
 !@-node:gcross.20091110205054.1929:mysvd
+!@+node:gcross.20100513214001.1746:compute_orthogonal_basis
+subroutine compute_orthogonal_basis( &
+  m, n, &
+  vectors, &
+  basis &
+)
+  integer, intent(in) :: n, m
+  double complex, intent(in) :: vectors(m,n)
+  double complex, intent(out) :: basis(m,m)
+
+  integer :: jpvt(n), info, lwork, lwork1, lwork2
+  double complex :: tau(n), lwork_as_complex
+  double precision :: rwork(2*n)
+
+  double complex, allocatable :: work(:)
+
+  external :: zgeqp3, zungqr
+
+  if (m < n) then
+    print *, "The input matrix has too many columns and not enough rows (column-major ordering) to orthogonalize!"
+    stop
+  end if
+
+  basis(:,:n) = vectors(:,:)
+
+  lwork1 = -1
+  call zgeqp3( &
+    m, n, &
+    basis, m, &
+    jpvt, &
+    tau, &
+    lwork_as_complex, lwork1, &
+    rwork, &
+    info &
+  )
+  lwork1 = int(real(lwork_as_complex))
+
+  if (info /= 0) then
+    print *, "Unable to factorize matrix (zgeqp3, workspace query); info =", info
+  end if
+
+  lwork2 = -1
+  call zungqr( &
+    m, m, n, &
+    basis, m, &
+    tau, &
+    lwork_as_complex, lwork2, &
+    info &
+  )
+  lwork2 = int(real(lwork_as_complex))
+
+  if (info /= 0) then
+    print *, "Unable to factorize matrix (zungqr, workspace query); info =", info
+  end if
+
+  lwork = max(lwork1,lwork2)
+  allocate(work(lwork))
+
+  call zgeqp3( &
+    m, n, &
+    basis, m, &
+    jpvt, &
+    tau, &
+    work, lwork, &
+    rwork, &
+    info &
+  )
+
+  if (info /= 0) then
+    print *, "Unable to factorize matrix (zgeqp3); info =", info
+  end if
+
+  call zungqr( &
+    m, m, n, &
+    basis, m, &
+    tau, &
+    work, lwork, &
+    info &
+  )
+
+  if (info /= 0) then
+    print *, "Unable to factorize matrix (zungqr); info =", info
+  end if
+
+  deallocate(work)
+
+end subroutine
+!@-node:gcross.20100513214001.1746:compute_orthogonal_basis
 !@+node:gcross.20100513214001.1742:orthogonalize_matrix_in_place
 subroutine orthogonalize_matrix_in_place( &
   m, n, &

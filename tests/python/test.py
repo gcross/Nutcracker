@@ -934,22 +934,44 @@ class rand_unnorm_state_site_tensor(unittest.TestCase):
 #@+node:gcross.20091116175016.1815:orthogonalize_matrix_in_place
 class orthogonalize_matrix_in_place(unittest.TestCase):
     @with_checker
-    def testCorrectness(self,projector_length=irange(8,20),number_of_projectors=irange(1,7)):
-        original_vectors = crand(number_of_projectors,projector_length)
-        projector_matrix = array(original_vectors.transpose(),order='Fortran',copy=True)
+    def test_orthogonality(self,projector_length=irange(8,20),number_of_projectors=irange(1,7)):
+        projector_matrix = array(crand(projector_length,number_of_projectors),order='Fortran')
         vmps.orthogonalize_matrix_in_place(projector_matrix)
-        projector_matrix = projector_matrix.transpose()
-        for i, projector in enumerate(projector_matrix):
-            self.assertAlmostEqual(1,norm(projector))
-            for orthogonal_projector in projector_matrix[i+1:]:
-                self.assertAlmostEqual(0,dot(projector.conj(),orthogonal_projector))
-            overlaps_with_any_vector = False
-            for overlap in (dot(projector.conj(),vector) for vector in original_vectors):
-                if abs(overlap) > 1.0/number_of_projectors:
-                    overlaps_with_any_vector = True
-                    break
-            self.assertTrue(overlaps_with_any_vector)
+        self.assertTrue(allclose(dot(projector_matrix.transpose().conj(),projector_matrix),identity(number_of_projectors)))
+
+    @with_checker
+    def test_completeness(self,projector_length=irange(8,20),number_of_projectors=irange(1,7)):
+        projectors = crand(projector_length,number_of_projectors)
+        projector_matrix = array(projectors.copy(),order='Fortran')
+        vmps.orthogonalize_matrix_in_place(projector_matrix)
+        self.assertTrue(allclose(dot(projector_matrix,dot(projector_matrix.conj().transpose(),projectors)),projectors))
 #@-node:gcross.20091116175016.1815:orthogonalize_matrix_in_place
+#@+node:gcross.20100513214001.1748:compute_orthogonal_basis
+class compute_orthogonal_basis(unittest.TestCase):
+    @with_checker
+    def test_shape(self,m=irange(8,20),n=irange(1,7)):
+        vectors = array(crand(m,n),order='Fortran')
+        basis = vmps.compute_orthogonal_basis(vectors)
+        self.assertEqual(basis.shape,(m,m))
+
+    @with_checker
+    def test_orthogonality(self,m=irange(8,20),n=irange(1,7)):
+        vectors = array(crand(m,n),order='Fortran')
+        basis = vmps.compute_orthogonal_basis(vectors)
+        self.assertTrue(allclose(dot(basis.transpose().conj(),basis),identity(m)))
+
+    @with_checker
+    def test_projector_subspace(self,m=irange(8,20),n=irange(1,7)):
+        vectors = array(crand(m,n),order='Fortran')
+        basis = vmps.compute_orthogonal_basis(vectors)
+        self.assertTrue(allclose(dot(basis[:,:n],dot(basis[:,:n].conj().transpose(),vectors)),vectors))
+
+    @with_checker
+    def test_remaining_subspace(self,m=irange(8,20),n=irange(1,7)):
+        vectors = array(crand(m,n),order='Fortran')
+        basis = vmps.compute_orthogonal_basis(vectors)
+        self.assertAlmostEqual(norm(dot(basis[:,n:].conj().transpose(),vectors)),0)
+#@-node:gcross.20100513214001.1748:compute_orthogonal_basis
 #@+node:gcross.20091110205054.1948:Normalization
 #@+node:gcross.20091110205054.1933:norm_denorm_going_left
 class norm_denorm_going_left(unittest.TestCase):
@@ -1154,6 +1176,7 @@ tests = [
     absorb_bi_matrix_from_right,
     increase_bandwidth_between,
     orthogonalize_matrix_in_place,
+    compute_orthogonal_basis,
     form_overlap_site_tensor,
     form_norm_overlap_tensors,
 ]
