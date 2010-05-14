@@ -977,18 +977,6 @@ function optimize( &
     info = 10
     return
   end if
-
-  result = guess / dznrm2(d*bl*br,guess(1,1,1),1)
-
-  call project(bl*br*d,number_of_projectors,projectors,result(1,1,1),result(1,1,1))
-
-  norm_of_result = dznrm2(d*bl*br,result(1,1,1),1)
-
-  if ( abs(norm_of_result-1) > 1e-7 ) then
-    info = 11
-    return
-  end if
-
   !@+at
   ! First do the stage 1 contraction, since it is independent of the state 
   ! site tensor.
