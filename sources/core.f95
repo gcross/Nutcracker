@@ -649,6 +649,57 @@ subroutine compute_expectation( &
 
 end subroutine
 !@-node:gcross.20091110205054.1916:compute_expectation
+!@+node:gcross.20100513131210.1744:compute_optimization_matrix
+subroutine compute_optimization_matrix( &
+  bl, br, & ! state bandwidth dimension
+  cl, & ! operator left  bandwidth dimension
+  cr, & ! operator right bandwidth dimension
+  d, & ! physical dimension
+  left_environment, &
+  number_of_matrices,sparse_operator_indices,sparse_operator_matrices, &
+  right_environment, &
+  optimization_matrix &
+)
+  integer, intent(in) :: &
+    bl, br, cl, cr, d, &
+    number_of_matrices, sparse_operator_indices(2,number_of_matrices)
+  double complex, intent(in) :: &
+    left_environment(bl,bl,cl), &
+    right_environment(br,br,cr), &
+    sparse_operator_matrices(d,d,number_of_matrices)
+  double complex, intent(out) :: &
+    optimization_matrix(br,bl,d,br,bl,d)
+
+  integer :: &
+    n, &
+    o1, o2, o3, o4, &
+    l1, l2, l3, &
+    r1, r2, r3
+
+  optimization_matrix = 0
+  do n = 1, number_of_matrices
+    l3 = sparse_operator_indices(1,n)
+    r3 = sparse_operator_indices(2,n)
+    o3 = r3
+    o4 = l3
+    do o1 = 1, d
+    do l1 = 1, bl
+    do r2 = 1, br
+    do o2 = 1, d
+    do l2 = 1, bl
+    do r1 = 1, br
+      optimization_matrix(r1,l2,o2,r2,l1,o1) = optimization_matrix(r1,l2,o2,r2,l1,o1) + &
+        left_environment(l1,l2,l3)*sparse_operator_matrices(o1,o2,n)*right_environment(r1,r2,r3)
+    end do
+    end do
+    end do
+    end do
+    end do
+    end do
+  end do
+
+end subroutine
+!@-node:gcross.20100513131210.1744:compute_optimization_matrix
 !@-node:gcross.20091110205054.1940:Contractors
 !@+node:gcross.20091211120042.1683:apply_single_site_operator
 subroutine apply_single_site_operator( &

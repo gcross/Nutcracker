@@ -743,29 +743,69 @@ class compute_expectation(unittest.TestCase):
         )
         self.assertTrue(allclose(actual_output_tensor,correct_output_tensor))
 #@-node:gcross.20091110205054.1918:compute_expectation
-#@-others
-#@-node:gcross.20091108152444.1534:Contractors
-#@+node:gcross.20091109182634.1543:optimize
-class optimize(unittest.TestCase):
-    #@    @+others
-    #@+node:gcross.20100506200958.2699:optimization_matrix_contractor
-    optimization_matrix_contractor = form_contractor([
-        ("L1","M5"),
+#@+node:gcross.20100513131210.1746:compute_optimization_matrix
+class compute_optimization_matrix(unittest.TestCase):
+
+    correct_contractor = staticmethod(form_contractor([
         ("L2","M2"),
         ("L3","O4"),
+        ("L1","M5"),
         ("R1","M1"),
-        ("R2","M4"),
         ("R3","O3"),
-        ("O1","M6"),
+        ("R2","M4"),
         ("O2","M3"),
+        ("O1","M6"),
     ], [
         ("L",3),
         ("O",4),
         ("R",3),
     ], ("M",6)
-    )
-    optimization_matrix_contractor = staticmethod(optimization_matrix_contractor)
-    #@-node:gcross.20100506200958.2699:optimization_matrix_contractor
+    ))
+
+    @with_checker(number_of_calls=10)
+    def test_agreement_with_contractor(self,
+        d = irange(2,4),
+        bl = irange(2,20),
+        br = irange(2,20),
+        cl = irange(2,10),
+        cr = irange(2,10),
+    ):
+        left_environment = crand(bl,bl,cl)
+        right_environment = crand(br,br,cr)
+        sparse_operator_indices, sparse_operator_matrices, operator_site_tensor = generate_random_sparse_matrices(cl,cr,d)
+        actual_output_tensor = vmps.compute_optimization_matrix(
+            left_environment,
+            sparse_operator_indices, sparse_operator_matrices,
+            right_environment,
+        )
+        correct_output_tensor = optimization_matrix_contractor(
+            left_environment,
+            operator_site_tensor,
+            right_environment,
+        )
+        self.assertTrue(allclose(actual_output_tensor,correct_output_tensor))
+#@-node:gcross.20100513131210.1746:compute_optimization_matrix
+#@-others
+#@-node:gcross.20091108152444.1534:Contractors
+#@+node:gcross.20091109182634.1543:optimize
+optimization_matrix_contractor = form_contractor([
+    ("L1","M5"),
+    ("L2","M2"),
+    ("L3","O4"),
+    ("R1","M1"),
+    ("R2","M4"),
+    ("R3","O3"),
+    ("O1","M6"),
+    ("O2","M3"),
+], [
+    ("L",3),
+    ("O",4),
+    ("R",3),
+], ("M",6)
+)
+
+class optimize(unittest.TestCase):
+    #@    @+others
     #@+node:gcross.20100506200958.2701:test_correct_result_for_arbitrary_operator
     @with_checker(number_of_calls=10)
     def test_correct_result_for_arbitrary_operator(self,
@@ -780,7 +820,7 @@ class optimize(unittest.TestCase):
         right_environment = crand(br,br,cr)
         right_environment += right_environment.transpose(1,0,2).conj()
         sparse_operator_indices, sparse_operator_matrices, operator_site_tensor = generate_random_sparse_matrices(cl,cr,d)
-        optimization_matrix = self.optimization_matrix_contractor(left_environment,operator_site_tensor,right_environment).reshape(d*bl*br,d*bl*br)
+        optimization_matrix = optimization_matrix_contractor(left_environment,operator_site_tensor,right_environment).reshape(d*bl*br,d*bl*br)
         self.assertTrue(allclose(optimization_matrix,optimization_matrix.conj().transpose()))
         info, result, actual_eigenvalue = \
             vmps.optimize(left_environment,sparse_operator_indices,sparse_operator_matrices,right_environment,zeros((0,0)),"SR",0,10000,crand(br,bl,d))
@@ -1103,6 +1143,7 @@ tests = [
     contract_ss_right,
     form_overlap_vector,
     compute_expectation,
+    compute_optimization_matrix,
     optimize,
     rand_norm_state_site_tensor,
     rand_unnorm_state_site_tensor,
