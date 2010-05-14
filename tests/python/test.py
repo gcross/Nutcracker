@@ -824,6 +824,7 @@ class optimize(unittest.TestCase):
         self.assertTrue(allclose(optimization_matrix,optimization_matrix.conj().transpose()))
         info, result, actual_eigenvalue = \
             vmps.optimize(left_environment,sparse_operator_indices,sparse_operator_matrices,right_environment,zeros((0,0)),"SR",0,10000,crand(br,bl,d))
+        self.assertEqual(info,0)
         correct_eigenvalues, correct_eigenvectors = eigh(optimization_matrix)
         correct_eigenvectors = correct_eigenvectors.transpose()
         correct_solution_index = argmin(correct_eigenvalues)
@@ -843,7 +844,7 @@ class optimize(unittest.TestCase):
         sparse_operator_matrices = diag([1,1,1,-1])
         sparse_operator_matrices = sparse_operator_matrices.reshape(sparse_operator_matrices.shape + (1,))
         info, result, eigenvalue = vmps.optimize(left_environment,sparse_operator_indices,sparse_operator_matrices,right_environment,zeros((0,0)),"SR",0,10000,crand(1,1,4))
-        self.assertEqual(0,info)
+        self.assertEqual(info,0)
         result /= result[0,0,-1]
         self.assertTrue(allclose(result.ravel(),array([0,0,0,1])))
         self.assertAlmostEqual(-1,eigenvalue)
@@ -857,7 +858,7 @@ class optimize(unittest.TestCase):
         sparse_operator_matrices = sparse_operator_matrices.reshape(sparse_operator_matrices.shape + (1,))
         projectors = array([[0,0,0,1]]).transpose()
         info, result, eigenvalue = vmps.optimize(left_environment,sparse_operator_indices,sparse_operator_matrices,right_environment,projectors,"SR",0,10000,crand(1,1,4))
-        self.assertEqual(0,info)
+        self.assertEqual(info,0)
         result /= result[0,0,-2]
         self.assertTrue(allclose(result.ravel(),array([0,0,1,0])))
         self.assertAlmostEqual(-1,eigenvalue)
@@ -871,7 +872,7 @@ class optimize(unittest.TestCase):
         sparse_operator_matrices = sparse_operator_matrices.reshape(sparse_operator_matrices.shape + (1,))
         projectors = array([[0,0,0,1j]]).transpose()
         info, result, eigenvalue = vmps.optimize(left_environment,sparse_operator_indices,sparse_operator_matrices,right_environment,projectors,"SR",0,10000,crand(1,1,4))
-        self.assertEqual(0,info)
+        self.assertEqual(info,0)
         result /= result[0,0,-2]
         self.assertTrue(allclose(result.ravel(),array([0,0,1,0])))
         self.assertAlmostEqual(-1,eigenvalue)
@@ -885,7 +886,7 @@ class optimize(unittest.TestCase):
         sparse_operator_matrices = sparse_operator_matrices.reshape(sparse_operator_matrices.shape + (1,))
         projectors = array([[0,0,0,1],[0,0,1,0]]).transpose()
         info, result, eigenvalue = vmps.optimize(left_environment,sparse_operator_indices,sparse_operator_matrices,right_environment,projectors,"SR",0,10000,crand(1,1,4))
-        self.assertEqual(0,info)
+        self.assertEqual(info,0)
         result /= result[0,0,1]
         self.assertTrue(allclose(result.ravel(),array([0,1,0,0])))
         self.assertAlmostEqual(-2,eigenvalue)
@@ -899,7 +900,7 @@ class optimize(unittest.TestCase):
         sparse_operator_matrices = sparse_operator_matrices.reshape(sparse_operator_matrices.shape + (1,))
         projectors = array([[0,0,0,1j],[0,0,1j,0]]).transpose()
         info, result, eigenvalue = vmps.optimize(left_environment,sparse_operator_indices,sparse_operator_matrices,right_environment,projectors,"SR",0,10000,crand(1,1,4))
-        self.assertEqual(0,info)
+        self.assertEqual(info,0)
         result /= result[0,0,1]
         self.assertTrue(allclose(result.ravel(),array([0,1,0,0])))
         self.assertAlmostEqual(-2,eigenvalue)
