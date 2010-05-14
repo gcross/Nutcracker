@@ -61,7 +61,7 @@ function mysvd ( &
 end function
 !@nonl
 !@-node:gcross.20091110205054.1929:mysvd
-!@+node:gcross.20100512172859.1741:orthogonalize_matrix_in_place
+!@+node:gcross.20100513214001.1742:orthogonalize_matrix_in_place
 subroutine orthogonalize_matrix_in_place( &
   m, n, &
   matrix &
@@ -69,7 +69,7 @@ subroutine orthogonalize_matrix_in_place( &
   integer, intent(in) :: n, m
   double complex, intent(inout) :: matrix(m,n)
 
-  integer :: jpvt(n), info, lwork
+  integer :: jpvt(n), info, lwork, lwork1, lwork2
   double complex :: tau(n), lwork_as_complex
   double precision :: rwork(2*n)
 
@@ -82,23 +82,39 @@ subroutine orthogonalize_matrix_in_place( &
     stop
   end if
 
-  lwork = -1
+  lwork1 = -1
   call zgeqp3( &
     m, n, &
     matrix, m, &
     jpvt, &
     tau, &
-    lwork_as_complex, lwork, &
+    lwork_as_complex, lwork1, &
     rwork, &
     info &
   )
+  lwork1 = int(real(lwork_as_complex))
 
   if (info /= 0) then
     print *, "Unable to factorize matrix (zgeqp3, workspace query); info =", info
   end if
 
-  lwork = int(real(lwork_as_complex))
+  lwork2 = -1
+  call zungqr( &
+    m, n, n, &
+    matrix, m, &
+    tau, &
+    lwork_as_complex, lwork2, &
+    info &
+  )
+  lwork2 = int(real(lwork_as_complex))
+
+  if (info /= 0) then
+    print *, "Unable to factorize matrix (zungqr, workspace query); info =", info
+  end if
+
+  lwork = max(lwork1,lwork2)
   allocate(work(lwork))
+
   call zgeqp3( &
     m, n, &
     matrix, m, &
@@ -128,7 +144,7 @@ subroutine orthogonalize_matrix_in_place( &
   deallocate(work)
 
 end subroutine
-!@-node:gcross.20100512172859.1741:orthogonalize_matrix_in_place
+!@-node:gcross.20100513214001.1742:orthogonalize_matrix_in_place
 !@-node:gcross.20100512172859.1739:Utility Functions
 !@+node:gcross.20091110205054.1940:Contractors
 !@+node:gcross.20091110205054.1910:Main iteration
@@ -874,6 +890,17 @@ function optimize( &
     return
   end if
 
+  result = guess / dznrm2(d*bl*br,guess(1,1,1),1)
+
+  call project(bl*br*d,number_of_projectors,projectors,result(1,1,1),result(1,1,1))
+
+  norm_of_result = dznrm2(d*bl*br,result(1,1,1),1)
+
+  if ( abs(norm_of_result-1) > 1e-7 ) then
+    info = 11
+    return
+  end if
+
   !@+at
   ! First do the stage 1 contraction, since it is independent of the state 
   ! site tensor.
@@ -935,6 +962,10 @@ function optimize( &
               'I', d*bl*br, which, nev, tol, resid, ncv, &
               v, br*bl*d, iparam, ipntr, workd, workl, 3*ncv**2+5*ncv, &
               rwork, info)
+
+  if ( info < 0 ) then
+    return
+  end if
 
   eigenvalue = eigenvalues(1)
 

@@ -931,7 +931,7 @@ class rand_unnorm_state_site_tensor(unittest.TestCase):
         self.assertAlmostEqual(1,norm(unnormalized_tensor.ravel()))
 #@-node:gcross.20091123113033.1633:rand_unnorm_state_site_tensor
 #@-node:gcross.20091123113033.1634:Randomization
-#@+node:gcross.20091116175016.1815:orthogonalize_projector_matrix
+#@+node:gcross.20091116175016.1815:orthogonalize_matrix_in_place
 class orthogonalize_matrix_in_place(unittest.TestCase):
     @with_checker
     def testCorrectness(self,projector_length=irange(8,20),number_of_projectors=irange(1,7)):
@@ -949,7 +949,7 @@ class orthogonalize_matrix_in_place(unittest.TestCase):
                     overlaps_with_any_vector = True
                     break
             self.assertTrue(overlaps_with_any_vector)
-#@-node:gcross.20091116175016.1815:orthogonalize_projector_matrix
+#@-node:gcross.20091116175016.1815:orthogonalize_matrix_in_place
 #@+node:gcross.20091110205054.1948:Normalization
 #@+node:gcross.20091110205054.1933:norm_denorm_going_left
 class norm_denorm_going_left(unittest.TestCase):
