@@ -65,10 +65,12 @@ end function
 subroutine compute_orthogonal_basis( &
   m, n, k, &
   vectors, &
+  rank, &
   basis &
 )
   integer, intent(in) :: n, m
-  integer, intent(inout) :: k
+  integer, intent(in) :: k
+  integer, intent(out) :: rank
   double complex, intent(in) :: vectors(m,n)
   double complex, intent(out) :: basis(m,k)
 
@@ -78,10 +80,16 @@ subroutine compute_orthogonal_basis( &
 
   double complex, allocatable :: work(:)
 
-  external :: zgeqp3, zungqr
+  external :: zgeqp3, zungqr, dznrm2
+  double precision :: dznrm2
 
   if (m < n) then
     print *, "The input matrix has too many columns and not enough rows (column-major ordering) to orthogonalize!"
+    stop
+  end if
+
+  if (k < n) then
+    print *, "The output matrix has fewer columns than the input matrix!"
     stop
   end if
 
@@ -101,6 +109,7 @@ subroutine compute_orthogonal_basis( &
 
   if (info /= 0) then
     print *, "Unable to factorize matrix (zgeqp3, workspace query); info =", info
+    stop
   end if
 
   lwork2 = -1
@@ -115,6 +124,7 @@ subroutine compute_orthogonal_basis( &
 
   if (info /= 0) then
     print *, "Unable to factorize matrix (zungqr, workspace query); info =", info
+    stop
   end if
 
   lwork = max(lwork1,lwork2)
@@ -132,7 +142,13 @@ subroutine compute_orthogonal_basis( &
 
   if (info /= 0) then
     print *, "Unable to factorize matrix (zgeqp3); info =", info
+    stop
   end if
+
+  rank = n
+  do while (dznrm2(n-rank+1,basis(rank,rank),m) < 1e-7)
+    rank = rank - 1
+  end do
 
   call zungqr( &
     m, k, n, &
@@ -144,6 +160,7 @@ subroutine compute_orthogonal_basis( &
 
   if (info /= 0) then
     print *, "Unable to factorize matrix (zungqr); info =", info
+    stop
   end if
 
   deallocate(work)
@@ -153,12 +170,14 @@ end subroutine
 !@+node:gcross.20100513214001.1742:orthogonalize_matrix_in_place
 subroutine orthogonalize_matrix_in_place( &
   m, n, &
-  matrix &
+  matrix, &
+  rank &
 )
   integer, intent(in) :: n, m
   double complex, intent(inout) :: matrix(m,n)
+  integer, intent(out) :: rank
 
-  call compute_orthogonal_basis(m,n,n,matrix,matrix)
+  call compute_orthogonal_basis(m,n,n,matrix,rank,matrix)
 
 end subroutine
 !@-node:gcross.20100513214001.1742:orthogonalize_matrix_in_place
@@ -1057,6 +1076,7 @@ subroutine rand_norm_state_site_tensor(br, bl, d, state_site_tensor)
   double complex, intent(out) :: state_site_tensor(br,bl,d)
 
   double complex :: workspace(br,d,bl)
+  integer :: rank
 
   if (br*d < bl) then
     print *, "Not enough degrees of freedom to normalize."
@@ -1066,7 +1086,11 @@ subroutine rand_norm_state_site_tensor(br, bl, d, state_site_tensor)
 
   call randomize_state_site_tensor(br, d, bl, workspace)
 
-  call orthogonalize_matrix_in_place(br*d, bl, workspace)
+  call orthogonalize_matrix_in_place(br*d, bl, workspace, rank)
+  if ( rank < bl ) then
+    print *, "rand_norm_state_site_tensor:  Bad rank", rank, "<", bl
+    stop
+  end if
 
   state_site_tensor = reshape(workspace,shape(state_site_tensor),order=(/1,3,2/))
 
@@ -1263,7 +1287,7 @@ subroutine create_bandwidth_increase_matrix(old_bandwidth,new_bandwidth,matrix)
   integer, intent(in) :: old_bandwidth, new_bandwidth
   double complex, intent(out) :: matrix(new_bandwidth,old_bandwidth)
 
-  integer :: i, j
+  integer :: i, j, rank
 
   do j = 1, old_bandwidth
   do i = 1, new_bandwidth
@@ -1271,7 +1295,12 @@ subroutine create_bandwidth_increase_matrix(old_bandwidth,new_bandwidth,matrix)
   end do
   end do
 
-  call orthogonalize_matrix_in_place(new_bandwidth,old_bandwidth,matrix)
+  call orthogonalize_matrix_in_place(new_bandwidth,old_bandwidth,matrix,rank)
+
+  if ( rank < old_bandwidth ) then
+    print *, "create_bandwidth_increase_matrix:  Bad rank", rank, "<", old_bandwidth
+    stop
+  end if
 
 end subroutine
 !@-node:gcross.20091115094257.1712:create_bandwidth_increase_matrix

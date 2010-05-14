@@ -369,22 +369,26 @@ int increase_bandwidth_between(
 }
 //@-node:gcross.20091115105949.1731:increase_bandwidth_between
 //@+node:gcross.20091116175016.1801:orthogonalize_projector_matrix
-void orthogonalize_matrix_in_place_(
+int orthogonalize_matrix_in_place_(
   int* n,
   int* m,
-  double* matrix
+  double* matrix,
+  int* rank
 );
 
-void orthogonalize_matrix_in_place(
+int orthogonalize_matrix_in_place(
   int n,
   int m,
   double* matrix
 ) {
+    int rank;
     orthogonalize_matrix_in_place_(
         &n,
         &m,
-        matrix
+        matrix,
+        &rank
     );
+    return rank;
 }
 //@-node:gcross.20091116175016.1801:orthogonalize_projector_matrix
 //@+node:gcross.20091118141720.1801:form_overlap_site_tensor

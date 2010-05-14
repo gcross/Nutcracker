@@ -450,12 +450,13 @@ withPinnedProjectorMatrix NullProjectorMatrix thunk = thunk 0 nullPtr
 withPinnedProjectorMatrix (ProjectorMatrix number_of_projectors matrix) thunk =
     withPinnedComplexTensor matrix (thunk number_of_projectors)
 
-withNewPinnedProjectorMatrix :: Int -> Int -> (Ptr (Complex Double) -> IO a) -> IO (a,ProjectorMatrix)
-withNewPinnedProjectorMatrix 0 _ = error "You are trying to get a write pointer to an emptry array!"
-withNewPinnedProjectorMatrix number_of_projectors projector_length =
-    fmap (second $ ProjectorMatrix number_of_projectors)
-    .
+withNewPinnedProjectorMatrix :: Int -> Int -> (Ptr (Complex Double) -> IO (Int,a)) -> IO (a,ProjectorMatrix)
+withNewPinnedProjectorMatrix 0 _ = error "You are trying to get a write pointer to an empty array!"
+withNewPinnedProjectorMatrix number_of_projectors projector_length = do
     withNewPinnedComplexTensor (number_of_projectors,projector_length)
+    >=>
+    \((rank,result),tensor) ->
+        return (result,ProjectorMatrix rank tensor)
 -- @-node:gcross.20091116175016.1796:ProjectorMatrix
 -- @-node:gcross.20091111171052.1591:Types
 -- @+node:gcross.20091111171052.1601:Classes

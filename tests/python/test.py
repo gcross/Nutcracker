@@ -946,31 +946,45 @@ class orthogonalize_matrix_in_place(unittest.TestCase):
         projector_matrix = array(projectors.copy(),order='Fortran')
         vmps.orthogonalize_matrix_in_place(projector_matrix)
         self.assertTrue(allclose(dot(projector_matrix,dot(projector_matrix.conj().transpose(),projectors)),projectors))
+
+    @with_checker
+    def test_rank(self,projector_length=irange(8,20),number_of_projectors=irange(1,7)):
+        rank = randint(1,number_of_projectors)
+        projector_matrix = array(dot(crand(projector_length,rank),crand(rank,number_of_projectors)),order='Fortran')
+        computed_rank = vmps.orthogonalize_matrix_in_place(projector_matrix)
+        self.assertTrue(computed_rank,rank)
 #@-node:gcross.20091116175016.1815:orthogonalize_matrix_in_place
 #@+node:gcross.20100513214001.1748:compute_orthogonal_basis
 class compute_orthogonal_basis(unittest.TestCase):
     @with_checker
     def test_shape(self,m=irange(8,20),n=irange(1,7)):
         vectors = array(crand(m,n),order='Fortran')
-        basis = vmps.compute_orthogonal_basis(m,vectors)
+        _, basis = vmps.compute_orthogonal_basis(m,vectors)
         self.assertEqual(basis.shape,(m,m))
 
     @with_checker
     def test_orthogonality(self,m=irange(8,20),n=irange(1,7)):
         vectors = array(crand(m,n),order='Fortran')
-        basis = vmps.compute_orthogonal_basis(m,vectors)
+        _, basis = vmps.compute_orthogonal_basis(m,vectors)
         self.assertTrue(allclose(dot(basis.transpose().conj(),basis),identity(m)))
+
+    @with_checker
+    def test_rank(self,m=irange(8,20),n=irange(1,7)):
+        rank = randint(1,n)
+        vectors = array(dot(crand(m,rank),crand(rank,n)),order='Fortran')
+        computed_rank, _ = vmps.compute_orthogonal_basis(m,vectors)
+        self.assertEqual(computed_rank,rank)
 
     @with_checker
     def test_projector_subspace(self,m=irange(8,20),n=irange(1,7)):
         vectors = array(crand(m,n),order='Fortran')
-        basis = vmps.compute_orthogonal_basis(n,vectors)
+        _, basis = vmps.compute_orthogonal_basis(n,vectors)
         self.assertTrue(allclose(dot(basis[:,:],dot(basis[:,:].conj().transpose(),vectors)),vectors))
 
     @with_checker
     def test_remaining_subspace(self,m=irange(8,20),n=irange(1,7)):
         vectors = array(crand(m,n),order='Fortran')
-        basis = vmps.compute_orthogonal_basis(m,vectors)
+        _, basis = vmps.compute_orthogonal_basis(m,vectors)
         self.assertAlmostEqual(norm(dot(basis[:,n:].conj().transpose(),vectors)),0)
 #@-node:gcross.20100513214001.1748:compute_orthogonal_basis
 #@+node:gcross.20091110205054.1948:Normalization

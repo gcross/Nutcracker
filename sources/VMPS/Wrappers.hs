@@ -542,7 +542,7 @@ foreign import ccall unsafe "orthogonalize_matrix_in_place" orthogonalize_matrix
     Int -> -- number of projectors
     Int -> -- projector length
     Ptr (Complex Double) -> -- projector matrix
-    IO ()
+    IO Int
 
 formProjectorMatrix :: 
     [(LeftOverlapBoundaryTensor
@@ -557,17 +557,13 @@ formProjectorMatrix projectors@(first_projector:_) =
             \p_projector_matrix ->
                 go projectors p_projector_matrix
                 >>
-                case number_of_projectors of
-                    1 -> do normalize projector_length p_projector_matrix
-                    2 -> orthogonalize2
-                            projector_length
-                            p_projector_matrix
-                            (plusPtr p_projector_matrix pointer_increment)
-                    _ -> 
-                     do orthogonalize_matrix_in_place
-                            projector_length
-                            number_of_projectors
-                            p_projector_matrix
+                orthogonalize_matrix_in_place
+                    projector_length
+                    number_of_projectors
+                    p_projector_matrix
+                >>=
+                \rank -> return (rank,())
+
   where
     number_of_projectors = length projectors
     (first_left_boundary,first_right_boundary,first_overlap_site_tensor) = first_projector
