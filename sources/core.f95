@@ -771,6 +771,7 @@ subroutine project(vector_size,number_of_projectors,projectors,input_vector,outp
   double complex :: projector_weights(number_of_projectors)
   integer :: i
   if (number_of_projectors == 0) then
+    output_vector = input_vector
     return
   end if
   call zgemv( &
