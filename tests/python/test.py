@@ -932,6 +932,7 @@ class rand_unnorm_state_site_tensor(unittest.TestCase):
         self.assertAlmostEqual(1,norm(unnormalized_tensor.ravel()))
 #@-node:gcross.20091123113033.1633:rand_unnorm_state_site_tensor
 #@-node:gcross.20091123113033.1634:Randomization
+#@+node:gcross.20100514235202.1744:Utility Functions
 #@+node:gcross.20091116175016.1815:orthogonalize_matrix_in_place
 class orthogonalize_matrix_in_place(unittest.TestCase):
     @with_checker
@@ -987,6 +988,22 @@ class compute_orthogonal_basis(unittest.TestCase):
         _, basis = vmps.compute_orthogonal_basis(m,vectors)
         self.assertAlmostEqual(norm(dot(basis[:,n:].conj().transpose(),vectors)),0)
 #@-node:gcross.20100513214001.1748:compute_orthogonal_basis
+#@+node:gcross.20100514235202.1745:lapack_eigenvalue_minimizer
+class lapack_eigenvalue_minimizer(unittest.TestCase):
+    @with_checker
+    def test_correctness(self,n=irange(1,10)):
+        matrix = crand(n,n)
+        matrix += matrix.transpose().conj()
+        correct_eigenvalues, correct_eigenvectors = eigh(matrix)
+        observed_eigenvalue, observed_eigenvector = vmps.lapack_eigenvalue_minimizer(matrix)
+        correct_minimal_eigenvalue = correct_eigenvalues[0]
+        self.assertAlmostEqual(observed_eigenvalue,correct_minimal_eigenvalue)
+        correct_minimal_eigenvector = correct_eigenvectors[:,0]
+        correct_minimal_eigenvector /= correct_minimal_eigenvector[0]
+        observed_eigenvector /= observed_eigenvector[0]
+        self.assertTrue(allclose(observed_eigenvector,correct_minimal_eigenvector))
+#@-node:gcross.20100514235202.1745:lapack_eigenvalue_minimizer
+#@-node:gcross.20100514235202.1744:Utility Functions
 #@+node:gcross.20091110205054.1948:Normalization
 #@+node:gcross.20091110205054.1933:norm_denorm_going_left
 class norm_denorm_going_left(unittest.TestCase):
@@ -1192,6 +1209,7 @@ tests = [
     increase_bandwidth_between,
     orthogonalize_matrix_in_place,
     compute_orthogonal_basis,
+    lapack_eigenvalue_minimizer,
     form_overlap_site_tensor,
     form_norm_overlap_tensors,
 ]

@@ -181,6 +181,79 @@ subroutine orthogonalize_matrix_in_place( &
 
 end subroutine
 !@-node:gcross.20100513214001.1742:orthogonalize_matrix_in_place
+!@+node:gcross.20100514235202.1743:lapack_eigenvalue_minimizer
+subroutine lapack_eigenvalue_minimizer(n,matrix,eigenvalue,eigenvector)
+  integer, intent(in) :: n
+  double complex, intent(in) :: matrix(n,n)
+
+  double precision, intent(out) :: eigenvalue
+  double complex, intent(out) :: eigenvector(n)
+
+  integer :: number_of_eigenvalues_found, lwork, lrwork, liwork
+  double precision :: lrwork_as_double
+  double complex :: lwork_as_complex, temp(n,n)
+  double complex, allocatable :: work(:)
+  double precision, allocatable :: rwork(:)
+  integer, allocatable :: iwork(:)
+
+  integer :: info
+
+  external :: zheevr
+
+  temp = matrix
+
+  call zheevr(&
+    'V', &
+    'I', &
+    'U', &
+    n, &
+    temp, n, &
+    0d0, 0d0, &
+    1, 1, &
+    0d0, &
+    number_of_eigenvalues_found, &
+    eigenvalue, &
+    eigenvector, n, &
+    0, &
+    lwork_as_complex, -1, &
+    lrwork_as_double, -1, &
+    liwork, -1, &
+    info &
+  )
+
+  if (info /= 0) then
+    print *, "Error computing eigenvalue (zheevr, workspace query); info =", info
+    stop
+  end if
+
+  lwork = int(lwork_as_complex)
+  lrwork = int(lrwork_as_double)
+
+  allocate(work(lwork),rwork(lrwork),iwork(liwork))
+
+  call zheevr(&
+    'V', &
+    'I', &
+    'U', &
+    n, &
+    temp, n, &
+    0d0, 0d0, &
+    1, 1, &
+    0d0, &
+    number_of_eigenvalues_found, &
+    eigenvalue, &
+    eigenvector, n, &
+    0, &
+    work, lwork, &
+    rwork, lrwork, &
+    iwork, liwork, &
+    info &
+  )
+
+  deallocate(work,rwork,iwork)
+
+end subroutine
+!@-node:gcross.20100514235202.1743:lapack_eigenvalue_minimizer
 !@-node:gcross.20100512172859.1739:Utility Functions
 !@+node:gcross.20091110205054.1940:Contractors
 !@+node:gcross.20091110205054.1910:Main iteration
