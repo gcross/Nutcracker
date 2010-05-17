@@ -966,44 +966,22 @@ function optimize( &
 
   double complex :: &
     iteration_stage_1_tensor(bl,d,cr,bl,d), &
-    iteration_stage_2_tensor(br,cr,bl,d), &
-    v(br*bl*d,ncv), &
-    workd(3*br*bl*d), &
-    workl(3*ncv**2+5*ncv), &
-    eigenvalues(nev+1), &
-    workev(2*ncv), &
-    resid(br,bl,d)
+    iteration_stage_2_tensor(br,cr,bl,d)
 
   double precision :: &
     norm_of_result
 
   integer :: &
-    iparam(11), &
-    ipntr(14), &
-    ido, &
     info
-
-  logical :: &
-    select(ncv)
-
-  double precision :: rwork(ncv)
-  !@nonl
   !@-node:gcross.20091115201814.1730:Work arrays
   !@-others
   !@-node:gcross.20091115201814.1731:<< Declarations >>
   !@nl
 
-  !@  << Setup >>
-  !@+node:gcross.20091115201814.1732:<< Setup >>
   if (number_of_projectors + 1 >= d*bl*br ) then
     info = 10
     return
   end if
-  !@+at
-  ! First do the stage 1 contraction, since it is independent of the state 
-  ! site tensor.
-  !@-at
-  !@@c
 
   call iteration_stage_1( &
     bl, cl, cr, d, &
@@ -1012,67 +990,18 @@ function optimize( &
     iteration_stage_1_tensor &
   )
 
-  !@+at
-  ! Set up the solver.
-  !@-at
-  !@@c
-
-  iparam = 0
-  ido = 0
-  info = 1
-
-  iparam(1) = 1
-  iparam(3) = number_of_iterations
-  iparam(7) = 1
-
-  resid = guess
-  !@-node:gcross.20091115201814.1732:<< Setup >>
-  !@nl
-
-  !@  << Main iteration >>
-  !@+node:gcross.20091115201814.1733:<< Main iteration >>
-  !@+at
-  ! Run the iteration.
-  !@-at
-  !@@c
-
-  do while (ido /= 99)
-    call znaupd ( &
-      ido, 'I', d*bl*br, which, nev, tol, resid, ncv, v, br*bl*d, &
-      iparam, ipntr, workd, workl, 3*ncv**2+5*ncv, rwork, info &
-    ) 
-    if (ido == -1 .or. ido == 1) then
-      call operate_on(workd(ipntr(1)),workd(ipntr(2)))
-    end if
-  end do
-  !@-node:gcross.20091115201814.1733:<< Main iteration >>
-  !@nl
-
-  !@  << Post-processing >>
-  !@+node:gcross.20091115201814.1728:<< Post-processing >>
-  number_of_iterations = iparam(3)
+  call run_arpack(d*bl*br,nev,ncv,guess,eigenvalue,result(1,1,1))
 
   if ( info < 0 ) then
     return
   end if
-
-  call zneupd (.true.,'A', select, eigenvalues, v, br*bl*d, (0d0,0d0), workev, &
-              'I', d*bl*br, which, nev, tol, resid, ncv, &
-              v, br*bl*d, iparam, ipntr, workd, workl, 3*ncv**2+5*ncv, &
-              rwork, info)
-
-  if ( info < 0 ) then
-    return
-  end if
-
-  eigenvalue = eigenvalues(1)
 
   if (abs(imag(eigenvalue)) > 1e-7) then
     info = 1
     return
   end if
 
-  norm_of_result = dznrm2(d*bl*br,v(1,1),1)
+  norm_of_result = dznrm2(d*bl*br,result(1,1,1),1)
 
   if (abs(norm_of_result-1) > 1e-7) then
     info = 2
@@ -1080,22 +1009,77 @@ function optimize( &
     return
   end if
 
-  call project(bl*br*d,number_of_projectors,projectors,v(1,1),v(1,1))
+  call project(bl*br*d,number_of_projectors,projectors,result(1,1,1),result(1,1,1))
 
-  norm_of_result = dznrm2(d*bl*br,v(1,1),1)
+  norm_of_result = dznrm2(d*bl*br,result(1,1,1),1)
 
   if (abs(norm_of_result-1) > 1e-7) then
     info = 3
     return
   end if
 
-  result = reshape(v(:,1),shape(result))
-  !@-node:gcross.20091115201814.1728:<< Post-processing >>
-  !@nl
-
 contains
 
   !@  @+others
+  !@+node:gcross.20100516220142.1754:run_arpack
+  subroutine run_arpack(n,nev,ncv,guess,eigenvalue,eigenvector)
+
+    integer, intent(in) :: n, nev, ncv
+
+    double complex, intent(in) :: guess(n)
+
+    double complex, intent(out) :: eigenvalue, eigenvector(n)
+
+    double complex :: &
+      v(n,ncv), &
+      workd(3*n), &
+      workl(3*ncv**2+5*ncv), &
+      eigenvalues(nev+1), &
+      workev(2*ncv), &
+      resid(n)
+
+    integer :: &
+      iparam(11), &
+      ipntr(14), &
+      ido
+
+    logical :: &
+      select(ncv)
+
+    double precision :: rwork(ncv)
+
+    resid = guess
+
+    iparam = 0
+    ido = 0
+    info = 1
+
+    iparam(1) = 1
+    iparam(3) = number_of_iterations
+    iparam(7) = 1
+
+    do while (ido /= 99)
+      call znaupd ( &
+        ido, 'I', n, which, nev, tol, resid, ncv, v, n, &
+        iparam, ipntr, workd, workl, 3*ncv**2+5*ncv, rwork, info &
+      ) 
+      if (ido == -1 .or. ido == 1) then
+        call operate_on(workd(ipntr(1)),workd(ipntr(2)))
+      end if
+    end do
+
+    number_of_iterations = iparam(3)
+
+    call zneupd (.true.,'A', select, eigenvalues, v, br*bl*d, (0d0,0d0), workev, &
+                  'I', d*bl*br, which, nev, tol, resid, ncv, &
+                  v, br*bl*d, iparam, ipntr, workd, workl, 3*ncv**2+5*ncv, &
+                  rwork, info)
+
+    eigenvalue = eigenvalues(1)
+    eigenvector = v(:,1)
+
+  end subroutine
+  !@-node:gcross.20100516220142.1754:run_arpack
   !@+node:gcross.20100513000837.1743:operate_on
   subroutine operate_on(input,output)
     double complex :: input(bl*br*d), output(bl*br*d)
