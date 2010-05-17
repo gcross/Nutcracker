@@ -915,6 +915,9 @@ class optimizer_tests(unittest.TestCase):
 class optimize(optimizer_tests):
     call_optimizer = staticmethod(vmps.optimize)
 
+class optimize_strategy_1(optimizer_tests):
+    call_optimizer = staticmethod(vmps.optimize_strategy_1)
+
 class optimize_strategy_2(optimizer_tests):
     call_optimizer = staticmethod(vmps.optimize_strategy_2)
 
@@ -1002,6 +1005,26 @@ class compute_orthogonal_basis(unittest.TestCase):
         _, basis = vmps.compute_orthogonal_basis(m,vectors)
         self.assertAlmostEqual(norm(dot(basis[:,n:].conj().transpose(),vectors)),0)
 #@-node:gcross.20100513214001.1748:compute_orthogonal_basis
+#@+node:gcross.20100517000234.1792:compute_orthogonal_basis
+class compute_orthogonal_subspace(unittest.TestCase):
+    @with_checker
+    def test_shape(self,m=irange(8,20),n=irange(1,7)):
+        vectors = array(crand(m,n),order='Fortran')
+        basis = vmps.compute_orthogonal_subspace(vectors)
+        self.assertEqual(basis.shape,(m,n-m))
+
+    @with_checker
+    def test_orthogonality(self,m=irange(8,20),n=irange(1,7)):
+        vectors = array(crand(m,n),order='Fortran')
+        basis = vmps.compute_orthogonal_subspace(vectors)
+        self.assertTrue(allclose(dot(basis.transpose().conj(),basis),identity(n-m)))
+
+    @with_checker
+    def test_subspace(self,m=irange(8,20),n=irange(1,7)):
+        vectors = array(crand(m,n),order='Fortran')
+        _, basis = vmps.compute_orthogonal_subspace(vectors)
+        self.assertAlmostEqual(norm(dot(basis.conj().transpose(),vectors)),0)
+#@-node:gcross.20100517000234.1792:compute_orthogonal_basis
 #@+node:gcross.20100514235202.1745:lapack_eigenvalue_minimizer
 class lapack_eigenvalue_minimizer(unittest.TestCase):
     @with_checker
@@ -1213,6 +1236,7 @@ tests = [
     compute_expectation,
     compute_optimization_matrix,
     optimize,
+    optimize_strategy_1,
     optimize_strategy_2,
     optimize_strategy_3,
     rand_norm_state_site_tensor,

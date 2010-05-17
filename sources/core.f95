@@ -167,6 +167,35 @@ subroutine compute_orthogonal_basis( &
 
 end subroutine
 !@-node:gcross.20100513214001.1746:compute_orthogonal_basis
+!@+node:gcross.20100517000234.1790:compute_orthogonal_subspace
+subroutine compute_orthogonal_subspace(n,number_of_projectors,projectors,orthogonal_basis)
+  integer, intent(in) :: n, number_of_projectors
+  double complex, intent(in) :: projectors(n,number_of_projectors)
+  double complex, intent(out) :: orthogonal_basis(n,n-number_of_projectors)
+
+  double complex :: &
+    full_basis(n,n)
+
+  integer :: m, rank
+
+  m = n-number_of_projectors
+
+  call compute_orthogonal_basis( &
+    n, number_of_projectors, n, &
+    projectors, &
+    rank, &
+    full_basis &
+  )
+
+  if (rank /= number_of_projectors) then
+    print *, "compute_orthogonal_subspace: error computing orthogonal basis for projectors (",rank,"/=",number_of_projectors,")"
+    stop
+  end if
+
+  orthogonal_basis(:,:) = full_basis(:,number_of_projectors+1:)
+
+end subroutine
+!@-node:gcross.20100517000234.1790:compute_orthogonal_subspace
 !@+node:gcross.20100513214001.1742:orthogonalize_matrix_in_place
 subroutine orthogonalize_matrix_in_place( &
   m, n, &
@@ -924,7 +953,25 @@ function optimize( &
 
   n = d*bl*br
 
-  if ( bl*br < cl*cr ) then
+  if ( n-number_of_projectors < 4 ) then
+    call optimize_strategy_1( &
+      bl, br, &
+      cl, &
+      cr, &
+      d, &
+      left_environment, &
+      number_of_matrices, sparse_operator_indices, sparse_operator_matrices, &
+      right_environment, &
+      number_of_projectors, projectors, &
+      which, &
+      tol, &
+      number_of_iterations, &
+      guess, &
+      info, &
+      result, &
+      eigenvalue &
+    )
+  else if ( bl*br < cl*cr ) then
     call optimize_strategy_2( &
       bl, br, &
       cl, &
@@ -990,6 +1037,133 @@ function optimize( &
 
 end function
 !@-node:gcross.20100517000234.1775:optimize
+!@+node:gcross.20100517000234.1786:optimize_strategy_1
+subroutine optimize_strategy_1( &
+  bl, br, & ! state bandwidth dimension
+  cl, & ! operator left  bandwidth dimension
+  cr, & ! operator right bandwidth dimension
+  d, & ! physical dimension
+  left_environment, &
+  number_of_matrices, sparse_operator_indices, sparse_operator_matrices, &
+  right_environment, &
+  number_of_projectors, projectors, &
+  which, &
+  tol, &
+  number_of_iterations, &
+  guess, &
+  info, &
+  result, &
+  eigenvalue &
+)
+  integer, intent(in) :: &
+    bl, br, cl, cr, d, &
+    number_of_matrices, sparse_operator_indices(2,number_of_matrices), &
+    number_of_projectors
+  integer, intent(inout) :: number_of_iterations
+  integer, intent(out) :: info
+  double complex, intent(in) :: &
+    left_environment(bl,bl,cl), &
+    right_environment(br,br,cr), &
+    sparse_operator_matrices(d,d,number_of_matrices), &
+    projectors(br*bl*d,number_of_projectors), &
+    guess(br,bl,d)
+  double complex, intent(out) :: &
+    result(br,bl,d), &
+    eigenvalue
+  character, intent(in) :: which*2
+  double precision, intent(in) :: tol
+
+  if (number_of_projectors == 0) then
+    call strategy_1a(d*bl*br)
+  else
+    call strategy_1b(d*bl*br,number_of_projectors,d*bl*br-number_of_projectors)
+  end if
+
+contains
+
+  !@  @+others
+  !@+node:gcross.20100517000234.1787:strategy_1a
+  subroutine strategy_1a(n)
+
+    integer, intent(in) :: n
+
+    double complex :: &
+      optimization_matrix(n,n)
+
+    call compute_optimization_matrix( &
+      bl, br, cl, cr, d, &
+      left_environment, &
+      number_of_matrices,sparse_operator_indices,sparse_operator_matrices, &
+      right_environment, &
+      optimization_matrix &
+    )
+
+    call lapack_eigenvalue_minimizer(n,optimization_matrix,eigenvalue,result(1,1,1))
+
+    info = 0
+
+  end subroutine
+  !@-node:gcross.20100517000234.1787:strategy_1a
+  !@+node:gcross.20100517000234.1789:strategy_1b
+  subroutine strategy_1b(n,number_of_projectors,m)
+
+    integer, intent(in) :: n, number_of_projectors, m
+
+    double complex :: &
+      orthogonal_projector_basis(n,m), &
+      workspace(n,m), &
+      full_optimization_matrix(n,n), &
+      optimization_matrix(m,m), &
+      eigenvector(m)
+
+    call compute_optimization_matrix( &
+      bl, br, cl, cr, d, &
+      left_environment, &
+      number_of_matrices,sparse_operator_indices,sparse_operator_matrices, &
+      right_environment, &
+      full_optimization_matrix &
+    )
+
+    call compute_orthogonal_subspace( &
+      n, number_of_projectors, &
+      projectors, &
+      orthogonal_projector_basis &
+    )
+
+    call zgemm( &
+      'N', 'N', &
+      n, m, n, &
+      (1d0,0d0), full_optimization_matrix, n, &
+      orthogonal_projector_basis, n, &
+      (0d0,0d0), workspace, n &
+    )
+
+    call zgemm( &
+      'C', 'N', &
+      m, m, n, &
+      (1d0,0d0), orthogonal_projector_basis, n, &
+      workspace, n, &
+      (0d0,0d0), optimization_matrix, m &
+    )
+
+    call lapack_eigenvalue_minimizer(m,optimization_matrix,eigenvalue,eigenvector)
+
+    call zgemv( &
+      'N', &
+      n, m, &
+      (1d0,0d0), orthogonal_projector_basis, n, &
+      eigenvector, 1, &
+      (0d0,0d0), result(1,1,1), 1 &
+    )
+
+    info = 0
+
+  end subroutine
+  !@-node:gcross.20100517000234.1789:strategy_1b
+  !@-others
+
+end subroutine
+!@-node:gcross.20100517000234.1786:optimize_strategy_1
 !@+node:gcross.20091109182634.1537:optimize_strategy_2
 subroutine optimize_strategy_2( &
   bl, br, & ! state bandwidth dimension
