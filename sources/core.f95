@@ -876,7 +876,7 @@ subroutine project(vector_size,number_of_projectors,projectors,input_vector,outp
   forall (i = 1:vector_size) output_vector(i) = input_vector(i) - dot_product(projectors(i,:),projector_weights)
 end subroutine
 !@-node:gcross.20091115201814.1736:project
-!@+node:gcross.20091109182634.1537:optimize
+!@+node:gcross.20100517000234.1775:optimize
 function optimize( &
   bl, br, & ! state bandwidth dimension
   cl, & ! operator left  bandwidth dimension
@@ -894,6 +894,121 @@ function optimize( &
   eigenvalue &
 ) result (info)
 
+  integer, intent(in) :: &
+    bl, br, cl, cr, d, &
+    number_of_matrices, sparse_operator_indices(2,number_of_matrices), &
+    number_of_projectors
+  integer, intent(inout) :: number_of_iterations
+  double complex, intent(in) :: &
+    left_environment(bl,bl,cl), &
+    right_environment(br,br,cr), &
+    sparse_operator_matrices(d,d,number_of_matrices), &
+    projectors(br*bl*d,number_of_projectors), &
+    guess(br,bl,d)
+  double complex, intent(out) :: &
+    result(br,bl,d), &
+    eigenvalue
+  character, intent(in) :: which*2
+  double precision, intent(in) :: tol
+
+  integer :: info, n
+  double precision :: norm_of_result
+
+  interface
+    function dznrm2 (n,x,incx)
+      integer, intent(in) :: n, incx
+      double complex, intent(in) :: x
+      double precision :: dznrm2
+    end function
+  end interface
+
+  n = d*bl*br
+
+  if ( bl*br < cl*cr ) then
+    call optimize_strategy_2( &
+      bl, br, &
+      cl, &
+      cr, &
+      d, &
+      left_environment, &
+      number_of_matrices, sparse_operator_indices, sparse_operator_matrices, &
+      right_environment, &
+      number_of_projectors, projectors, &
+      which, &
+      tol, &
+      number_of_iterations, &
+      guess, &
+      info, &
+      result, &
+      eigenvalue &
+    )
+  else
+    call optimize_strategy_3( &
+      bl, br, &
+      cl, &
+      cr, &
+      d, &
+      left_environment, &
+      number_of_matrices, sparse_operator_indices, sparse_operator_matrices, &
+      right_environment, &
+      number_of_projectors, projectors, &
+      which, &
+      tol, &
+      number_of_iterations, &
+      guess, &
+      info, &
+      result, &
+      eigenvalue &
+    )
+  end if
+
+  if ( info < 0 ) then
+    return
+  end if
+
+  if (abs(imag(eigenvalue)) > 1e-7) then
+    info = 1
+    return
+  end if
+
+  norm_of_result = dznrm2(n,result(1,1,1),1)
+
+  if (abs(norm_of_result-1) > 1e-7) then
+    info = 2
+    eigenvalue = norm_of_result*(1d0,0d0)
+    return
+  end if
+
+  call project(n,number_of_projectors,projectors,result(1,1,1),result(1,1,1))
+
+  norm_of_result = dznrm2(n,result(1,1,1),1)
+
+  if (abs(norm_of_result-1) > 1e-7) then
+    info = 3
+    return
+  end if
+
+end function
+!@-node:gcross.20100517000234.1775:optimize
+!@+node:gcross.20091109182634.1537:optimize_strategy_2
+subroutine optimize_strategy_2( &
+  bl, br, & ! state bandwidth dimension
+  cl, & ! operator left  bandwidth dimension
+  cr, & ! operator right bandwidth dimension
+  d, & ! physical dimension
+  left_environment, &
+  number_of_matrices, sparse_operator_indices, sparse_operator_matrices, &
+  right_environment, &
+  number_of_projectors, projectors, &
+  which, &
+  tol, &
+  number_of_iterations, &
+  guess, &
+  info, &
+  result, &
+  eigenvalue &
+)
+
   !@  << Declarations >>
   !@+node:gcross.20091115201814.1731:<< Declarations >>
   !@+others
@@ -903,6 +1018,7 @@ function optimize( &
     number_of_matrices, sparse_operator_indices(2,number_of_matrices), &
     number_of_projectors
   integer, intent(inout) :: number_of_iterations
+  integer, intent(out) :: info
   double complex, intent(in) :: &
     left_environment(bl,bl,cl), &
     right_environment(br,br,cr), &
@@ -965,58 +1081,25 @@ function optimize( &
   integer, parameter :: nev = 1, ncv = 3
 
   double complex :: &
-    iteration_stage_1_tensor(bl,d,cr,bl,d), &
-    iteration_stage_2_tensor(br,cr,bl,d)
+    optimization_matrix(br,bl,d,br,bl,d)
 
-  double precision :: &
-    norm_of_result
-
-  integer :: &
-    info
+  integer :: n
   !@-node:gcross.20091115201814.1730:Work arrays
   !@-others
   !@-node:gcross.20091115201814.1731:<< Declarations >>
   !@nl
 
-  if (number_of_projectors + 1 >= d*bl*br ) then
-    info = 10
-    return
-  end if
+  n = bl*br*d
 
-  call iteration_stage_1( &
-    bl, cl, cr, d, &
+  call compute_optimization_matrix( &
+    bl, br, cl, cr, d, &
     left_environment, &
-    number_of_matrices, sparse_operator_indices, sparse_operator_matrices, &
-    iteration_stage_1_tensor &
+    number_of_matrices,sparse_operator_indices,sparse_operator_matrices, &
+    right_environment, &
+    optimization_matrix &
   )
 
-  call run_arpack(d*bl*br,nev,ncv,guess,eigenvalue,result(1,1,1))
-
-  if ( info < 0 ) then
-    return
-  end if
-
-  if (abs(imag(eigenvalue)) > 1e-7) then
-    info = 1
-    return
-  end if
-
-  norm_of_result = dznrm2(d*bl*br,result(1,1,1),1)
-
-  if (abs(norm_of_result-1) > 1e-7) then
-    info = 2
-    eigenvalue = norm_of_result*(1d0,0d0)
-    return
-  end if
-
-  call project(bl*br*d,number_of_projectors,projectors,result(1,1,1),result(1,1,1))
-
-  norm_of_result = dznrm2(d*bl*br,result(1,1,1),1)
-
-  if (abs(norm_of_result-1) > 1e-7) then
-    info = 3
-    return
-  end if
+  call run_arpack(n,nev,ncv,guess,eigenvalue,result(1,1,1))
 
 contains
 
@@ -1082,9 +1165,201 @@ contains
   !@-node:gcross.20100516220142.1754:run_arpack
   !@+node:gcross.20100513000837.1743:operate_on
   subroutine operate_on(input,output)
-    double complex :: input(bl*br*d), output(bl*br*d)
+    double complex :: input(n), output(n)
 
-    call project(bl*br*d,number_of_projectors,projectors,input,input)
+    call project(n,number_of_projectors,projectors,input,input)
+    call zhemv( &
+      'U', &
+      n, &
+      (1d0,0d0), optimization_matrix, n, &
+      input, 1, &
+      (0d0,0d0), output, 1 &
+    )
+    call project(n,number_of_projectors,projectors,output,output)
+  end subroutine
+  !@-node:gcross.20100513000837.1743:operate_on
+  !@-others
+
+end subroutine
+!@-node:gcross.20091109182634.1537:optimize_strategy_2
+!@+node:gcross.20100517000234.1753:optimize_strategy_3
+subroutine optimize_strategy_3( &
+  bl, br, & ! state bandwidth dimension
+  cl, & ! operator left  bandwidth dimension
+  cr, & ! operator right bandwidth dimension
+  d, & ! physical dimension
+  left_environment, &
+  number_of_matrices, sparse_operator_indices, sparse_operator_matrices, &
+  right_environment, &
+  number_of_projectors, projectors, &
+  which, &
+  tol, &
+  number_of_iterations, &
+  guess, &
+  info, &
+  result, &
+  eigenvalue &
+)
+
+  !@  << Declarations >>
+  !@+node:gcross.20100517000234.1754:<< Declarations >>
+  !@+others
+  !@+node:gcross.20100517000234.1755:Arguments
+  integer, intent(in) :: &
+    bl, br, cl, cr, d, &
+    number_of_matrices, sparse_operator_indices(2,number_of_matrices), &
+    number_of_projectors
+  integer, intent(inout) :: number_of_iterations
+  integer, intent(out) :: info
+  double complex, intent(in) :: &
+    left_environment(bl,bl,cl), &
+    right_environment(br,br,cr), &
+    sparse_operator_matrices(d,d,number_of_matrices), &
+    projectors(br*bl*d,number_of_projectors), &
+    guess(br,bl,d)
+  double complex, intent(out) :: &
+    result(br,bl,d), &
+    eigenvalue
+  character, intent(in) :: which*2
+  double precision, intent(in) :: tol
+  !@-node:gcross.20100517000234.1755:Arguments
+  !@+node:gcross.20100517000234.1756:Interface
+  interface
+    !@  @+others
+    !@+node:gcross.20100517000234.1757:znaupd
+    subroutine znaupd &
+        ( ido, bmat, n, which, nev, tol, resid, ncv, v, ldv, iparam, &
+          ipntr, workd, workl, lworkl, rwork, info )
+        character :: bmat*1, which*2
+        integer :: ido, info, ldv, lworkl, n, ncv, nev
+        double precision :: tol
+        integer :: iparam(11), ipntr(14)
+        double complex :: resid(n), v(ldv,ncv), workd(3*n), workl(lworkl)
+        double precision :: rwork(ncv)
+    end subroutine
+    !@nonl
+    !@-node:gcross.20100517000234.1757:znaupd
+    !@+node:gcross.20100517000234.1758:zneupd
+    subroutine zneupd (rvec, howmny, select, d, z, ldz, sigma, &
+                       workev, bmat, n, which, nev, tol, &
+                       resid, ncv, v, ldv, iparam, ipntr, workd,  &
+                       workl, lworkl, rwork, info)
+          character  :: bmat, howmny, which*2
+          logical    :: rvec
+          integer    :: info, ldz, ldv, lworkl, n, ncv, nev
+          double complex :: sigma
+          Double precision :: tol
+          integer    :: iparam(11), ipntr(14)
+          logical    :: select(ncv)
+          double precision :: rwork(ncv)
+          double complex :: &
+                    d(nev), resid(n), v(ldv,ncv), z(ldz, nev), &
+                    workd(3*n), workl(lworkl), workev(2*ncv)
+
+    end subroutine
+    !@-node:gcross.20100517000234.1758:zneupd
+    !@+node:gcross.20100517000234.1759:dznrm2
+    function dznrm2 (n,x,incx)
+      integer, intent(in) :: n, incx
+      double complex, intent(in) :: x
+
+      double precision :: dznrm2
+    end function
+    !@-node:gcross.20100517000234.1759:dznrm2
+    !@-others
+  end interface
+  !@-node:gcross.20100517000234.1756:Interface
+  !@+node:gcross.20100517000234.1760:Work arrays
+  integer, parameter :: nev = 1, ncv = 3
+
+  double complex :: &
+    iteration_stage_1_tensor(bl,d,cr,bl,d), &
+    iteration_stage_2_tensor(br,cr,bl,d)
+
+  integer ::  n
+  !@-node:gcross.20100517000234.1760:Work arrays
+  !@-others
+  !@-node:gcross.20100517000234.1754:<< Declarations >>
+  !@nl
+
+  n = br*bl*d
+
+  call iteration_stage_1( &
+    bl, cl, cr, d, &
+    left_environment, &
+    number_of_matrices, sparse_operator_indices, sparse_operator_matrices, &
+    iteration_stage_1_tensor &
+  )
+
+  call run_arpack(n,nev,ncv,guess,eigenvalue,result(1,1,1))
+
+contains
+
+  !@  @+others
+  !@+node:gcross.20100517000234.1761:run_arpack
+  subroutine run_arpack(n,nev,ncv,guess,eigenvalue,eigenvector)
+
+    integer, intent(in) :: n, nev, ncv
+
+    double complex, intent(in) :: guess(n)
+
+    double complex, intent(out) :: eigenvalue, eigenvector(n)
+
+    double complex :: &
+      v(n,ncv), &
+      workd(3*n), &
+      workl(3*ncv**2+5*ncv), &
+      eigenvalues(nev+1), &
+      workev(2*ncv), &
+      resid(n)
+
+    integer :: &
+      iparam(11), &
+      ipntr(14), &
+      ido
+
+    logical :: &
+      select(ncv)
+
+    double precision :: rwork(ncv)
+
+    resid = guess
+
+    iparam = 0
+    ido = 0
+    info = 1
+
+    iparam(1) = 1
+    iparam(3) = number_of_iterations
+    iparam(7) = 1
+
+    do while (ido /= 99)
+      call znaupd ( &
+        ido, 'I', n, which, nev, tol, resid, ncv, v, n, &
+        iparam, ipntr, workd, workl, 3*ncv**2+5*ncv, rwork, info &
+      ) 
+      if (ido == -1 .or. ido == 1) then
+        call operate_on(workd(ipntr(1)),workd(ipntr(2)))
+      end if
+    end do
+
+    number_of_iterations = iparam(3)
+
+    call zneupd (.true.,'A', select, eigenvalues, v, br*bl*d, (0d0,0d0), workev, &
+                  'I', d*bl*br, which, nev, tol, resid, ncv, &
+                  v, br*bl*d, iparam, ipntr, workd, workl, 3*ncv**2+5*ncv, &
+                  rwork, info)
+
+    eigenvalue = eigenvalues(1)
+    eigenvector = v(:,1)
+
+  end subroutine
+  !@-node:gcross.20100517000234.1761:run_arpack
+  !@+node:gcross.20100517000234.1762:operate_on
+  subroutine operate_on(input,output)
+    double complex :: input(n), output(n)
+
+    call project(n,number_of_projectors,projectors,input,input)
     call iteration_stage_2( &
       bl, br, cr, d, &
       iteration_stage_1_tensor, &
@@ -1097,13 +1372,13 @@ contains
       right_environment, &
       output &
     )
-    call project(bl*br*d,number_of_projectors,projectors,output,output)
+    call project(n,number_of_projectors,projectors,output,output)
   end subroutine
-  !@-node:gcross.20100513000837.1743:operate_on
+  !@-node:gcross.20100517000234.1762:operate_on
   !@-others
 
-end function
-!@-node:gcross.20091109182634.1537:optimize
+end subroutine
+!@-node:gcross.20100517000234.1753:optimize_strategy_3
 !@+node:gcross.20091110205054.1942:Randomization
 !@+node:gcross.20091110205054.1921:seed_randomizer
 subroutine seed_randomizer(seed)

@@ -787,7 +787,9 @@ class compute_optimization_matrix(unittest.TestCase):
 #@-node:gcross.20100513131210.1746:compute_optimization_matrix
 #@-others
 #@-node:gcross.20091108152444.1534:Contractors
-#@+node:gcross.20091109182634.1543:optimize
+#@+node:gcross.20100517000234.1763:Optimization
+#@+others
+#@+node:gcross.20100517000234.1764:optimization_matrix_contractor
 optimization_matrix_contractor = form_contractor([
     ("L1","M5"),
     ("L2","M2"),
@@ -803,8 +805,9 @@ optimization_matrix_contractor = form_contractor([
     ("R",3),
 ], ("M",6)
 )
-
-class optimize(unittest.TestCase):
+#@-node:gcross.20100517000234.1764:optimization_matrix_contractor
+#@+node:gcross.20091109182634.1543:optimizer_tests
+class optimizer_tests(unittest.TestCase):
     #@    @+others
     #@+node:gcross.20100506200958.2701:test_correct_result_for_arbitrary_operator
     @with_checker(number_of_calls=10)
@@ -823,7 +826,7 @@ class optimize(unittest.TestCase):
         optimization_matrix = optimization_matrix_contractor(left_environment,operator_site_tensor,right_environment).reshape(d*bl*br,d*bl*br)
         self.assertTrue(allclose(optimization_matrix,optimization_matrix.conj().transpose()))
         info, result, actual_eigenvalue = \
-            vmps.optimize(left_environment,sparse_operator_indices,sparse_operator_matrices,right_environment,zeros((0,0)),"SR",0,10000,crand(br,bl,d))
+            self.call_optimizer(left_environment,sparse_operator_indices,sparse_operator_matrices,right_environment,zeros((0,0)),"SR",0,10000,crand(br,bl,d))
         self.assertEqual(info,0)
         correct_eigenvalues, correct_eigenvectors = eigh(optimization_matrix)
         correct_eigenvectors = correct_eigenvectors.transpose()
@@ -843,7 +846,7 @@ class optimize(unittest.TestCase):
         sparse_operator_indices = ones((2,1))
         sparse_operator_matrices = diag([1,1,1,-1])
         sparse_operator_matrices = sparse_operator_matrices.reshape(sparse_operator_matrices.shape + (1,))
-        info, result, eigenvalue = vmps.optimize(left_environment,sparse_operator_indices,sparse_operator_matrices,right_environment,zeros((0,0)),"SR",0,10000,crand(1,1,4))
+        info, result, eigenvalue = self.call_optimizer(left_environment,sparse_operator_indices,sparse_operator_matrices,right_environment,zeros((0,0)),"SR",0,10000,crand(1,1,4))
         self.assertEqual(info,0)
         result /= result[0,0,-1]
         self.assertTrue(allclose(result.ravel(),array([0,0,0,1])))
@@ -857,7 +860,7 @@ class optimize(unittest.TestCase):
         sparse_operator_matrices = diag([1,1,-1,-2])
         sparse_operator_matrices = sparse_operator_matrices.reshape(sparse_operator_matrices.shape + (1,))
         projectors = array([[0,0,0,1]]).transpose()
-        info, result, eigenvalue = vmps.optimize(left_environment,sparse_operator_indices,sparse_operator_matrices,right_environment,projectors,"SR",0,10000,crand(1,1,4))
+        info, result, eigenvalue = self.call_optimizer(left_environment,sparse_operator_indices,sparse_operator_matrices,right_environment,projectors,"SR",0,10000,crand(1,1,4))
         self.assertEqual(info,0)
         result /= result[0,0,-2]
         self.assertTrue(allclose(result.ravel(),array([0,0,1,0])))
@@ -871,7 +874,7 @@ class optimize(unittest.TestCase):
         sparse_operator_matrices = diag([1,1,-1,-2])
         sparse_operator_matrices = sparse_operator_matrices.reshape(sparse_operator_matrices.shape + (1,))
         projectors = array([[0,0,0,1j]]).transpose()
-        info, result, eigenvalue = vmps.optimize(left_environment,sparse_operator_indices,sparse_operator_matrices,right_environment,projectors,"SR",0,10000,crand(1,1,4))
+        info, result, eigenvalue = self.call_optimizer(left_environment,sparse_operator_indices,sparse_operator_matrices,right_environment,projectors,"SR",0,10000,crand(1,1,4))
         self.assertEqual(info,0)
         result /= result[0,0,-2]
         self.assertTrue(allclose(result.ravel(),array([0,0,1,0])))
@@ -885,7 +888,7 @@ class optimize(unittest.TestCase):
         sparse_operator_matrices = diag([-1,-2,-3,-4])
         sparse_operator_matrices = sparse_operator_matrices.reshape(sparse_operator_matrices.shape + (1,))
         projectors = array([[0,0,0,1],[0,0,1,0]]).transpose()
-        info, result, eigenvalue = vmps.optimize(left_environment,sparse_operator_indices,sparse_operator_matrices,right_environment,projectors,"SR",0,10000,crand(1,1,4))
+        info, result, eigenvalue = self.call_optimizer(left_environment,sparse_operator_indices,sparse_operator_matrices,right_environment,projectors,"SR",0,10000,crand(1,1,4))
         self.assertEqual(info,0)
         result /= result[0,0,1]
         self.assertTrue(allclose(result.ravel(),array([0,1,0,0])))
@@ -899,14 +902,25 @@ class optimize(unittest.TestCase):
         sparse_operator_matrices = diag([-1,-2,-3,-4])
         sparse_operator_matrices = sparse_operator_matrices.reshape(sparse_operator_matrices.shape + (1,))
         projectors = array([[0,0,0,1j],[0,0,1j,0]]).transpose()
-        info, result, eigenvalue = vmps.optimize(left_environment,sparse_operator_indices,sparse_operator_matrices,right_environment,projectors,"SR",0,10000,crand(1,1,4))
+        info, result, eigenvalue = self.call_optimizer(left_environment,sparse_operator_indices,sparse_operator_matrices,right_environment,projectors,"SR",0,10000,crand(1,1,4))
         self.assertEqual(info,0)
         result /= result[0,0,1]
         self.assertTrue(allclose(result.ravel(),array([0,1,0,0])))
         self.assertAlmostEqual(-2,eigenvalue)
     #@-node:gcross.20091119150241.1877:test_orthogonalization_2_complex
     #@-others
-#@-node:gcross.20091109182634.1543:optimize
+#@-node:gcross.20091109182634.1543:optimizer_tests
+#@-others
+
+class optimize(optimizer_tests):
+    call_optimizer = staticmethod(vmps.optimize)
+
+class optimize_strategy_2(optimizer_tests):
+    call_optimizer = staticmethod(vmps.optimize_strategy_2)
+
+class optimize_strategy_3(optimizer_tests):
+    call_optimizer = staticmethod(vmps.optimize_strategy_3)
+#@-node:gcross.20100517000234.1763:Optimization
 #@+node:gcross.20091123113033.1634:Randomization
 #@+node:gcross.20091110205054.1924:rand_norm_state_site_tensor
 class rand_norm_state_site_tensor(unittest.TestCase):
@@ -1199,6 +1213,8 @@ tests = [
     compute_expectation,
     compute_optimization_matrix,
     optimize,
+    optimize_strategy_2,
+    optimize_strategy_3,
     rand_norm_state_site_tensor,
     rand_unnorm_state_site_tensor,
     norm_denorm_going_left,
