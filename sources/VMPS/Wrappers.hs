@@ -552,18 +552,9 @@ formProjectorMatrix ::
 
 formProjectorMatrix [] = NullProjectorMatrix
 formProjectorMatrix projectors@(first_projector:_) =
-    snd . unsafePerformIO $
-        withNewPinnedProjectorMatrix number_of_projectors projector_length $
-            \p_projector_matrix ->
-                go projectors p_projector_matrix
-                >>
-                orthogonalize_matrix_in_place
-                    projector_length
-                    number_of_projectors
-                    p_projector_matrix
-                >>=
-                \rank -> return (rank,())
-
+    if projectorCount projector_matrix == 0
+        then NullProjectorMatrix
+        else projector_matrix
   where
     number_of_projectors = length projectors
     (first_left_boundary,first_right_boundary,first_overlap_site_tensor) = first_projector
@@ -595,6 +586,19 @@ formProjectorMatrix projectors@(first_projector:_) =
                     p_overlap_site_tensor
                     p_projector
             ) >> go rest_projectors (p_projector `plusPtr` pointer_increment)
+
+    projector_matrix = snd . unsafePerformIO $
+        withNewPinnedProjectorMatrix number_of_projectors projector_length $
+            \p_projector_matrix ->
+                go projectors p_projector_matrix
+                >>
+                orthogonalize_matrix_in_place
+                    projector_length
+                    number_of_projectors
+                    p_projector_matrix
+                >>=
+                \rank -> return (rank,())
+-- @nonl
 -- @-node:gcross.20091116175016.1797:formProjectorMatrix
 -- @+node:gcross.20091120134444.1598:applyProjectorMatrix
 foreign import ccall unsafe "project" project :: 
