@@ -4,9 +4,10 @@
 #@+node:gcross.20091115094257.1715:<< Import needed modules >>
 import unittest
 from paycheck import *
-from numpy import array, zeros, all, double, tensordot, multiply, complex128, allclose, ones, diag, identity, dot, argmin
-from numpy.linalg import norm, eigh
+from numpy import array, zeros, all, double, tensordot, multiply, complex128, allclose, ones, diag, identity, dot, argmin, rank
+from numpy.linalg import norm
 from numpy.random import rand
+from scipy.linalg import qr, eigh
 from random import randint, choice
 import random
 import __builtin__
@@ -811,13 +812,12 @@ class optimizer_tests(unittest.TestCase):
     #@    @+others
     #@+node:gcross.20100506200958.2701:test_correct_result_for_arbitrary_operator
     @with_checker(number_of_calls=10)
-    def test_correct_result_for_arbitrary_operator(self,
-        d = irange(2,4),
-        bl = irange(2,5),
-        br = irange(2,5),
-        cl = irange(2,5),
-        cr = irange(2,5),
-    ):
+    def test_correct_result_for_arbitrary_operator(self):
+        d = randint(*self.d_range)
+        bl = randint(*self.b_range)
+        br = randint(*self.b_range)
+        cl = randint(*self.c_range)
+        cr = randint(*self.c_range)
         left_environment = crand(bl,bl,cl)
         left_environment += left_environment.transpose(1,0,2).conj()
         right_environment = crand(br,br,cr)
@@ -825,8 +825,9 @@ class optimizer_tests(unittest.TestCase):
         sparse_operator_indices, sparse_operator_matrices, operator_site_tensor = generate_random_sparse_matrices(cl,cr,d)
         optimization_matrix = optimization_matrix_contractor(left_environment,operator_site_tensor,right_environment).reshape(d*bl*br,d*bl*br)
         self.assertTrue(allclose(optimization_matrix,optimization_matrix.conj().transpose()))
+        guess = crand(br,bl,d)
         info, result, actual_eigenvalue = \
-            self.call_optimizer(left_environment,sparse_operator_indices,sparse_operator_matrices,right_environment,zeros((0,0)),"SR",0,10000,crand(br,bl,d))
+            self.call_optimizer(left_environment,sparse_operator_indices,sparse_operator_matrices,right_environment,zeros((0,0)),"SR",0,10000,guess)
         self.assertEqual(info,0)
         correct_eigenvalues, correct_eigenvectors = eigh(optimization_matrix)
         correct_eigenvectors = correct_eigenvectors.transpose()
@@ -839,6 +840,58 @@ class optimizer_tests(unittest.TestCase):
         correct_eigenvector /= correct_eigenvector[0]
         self.assertTrue(allclose(actual_eigenvector,correct_eigenvector))
     #@-node:gcross.20100506200958.2701:test_correct_result_for_arbitrary_operator
+    #@+node:gcross.20100517150547.1762:test_correct_result_for_arbitrary_operator_with_projectors
+    @with_checker(number_of_calls=10)
+    def test_correct_result_for_arbitrary_operator_with_projectors(self):
+        d = randint(*self.d_range)
+        bl = randint(*self.b_range)
+        br = randint(*self.b_range)
+        cl = randint(*self.c_range)
+        cr = randint(*self.c_range)
+
+        left_environment = crand(bl,bl,cl)
+        left_environment += left_environment.transpose(1,0,2).conj()
+        right_environment = crand(br,br,cr)
+        right_environment += right_environment.transpose(1,0,2).conj()
+        sparse_operator_indices, sparse_operator_matrices, operator_site_tensor = generate_random_sparse_matrices(cl,cr,d)
+        optimization_matrix = optimization_matrix_contractor(left_environment,operator_site_tensor,right_environment).transpose().reshape(d*bl*br,d*bl*br).transpose()
+        self.assertTrue(allclose(optimization_matrix,optimization_matrix.conj().transpose()))
+
+        if d*bl*br == 1:
+            number_of_projectors = 0
+        else:
+            number_of_projectors = randint(1,d*bl*br-1)
+
+        self.assertTrue(d*bl*br>0)
+        self.assertTrue(d*bl*br>number_of_projectors)
+
+        projector_matrix, _ = qr(crand(d*bl*br,number_of_projectors),overwrite_a=True,econ=False,mode='qr')
+        projector_rank = rank(projector_matrix)
+        projectors = array(projector_matrix[:,:projector_rank],order='Fortran')
+
+        guess = vmps.project(projectors,crand(br*bl*d)).reshape(d,bl,br).transpose()
+        guess /= norm(guess.ravel())
+        info, result, actual_eigenvalue = \
+            self.call_optimizer(left_environment,sparse_operator_indices,sparse_operator_matrices,right_environment,projectors,"SR",0,10000,guess)
+        self.assertEqual(info,0)
+        actual_eigenvector = result.transpose().ravel()
+        self.assertAlmostEqual(norm(dot(projectors.conj().transpose(),actual_eigenvector)),0)
+        self.assertAlmostEqual(dot(actual_eigenvector.conj(),dot(optimization_matrix,actual_eigenvector))/norm(actual_eigenvector),actual_eigenvalue)
+
+        orthogonal_subspace = projector_matrix[:,projector_rank:]
+        projected_optimization_matrix = \
+            dot(orthogonal_subspace.conj().transpose(),dot(optimization_matrix,orthogonal_subspace))
+        self.assertTrue(allclose(projected_optimization_matrix.conj().transpose(),projected_optimization_matrix))
+        correct_eigenvalues, correct_projected_eigenvectors = eigh(projected_optimization_matrix)
+        correct_eigenvectors = dot(orthogonal_subspace,correct_projected_eigenvectors).transpose()
+        correct_solution_index = argmin(correct_eigenvalues)
+        correct_eigenvalue = correct_eigenvalues[correct_solution_index]
+        self.assertAlmostEqual(actual_eigenvalue,correct_eigenvalue)
+        actual_eigenvector /= actual_eigenvector[0]
+        correct_eigenvector = correct_eigenvectors[correct_solution_index]
+        correct_eigenvector /= correct_eigenvector[0]
+        self.assertTrue(allclose(actual_eigenvector,correct_eigenvector))
+    #@-node:gcross.20100517150547.1762:test_correct_result_for_arbitrary_operator_with_projectors
     #@+node:gcross.20091109182634.1546:test_correct_result_for_simple_operator
     def test_correct_result_for_simple_operator(self):
         left_environment = ones((1,1,1),complex128)
@@ -860,7 +913,8 @@ class optimizer_tests(unittest.TestCase):
         sparse_operator_matrices = diag([1,1,-1,-2])
         sparse_operator_matrices = sparse_operator_matrices.reshape(sparse_operator_matrices.shape + (1,))
         projectors = array([[0,0,0,1]]).transpose()
-        info, result, eigenvalue = self.call_optimizer(left_environment,sparse_operator_indices,sparse_operator_matrices,right_environment,projectors,"SR",0,10000,crand(1,1,4))
+        guess = vmps.project(projectors,crand(4)).reshape(1,1,4)
+        info, result, eigenvalue = self.call_optimizer(left_environment,sparse_operator_indices,sparse_operator_matrices,right_environment,projectors,"SR",0,10000,guess)
         self.assertEqual(info,0)
         result /= result[0,0,-2]
         self.assertTrue(allclose(result.ravel(),array([0,0,1,0])))
@@ -874,7 +928,8 @@ class optimizer_tests(unittest.TestCase):
         sparse_operator_matrices = diag([1,1,-1,-2])
         sparse_operator_matrices = sparse_operator_matrices.reshape(sparse_operator_matrices.shape + (1,))
         projectors = array([[0,0,0,1j]]).transpose()
-        info, result, eigenvalue = self.call_optimizer(left_environment,sparse_operator_indices,sparse_operator_matrices,right_environment,projectors,"SR",0,10000,crand(1,1,4))
+        guess = vmps.project(projectors,crand(4)).reshape(1,1,4)
+        info, result, eigenvalue = self.call_optimizer(left_environment,sparse_operator_indices,sparse_operator_matrices,right_environment,projectors,"SR",0,10000,guess)
         self.assertEqual(info,0)
         result /= result[0,0,-2]
         self.assertTrue(allclose(result.ravel(),array([0,0,1,0])))
@@ -888,7 +943,8 @@ class optimizer_tests(unittest.TestCase):
         sparse_operator_matrices = diag([-1,-2,-3,-4])
         sparse_operator_matrices = sparse_operator_matrices.reshape(sparse_operator_matrices.shape + (1,))
         projectors = array([[0,0,0,1],[0,0,1,0]]).transpose()
-        info, result, eigenvalue = self.call_optimizer(left_environment,sparse_operator_indices,sparse_operator_matrices,right_environment,projectors,"SR",0,10000,crand(1,1,4))
+        guess = vmps.project(projectors,crand(4)).reshape(1,1,4)
+        info, result, eigenvalue = self.call_optimizer(left_environment,sparse_operator_indices,sparse_operator_matrices,right_environment,projectors,"SR",0,10000,guess)
         self.assertEqual(info,0)
         result /= result[0,0,1]
         self.assertTrue(allclose(result.ravel(),array([0,1,0,0])))
@@ -902,7 +958,8 @@ class optimizer_tests(unittest.TestCase):
         sparse_operator_matrices = diag([-1,-2,-3,-4])
         sparse_operator_matrices = sparse_operator_matrices.reshape(sparse_operator_matrices.shape + (1,))
         projectors = array([[0,0,0,1j],[0,0,1j,0]]).transpose()
-        info, result, eigenvalue = self.call_optimizer(left_environment,sparse_operator_indices,sparse_operator_matrices,right_environment,projectors,"SR",0,10000,crand(1,1,4))
+        guess = vmps.project(projectors,crand(4)).reshape(1,1,4)
+        info, result, eigenvalue = self.call_optimizer(left_environment,sparse_operator_indices,sparse_operator_matrices,right_environment,projectors,"SR",0,10000,guess)
         self.assertEqual(info,0)
         result /= result[0,0,1]
         self.assertTrue(allclose(result.ravel(),array([0,1,0,0])))
@@ -913,15 +970,27 @@ class optimizer_tests(unittest.TestCase):
 #@-others
 
 class optimize(optimizer_tests):
+    d_range = (1,4)
+    b_range = (1,10)
+    c_range = (1,10)
     call_optimizer = staticmethod(vmps.optimize)
 
 class optimize_strategy_1(optimizer_tests):
+    d_range = (1,4)
+    b_range = (1,4)
+    c_range = (1,4)
     call_optimizer = staticmethod(vmps.optimize_strategy_1)
 
 class optimize_strategy_2(optimizer_tests):
+    d_range = (2,4)
+    b_range = (2,10)
+    c_range = (2,10)
     call_optimizer = staticmethod(vmps.optimize_strategy_2)
 
 class optimize_strategy_3(optimizer_tests):
+    d_range = (2,4)
+    b_range = (2,10)
+    c_range = (2,10)
     call_optimizer = staticmethod(vmps.optimize_strategy_3)
 #@-node:gcross.20100517000234.1763:Optimization
 #@+node:gcross.20091123113033.1634:Randomization
@@ -1040,6 +1109,18 @@ class lapack_eigenvalue_minimizer(unittest.TestCase):
         observed_eigenvector /= observed_eigenvector[0]
         self.assertTrue(allclose(observed_eigenvector,correct_minimal_eigenvector))
 #@-node:gcross.20100514235202.1745:lapack_eigenvalue_minimizer
+#@+node:gcross.20100517160929.1762:project
+class project(unittest.TestCase):
+    @with_checker
+    def test_correctness(self,n=irange(2,10)):
+        projector_matrix, _ = qr(crand(n,randint(1,n-1)),overwrite_a=True,econ=False,mode='qr')
+        projector_rank = rank(projector_matrix)
+        projectors = projector_matrix[:,:projector_rank]
+        self.assertTrue(allclose(dot(projectors.transpose().conj(),projectors),identity(projector_rank)))
+        vector = crand(n)
+        projected_vector = vmps.project(projectors,vector)
+        self.assertAlmostEqual(norm(dot(projectors.transpose().conj(),projected_vector)),0)
+#@-node:gcross.20100517160929.1762:project
 #@-node:gcross.20100514235202.1744:Utility Functions
 #@+node:gcross.20091110205054.1948:Normalization
 #@+node:gcross.20091110205054.1933:norm_denorm_going_left
@@ -1189,10 +1270,10 @@ class form_overlap_site_tensor(unittest.TestCase):
     #@-others
 
     @with_checker
-    def testCorrectness(self,br=irange(2,4),bl=irange(2,4),d=irange(2,4)):
+    def test_correctness(self,br=irange(2,4),bl=irange(2,4),d=irange(2,4)):
         state_site_tensor = crand(br,bl,d)
         overlap_site_tensor = vmps.form_overlap_site_tensor(state_site_tensor)
-        self.assertTrue(allclose(state_site_tensor.transpose(1,2,0).conj(),overlap_site_tensor))
+        self.assertTrue(allclose(state_site_tensor.transpose(1,2,0),overlap_site_tensor))
 #@-node:gcross.20091118141720.1807:form_overlap_site_tensor
 #@+node:gcross.20091118141720.1809:form_norm_overlap_tensors
 class form_norm_overlap_tensors(unittest.TestCase):
@@ -1200,7 +1281,7 @@ class form_norm_overlap_tensors(unittest.TestCase):
     #@-others
 
     @with_checker
-    def testCorrectness(self,br=irange(2,4),bm=irange(2,4),bl=irange(2,4),dl=irange(2,4),dr=irange(2,4)):
+    def test_correctness(self,br=irange(2,4),bm=irange(2,4),bl=irange(2,4),dl=irange(2,4),dr=irange(2,4)):
         unnormalized_state_tensor_1 = crand(bm,bl,dl)
         right_norm_state_tensor_2 = crand(br,bm,dr)
         resulting_tensors = vmps.form_norm_overlap_tensors(unnormalized_state_tensor_1,right_norm_state_tensor_2)
@@ -1208,9 +1289,9 @@ class form_norm_overlap_tensors(unittest.TestCase):
         unnormalized_overlap_tensor_1 = resulting_tensors[1]
         unnormalized_state_tensor_2 = resulting_tensors[2]
         right_norm_overlap_tensor_2 = resulting_tensors[3]
-        self.assertTrue(allclose(right_norm_state_tensor_2,right_norm_overlap_tensor_2.transpose(2,0,1).conj()))
-        self.assertTrue(allclose(unnormalized_state_tensor_1,unnormalized_overlap_tensor_1.transpose(2,0,1).conj()))
-        left_norm_state_tensor_1 = left_norm_overlap_tensor_1.transpose(2,0,1).conj()
+        self.assertTrue(allclose(right_norm_state_tensor_2,right_norm_overlap_tensor_2.transpose(2,0,1)))
+        self.assertTrue(allclose(unnormalized_state_tensor_1,unnormalized_overlap_tensor_1.transpose(2,0,1)))
+        left_norm_state_tensor_1 = left_norm_overlap_tensor_1.transpose(2,0,1)
         self.assertTrue(allclose(
             tensordot(unnormalized_state_tensor_1,right_norm_state_tensor_2,(0,1)),
             tensordot(left_norm_state_tensor_1,unnormalized_state_tensor_2,(0,1)),
@@ -1250,6 +1331,7 @@ tests = [
     orthogonalize_matrix_in_place,
     compute_orthogonal_basis,
     lapack_eigenvalue_minimizer,
+    project,
     form_overlap_site_tensor,
     form_norm_overlap_tensors,
 ]

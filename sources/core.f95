@@ -252,6 +252,7 @@ subroutine lapack_eigenvalue_minimizer(n,matrix,eigenvalue,eigenvector)
 
   if (info /= 0) then
     print *, "Error computing eigenvalue (zheevr, workspace query); info =", info
+      print *, "n=",n
     stop
   end if
 
@@ -891,18 +892,21 @@ subroutine project(vector_size,number_of_projectors,projectors,input_vector,outp
   double complex, intent(out) :: output_vector(vector_size)
   double complex :: projector_weights(number_of_projectors)
   integer :: i
-  if (number_of_projectors == 0) then
-    output_vector = input_vector
-    return
-  end if
   call zgemv( &
-    'T', &
+    'C', &
     vector_size,number_of_projectors, &
     (1d0,0d0),projectors,vector_size, &
     input_vector,1, &
     (0d0,0d0),projector_weights,1 &
   )
-  forall (i = 1:vector_size) output_vector(i) = input_vector(i) - dot_product(projectors(i,:),projector_weights)
+  output_vector = input_vector
+  call zgemv( &
+    'N', &
+    vector_size,number_of_projectors, &
+    (-1d0,0d0),projectors,vector_size, &
+    projector_weights,1, &
+    (1d0,0d0),output_vector,1 &
+  )
 end subroutine
 !@-node:gcross.20091115201814.1736:project
 !@+node:gcross.20100517000234.1775:optimize
@@ -942,18 +946,28 @@ function optimize( &
 
   integer :: info, n
   double precision :: norm_of_result
+  double complex :: resid(br,bl,d)
 
   interface
     function dznrm2 (n,x,incx)
       integer, intent(in) :: n, incx
-      double complex, intent(in) :: x
+      double complex, intent(in) :: x(n)
       double precision :: dznrm2
     end function
   end interface
 
   n = d*bl*br
 
-  if ( n-number_of_projectors < 4 ) then
+  if (number_of_projectors > 0) then
+    resid = guess / dznrm2(n,guess(1,1,1),1)
+    call project(n,number_of_projectors,projectors,resid(1,1,1),resid(1,1,1))
+    if (abs(dznrm2(n,resid,1)-1) > 1e-7) then
+      info = 11
+      return
+    end if
+  end if
+
+  if (n-number_of_projectors < 4) then
     call optimize_strategy_1( &
       bl, br, &
       cl, &
@@ -1533,11 +1547,11 @@ contains
   subroutine operate_on(input,output)
     double complex :: input(n), output(n)
 
-    call project(n,number_of_projectors,projectors,input,input)
+    call project(n,number_of_projectors,projectors,input,output)
     call iteration_stage_2( &
       bl, br, cr, d, &
       iteration_stage_1_tensor, &
-      input, &
+      output, &
       iteration_stage_2_tensor &
     )
     call iteration_stage_3( &
@@ -1547,6 +1561,7 @@ contains
       output &
     )
     call project(n,number_of_projectors,projectors,output,output)
+
   end subroutine
   !@-node:gcross.20100517000234.1762:operate_on
   !@-others
@@ -1937,11 +1952,11 @@ subroutine form_overlap_site_tensor(br, bl, d, state_site_tensor, overlap_site_t
   double complex, intent(out) :: overlap_site_tensor(bl,d,br)
 
   overlap_site_tensor = &
-    conjg(reshape( &
+    reshape( &
       state_site_tensor, &
       shape(overlap_site_tensor), &
       order=(/3,1,2/) &
-    ))
+    )
 
 end subroutine
 !@-node:gcross.20091117140132.1800:form_overlap_site_tensor
