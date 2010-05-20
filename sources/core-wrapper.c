@@ -439,6 +439,12 @@ void project(int vector_size,int number_of_projectors,double* projectors,double*
     project_(&vector_size,&number_of_projectors,projectors,input_vector,output_vector);
 }
 //@-node:gcross.20091120134444.1596:project
+//@+node:gcross.20100520145029.1768:compute_overlap_with_projectors
+double compute_overlap_with_projectors_(int* vector_size,int* number_of_projectors,double* projectors,double* vector);
+double compute_overlap_with_projectors(int vector_size,int number_of_projectors,double* projectors,double* vector) {
+    return compute_overlap_with_projectors_(&vector_size,&number_of_projectors,projectors,vector);
+}
+//@-node:gcross.20100520145029.1768:compute_overlap_with_projectors
 //@+node:gcross.20091211120042.1691:apply_single_site_operator
 void apply_single_site_operator_(int* br, int* bl, int* d, double* state_site_tensor, double* operator, double* new_state_site_tensor);
 

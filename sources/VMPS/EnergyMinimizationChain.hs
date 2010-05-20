@@ -12,6 +12,7 @@ module VMPS.EnergyMinimizationChain where
 
 -- @<< Import needed modules >>
 -- @+node:gcross.20091113142219.1663:<< Import needed modules >>
+import Control.Applicative
 import Control.Arrow
 import Control.Exception
 import Control.Monad
@@ -280,6 +281,8 @@ data EnergyMinimizationChain = EnergyMinimizationChain
     ,   siteNumber :: !Int
     ,   chainNumberOfSites :: !Int
     ,   chainEnergy :: Double
+    ,   siteProjectorMatrix :: ProjectorMatrix
+    ,   chainProjectorOverlap :: Double
     }
 -- @-node:gcross.20091113142219.1665:EnergyMinimizationChain
 -- @-node:gcross.20091113142219.1664:Types
@@ -377,9 +380,10 @@ activateLeftNeighbor old_chain =
                 ,   siteNumber = (siteNumber old_chain) - 1
                 ,   chainNumberOfSites = chainNumberOfSites old_chain
                 ,   chainEnergy = computeEnergy new_chain
+                ,   siteProjectorMatrix = computeProjectorMatrix new_chain
+                ,   chainProjectorOverlap = computeProjectorOverlap new_chain
                 }
     in new_chain
-
 -- @-node:gcross.20091113142219.1684:activateLeftNeighbor
 -- @+node:gcross.20100512151146.1739:activateLeftNeighborWithSanityCheck
 activateLeftNeighborWithSanityCheck = checkSanityAfterActivatingNeighbor activateLeftNeighbor (Left ())
@@ -417,6 +421,8 @@ activateRightNeighbor old_chain =
                 ,   siteNumber = (siteNumber old_chain) + 1
                 ,   chainNumberOfSites = chainNumberOfSites old_chain
                 ,   chainEnergy = computeEnergy new_chain
+                ,   siteProjectorMatrix = computeProjectorMatrix new_chain
+                ,   chainProjectorOverlap = computeProjectorOverlap new_chain
                 }
     in new_chain
 -- @-node:gcross.20091113142219.1686:activateRightNeighbor
@@ -523,6 +529,9 @@ computeProjectorMatrix chain =
              (siteRightOverlapBoundaryTensors chain)
              (map overlapUnnormalizedTensor . siteOverlapTrios $ chain)
 -- @-node:gcross.20091117140132.1797:computeProjectorMatrix
+-- @+node:gcross.20100520145029.1770:computeProjectorOverlap
+computeProjectorOverlap = liftA2 computeOverlapWithProjectors siteProjectorMatrix siteStateTensor
+-- @-node:gcross.20100520145029.1770:computeProjectorOverlap
 -- @+node:gcross.20091117140132.1796:generateRandomizedChain
 generateRandomizedChain :: Int -> [OperatorSiteTensor] -> IO (EnergyMinimizationChain)
 generateRandomizedChain requested_bandwidth_dimension =
@@ -592,6 +601,8 @@ generateRandomizedChainWithOverlaps requested_bandwidth_dimension operator_site_
                     ,   siteNumber = 1
                     ,   chainNumberOfSites = number_of_sites
                     ,   chainEnergy = computeEnergy chain
+                    ,   siteProjectorMatrix = computeProjectorMatrix chain
+                    ,   chainProjectorOverlap = computeProjectorOverlap chain
                     }
             in chain
 -- @-node:gcross.20091113142219.2535:generateRandomizedChainWithOverlaps
@@ -695,6 +706,8 @@ increaseChainBandwidth
                     ,   siteStateTensor = state_site_tensor
                     ,   siteRightNeighbors = new_right_neighbors
                     ,   chainEnergy = computeEnergy new_chain
+                    ,   siteProjectorMatrix = computeProjectorMatrix new_chain
+                    ,   chainProjectorOverlap = computeProjectorOverlap new_chain
                     }
             in new_chain
     go2
@@ -768,7 +781,7 @@ optimizeSite tolerance maximum_number_of_iterations chain =
             (siteStateTensor chain)
             (siteHamiltonianTensor chain)
             (siteRightBoundaryTensor chain)
-            (computeProjectorMatrix chain)
+            (siteProjectorMatrix chain)
             SR
             tolerance
             maximum_number_of_iterations
@@ -778,6 +791,7 @@ optimizeSite tolerance maximum_number_of_iterations chain =
         ,chain
             {   siteStateTensor = optimal_site_tensor
             ,   chainEnergy = new_energy
+            ,   chainProjectorOverlap = computeProjectorOverlap chain
             }
         )
 

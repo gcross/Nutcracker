@@ -885,13 +885,13 @@ subroutine apply_single_site_operator( &
 
 end subroutine
 !@-node:gcross.20091211120042.1683:apply_single_site_operator
+!@+node:gcross.20100520145029.1766:Projectors
 !@+node:gcross.20091115201814.1736:project
 subroutine project(vector_size,number_of_projectors,projectors,input_vector,output_vector)
   integer, intent(in) :: number_of_projectors, vector_size
   double complex, intent(in) :: projectors(vector_size,number_of_projectors), input_vector(vector_size)
   double complex, intent(out) :: output_vector(vector_size)
   double complex :: projector_weights(number_of_projectors)
-  integer :: i
   call zgemv( &
     'C', &
     vector_size,number_of_projectors, &
@@ -909,6 +909,37 @@ subroutine project(vector_size,number_of_projectors,projectors,input_vector,outp
   )
 end subroutine
 !@-node:gcross.20091115201814.1736:project
+!@+node:gcross.20100520145029.1765:compute_overlap_with_projectors
+function compute_overlap_with_projectors( &
+  vector_size, number_of_projectors, &
+  projectors, &
+  vector &
+) result (overlap)
+  integer, intent(in) :: number_of_projectors, vector_size
+  double complex, intent(in) :: projectors(vector_size,number_of_projectors), vector(vector_size)
+  double precision :: overlap
+
+  interface
+    function dznrm2 (n,x,incx)
+      integer, intent(in) :: n, incx
+      double complex, intent(in) :: x(n)
+      double precision :: dznrm2
+    end function
+  end interface
+
+  double complex :: projector_weights(number_of_projectors)
+  call zgemv( &
+    'C', &
+    vector_size,number_of_projectors, &
+    (1d0,0d0),projectors,vector_size, &
+    vector,1, &
+    (0d0,0d0),projector_weights,1 &
+  )
+
+  overlap = dznrm2(vector_size,projector_weights,1)
+end function
+!@-node:gcross.20100520145029.1765:compute_overlap_with_projectors
+!@-node:gcross.20100520145029.1766:Projectors
 !@+node:gcross.20100517000234.1775:optimize
 function optimize( &
   bl, br, & ! state bandwidth dimension

@@ -628,6 +628,32 @@ applyProjectorMatrix projector_matrix state_site_tensor =
                     p_projector_matrix
                     p_state_site_tensor
 -- @-node:gcross.20091120134444.1598:applyProjectorMatrix
+-- @+node:gcross.20100520145029.1769:computeOverlapWithProjectors
+foreign import ccall unsafe "compute_overlap_with_projectors" compute_overlap_with_projectors :: 
+    Int -> -- vector size
+    Int -> -- number of projectors
+    Ptr (Complex Double) -> -- input: projector matrix
+    Ptr (Complex Double) -> -- input: state site tensor
+    IO Double
+
+computeOverlapWithProjectors ::
+    ProjectorMatrix ->
+    UnnormalizedStateSiteTensor ->
+    Double
+computeOverlapWithProjectors NullProjectorMatrix _ = 0
+computeOverlapWithProjectors projector_matrix state_site_tensor =
+    let br = rightBandwidthOfState state_site_tensor
+        bl = leftBandwidthOfState state_site_tensor
+        d = physicalDimensionOfState state_site_tensor
+    in unsafePerformIO $
+            withPinnedProjectorMatrix projector_matrix $ \number_of_projectors p_projector_matrix ->
+            withPinnedTensor state_site_tensor $ \p_state_site_tensor ->
+                compute_overlap_with_projectors
+                    (br*bl*d)
+                    number_of_projectors
+                    p_projector_matrix
+                    p_state_site_tensor
+-- @-node:gcross.20100520145029.1769:computeOverlapWithProjectors
 -- @+node:gcross.20091118141720.1810:Overlap tensor formation
 -- @+node:gcross.20091118141720.1812:makeOverlapSiteTensor
 foreign import ccall unsafe "form_overlap_site_tensor" form_overlap_site_tensor :: 
