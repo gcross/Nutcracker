@@ -687,8 +687,6 @@ main = defaultMain
             return $
                 (~= 0)
                 .
-                echo
-                .
                 computeOverlapWithProjectors projector_matrix
                 .
                 applyProjectorMatrix projector_matrix
