@@ -928,6 +928,11 @@ function compute_overlap_with_projectors( &
   end interface
 
   double complex :: projector_weights(number_of_projectors)
+
+  if (number_of_projectors == 0) then
+    overlap = 0
+  end if
+
   call zgemv( &
     'C', &
     vector_size,number_of_projectors, &
@@ -936,7 +941,7 @@ function compute_overlap_with_projectors( &
     (0d0,0d0),projector_weights,1 &
   )
 
-  overlap = dznrm2(vector_size,projector_weights,1)
+  overlap = dznrm2(number_of_projectors,projector_weights,1)
 end function
 !@-node:gcross.20100520145029.1765:compute_overlap_with_projectors
 !@-node:gcross.20100520145029.1766:Projectors

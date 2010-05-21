@@ -676,6 +676,27 @@ main = defaultMain
                -- @-others
                ]
         -- @-node:gcross.20091116222034.1801:formProjectorMatrix
+        -- @+node:gcross.20100521141104.1778:applyProjectorMatrix
+        ,testProperty "computeOverlapWithProjectors . applyProjectorMatrix = 0" $ do
+            d <- choose (1,4)
+            bl <- choose (1,4)
+            br <- choose (1,4)
+            let projector_length = d*bl*br
+            number_of_projectors <- choose (0,projector_length-1)
+            let projector_matrix = unsafePerformIO $ generateRandomizedProjectorMatrix projector_length number_of_projectors
+            return $
+                (~= 0)
+                .
+                echo
+                .
+                computeOverlapWithProjectors projector_matrix
+                .
+                applyProjectorMatrix projector_matrix
+                .
+                unsafePerformIO
+                $
+                generateRandomizedStateSiteTensor d bl br
+        -- @-node:gcross.20100521141104.1778:applyProjectorMatrix
         -- @-others
         ]
     -- @-node:gcross.20091113142219.1700:VMPS.Wrapper

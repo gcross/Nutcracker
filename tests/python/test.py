@@ -860,13 +860,18 @@ class optimizer_tests(unittest.TestCase):
         if d*bl*br == 1:
             number_of_projectors = 0
         else:
-            number_of_projectors = randint(1,d*bl*br-1)
+            number_of_projectors = randint(0,d*bl*br-1)
 
         self.assertTrue(d*bl*br>0)
         self.assertTrue(d*bl*br>number_of_projectors)
 
-        projector_matrix, _ = qr(crand(d*bl*br,number_of_projectors),overwrite_a=True,econ=False,mode='qr')
-        projector_rank = rank(projector_matrix)
+        if number_of_projectors == 0:
+            projector_matrix = identity(d*bl*br)
+            projector_rank = 0
+        else:
+            projector_matrix, _ = qr(crand(d*bl*br,number_of_projectors),overwrite_a=True,econ=False,mode='qr')
+            projector_rank = rank(projector_matrix)
+
         projectors = array(projector_matrix[:,:projector_rank],order='Fortran')
 
         guess = vmps.project(projectors,crand(br*bl*d)).reshape(d,bl,br).transpose()
@@ -1120,6 +1125,8 @@ class lapack_eigenvalue_minimizer(unittest.TestCase):
         observed_eigenvector /= observed_eigenvector[0]
         self.assertTrue(allclose(observed_eigenvector,correct_minimal_eigenvector))
 #@-node:gcross.20100514235202.1745:lapack_eigenvalue_minimizer
+#@-node:gcross.20100514235202.1744:Utility Functions
+#@+node:gcross.20100521141104.1779:Projectors
 #@+node:gcross.20100517160929.1762:project
 class project(unittest.TestCase):
     @with_checker
@@ -1129,7 +1136,16 @@ class project(unittest.TestCase):
         projected_vector = vmps.project(projectors,vector)
         self.assertAlmostEqual(norm(dot(projectors.transpose().conj(),projected_vector)),0)
 #@-node:gcross.20100517160929.1762:project
-#@-node:gcross.20100514235202.1744:Utility Functions
+#@+node:gcross.20100521141104.1781:compute_overlap_with_projectors
+class compute_overlap_with_projectors(unittest.TestCase):
+    @with_checker
+    def test_correctness(self,n=irange(2,10)):
+        projectors = vmps.random_projector_matrix(n,randint(1,n-1))
+        vector = crand(n)
+        projected_vector = vmps.project(projectors,vector)
+        self.assertAlmostEqual(vmps.compute_overlap_with_projectors(projectors,projected_vector),0)
+#@-node:gcross.20100521141104.1781:compute_overlap_with_projectors
+#@-node:gcross.20100521141104.1779:Projectors
 #@+node:gcross.20091110205054.1948:Normalization
 #@+node:gcross.20091110205054.1933:norm_denorm_going_left
 class norm_denorm_going_left(unittest.TestCase):
@@ -1341,6 +1357,7 @@ tests = [
     compute_orthogonal_basis,
     lapack_eigenvalue_minimizer,
     project,
+    compute_overlap_with_projectors,
     form_overlap_site_tensor,
     form_norm_overlap_tensors,
 ]
