@@ -281,6 +281,13 @@ void rand_norm_state_site_tensor(int br, int bl, int d, double* state_site_tenso
     rand_norm_state_site_tensor_(&br,&bl,&d,state_site_tensor);
 }
 //@-node:gcross.20091112145455.1673:rand_norm_state_site_tensor
+//@+node:gcross.20100521141104.1777:random_projector_matrix
+void random_projector_matrix_(int* projector_length, int* number_of_projectors, double* projector_matrix);
+
+void random_projector_matrix(int projector_length, int number_of_projectors, double* projector_matrix) {
+    random_projector_matrix_(&projector_length,&number_of_projectors,projector_matrix);
+}
+//@-node:gcross.20100521141104.1777:random_projector_matrix
 //@+node:gcross.20091113125544.1647:norm_denorm_going_left
 int norm_denorm_going_left_(
   int* bll, int* bl, int* br,

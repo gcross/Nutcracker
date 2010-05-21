@@ -531,6 +531,19 @@ main = defaultMain
             -- @-others
             ]
         -- @-node:gcross.20091112145455.1660:generateRandomizedStateTensor
+        -- @+node:gcross.20100521141104.1774:generateRandomizedProjectorMatrix
+        ,testProperty "generateRandomizedProjectorMatrix" $ do
+            projector_length <- choose (1,10)
+            number_of_projectors <- choose (0,projector_length-1)
+            return $
+                case (unsafePerformIO $ generateRandomizedProjectorMatrix projector_length number_of_projectors) of
+                    NullProjectorMatrix ->
+                        number_of_projectors == 0
+                    ProjectorMatrix number_of_projectors_ projector_length_ _ ->
+                        (projector_length_ == projector_length)
+                        &&
+                        (number_of_projectors_ == number_of_projectors)
+        -- @-node:gcross.20100521141104.1774:generateRandomizedProjectorMatrix
         -- @+node:gcross.20091116222034.1801:formProjectorMatrix
         ,testGroup "formProjectorMatrix" $
             let 
@@ -577,10 +590,9 @@ main = defaultMain
                            [(left_boundary,right_boundary,overlap_site_tensor)]       
                    in case projector_matrix of
                        NullProjectorMatrix -> assertFailure "null projector matrix returned"
-                       ProjectorMatrix number_of_projectors projector_matrix -> do
+                       ProjectorMatrix number_of_projectors projector_length projector_matrix -> do
                            assertEqual "is the projector count correct?" 1 number_of_projectors
-                           (getBounds . unwrapComplexTensor) projector_matrix
-                               >>= assertEqual "is the projector length correct?" 1 . snd . fst
+                           assertEqual "is the projector length correct?" 1 projector_length
                            assertAlmostEqual "is the overlap matrix correct?"
                                [1]
                                (toListOfComplexNumbers projector_matrix)
@@ -599,13 +611,12 @@ main = defaultMain
                            [(left_boundary,right_boundary,overlap_site_tensor)]       
                    in case projector_matrix of
                        NullProjectorMatrix -> assertFailure "null projector matrix returned"
-                       ProjectorMatrix number_of_projectors projector_matrix -> do
+                       ProjectorMatrix number_of_projectors projector_length projector_matrix -> do
                            assertEqual "is the projector count correct?" 1 number_of_projectors
-                           (getBounds . unwrapComplexTensor) projector_matrix
-                               >>= assertEqual "is the projector length correct?" 4 . snd . snd
+                           assertEqual "is the projector length correct?" 4 projector_length
                            assertAlmostEqual "is the overlap matrix correct?"
                                [0.5,0.5,0.5,0.5]
-                               (toListOfComplexNumbers projector_matrix)
+                               ((\lst@(x:_) -> let sign = abs x/x in map (*sign) lst) . toListOfComplexNumbers $ projector_matrix)
                -- @-node:gcross.20091116222034.1805:d = 4, one projector
                -- @+node:gcross.20091116222034.1807:d = 4, two projectors
                ,testCase "d = 4, two projectors" $
@@ -629,10 +640,9 @@ main = defaultMain
                            ]
                    in case projector_matrix of
                        NullProjectorMatrix -> assertFailure "null projector matrix returned"
-                       ProjectorMatrix number_of_projectors projector_matrix -> do
+                       ProjectorMatrix number_of_projectors projector_length projector_matrix -> do
                            assertEqual "is the projector count correct?" 2 number_of_projectors
-                           (getBounds . unwrapComplexTensor) projector_matrix
-                               >>= assertEqual "is the projector length correct?" 4 . snd . snd
+                           assertEqual "is the projector length correct?" 4 projector_length
                            checkMatrixOrthonormality projector_matrix
                -- @-node:gcross.20091116222034.1807:d = 4, two projectors
                -- @+node:gcross.20091116222034.1810:d = 4, three projectors
@@ -658,10 +668,9 @@ main = defaultMain
                            ]
                    in case projector_matrix of
                        NullProjectorMatrix -> assertFailure "null projector matrix returned"
-                       ProjectorMatrix number_of_projectors projector_matrix -> do
+                       ProjectorMatrix number_of_projectors projector_length projector_matrix -> do
                            assertEqual "is the projector count correct?" 3 number_of_projectors
-                           (getBounds . unwrapComplexTensor) projector_matrix
-                               >>= assertEqual "is the projector length correct?" 4 . snd . snd
+                           assertEqual "is the projector length correct?" 4 projector_length
                            checkMatrixOrthonormality projector_matrix
                -- @-node:gcross.20091116222034.1810:d = 4, three projectors
                -- @-others
