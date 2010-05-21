@@ -1124,10 +1124,7 @@ class lapack_eigenvalue_minimizer(unittest.TestCase):
 class project(unittest.TestCase):
     @with_checker
     def test_correctness(self,n=irange(2,10)):
-        projector_matrix, _ = qr(crand(n,randint(1,n-1)),overwrite_a=True,econ=False,mode='qr')
-        projector_rank = rank(projector_matrix)
-        projectors = projector_matrix[:,:projector_rank]
-        self.assertTrue(allclose(dot(projectors.transpose().conj(),projectors),identity(projector_rank)))
+        projectors = vmps.random_projector_matrix(n,randint(1,n-1))
         vector = crand(n)
         projected_vector = vmps.project(projectors,vector)
         self.assertAlmostEqual(norm(dot(projectors.transpose().conj(),projected_vector)),0)
