@@ -747,7 +747,7 @@ increaseChainBandwidth
 
 increaseChainBandwidth _ _ = error "This algorithm is only designed to work when the chain is at its leftmost site."
 -- @-node:gcross.20091115105949.1744:increaseChainBandwidth
--- @+node:gcross.20100512151146.1745:increaseChainBandwithWithSanityCheck
+-- @+node:gcross.20100512151146.1745:increaseChainBandwidthWithSanityCheck
 increaseChainBandwidthWithSanityCheck tolerance new_bandwidth old_chain =
     increaseChainBandwidth new_bandwidth old_chain
     >>=
@@ -757,7 +757,7 @@ increaseChainBandwidthWithSanityCheck tolerance new_bandwidth old_chain =
         in if abs (new_energy - old_energy) > tolerance
             then throwIO $ EnergyChangedAfterBandwidthIncreaseError (maximumBandwidthIn old_chain) new_bandwidth old_energy new_energy
             else return new_chain
--- @-node:gcross.20100512151146.1745:increaseChainBandwithWithSanityCheck
+-- @-node:gcross.20100512151146.1745:increaseChainBandwidthWithSanityCheck
 -- @+node:gcross.20091118213523.1855:maximumBandwidthIn
 maximumBandwidthIn :: EnergyMinimizationChain -> Int
 maximumBandwidthIn chain =
