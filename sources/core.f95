@@ -1659,6 +1659,34 @@ subroutine rand_unnorm_state_site_tensor(br, bl, d, state_site_tensor)
 
 end subroutine
 !@-node:gcross.20091120134444.1600:rand_unnorm_state_site_tensor
+!@+node:gcross.20100521141104.1771:random_projector_matrix
+subroutine random_projector_matrix( &
+  projector_length, number_of_projectors, &
+  projector_matrix &
+)
+  integer, intent(in) :: projector_length, number_of_projectors
+  double complex, intent(out) :: projector_matrix(projector_length,number_of_projectors)
+
+  integer :: i, j, rank
+
+  if (number_of_projectors == 0) then
+    return
+  end if
+
+  do j = 1, number_of_projectors
+  do i = 1, projector_length
+    projector_matrix(i,j) = (0.5d0-rand())*(1d0,0d0) + (0.5d0-rand())*(0d0,1d0)
+  end do
+  end do
+
+  call orthogonalize_matrix_in_place( &
+    projector_length, number_of_projectors, &
+    projector_matrix, &
+    rank &
+  )
+
+end subroutine
+!@-node:gcross.20100521141104.1771:random_projector_matrix
 !@-node:gcross.20091110205054.1942:Randomization
 !@+node:gcross.20091110205054.1943:Normalization
 !@+node:gcross.20091110205054.1926:norm_denorm_going_left

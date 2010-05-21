@@ -1017,6 +1017,17 @@ class rand_unnorm_state_site_tensor(unittest.TestCase):
         unnormalized_tensor = vmps.rand_unnorm_state_site_tensor(br,bl,d)
         self.assertAlmostEqual(1,norm(unnormalized_tensor.ravel()))
 #@-node:gcross.20091123113033.1633:rand_unnorm_state_site_tensor
+#@+node:gcross.20100521141104.1772:random_projector_matrix
+class random_projector_matrix(unittest.TestCase):
+    #@    @+others
+    #@-others
+
+    @with_checker
+    def test_correctness(self,n=irange(2,10)):
+        number_of_projectors = randint(1,n)
+        projector_matrix = vmps.random_projector_matrix(n,number_of_projectors)
+        self.assertTrue(allclose(dot(projector_matrix.conj().transpose(),projector_matrix),identity(number_of_projectors)))
+#@-node:gcross.20100521141104.1772:random_projector_matrix
 #@-node:gcross.20091123113033.1634:Randomization
 #@+node:gcross.20100514235202.1744:Utility Functions
 #@+node:gcross.20091116175016.1815:orthogonalize_matrix_in_place
@@ -1322,6 +1333,7 @@ tests = [
     optimize_strategy_3,
     rand_norm_state_site_tensor,
     rand_unnorm_state_site_tensor,
+    random_projector_matrix,
     norm_denorm_going_left,
     norm_denorm_going_right,
     create_bandwidth_increase_matrix,
