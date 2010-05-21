@@ -262,6 +262,14 @@ withNewPinnedStateTensor bounds@(d,bl,br) =
     fmap (second $ StateSiteTensor d bl br)
     .
     withNewPinnedComplexTensor bounds
+withNewPinnedStateTensor bounds@(d,bl,br) =
+    fmap (second $ StateSiteTensor d bl br)
+    .
+    withNewPinnedComplexTensor bounds    
+normOfStateSiteTensor (StateSiteTensor d bl br state_data) =
+    unsafePerformIO $
+    withPinnedComplexTensor state_data $
+        \ptr -> norm (d*bl*br) ptr
 
 instance Connected LeftAbsorptionNormalizedStateSiteTensor UnnormalizedStateSiteTensor where
     (<-?->) = makeConnectedTest
@@ -364,37 +372,44 @@ class StateSiteTensorClass a where
     rightBandwidthOfState :: a -> Int
     physicalDimensionOfState :: a -> Int
     unnormalize :: a -> UnnormalizedStateSiteTensor
+    normOfState :: a -> Double
 
 instance StateSiteTensorClass UnnormalizedStateSiteTensor where
     leftBandwidthOfState = stateLeftBandwidth . unwrapUnnormalizedStateSiteTensor
     rightBandwidthOfState = stateRightBandwidth . unwrapUnnormalizedStateSiteTensor
     physicalDimensionOfState = statePhysicalDimension . unwrapUnnormalizedStateSiteTensor
     unnormalize = id
+    normOfState = normOfStateSiteTensor . unwrapUnnormalizedStateSiteTensor
 instance StateSiteTensorClass LeftAbsorptionNormalizedStateSiteTensor where
     leftBandwidthOfState = stateLeftBandwidth . unwrapLeftAbsorptionNormalizedStateSiteTensor
     rightBandwidthOfState = stateRightBandwidth . unwrapLeftAbsorptionNormalizedStateSiteTensor
     physicalDimensionOfState = statePhysicalDimension . unwrapLeftAbsorptionNormalizedStateSiteTensor
     unnormalize = UnnormalizedStateSiteTensor . unwrapLeftAbsorptionNormalizedStateSiteTensor
+    normOfState = normOfStateSiteTensor . unwrapLeftAbsorptionNormalizedStateSiteTensor
 instance StateSiteTensorClass RightAbsorptionNormalizedStateSiteTensor where
     leftBandwidthOfState = stateLeftBandwidth . unwrapRightAbsorptionNormalizedStateSiteTensor
     rightBandwidthOfState = stateRightBandwidth . unwrapRightAbsorptionNormalizedStateSiteTensor
     physicalDimensionOfState = statePhysicalDimension . unwrapRightAbsorptionNormalizedStateSiteTensor
     unnormalize = UnnormalizedStateSiteTensor . unwrapRightAbsorptionNormalizedStateSiteTensor
+    normOfState = normOfStateSiteTensor . unwrapRightAbsorptionNormalizedStateSiteTensor
 instance StateSiteTensorClass UnnormalizedOverlapSiteTensor where
     leftBandwidthOfState = stateLeftBandwidth . unwrapUnnormalizedOverlapSiteTensor
     rightBandwidthOfState = stateRightBandwidth . unwrapUnnormalizedOverlapSiteTensor
     physicalDimensionOfState = statePhysicalDimension . unwrapUnnormalizedOverlapSiteTensor
     unnormalize = undefined
+    normOfState = normOfStateSiteTensor . unwrapUnnormalizedOverlapSiteTensor
 instance StateSiteTensorClass LeftAbsorptionNormalizedOverlapSiteTensor where
     leftBandwidthOfState = stateLeftBandwidth . unwrapLeftAbsorptionNormalizedOverlapSiteTensor
     rightBandwidthOfState = stateRightBandwidth . unwrapLeftAbsorptionNormalizedOverlapSiteTensor
     physicalDimensionOfState = statePhysicalDimension . unwrapLeftAbsorptionNormalizedOverlapSiteTensor
     unnormalize = undefined
+    normOfState = normOfStateSiteTensor . unwrapLeftAbsorptionNormalizedOverlapSiteTensor
 instance StateSiteTensorClass RightAbsorptionNormalizedOverlapSiteTensor where
     leftBandwidthOfState = stateLeftBandwidth . unwrapRightAbsorptionNormalizedOverlapSiteTensor
     rightBandwidthOfState = stateRightBandwidth . unwrapRightAbsorptionNormalizedOverlapSiteTensor
     physicalDimensionOfState = statePhysicalDimension . unwrapRightAbsorptionNormalizedOverlapSiteTensor
     unnormalize = undefined
+    normOfState = normOfStateSiteTensor . unwrapRightAbsorptionNormalizedOverlapSiteTensor
 -- @-node:gcross.20091116175016.1758:StateSiteTensorClass + instances
 -- @-node:gcross.20091111171052.1597:State Site Tensor
 -- @+node:gcross.20091111171052.1598:Operator Site Tensor

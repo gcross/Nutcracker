@@ -35,6 +35,7 @@ module VMPS.Tensors
     ,trivial_right_overlap_boundary
     ,OperatorSiteTensor
     ,projectorCount
+    ,normOfState
     ) where
 
 import VMPS.Tensors.Implementation

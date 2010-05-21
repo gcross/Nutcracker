@@ -441,6 +441,9 @@ chainPhysicalDimensions chain =
     ++
     map (physicalDimensionOfState . rightNeighborState) (siteRightNeighbors chain)
 -- @-node:gcross.20100503130440.1689:chainPhysicalDimensions
+-- @+node:gcross.20100520170650.1771:chainNorm
+chainNorm = normOfState . siteStateTensor
+-- @-node:gcross.20100520170650.1771:chainNorm
 -- @+node:gcross.20100512151146.1740:checkSanityAfterActivatingNeighbor
 checkSanityAfterActivatingNeighbor activateNeighbor direction tolerance old_chain =
     throwIfEnergyChanged tolerance old_chain (

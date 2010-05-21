@@ -55,9 +55,9 @@ echo x = trace (show x) x
 -- @+node:gcross.20091116222034.1789:normalize
 normalize :: Int -> Ptr (Complex Double) -> IO ()
 normalize array_length p_array =
-    dotArrays array_length p_array p_array
+    norm array_length p_array
     >>=
-    return . (:+ 0) . (1/) . sqrt . realPart
+    return . (:+ 0) . (1/)
     >>=
     divAll array_length p_array
   where
@@ -81,6 +81,20 @@ dotArrays = go 0
         v2 <- peek p2
         go (acc + ((conjugate v1) * v2)) (n-1) (nextComplexPtr p1) (nextComplexPtr p2)
 -- @-node:gcross.20091116222034.1790:dotArrays
+-- @+node:gcross.20100520170650.1770:norm/normSquared
+normSquared :: Int -> Ptr (Complex Double) -> IO Double
+normSquared = go 0
+  where
+    go :: Double -> Int -> Ptr (Complex Double) -> IO Double
+    go acc 0 _ = return acc
+    go acc n p =
+        peek p
+        >>=
+        \(r :+ i) ->
+            go (acc + r*r + i*i) (n-1) (nextComplexPtr p)
+
+norm size = fmap sqrt . normSquared size
+-- @-node:gcross.20100520170650.1770:norm/normSquared
 -- @+node:gcross.20091116222034.1791:orthogonalize2
 orthogonalize2 :: Int -> Ptr (Complex Double) -> Ptr (Complex Double) -> IO ()
 orthogonalize2 array_length p_array1 p_array2 =
