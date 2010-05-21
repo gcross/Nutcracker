@@ -429,6 +429,33 @@ activateRightNeighbor old_chain =
 -- @+node:gcross.20100512151146.1743:activateRightNeighborWithSanityCheck
 activateRightNeighborWithSanityCheck = checkSanityAfterActivatingNeighbor activateRightNeighbor (Right ())
 -- @-node:gcross.20100512151146.1743:activateRightNeighborWithSanityCheck
+-- @+node:gcross.20100521141104.1783:activateSite
+activateSite :: Int -> EnergyMinimizationChain -> EnergyMinimizationChain
+activateSite requested_site_number chain
+  | requested_site_number < 1
+    = error $
+        printf "Attempted to activate site number %i, which is less than 1."
+            requested_site_number
+  | requested_site_number > chainNumberOfSites chain
+    = error $
+        printf "Attempted to activate site number %i, which is past the number of sites in the chain (%i)."
+            requested_site_number
+            (chainNumberOfSites chain)
+  | requested_site_number == current_site_number
+    = chain
+  | requested_site_number < current_site_number
+    = iterate activateLeftNeighbor chain !! (current_site_number - requested_site_number)    
+  | requested_site_number > current_site_number
+    = iterate activateRightNeighbor chain !! (requested_site_number - current_site_number)
+  | otherwise
+    = error $ "activateSite:  Should never reach here, since the previous cases are supposed to have been exhaustive."
+  where
+    current_site_number = siteNumber chain
+-- @-node:gcross.20100521141104.1783:activateSite
+-- @+node:gcross.20100521141104.1785:activateFirstSite
+activateFirstSite :: EnergyMinimizationChain -> EnergyMinimizationChain
+activateFirstSite = activateSite 1
+-- @-node:gcross.20100521141104.1785:activateFirstSite
 -- @+node:gcross.20100513131210.1743:chainNumberOfProjectors
 chainNumberOfProjectors = length . siteOverlapTrios
 -- @-node:gcross.20100513131210.1743:chainNumberOfProjectors
@@ -611,14 +638,15 @@ generateRandomizedChainWithOverlaps requested_bandwidth_dimension operator_site_
 -- @-node:gcross.20091113142219.2535:generateRandomizedChainWithOverlaps
 -- @+node:gcross.20091119150241.1849:getCanonicalStateRepresentation
 getCanonicalStateRepresentation :: EnergyMinimizationChain -> CanonicalStateRepresentation
-getCanonicalStateRepresentation chain
-    | siteNumber chain > 1
-        = error "The chain must be at the first site in order to extract the canonical state representation."
-    | otherwise
-        = CanonicalStateRepresentation
+getCanonicalStateRepresentation =
+    (\chain -> 
+        CanonicalStateRepresentation
             (chainNumberOfSites chain)
             (siteStateTensor chain)
             (map rightNeighborState . siteRightNeighbors $ chain)
+    )
+    .
+    activateFirstSite
 -- @-node:gcross.20091119150241.1849:getCanonicalStateRepresentation
 -- @+node:gcross.20091115105949.1744:increaseChainBandwidth
 increaseChainBandwidth :: Int -> EnergyMinimizationChain -> IO EnergyMinimizationChain

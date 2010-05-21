@@ -898,6 +898,33 @@ main = defaultMain
                 ]
         -- @nonl
         -- @-node:gcross.20091115105949.1747:Chain energy invariant under bandwidth increase
+        -- @+node:gcross.20100521141104.1786:activateSite
+        ,testProperty "activateSite" $ do
+            number_of_sites <- choose (2,10)
+            bandwidth_dimension <- choose (1,2)
+            let chain =
+                    unsafePerformIO
+                    .
+                    generateRandomizedChain bandwidth_dimension
+                    .
+                    replicate number_of_sites
+                    .
+                    makeOperatorSiteTensorFromSpecification 1 1 
+                    $
+                    [(1 --> 1) (identity :: SingleSiteOperator N2)]
+            site_number_1 <- choose (1,number_of_sites)
+            let moved_chain_1 = activateSite site_number_1 chain
+            site_number_2 <- choose (1,number_of_sites)
+            let moved_chain_2 = activateSite site_number_2 moved_chain_1
+            site_number_3 <- choose (1,number_of_sites)
+            let moved_chain_3 = activateSite site_number_3 moved_chain_2
+            return $
+                (siteNumber moved_chain_1 == site_number_1)
+                &&
+                (siteNumber moved_chain_2 == site_number_2)
+                &&
+                (siteNumber moved_chain_3 == site_number_3)
+        -- @-node:gcross.20100521141104.1786:activateSite
         -- @-others
         ]
     -- @-node:gcross.20091113142219.1701:VMPS.EnergyMinimizationChain
