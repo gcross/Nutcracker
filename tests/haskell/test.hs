@@ -698,6 +698,26 @@ main = defaultMain
         -- @-others
         ]
     -- @-node:gcross.20091113142219.1700:VMPS.Wrapper
+    -- @+node:gcross.20100522160359.1783:VMPS.Tensor
+    ,testGroup "VMPS.Tensor"
+        -- @    @+others
+        -- @+node:gcross.20100522160359.1784:numberOfDegreesOfFreedomInState
+        [testProperty "numberOfDegreesOfFreedomInState" $ do
+            d <- choose (1,4)
+            bl <- choose (1,4)
+            br <- choose (1,4)
+            return $
+                (== d*bl*br)
+                .
+                numberOfDegreesOfFreedomInState
+                .
+                unsafePerformIO
+                $
+                (generateRandomizedStateSiteTensor d bl br :: IO UnnormalizedStateSiteTensor)
+        -- @-node:gcross.20100522160359.1784:numberOfDegreesOfFreedomInState
+        -- @-others
+        ]
+    -- @-node:gcross.20100522160359.1783:VMPS.Tensor
     -- @+node:gcross.20091113142219.1701:VMPS.EnergyMinimizationChain
     ,testGroup "VMPS.EnergyMinimizationChain"
         -- @    @+others

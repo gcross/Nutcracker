@@ -16,6 +16,7 @@ module VMPS.Tensors.Implementation where
 
 -- @<< Import needed modules >>
 -- @+node:gcross.20091111171052.1599:<< Import needed modules >>
+import Control.Applicative.Infix
 import Control.Arrow
 import Control.Exception
 import Control.Monad
@@ -373,6 +374,9 @@ class StateSiteTensorClass a where
     physicalDimensionOfState :: a -> Int
     unnormalize :: a -> UnnormalizedStateSiteTensor
     normOfState :: a -> Double
+
+numberOfDegreesOfFreedomInState :: StateSiteTensorClass a => a -> Int
+numberOfDegreesOfFreedomInState = leftBandwidthOfState <^(*)^> rightBandwidthOfState <^(*)^> physicalDimensionOfState
 
 instance StateSiteTensorClass UnnormalizedStateSiteTensor where
     leftBandwidthOfState = stateLeftBandwidth . unwrapUnnormalizedStateSiteTensor

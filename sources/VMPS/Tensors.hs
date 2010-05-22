@@ -8,7 +8,9 @@ module VMPS.Tensors
     ,leftBandwidthOfState
     ,rightBandwidthOfState
     ,physicalDimensionOfState
+    ,numberOfDegreesOfFreedomInState
     ,unnormalize
+    ,normOfState
     ,ProjectorMatrix(NullProjectorMatrix)
     ,withPinnedProjectorMatrix
     ,withNewPinnedProjectorMatrix
@@ -35,7 +37,7 @@ module VMPS.Tensors
     ,trivial_right_overlap_boundary
     ,OperatorSiteTensor
     ,projectorCount
-    ,normOfState
+    ,projectorLength
     ) where
 
 import VMPS.Tensors.Implementation

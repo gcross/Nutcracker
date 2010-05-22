@@ -830,6 +830,9 @@ optimizeSite tolerance maximum_number_of_iterations chain =
 
 optimizeSite_ = optimizeSite 0 1000
 -- @-node:gcross.20091113142219.1687:optimizeSite
+-- @+node:gcross.20100522160359.1782:siteDegreesOfFreedom
+siteDegreesOfFreedom = numberOfDegreesOfFreedomInState . siteStateTensor
+-- @-node:gcross.20100522160359.1782:siteDegreesOfFreedom
 -- @-node:gcross.20091113142219.1678:Chain Functions
 -- @-others
 -- @-node:gcross.20091113142219.1659:@thin EnergyMinimizationChain.hs
