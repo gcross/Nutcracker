@@ -650,15 +650,10 @@ getCanonicalStateRepresentation =
 -- @-node:gcross.20091119150241.1849:getCanonicalStateRepresentation
 -- @+node:gcross.20091115105949.1744:increaseChainBandwidth
 increaseChainBandwidth :: Int -> EnergyMinimizationChain -> IO EnergyMinimizationChain
-increaseChainBandwidth
-    new_bandwidth
-    chain@
-    EnergyMinimizationChain
-    {   siteRightNeighbors = neighbors
-    ,   siteLeftNeighbors = []
-    ,   chainNumberOfSites = number_of_sites
-    }
- = (flip go1) []
+increaseChainBandwidth new_bandwidth starting_chain
+  = fmap (activateSite starting_site_number)
+    .
+    (flip go1) []
     .
     zip (
         reverse
@@ -689,6 +684,15 @@ increaseChainBandwidth
     $
     chain
   where
+    starting_site_number = siteNumber starting_chain
+
+    chain@
+        EnergyMinimizationChain
+        {   siteRightNeighbors = neighbors
+        ,   siteLeftNeighbors = []
+        ,   chainNumberOfSites = number_of_sites
+        } = activateFirstSite starting_chain
+
     go1 ::
         [(RightNeighbor,Int)] ->
         [RightNeighbor] ->
@@ -772,8 +776,6 @@ increaseChainBandwidth
                 next_bandwidth_dimension
                 remaining_neighbors_to_process
                 (new_neighbor:new_neighbors)
-
-increaseChainBandwidth _ _ = error "This algorithm is only designed to work when the chain is at its leftmost site."
 -- @-node:gcross.20091115105949.1744:increaseChainBandwidth
 -- @+node:gcross.20100512151146.1745:increaseChainBandwidthWithSanityCheck
 increaseChainBandwidthWithSanityCheck tolerance new_bandwidth old_chain =
