@@ -945,6 +945,42 @@ main = defaultMain
                 &&
                 (siteNumber moved_chain_3 == site_number_3)
         -- @-node:gcross.20100521141104.1786:activateSite
+        -- @+node:gcross.20100522160359.1790:projectSite
+        ,testProperty "projectSite" $ do
+            number_of_sites <- choose (2,10)
+            bandwidth_dimension <- choose (1,2)
+            site_number <- choose (1,number_of_sites)
+            let operator_site_tensors =
+                    replicate number_of_sites
+                    .
+                    makeOperatorSiteTensorFromSpecification 1 1 
+                    $
+                    [(1 --> 1) (identity :: SingleSiteOperator N2)]
+            return $
+                (~= 0)
+                .
+                chainProjectorOverlap
+                .
+                projectSite
+                .
+                activateSite site_number
+                .
+                unsafePerformIO
+                .
+                generateRandomizedChainWithOverlaps bandwidth_dimension
+                .
+                makeConfiguration operator_site_tensors
+                .
+                (:[])
+                .
+                chainStateProjector
+                .
+                unsafePerformIO
+                .
+                generateRandomizedChain bandwidth_dimension
+                $
+                operator_site_tensors
+        -- @-node:gcross.20100522160359.1790:projectSite
         -- @-others
         ]
     -- @-node:gcross.20091113142219.1701:VMPS.EnergyMinimizationChain

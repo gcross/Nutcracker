@@ -830,9 +830,26 @@ optimizeSite tolerance maximum_number_of_iterations chain =
 
 optimizeSite_ = optimizeSite 0 1000
 -- @-node:gcross.20091113142219.1687:optimizeSite
+-- @+node:gcross.20100522160359.1788:projectSite
+projectSite :: EnergyMinimizationChain -> EnergyMinimizationChain
+projectSite chain = new_chain
+  where
+    new_chain =
+        chain
+        {   siteStateTensor = (liftA2 applyProjectorMatrix siteProjectorMatrix siteStateTensor) chain
+        ,   chainEnergy = computeEnergy new_chain
+        ,   chainProjectorOverlap = computeProjectorOverlap new_chain
+        }
+-- @-node:gcross.20100522160359.1788:projectSite
 -- @+node:gcross.20100522160359.1782:siteDegreesOfFreedom
 siteDegreesOfFreedom = numberOfDegreesOfFreedomInState . siteStateTensor
 -- @-node:gcross.20100522160359.1782:siteDegreesOfFreedom
+-- @+node:gcross.20100522160359.1786:siteProjectorCount
+siteProjectorCount = projectorCount . siteProjectorMatrix
+-- @-node:gcross.20100522160359.1786:siteProjectorCount
+-- @+node:gcross.20100522160359.1791:chainStateProjector
+chainStateProjector = computeOverlapTriosFromCanonicalStateRepresentation . getCanonicalStateRepresentation
+-- @-node:gcross.20100522160359.1791:chainStateProjector
 -- @-node:gcross.20091113142219.1678:Chain Functions
 -- @-others
 -- @-node:gcross.20091113142219.1659:@thin EnergyMinimizationChain.hs
