@@ -5,6 +5,7 @@
 -- @<< Language extensions >>
 -- @+node:gcross.20091123113033.1623:<< Language extensions >>
 {-# LANGUAGE DeriveDataTypeable #-}
+{-# LANGUAGE UnicodeSyntax #-}
 -- @-node:gcross.20091123113033.1623:<< Language extensions >>
 -- @nl
 
@@ -37,7 +38,7 @@ data CanonicalStateRepresentation =
 -- @-node:gcross.20091123113033.1629:Types
 -- @+node:gcross.20091123113033.1626:Functions
 -- @+node:gcross.20091123113033.1635:expectationOf
-expectationOf :: [OperatorSiteTensor] -> CanonicalStateRepresentation -> Complex Double
+expectationOf :: [OperatorSiteTensor] → CanonicalStateRepresentation → Complex Double
 expectationOf operator_site_tensors state
     | length operator_site_tensors /= canonicalStateNumberOfSites state
         = error "The number of operator sites and state sites do not match!"
@@ -48,7 +49,7 @@ expectationOf operator_site_tensors state
             (head operator_site_tensors)
           .
           foldl' -- '
-            (\right_boundary (state_site_tensor,operator_site_tensor) ->
+            (\right_boundary (state_site_tensor,operator_site_tensor) →
                 contractSOSRight right_boundary state_site_tensor operator_site_tensor
             )
             trivial_right_boundary
@@ -60,6 +61,7 @@ expectationOf operator_site_tensors state
           tail
           $
           operator_site_tensors
+-- @nonl
 -- @-node:gcross.20091123113033.1635:expectationOf
 -- @-node:gcross.20091123113033.1626:Functions
 -- @-others

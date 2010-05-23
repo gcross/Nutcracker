@@ -4,7 +4,7 @@
 
 module VMPS.Tensors
     (withNewPinnedTensor
-    ,(<-?->)
+    ,(←?→)
     ,leftBandwidthOfState
     ,rightBandwidthOfState
     ,physicalDimensionOfState
@@ -41,5 +41,6 @@ module VMPS.Tensors
     ) where
 
 import VMPS.Tensors.Implementation
+-- @nonl
 -- @-node:gcross.20091116222034.1779:@thin Tensors.hs
 -- @-leo

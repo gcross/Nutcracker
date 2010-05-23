@@ -5,6 +5,8 @@
 -- @<< Language extensions >>
 -- @+node:gcross.20091113142219.1661:<< Language extensions >>
 {-# LANGUAGE DeriveDataTypeable #-}
+{-# LANGUAGE ParallelListComp #-}
+{-# LANGUAGE UnicodeSyntax #-}
 -- @-node:gcross.20091113142219.1661:<< Language extensions >>
 -- @nl
 
@@ -56,8 +58,8 @@ instance Show SanityCheckFailed where
       where
         new_site_number =
             case sweep_direction of
-                Left () -> old_site_number-1
-                Right () -> old_site_number+1
+                Left () → old_site_number-1
+                Right () → old_site_number+1
     show (EnergyChangedAfterBandwidthIncreaseError old_bandwidth new_bandwidth old_energy new_energy) =
         printf "SanityCheckFailed:  When increasing the bandwidth from %i to %i, the energy changed from %f to %f."
             old_bandwidth
@@ -117,11 +119,11 @@ data RightNeighbor = RightNeighbor
 -- @+others
 -- @+node:gcross.20091117140132.1792:absorbIntoNew___Neighbor
 absorbIntoNewRightNeighbor ::
-    RightBoundaryTensor ->
-    [RightOverlapBoundaryTensor] ->
-    RightAbsorptionNormalizedStateSiteTensor ->
-    OperatorSiteTensor ->
-    [OverlapTensorTrio] ->
+    RightBoundaryTensor →
+    [RightOverlapBoundaryTensor] →
+    RightAbsorptionNormalizedStateSiteTensor →
+    OperatorSiteTensor →
+    [OverlapTensorTrio] →
     (RightBoundaryTensor,[RightOverlapBoundaryTensor],RightNeighbor)
 
 absorbIntoNewRightNeighbor
@@ -146,11 +148,11 @@ absorbIntoNewRightNeighbor
     )
 
 absorbIntoNewLeftNeighbor ::
-    LeftBoundaryTensor ->
-    [LeftOverlapBoundaryTensor] ->
-    LeftAbsorptionNormalizedStateSiteTensor ->
-    OperatorSiteTensor ->
-    [OverlapTensorTrio] ->
+    LeftBoundaryTensor →
+    [LeftOverlapBoundaryTensor] →
+    LeftAbsorptionNormalizedStateSiteTensor →
+    OperatorSiteTensor →
+    [OverlapTensorTrio] →
     (LeftBoundaryTensor,[LeftOverlapBoundaryTensor],LeftNeighbor)
 
 absorbIntoNewLeftNeighbor
@@ -176,12 +178,12 @@ absorbIntoNewLeftNeighbor
 -- @-node:gcross.20091117140132.1792:absorbIntoNew___Neighbor
 -- @+node:gcross.20091117140132.1794:prepareAndAbsorbIntoNew___Neighbor
 prepareAndAbsorbIntoNewRightNeighbor ::
-    LeftNeighbor ->
-    RightBoundaryTensor ->
-    [RightOverlapBoundaryTensor] ->
-    UnnormalizedStateSiteTensor ->
-    OperatorSiteTensor ->
-    [OverlapTensorTrio] ->
+    LeftNeighbor →
+    RightBoundaryTensor →
+    [RightOverlapBoundaryTensor] →
+    UnnormalizedStateSiteTensor →
+    OperatorSiteTensor →
+    [OverlapTensorTrio] →
      (LeftBoundaryTensor
      ,[LeftOverlapBoundaryTensor]
      ,RightBoundaryTensor
@@ -221,12 +223,12 @@ prepareAndAbsorbIntoNewRightNeighbor
         )
 
 prepareAndAbsorbIntoNewLeftNeighbor ::
-    RightNeighbor ->
-    LeftBoundaryTensor ->
-    [LeftOverlapBoundaryTensor] ->
-    UnnormalizedStateSiteTensor ->
-    OperatorSiteTensor ->
-    [OverlapTensorTrio] ->
+    RightNeighbor →
+    LeftBoundaryTensor →
+    [LeftOverlapBoundaryTensor] →
+    UnnormalizedStateSiteTensor →
+    OperatorSiteTensor →
+    [OverlapTensorTrio] →
      (LeftBoundaryTensor
      ,[LeftOverlapBoundaryTensor]
      ,RightBoundaryTensor
@@ -285,14 +287,17 @@ data EnergyMinimizationChain = EnergyMinimizationChain
     ,   chainProjectorOverlap :: Double
     }
 -- @-node:gcross.20091113142219.1665:EnergyMinimizationChain
+-- @+node:gcross.20100522160359.1793:Configuration
+type Configuration = [(OperatorSiteTensor,[OverlapTensorTrio])]
+-- @-node:gcross.20100522160359.1793:Configuration
 -- @-node:gcross.20091113142219.1664:Types
 -- @+node:gcross.20091116222034.2374:Utility Functions
 -- @+node:gcross.20091113142219.1699:computeBandwidthDimensionSequence
-computeBandwidthDimensionSequence :: Int -> [Int] -> [Int]
+computeBandwidthDimensionSequence :: Int → [Int] → [Int]
 computeBandwidthDimensionSequence requested_bandwidth_dimension physical_dimensions =
     let computeSequence physical_dimensions = 1:go 1 physical_dimensions
           where
-            go :: Int -> [Int] -> [Int]
+            go :: Int → [Int] → [Int]
             go _ [] = []
             go last_bandwidth_dimension (current_physical_dimension:remaining_physical_dimensions)
                | current_bandwidth_dimension >= requested_bandwidth_dimension
@@ -315,7 +320,7 @@ computeBandwidthDimensionSequence requested_bandwidth_dimension physical_dimensi
             right_sequence
 -- @-node:gcross.20091113142219.1699:computeBandwidthDimensionSequence
 -- @+node:gcross.20091113142219.2519:computeSiteDimensionSequence
-computeSiteDimensionSequence :: Int -> [Int] -> [(Int,Int,Int)]
+computeSiteDimensionSequence :: Int → [Int] → [(Int,Int,Int)]
 computeSiteDimensionSequence requested_bandwidth_dimension physical_dimensions =
     zip3
         physical_dimensions
@@ -328,16 +333,16 @@ computeSiteDimensionSequence requested_bandwidth_dimension physical_dimensions =
             physical_dimensions
 -- @-node:gcross.20091113142219.2519:computeSiteDimensionSequence
 -- @+node:gcross.20091120112621.1590:makeConfiguration
-makeConfiguration :: [OperatorSiteTensor] -> [[OverlapTensorTrio]] -> [(OperatorSiteTensor,[OverlapTensorTrio])]
+makeConfiguration :: [OperatorSiteTensor] → [[OverlapTensorTrio]] → Configuration
 makeConfiguration operator_site_tensors [] = zip operator_site_tensors (repeat [])
 makeConfiguration operator_site_tensors projectors = zip operator_site_tensors . transpose $ projectors
 -- @-node:gcross.20091120112621.1590:makeConfiguration
 -- @+node:gcross.20100512154636.1738:throwIfEnergyChanged
 throwIfEnergyChanged ::
-    Double ->
-    EnergyMinimizationChain ->
-    (EnergyMinimizationChain -> EnergyMinimizationChain -> SanityCheckFailed) ->
-    EnergyMinimizationChain ->
+    Double →
+    EnergyMinimizationChain →
+    (EnergyMinimizationChain → EnergyMinimizationChain → SanityCheckFailed) →
+    EnergyMinimizationChain →
     EnergyMinimizationChain
 throwIfEnergyChanged tolerance old_chain createException new_chain
  | abs (chainEnergy new_chain - chainEnergy old_chain) > tolerance
@@ -348,7 +353,7 @@ throwIfEnergyChanged tolerance old_chain createException new_chain
 -- @-node:gcross.20091116222034.2374:Utility Functions
 -- @+node:gcross.20091113142219.1678:Chain Functions
 -- @+node:gcross.20091113142219.1684:activateLeftNeighbor
-activateLeftNeighbor :: EnergyMinimizationChain -> EnergyMinimizationChain
+activateLeftNeighbor :: EnergyMinimizationChain → EnergyMinimizationChain
 activateLeftNeighbor EnergyMinimizationChain { siteLeftNeighbors = [] } =
     error "Chain is already at its leftmost site!"
 activateLeftNeighbor old_chain =
@@ -389,7 +394,7 @@ activateLeftNeighbor old_chain =
 activateLeftNeighborWithSanityCheck = checkSanityAfterActivatingNeighbor activateLeftNeighbor (Left ())
 -- @-node:gcross.20100512151146.1739:activateLeftNeighborWithSanityCheck
 -- @+node:gcross.20091113142219.1686:activateRightNeighbor
-activateRightNeighbor :: EnergyMinimizationChain -> EnergyMinimizationChain
+activateRightNeighbor :: EnergyMinimizationChain → EnergyMinimizationChain
 activateRightNeighbor EnergyMinimizationChain { siteRightNeighbors = [] } =
     error "Chain is already at its rightmost site!"
 activateRightNeighbor old_chain =
@@ -430,7 +435,7 @@ activateRightNeighbor old_chain =
 activateRightNeighborWithSanityCheck = checkSanityAfterActivatingNeighbor activateRightNeighbor (Right ())
 -- @-node:gcross.20100512151146.1743:activateRightNeighborWithSanityCheck
 -- @+node:gcross.20100521141104.1783:activateSite
-activateSite :: Int -> EnergyMinimizationChain -> EnergyMinimizationChain
+activateSite :: Int → EnergyMinimizationChain → EnergyMinimizationChain
 activateSite requested_site_number chain
   | requested_site_number < 1
     = error $
@@ -453,14 +458,14 @@ activateSite requested_site_number chain
     current_site_number = siteNumber chain
 -- @-node:gcross.20100521141104.1783:activateSite
 -- @+node:gcross.20100521141104.1785:activateFirstSite
-activateFirstSite :: EnergyMinimizationChain -> EnergyMinimizationChain
+activateFirstSite :: EnergyMinimizationChain → EnergyMinimizationChain
 activateFirstSite = activateSite 1
 -- @-node:gcross.20100521141104.1785:activateFirstSite
 -- @+node:gcross.20100513131210.1743:chainNumberOfProjectors
 chainNumberOfProjectors = length . siteOverlapTrios
 -- @-node:gcross.20100513131210.1743:chainNumberOfProjectors
 -- @+node:gcross.20100503130440.1689:chainPhysicalDimensions
-chainPhysicalDimensions :: EnergyMinimizationChain -> [Int]
+chainPhysicalDimensions :: EnergyMinimizationChain → [Int]
 chainPhysicalDimensions chain =
     reverse (map (physicalDimensionOfState . leftNeighborState) (siteLeftNeighbors chain))
     ++
@@ -474,7 +479,7 @@ chainNorm = normOfState . siteStateTensor
 -- @+node:gcross.20100512151146.1740:checkSanityAfterActivatingNeighbor
 checkSanityAfterActivatingNeighbor activateNeighbor direction tolerance old_chain =
     throwIfEnergyChanged tolerance old_chain (
-        \old_chain new_chain ->
+        \old_chain new_chain →
             EnergyChangedAfterMoveError
                 direction
                 (siteNumber old_chain)
@@ -487,7 +492,7 @@ checkSanityAfterActivatingNeighbor activateNeighbor direction tolerance old_chai
     old_chain
 -- @-node:gcross.20100512151146.1740:checkSanityAfterActivatingNeighbor
 -- @+node:gcross.20091113142219.1679:computeEnergy
-computeEnergy :: EnergyMinimizationChain -> Double
+computeEnergy :: EnergyMinimizationChain → Double
 computeEnergy EnergyMinimizationChain
             {   siteLeftBoundaryTensor = left_boundary_tensor
             ,   siteStateTensor = state_site_tensor
@@ -497,8 +502,8 @@ computeEnergy EnergyMinimizationChain
     let expectation = computeExpectation left_boundary_tensor state_site_tensor operator_site_tensor right_boundary_tensor
     in assert (imagPart expectation ~= 0) (realPart expectation)
 -- @-node:gcross.20091113142219.1679:computeEnergy
--- @+node:gcross.20091117140132.1798:computeOverlapTriosFromStateTensors
-computeOverlapTriosFromCanonicalStateRepresentation :: CanonicalStateRepresentation -> [OverlapTensorTrio]
+-- @+node:gcross.20091117140132.1798:computeOverlapTriosFromCanonicalStateRepresentation
+computeOverlapTriosFromCanonicalStateRepresentation :: CanonicalStateRepresentation → [OverlapTensorTrio]
 computeOverlapTriosFromCanonicalStateRepresentation (CanonicalStateRepresentation _ _ []) =
     error "There needs to be more than one site to use this function!"
 computeOverlapTriosFromCanonicalStateRepresentation
@@ -521,10 +526,10 @@ computeOverlapTriosFromCanonicalStateRepresentation
              right_normalized_overlap_second_site_tensor
              right_normalized_state_rest_site_tensors
   where
-    go :: UnnormalizedStateSiteTensor ->
-          RightAbsorptionNormalizedStateSiteTensor ->
-          RightAbsorptionNormalizedOverlapSiteTensor ->
-          [RightAbsorptionNormalizedStateSiteTensor] ->
+    go :: UnnormalizedStateSiteTensor →
+          RightAbsorptionNormalizedStateSiteTensor →
+          RightAbsorptionNormalizedOverlapSiteTensor →
+          [RightAbsorptionNormalizedStateSiteTensor] →
           [OverlapTensorTrio]
     go unnormalized_state_last_site_tensor
        _
@@ -550,9 +555,9 @@ computeOverlapTriosFromCanonicalStateRepresentation
                    right_normalized_state_next_site_tensor
                    right_normalized_overlap_next_site_tensor
                    normalized_state_rest_site_tensors
--- @-node:gcross.20091117140132.1798:computeOverlapTriosFromStateTensors
+-- @-node:gcross.20091117140132.1798:computeOverlapTriosFromCanonicalStateRepresentation
 -- @+node:gcross.20091117140132.1797:computeProjectorMatrix
-computeProjectorMatrix :: EnergyMinimizationChain -> ProjectorMatrix
+computeProjectorMatrix :: EnergyMinimizationChain → ProjectorMatrix
 computeProjectorMatrix chain =
     formProjectorMatrix $
         zip3 (siteLeftOverlapBoundaryTensors chain)
@@ -563,12 +568,12 @@ computeProjectorMatrix chain =
 computeProjectorOverlap = liftA2 computeOverlapWithProjectors siteProjectorMatrix siteStateTensor
 -- @-node:gcross.20100520145029.1770:computeProjectorOverlap
 -- @+node:gcross.20091117140132.1796:generateRandomizedChain
-generateRandomizedChain :: Int -> [OperatorSiteTensor] -> IO (EnergyMinimizationChain)
+generateRandomizedChain :: Int → [OperatorSiteTensor] → IO (EnergyMinimizationChain)
 generateRandomizedChain requested_bandwidth_dimension =
     generateRandomizedChainWithOverlaps requested_bandwidth_dimension . flip zip (repeat [])
 -- @-node:gcross.20091117140132.1796:generateRandomizedChain
 -- @+node:gcross.20091113142219.2535:generateRandomizedChainWithOverlaps
-generateRandomizedChainWithOverlaps :: Int -> [(OperatorSiteTensor,[OverlapTensorTrio])] -> IO (EnergyMinimizationChain)
+generateRandomizedChainWithOverlaps :: Int → Configuration → IO (EnergyMinimizationChain)
 generateRandomizedChainWithOverlaps _ [] = error "Must have at least one operator site tensor!"
 generateRandomizedChainWithOverlaps requested_bandwidth_dimension operator_site_tensors =
     let number_of_sites = length operator_site_tensors
@@ -590,7 +595,7 @@ generateRandomizedChainWithOverlaps requested_bandwidth_dimension operator_site_
            (((d,bl,br),(operator_site_tensor,overlap_trios)):remaining) 
            = generateRandomizedStateSiteTensor d bl br
              >>=
-             \site_state_tensor ->
+             \site_state_tensor →
                  let (new_right_boundary,new_right_overlap_boundaries,new_neighbor) =
                          absorbIntoNewRightNeighbor
                              right_boundary
@@ -603,12 +608,12 @@ generateRandomizedChainWithOverlaps requested_bandwidth_dimension operator_site_
                        (new_neighbor:current_neighbors)
                        remaining
     in do
-        (right_neighbors,right_boundary,right_overlap_boundaries) <-
+        (right_neighbors,right_boundary,right_overlap_boundaries) ←
             go trivial_right_boundary
                (replicate number_of_projectors trivial_right_overlap_boundary)
                []
                (reverse . tail $ zip sequence_of_site_dimensions operator_site_tensors)
-        unnormalized_state_site_tensor <-
+        unnormalized_state_site_tensor ←
             let (d,bl,br) = head sequence_of_site_dimensions
             in generateRandomizedStateSiteTensor d bl br
         return $
@@ -635,11 +640,12 @@ generateRandomizedChainWithOverlaps requested_bandwidth_dimension operator_site_
                     ,   chainProjectorOverlap = computeProjectorOverlap chain
                     }
             in chain
+-- @nonl
 -- @-node:gcross.20091113142219.2535:generateRandomizedChainWithOverlaps
 -- @+node:gcross.20091119150241.1849:getCanonicalStateRepresentation
-getCanonicalStateRepresentation :: EnergyMinimizationChain -> CanonicalStateRepresentation
+getCanonicalStateRepresentation :: EnergyMinimizationChain → CanonicalStateRepresentation
 getCanonicalStateRepresentation =
-    (\chain -> 
+    (\chain → 
         CanonicalStateRepresentation
             (chainNumberOfSites chain)
             (siteStateTensor chain)
@@ -649,7 +655,7 @@ getCanonicalStateRepresentation =
     activateFirstSite
 -- @-node:gcross.20091119150241.1849:getCanonicalStateRepresentation
 -- @+node:gcross.20091115105949.1744:increaseChainBandwidth
-increaseChainBandwidth :: Int -> EnergyMinimizationChain -> IO EnergyMinimizationChain
+increaseChainBandwidth :: Int → EnergyMinimizationChain → IO EnergyMinimizationChain
 increaseChainBandwidth new_bandwidth starting_chain
   = fmap (activateSite starting_site_number)
     .
@@ -694,8 +700,8 @@ increaseChainBandwidth new_bandwidth starting_chain
         } = activateFirstSite starting_chain
 
     go1 ::
-        [(RightNeighbor,Int)] ->
-        [RightNeighbor] ->
+        [(RightNeighbor,Int)] →
+        [RightNeighbor] →
         IO EnergyMinimizationChain
     go1 [] _ = error "The chain already had the desired bandwidth!"
     go1 ((current_neighbor,desired_bandwidth):rest_neighbors) new_neighbors
@@ -716,14 +722,14 @@ increaseChainBandwidth new_bandwidth starting_chain
       where neighbor_bandwidth = leftBandwidthOfState . rightNeighborState $ current_neighbor
 
     go2 ::
-        RightBoundaryTensor ->
-        [RightOverlapBoundaryTensor] ->
-        UnnormalizedStateSiteTensor ->
-        OperatorSiteTensor ->
-        [OverlapTensorTrio] ->
-        Int ->
-        [(RightNeighbor,Int)] ->
-        [RightNeighbor] ->
+        RightBoundaryTensor →
+        [RightOverlapBoundaryTensor] →
+        UnnormalizedStateSiteTensor →
+        OperatorSiteTensor →
+        [OverlapTensorTrio] →
+        Int →
+        [(RightNeighbor,Int)] →
+        [RightNeighbor] →
         IO EnergyMinimizationChain
     go2 right_boundary
         right_overlap_boundaries
@@ -759,7 +765,7 @@ increaseChainBandwidth new_bandwidth starting_chain
             desired_bandwidth_at_site
             (rightNeighborState neighbor)
             state_site_tensor
-        >>= \(denormalized_state_site_tensor,normalized_state_site_tensor) ->
+        >>= \(denormalized_state_site_tensor,normalized_state_site_tensor) →
             let (new_right_boundary,new_right_overlap_boundaries,new_neighbor) =
                     absorbIntoNewRightNeighbor
                         right_boundary
@@ -781,7 +787,7 @@ increaseChainBandwidth new_bandwidth starting_chain
 increaseChainBandwidthWithSanityCheck tolerance new_bandwidth old_chain =
     increaseChainBandwidth new_bandwidth old_chain
     >>=
-    \new_chain ->
+    \new_chain →
         let new_energy = chainEnergy new_chain
             old_energy = chainEnergy old_chain
         in if abs (new_energy - old_energy) > tolerance
@@ -789,24 +795,24 @@ increaseChainBandwidthWithSanityCheck tolerance new_bandwidth old_chain =
             else return new_chain
 -- @-node:gcross.20100512151146.1745:increaseChainBandwidthWithSanityCheck
 -- @+node:gcross.20091118213523.1855:maximumBandwidthIn
-maximumBandwidthIn :: EnergyMinimizationChain -> Int
+maximumBandwidthIn :: EnergyMinimizationChain → Int
 maximumBandwidthIn chain =
     maximum
     .
     case siteLeftNeighbors chain of
-        [] -> id
-        neighbors -> (:) (maximum . map (rightBandwidthOfState . leftNeighborState) $ neighbors)
+        [] → id
+        neighbors → (:) (maximum . map (rightBandwidthOfState . leftNeighborState) $ neighbors)
     .
     case siteRightNeighbors chain of
-        [] -> id
-        neighbors -> (:) (maximum . map (leftBandwidthOfState . rightNeighborState) $ neighbors)
+        [] → id
+        neighbors → (:) (maximum . map (leftBandwidthOfState . rightNeighborState) $ neighbors)
     $
     [   leftBandwidthOfState . siteStateTensor $ chain
     ,   rightBandwidthOfState . siteStateTensor $ chain
     ]
 -- @-node:gcross.20091118213523.1855:maximumBandwidthIn
 -- @+node:gcross.20091113142219.1687:optimizeSite
-optimizeSite :: Double -> Int -> EnergyMinimizationChain -> Either OptimizerFailure (Int,EnergyMinimizationChain)
+optimizeSite :: Double → Int → EnergyMinimizationChain → Either OptimizerFailure (Int,EnergyMinimizationChain)
 optimizeSite tolerance maximum_number_of_iterations chain =
     mapRight postProcess $
         computeOptimalSiteStateTensor
@@ -831,7 +837,7 @@ optimizeSite tolerance maximum_number_of_iterations chain =
 optimizeSite_ = optimizeSite 0 1000
 -- @-node:gcross.20091113142219.1687:optimizeSite
 -- @+node:gcross.20100522160359.1788:projectSite
-projectSite :: EnergyMinimizationChain -> EnergyMinimizationChain
+projectSite :: EnergyMinimizationChain → EnergyMinimizationChain
 projectSite chain = new_chain
   where
     new_chain =

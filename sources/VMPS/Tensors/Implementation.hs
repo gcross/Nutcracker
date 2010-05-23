@@ -8,6 +8,7 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE DeriveDataTypeable #-}
+{-# LANGUAGE UnicodeSyntax #-}
 
 -- @-node:gcross.20091111171052.1600:<< Language extensions >>
 -- @nl
@@ -45,22 +46,23 @@ import VMPS.Miscellaneous
 -- @+node:gcross.20091111171052.1596:ComplexTensor
 newtype MyIx i => ComplexTensor i = ComplexTensor { unwrapComplexTensor :: StorableArray i (Complex Double) }
 
-withPinnedComplexTensor :: MyIx i => ComplexTensor i -> (Ptr (Complex Double) -> IO a) -> IO a
+withPinnedComplexTensor :: MyIx i => ComplexTensor i → (Ptr (Complex Double) → IO a) → IO a
 withPinnedComplexTensor = withStorableArray . unwrapComplexTensor
 
 withNewPinnedComplexTensor dimensions thunk = do
-    storable_array <- newMyArray dimensions
-    result <- withStorableArray storable_array thunk
+    storable_array ← newMyArray dimensions
+    result ← withStorableArray storable_array thunk
     return (result,ComplexTensor storable_array)
 
-complexTensorFromList :: MyIx i => i -> [Complex Double] -> ComplexTensor i
+complexTensorFromList :: MyIx i => i → [Complex Double] → ComplexTensor i
 complexTensorFromList dimensions = ComplexTensor . myListArray dimensions
 
 trivial_complex_tensor :: MyIx i => ComplexTensor i
 trivial_complex_tensor = complexTensorFromList lowerBounds [1]
 
-toListOfComplexNumbers :: MyIx i => ComplexTensor i -> [Complex Double]
+toListOfComplexNumbers :: MyIx i => ComplexTensor i → [Complex Double]
 toListOfComplexNumbers = unsafePerformIO . getElems . unwrapComplexTensor
+-- @nonl
 -- @-node:gcross.20091111171052.1596:ComplexTensor
 -- @+node:gcross.20091113142219.2538:Tensors
 -- @+node:gcross.20091111171052.1595:Left/Right Boundaries
@@ -92,24 +94,25 @@ instance Creatable LeftBoundaryTensor (Int,Int) where
         withNewPinnedBoundaryTensor bounds
 
 instance Connected LeftBoundaryTensor UnnormalizedStateSiteTensor where
-    (<-?->) = makeConnectedTest
+    (←?→) = makeConnectedTest
         "Left boundary and (unnormalized) state site tensors disagree over the bandwidth dimension!"
         (boundaryStateBandwidth . unwrapLeftBoundaryTensor)
         (stateLeftBandwidth . unwrapUnnormalizedStateSiteTensor)
 
 instance Connected LeftBoundaryTensor LeftAbsorptionNormalizedStateSiteTensor where
-    (<-?->) = makeConnectedTest
+    (←?→) = makeConnectedTest
         "Left boundary and (left-absorption normalized) state site tensors disagree over the bandwidth dimension!"
         (boundaryStateBandwidth . unwrapLeftBoundaryTensor)
         (stateLeftBandwidth . unwrapLeftAbsorptionNormalizedStateSiteTensor)
 
 instance Connected LeftBoundaryTensor OperatorSiteTensor where
-    (<-?->) = makeConnectedTest
+    (←?→) = makeConnectedTest
         "Left boundary and operator site tensors disagree over the bandwidth dimension!"
         (boundaryOperatorBandwidth . unwrapLeftBoundaryTensor)
         operatorLeftBandwidth
 
 trivial_left_boundary = LeftBoundaryTensor trivial_boundary
+-- @nonl
 -- @-node:gcross.20091112145455.1649:Left boundary
 -- @+node:gcross.20091112145455.1651:Right boundary
 newtype RightBoundaryTensor = RightBoundaryTensor { unwrapRightBoundaryTensor :: BoundaryTensor }
@@ -124,24 +127,25 @@ instance Creatable RightBoundaryTensor (Int,Int) where
         withNewPinnedBoundaryTensor bounds
 
 instance Connected UnnormalizedStateSiteTensor RightBoundaryTensor where
-    (<-?->) = makeConnectedTest
+    (←?→) = makeConnectedTest
         "Right boundary and (unnormalized) state site tensors disagree over the bandwidth dimension!"
         (stateRightBandwidth . unwrapUnnormalizedStateSiteTensor)
         (boundaryStateBandwidth . unwrapRightBoundaryTensor)
 
 instance Connected RightAbsorptionNormalizedStateSiteTensor RightBoundaryTensor where
-    (<-?->) = makeConnectedTest
+    (←?→) = makeConnectedTest
         "Right boundary and (right-absorption normalized) state site tensors disagree over the bandwidth dimension!"
         (stateRightBandwidth . unwrapRightAbsorptionNormalizedStateSiteTensor)
         (boundaryStateBandwidth . unwrapRightBoundaryTensor)
 
 instance Connected OperatorSiteTensor RightBoundaryTensor where
-    (<-?->) = makeConnectedTest
+    (←?→) = makeConnectedTest
         "Right boundary and operator site tensors disagree over the bandwidth dimension!"
         operatorRightBandwidth
         (boundaryOperatorBandwidth . unwrapRightBoundaryTensor)
 
 trivial_right_boundary = RightBoundaryTensor trivial_boundary
+-- @nonl
 -- @-node:gcross.20091112145455.1651:Right boundary
 -- @-others
 -- @-node:gcross.20091111171052.1595:Left/Right Boundaries
@@ -161,7 +165,7 @@ withNewPinnedOverlapBoundaryTensor (cl,bl) =
 trivial_overlap_boundary = OverlapBoundaryTensor 1 1 trivial_complex_tensor
 
 class OverlapBoundaryTensorClass a where
-    getNewStateBandwidth :: a -> Int
+    getNewStateBandwidth :: a → Int
 
 -- @+others
 -- @+node:gcross.20091116175016.1763:Left boundary
@@ -180,30 +184,31 @@ instance OverlapBoundaryTensorClass LeftOverlapBoundaryTensor where
     getNewStateBandwidth = overlapNewStateBandwidth . unwrapLeftOverlapBoundaryTensor
 
 instance Connected LeftOverlapBoundaryTensor UnnormalizedOverlapSiteTensor where
-    (<-?->) = makeConnectedTest
+    (←?→) = makeConnectedTest
         "Left overlap boundary and (unnormalized) overlap site tensors disagree over the bandwidth dimension!"
         (overlapOldStateBandwidth . unwrapLeftOverlapBoundaryTensor)
         leftBandwidthOfState
 
 instance Connected LeftOverlapBoundaryTensor LeftAbsorptionNormalizedOverlapSiteTensor where
-    (<-?->) = makeConnectedTest
+    (←?→) = makeConnectedTest
         "Left overlap boundary and (left-absorption normalized) overlap site tensors disagree over the bandwidth dimension!"
         (overlapOldStateBandwidth . unwrapLeftOverlapBoundaryTensor)
         leftBandwidthOfState
 
 instance Connected LeftOverlapBoundaryTensor UnnormalizedStateSiteTensor where
-    (<-?->) = makeConnectedTest
+    (←?→) = makeConnectedTest
         "Left overlap boundary and (unnormalized) state site tensors disagree over the bandwidth dimension!"
         (overlapNewStateBandwidth . unwrapLeftOverlapBoundaryTensor)
         leftBandwidthOfState
 
 instance Connected LeftOverlapBoundaryTensor LeftAbsorptionNormalizedStateSiteTensor where
-    (<-?->) = makeConnectedTest
+    (←?→) = makeConnectedTest
         "Left overlap boundary and (left-absorption normalized) state site tensors disagree over the bandwidth dimension!"
         (overlapNewStateBandwidth . unwrapLeftOverlapBoundaryTensor)
         leftBandwidthOfState
 
 trivial_left_overlap_boundary = LeftOverlapBoundaryTensor trivial_overlap_boundary
+-- @nonl
 -- @-node:gcross.20091116175016.1763:Left boundary
 -- @+node:gcross.20091116175016.1768:Right boundary
 newtype RightOverlapBoundaryTensor = RightOverlapBoundaryTensor { unwrapRightOverlapBoundaryTensor :: OverlapBoundaryTensor }
@@ -221,25 +226,25 @@ instance OverlapBoundaryTensorClass RightOverlapBoundaryTensor where
     getNewStateBandwidth = overlapNewStateBandwidth . unwrapRightOverlapBoundaryTensor
 
 instance Connected UnnormalizedOverlapSiteTensor RightOverlapBoundaryTensor where
-    (<-?->) = makeConnectedTest
+    (←?→) = makeConnectedTest
         "Right overlap boundary and (unnormalized) overlap site tensors disagree over the bandwidth dimension!"
         rightBandwidthOfState
         (overlapOldStateBandwidth . unwrapRightOverlapBoundaryTensor)
 
 instance Connected RightAbsorptionNormalizedOverlapSiteTensor RightOverlapBoundaryTensor where
-    (<-?->) = makeConnectedTest
+    (←?→) = makeConnectedTest
         "Right overlap boundary and (Right-absorption normalized) overlap site tensors disagree over the bandwidth dimension!"
         rightBandwidthOfState
         (overlapOldStateBandwidth . unwrapRightOverlapBoundaryTensor)
 
 instance Connected UnnormalizedStateSiteTensor RightOverlapBoundaryTensor where
-    (<-?->) = makeConnectedTest
+    (←?→) = makeConnectedTest
         "Right overlap boundary and (unnormalized) state site tensors disagree over the bandwidth dimension!"
         rightBandwidthOfState
         (overlapNewStateBandwidth . unwrapRightOverlapBoundaryTensor)
 
 instance Connected RightAbsorptionNormalizedStateSiteTensor RightOverlapBoundaryTensor where
-    (<-?->) = makeConnectedTest
+    (←?→) = makeConnectedTest
         "Right overlap boundary and (right-absorption normalized) state site tensors disagree over the bandwidth dimension!"
         rightBandwidthOfState
         (overlapNewStateBandwidth . unwrapRightOverlapBoundaryTensor)
@@ -248,6 +253,7 @@ trivial_right_overlap_boundary = RightOverlapBoundaryTensor trivial_overlap_boun
 -- @nonl
 -- @-node:gcross.20091116175016.1768:Right boundary
 -- @-others
+-- @nonl
 -- @-node:gcross.20091116175016.1762:Left/Right Overlap Boundaries
 -- @+node:gcross.20091111171052.1597:State Site Tensor
 data StateSiteTensor = StateSiteTensor
@@ -270,37 +276,38 @@ withNewPinnedStateTensor bounds@(d,bl,br) =
 normOfStateSiteTensor (StateSiteTensor d bl br state_data) =
     unsafePerformIO $
     withPinnedComplexTensor state_data $
-        \ptr -> norm (d*bl*br) ptr
+        \ptr → norm (d*bl*br) ptr
 
 instance Connected LeftAbsorptionNormalizedStateSiteTensor UnnormalizedStateSiteTensor where
-    (<-?->) = makeConnectedTest
+    (←?→) = makeConnectedTest
         "State site tensors disagree over the bandwidth dimension!"
         rightBandwidthOfState
         leftBandwidthOfState
 
 instance Connected UnnormalizedStateSiteTensor RightAbsorptionNormalizedStateSiteTensor where
-    (<-?->) = makeConnectedTest
+    (←?→) = makeConnectedTest
         "State site tensors disagree over the bandwidth dimension!"
         rightBandwidthOfState
         leftBandwidthOfState
 
 instance Connected UnnormalizedOverlapSiteTensor UnnormalizedStateSiteTensor where
-    (<-?->) = makeConnectedTest
+    (←?→) = makeConnectedTest
         "State site tensors disagree over the bandwidth dimension!"
         physicalDimensionOfState
         physicalDimensionOfState
 
 instance Connected LeftAbsorptionNormalizedOverlapSiteTensor LeftAbsorptionNormalizedStateSiteTensor where
-    (<-?->) = makeConnectedTest
+    (←?→) = makeConnectedTest
         "State site tensors disagree over the bandwidth dimension!"
         physicalDimensionOfState
         physicalDimensionOfState
 
 instance Connected RightAbsorptionNormalizedOverlapSiteTensor RightAbsorptionNormalizedStateSiteTensor where
-    (<-?->) = makeConnectedTest
+    (←?→) = makeConnectedTest
         "State site tensors disagree over the bandwidth dimension!"
         physicalDimensionOfState
         physicalDimensionOfState
+-- @nonl
 -- @+node:gcross.20091116175016.1755:newtypes
 newtype UnnormalizedStateSiteTensor = UnnormalizedStateSiteTensor
     { unwrapUnnormalizedStateSiteTensor :: StateSiteTensor }
@@ -369,13 +376,13 @@ instance Creatable RightAbsorptionNormalizedOverlapSiteTensor (Int,Int,Int) wher
 -- @-node:gcross.20091116175016.1757:Creatable instances
 -- @+node:gcross.20091116175016.1758:StateSiteTensorClass + instances
 class StateSiteTensorClass a where
-    leftBandwidthOfState :: a -> Int
-    rightBandwidthOfState :: a -> Int
-    physicalDimensionOfState :: a -> Int
-    unnormalize :: a -> UnnormalizedStateSiteTensor
-    normOfState :: a -> Double
+    leftBandwidthOfState :: a → Int
+    rightBandwidthOfState :: a → Int
+    physicalDimensionOfState :: a → Int
+    unnormalize :: a → UnnormalizedStateSiteTensor
+    normOfState :: a → Double
 
-numberOfDegreesOfFreedomInState :: StateSiteTensorClass a => a -> Int
+numberOfDegreesOfFreedomInState :: StateSiteTensorClass a => a → Int
 numberOfDegreesOfFreedomInState = leftBandwidthOfState <^(*)^> rightBandwidthOfState <^(*)^> physicalDimensionOfState
 
 instance StateSiteTensorClass UnnormalizedStateSiteTensor where
@@ -414,6 +421,7 @@ instance StateSiteTensorClass RightAbsorptionNormalizedOverlapSiteTensor where
     physicalDimensionOfState = statePhysicalDimension . unwrapRightAbsorptionNormalizedOverlapSiteTensor
     unnormalize = undefined
     normOfState = normOfStateSiteTensor . unwrapRightAbsorptionNormalizedOverlapSiteTensor
+-- @nonl
 -- @-node:gcross.20091116175016.1758:StateSiteTensorClass + instances
 -- @-node:gcross.20091111171052.1597:State Site Tensor
 -- @+node:gcross.20091111171052.1598:Operator Site Tensor
@@ -428,31 +436,32 @@ data OperatorSiteTensor = OperatorSiteTensor
 
 -- @+others
 -- @+node:gcross.20091114174920.1715:withPinnedOperatorSiteTensor
-withPinnedOperatorSiteTensor :: OperatorSiteTensor -> (Int -> Ptr Int32 -> Ptr (Complex Double) -> IO a) -> IO a
+withPinnedOperatorSiteTensor :: OperatorSiteTensor → (Int → Ptr Int32 → Ptr (Complex Double) → IO a) → IO a
 withPinnedOperatorSiteTensor operator_site_tensor thunk = 
-    (withStorableArray . operatorIndices) operator_site_tensor $ \p_indices ->
+    (withStorableArray . operatorIndices) operator_site_tensor $ \p_indices →
     (withStorableArray . operatorMatrices) operator_site_tensor $
     thunk (operatorNumberOfMatrices operator_site_tensor) p_indices . castPtr
 -- @nonl
 -- @-node:gcross.20091114174920.1715:withPinnedOperatorSiteTensor
 -- @+node:gcross.20091114174920.1717:(Connected instances)
 instance Connected OperatorSiteTensor UnnormalizedStateSiteTensor where
-    (<-?->) = makeConnectedTest
+    (←?→) = makeConnectedTest
         "Operator and (unnormalized) state site tensors disagree over the physical dimension!"
         operatorPhysicalDimension
         physicalDimensionOfState
 
 instance Connected OperatorSiteTensor LeftAbsorptionNormalizedStateSiteTensor where
-    (<-?->) = makeConnectedTest
+    (←?→) = makeConnectedTest
         "Operator and (unnormalized) state site tensors disagree over the physical dimension!"
         operatorPhysicalDimension
         physicalDimensionOfState
 
 instance Connected OperatorSiteTensor RightAbsorptionNormalizedStateSiteTensor where
-    (<-?->) = makeConnectedTest
+    (←?→) = makeConnectedTest
         "Operator and (unnormalized) state site tensors disagree over the physical dimension!"
         operatorPhysicalDimension
         physicalDimensionOfState
+-- @nonl
 -- @-node:gcross.20091114174920.1717:(Connected instances)
 -- @-others
 
@@ -465,34 +474,37 @@ data ProjectorMatrix = NullProjectorMatrix | ProjectorMatrix
     ,   projectorMatrix :: !(ComplexTensor (Int,Int))
     }
 
-withPinnedProjectorMatrix :: ProjectorMatrix -> (Int -> Int -> Ptr (Complex Double) -> IO a) -> IO a
+withPinnedProjectorMatrix :: ProjectorMatrix → (Int → Int → Ptr (Complex Double) → IO a) → IO a
 withPinnedProjectorMatrix NullProjectorMatrix thunk = thunk 0 undefined nullPtr
 withPinnedProjectorMatrix (ProjectorMatrix number_of_projectors projector_length matrix) thunk =
     withPinnedComplexTensor matrix (thunk number_of_projectors projector_length)
 
-withNewPinnedProjectorMatrix :: Int -> Int -> (Ptr (Complex Double) -> IO (Int,a)) -> IO (a,ProjectorMatrix)
+withNewPinnedProjectorMatrix :: Int → Int → (Ptr (Complex Double) → IO (Int,a)) → IO (a,ProjectorMatrix)
 withNewPinnedProjectorMatrix 0 _ = error "You are trying to get a write pointer to an empty array!"
 withNewPinnedProjectorMatrix number_of_projectors projector_length = do
     withNewPinnedComplexTensor (number_of_projectors,projector_length)
     >=>
-    \((rank,result),tensor) ->
+    \((rank,result),tensor) →
         return (result,ProjectorMatrix rank projector_length tensor)
+-- @nonl
 -- @-node:gcross.20091116175016.1796:ProjectorMatrix
 -- @-node:gcross.20091111171052.1591:Types
 -- @+node:gcross.20091111171052.1601:Classes
 -- @+node:gcross.20091111171052.1602:Connected
 class Connected a b where
-    (<-?->) :: a -> b -> Int
+    (←?→) :: a → b → Int
 
-makeConnectedTest :: String -> (a -> Int) -> (b -> Int) -> a -> b -> Int
+makeConnectedTest :: String → (a → Int) → (b → Int) → a → b → Int
 makeConnectedTest message fetch_left_dimension fetch_right_dimension x y =
     let d1 = fetch_left_dimension x
         d2 = fetch_right_dimension y
     in if d1 == d2 then d1 else error $ message ++ (printf " (%i != %i)\n" d1 d2)
+-- @nonl
 -- @-node:gcross.20091111171052.1602:Connected
 -- @+node:gcross.20091116132159.1754:Creatable
 class MyIx i => Creatable a i where
-    withNewPinnedTensor :: i -> (Ptr (Complex Double) -> IO b) -> IO (b,a)
+    withNewPinnedTensor :: i → (Ptr (Complex Double) → IO b) → IO (b,a)
+-- @nonl
 -- @-node:gcross.20091116132159.1754:Creatable
 -- @+node:gcross.20091116132159.1750:MyIx
 class Ix a => MyIx a where
@@ -502,11 +514,12 @@ instance MyIx Int where { lowerBounds = 1 }
 instance MyIx (Int,Int) where { lowerBounds = (1,1) }
 instance MyIx (Int,Int,Int) where { lowerBounds = (1,1,1) }
 
-newMyArray :: MyIx i => i -> IO (StorableArray i (Complex Double))
+newMyArray :: MyIx i => i → IO (StorableArray i (Complex Double))
 newMyArray dimensions = newArray (lowerBounds,dimensions) 0
 
-myListArray :: MyIx i => i -> [Complex Double] -> StorableArray i (Complex Double)
+myListArray :: MyIx i => i → [Complex Double] → StorableArray i (Complex Double)
 myListArray dimensions = unsafePerformIO . newListArray (lowerBounds,dimensions)
+-- @nonl
 -- @-node:gcross.20091116132159.1750:MyIx
 -- @-node:gcross.20091111171052.1601:Classes
 -- @-others

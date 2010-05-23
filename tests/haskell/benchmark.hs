@@ -24,7 +24,7 @@ import VMPS.Models
 -- @-others
 
 main = do
-    three_site_chain_with_small_bandwidth <- generateRandomizedChain 2 2 (makeTransverseIsingModelOperatorSiteTensors 1 3)
+    three_site_chain_with_small_bandwidth ← generateRandomizedChain 2 2 (makeTransverseIsingModelOperatorSiteTensors 1 3)
     defaultMain
         -- @        << Benchmarks >>
         -- @+node:gcross.20091120134444.1975:<< Benchmarks >>
@@ -32,5 +32,6 @@ main = do
         -- @-node:gcross.20091120134444.1975:<< Benchmarks >>
         -- @nl
         ]
+-- @nonl
 -- @-node:gcross.20091120134444.1970:@thin benchmark.hs
 -- @-leo

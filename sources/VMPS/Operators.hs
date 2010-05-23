@@ -16,7 +16,7 @@
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE TypeSynonymInstances #-}
 {-# LANGUAGE UndecidableInstances #-}
--- @nonl
+{-# LANGUAGE UnicodeSyntax #-}
 -- @-node:gcross.20100504143114.1704:<< Language extensions >>
 -- @nl
 
@@ -57,8 +57,9 @@ class (Nat n
       ) => OperatorDimension n
   where
     identity :: SingleSiteOperator n
-    physicalDimensionOfSingleSiteOperator :: SingleSiteOperator n -> Int
+    physicalDimensionOfSingleSiteOperator :: SingleSiteOperator n → Int
     physicalDimensionOfSingleSiteOperator _ = nat (undefined :: n)
+-- @nonl
 -- @-node:gcross.20100505152919.1754:OperatorDimension
 -- @-node:gcross.20100505152919.1753:Classes
 -- @+node:gcross.20100506200958.2692:Exceptions
@@ -120,11 +121,12 @@ instance OperatorDimension n => Pinnable (SingleSiteOperator n)
   where
     withPinnedTensor single_site_operator thunk = do
         let n = physicalDimensionOfSingleSiteOperator single_site_operator
-        operator <- newArray ((1,1),(n,n)) 0
+        operator ← newArray ((1,1),(n,n)) 0
         forM_ (enumerateSingleSiteOperator single_site_operator) $
-            \(row,columns) -> forM_ columns $
-                \(column,value) -> writeArray operator (row,column) value
+            \(row,columns) → forM_ columns $
+                \(column,value) → writeArray operator (row,column) value
         withStorableArray operator thunk
+-- @nonl
 -- @-node:gcross.20100504143114.1694:Pinnable SingleSiteOperator
 -- @-node:gcross.20100504143114.1693:Instances
 -- @+node:gcross.20100504143114.1695:Functions
@@ -133,19 +135,20 @@ infix 5 *:
 (*:) :: (Vec.Map (ComplexVector n) (ComplexVector n) (ComplexSquareMatrix n) (ComplexSquareMatrix n)
         ,Vec.Map (Complex Double) (Complex Double) (ComplexVector n) (ComplexVector n)
         ) =>
-        Complex Double ->
-        SingleSiteOperator n ->
+        Complex Double →
+        SingleSiteOperator n →
         SingleSiteOperator n
 (*:) c = SingleSiteOperator . Vec.map (Vec.map (c*)) . unwrapSingleSiteOperator
+-- @nonl
 -- @-node:gcross.20100504143114.1696:(*:)
 -- @+node:gcross.20100504143114.1703:applySingleSiteOperator
 foreign import ccall unsafe "apply_single_site_operator" apply_single_site_operator :: 
-    Int -> -- rightmost bandwidth dimension
-    Int -> -- leftmost bandwidth dimension
-    Int -> -- physical dimension
-    Ptr (Complex Double) -> -- input: state site tensor
-    Ptr (Complex Double) -> -- input: operator
-    Ptr (Complex Double) -> -- output: new state site tensor
+    Int → -- rightmost bandwidth dimension
+    Int → -- leftmost bandwidth dimension
+    Int → -- physical dimension
+    Ptr (Complex Double) → -- input: state site tensor
+    Ptr (Complex Double) → -- input: operator
+    Ptr (Complex Double) → -- output: new state site tensor
     IO ()
 
 applySingleSiteOperator ::
@@ -154,8 +157,8 @@ applySingleSiteOperator ::
     ,Creatable a (Int,Int,Int)
     ,StateSiteTensorClass a
     ) =>
-    SingleSiteOperator n ->
-    a ->
+    SingleSiteOperator n →
+    a →
     a
 applySingleSiteOperator operator state_site_tensor =
     let br = rightBandwidthOfState state_site_tensor
@@ -163,9 +166,9 @@ applySingleSiteOperator operator state_site_tensor =
         d = physicalDimensionOfState state_site_tensor
     in assert (d == physicalDimensionOfSingleSiteOperator operator) $
        snd . unsafePerformIO $
-            withPinnedTensor state_site_tensor $ \p_state_site_tensor ->
-            withPinnedTensor operator $ \p_operator ->
-            withNewPinnedTensor (d,bl,br) $ \p_new_state_site_tensor ->
+            withPinnedTensor state_site_tensor $ \p_state_site_tensor →
+            withPinnedTensor operator $ \p_operator →
+            withNewPinnedTensor (d,bl,br) $ \p_new_state_site_tensor →
                 apply_single_site_operator
                     br
                     bl
@@ -173,9 +176,10 @@ applySingleSiteOperator operator state_site_tensor =
                     p_state_site_tensor
                     p_operator
                     p_new_state_site_tensor
+-- @nonl
 -- @-node:gcross.20100504143114.1703:applySingleSiteOperator
 -- @+node:gcross.20100505152919.1748:applySingleSiteOperators
-applySingleSiteOperators :: OperatorDimension n => [SingleSiteOperator n] -> CanonicalStateRepresentation -> CanonicalStateRepresentation
+applySingleSiteOperators :: OperatorDimension n => [SingleSiteOperator n] → CanonicalStateRepresentation → CanonicalStateRepresentation
 applySingleSiteOperators operators old_state = assert (length operators >= canonicalStateNumberOfSites old_state) $
     old_state
         {   canonicalStateFirstSiteTensor =
@@ -187,33 +191,37 @@ applySingleSiteOperators operators old_state = assert (length operators >= canon
                     (tail operators)
                     (canonicalStateRestSiteTensors old_state)
         }
+-- @nonl
 -- @-node:gcross.20100505152919.1748:applySingleSiteOperators
 -- @+node:gcross.20100505152919.1705:enumerateMatrix
-enumerateMatrix :: (Vec.Fold v (Complex Double), Vec.Fold m v)  => m -> [(Int,[(Int,Complex Double)])]
+enumerateMatrix :: (Vec.Fold v (Complex Double), Vec.Fold m v)  => m → [(Int,[(Int,Complex Double)])]
 enumerateMatrix = zip [1..] . map enumerateVector . Vec.toList
+-- @nonl
 -- @-node:gcross.20100505152919.1705:enumerateMatrix
 -- @+node:gcross.20100505152919.1704:enumerateVector
-enumerateVector :: Vec.Fold v (Complex Double) => v -> [(Int,Complex Double)]
+enumerateVector :: Vec.Fold v (Complex Double) => v → [(Int,Complex Double)]
 enumerateVector = zip [1..] . Vec.toList
+-- @nonl
 -- @-node:gcross.20100505152919.1704:enumerateVector
 -- @+node:gcross.20100505152919.1706:enumerateSingleSiteOperator
-enumerateSingleSiteOperator :: OperatorDimension n => SingleSiteOperator n -> [(Int,[(Int,Complex Double)])]
+enumerateSingleSiteOperator :: OperatorDimension n => SingleSiteOperator n → [(Int,[(Int,Complex Double)])]
 enumerateSingleSiteOperator = enumerateMatrix . unwrapSingleSiteOperator
+-- @nonl
 -- @-node:gcross.20100505152919.1706:enumerateSingleSiteOperator
 -- @+node:gcross.20100504143114.1691:makeOperatorSiteTensorFromSpecification
 makeOperatorSiteTensorFromSpecification ::
     OperatorDimension n =>
-    Int ->
-    Int ->
-    OperatorSiteSpecification n ->
+    Int →
+    Int →
+    OperatorSiteSpecification n →
     OperatorSiteTensor
 makeOperatorSiteTensorFromSpecification _ _ [] = error "The specification must be non-empty."
 makeOperatorSiteTensorFromSpecification left_bandwidth right_bandwidth elements@((_,o):_) =
     let number_of_elements = length elements
     in unsafePerformIO $ do
         let n = physicalDimensionOfSingleSiteOperator o
-        operator_indices <- newArray ((1,1),(number_of_elements,2)) 0
-        operator_matrices <- newArray ((1,1,1),(number_of_elements,n,n)) 0
+        operator_indices ← newArray ((1,1),(number_of_elements,2)) 0
+        operator_matrices ← newArray ((1,1,1),(number_of_elements,n,n)) 0
         let go _ [] = return ()
             go index (((left_index,right_index),single_site_operator):rest) = do
                 when (left_index < 1) $
@@ -227,8 +235,8 @@ makeOperatorSiteTensorFromSpecification left_bandwidth right_bandwidth elements@
                 writeArray operator_indices (index,1) (fromIntegral left_index)
                 writeArray operator_indices (index,2) (fromIntegral right_index)
                 forM_ (enumerateSingleSiteOperator single_site_operator) $
-                    \(row,columns) -> forM_ columns $
-                        \(column,value) ->
+                    \(row,columns) → forM_ columns $
+                        \(column,value) →
                             writeArray operator_matrices (index,row,column) value
                 go (index+1) rest
         go 1 elements
@@ -240,6 +248,7 @@ makeOperatorSiteTensorFromSpecification left_bandwidth right_bandwidth elements@
             ,   operatorIndices = operator_indices
             ,   operatorMatrices = operator_matrices
             }
+-- @nonl
 -- @-node:gcross.20100504143114.1691:makeOperatorSiteTensorFromSpecification
 -- @-node:gcross.20100504143114.1695:Functions
 -- @-others

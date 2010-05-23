@@ -5,6 +5,7 @@
 -- @<< Language extensions >>
 -- @+node:gcross.20100505152919.1757:<< Language extensions >>
 {-# LANGUAGE TypeSynonymInstances #-}
+{-# LANGUAGE UnicodeSyntax #-}
 -- @-node:gcross.20100505152919.1757:<< Language extensions >>
 -- @nl
 
