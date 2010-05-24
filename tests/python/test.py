@@ -1139,11 +1139,25 @@ class project(unittest.TestCase):
 #@+node:gcross.20100521141104.1781:compute_overlap_with_projectors
 class compute_overlap_with_projectors(unittest.TestCase):
     @with_checker
-    def test_correctness(self,n=irange(2,10)):
+    def test_correctness_for_orthogonal_vector(self,n=irange(2,10)):
         projectors = vmps.random_projector_matrix(n,randint(1,n-1))
         vector = crand(n)
         projected_vector = vmps.project(projectors,vector)
         self.assertAlmostEqual(vmps.compute_overlap_with_projectors(projectors,projected_vector),0)
+
+    @with_checker
+    def test_correctness_for_projection_space_vector(self,n=irange(2,10)):
+        projectors = vmps.random_projector_matrix(n,randint(1,n-1))
+        vector = crand(n)
+        vector = vector - vmps.project(projectors,vector)
+        self.assertAlmostEqual(vmps.compute_overlap_with_projectors(projectors,vector),norm(vector))
+
+    @with_checker
+    def test_correctness_for_general_vector(self,n=irange(2,10)):
+        projectors = vmps.random_projector_matrix(n,randint(1,n-1))
+        vector = crand(n)
+        projected_vector = vmps.project(projectors,vector)
+        self.assertAlmostEqual(vmps.compute_overlap_with_projectors(projectors,vector),norm(vector-projected_vector))
 #@-node:gcross.20100521141104.1781:compute_overlap_with_projectors
 #@-node:gcross.20100521141104.1779:Projectors
 #@+node:gcross.20091110205054.1948:Normalization
