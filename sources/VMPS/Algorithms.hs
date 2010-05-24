@@ -15,6 +15,7 @@ module VMPS.Algorithms where
 -- @+node:gcross.20091118213523.1812:<< Import needed modules >>
 import Control.Arrow
 import Control.Exception
+import Control.Monad
 import Control.Monad.Identity
 import Control.Monad.State
 
@@ -76,12 +77,17 @@ newChainCreator post_initialization initial_bandwidth operator_site_tensors over
     new_chain ←
         liftIO
         .
+        fmap (
+            fromMaybe (error "Bandwidth was insufficient to construct a randomized energy chain that was perpendicular to the projectors.")
+            .
+            projectChain
+        )
+        .
         generateRandomizedChainWithOverlaps initial_bandwidth
         $
         makeConfiguration operator_site_tensors overlap_tensor_trios
     post_initialization
     return new_chain
--- @nonl
 -- @-node:gcross.20091120112621.1597:newChainCreator
 -- @-node:gcross.20091120112621.1596:bandwidth increase callbacks
 -- @+node:gcross.20091120112621.1594:multi-level callbacks

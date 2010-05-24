@@ -642,6 +642,13 @@ generateRandomizedChainWithOverlaps requested_bandwidth_dimension operator_site_
             in chain
 -- @nonl
 -- @-node:gcross.20091113142219.2535:generateRandomizedChainWithOverlaps
+-- @+node:gcross.20100523170654.1792:generateRandomizedChainProjecting
+generateRandomizedChainProjecting :: Int → EnergyMinimizationChain → IO EnergyMinimizationChain
+generateRandomizedChainProjecting requested_bandwidth_dimension =
+    generateRandomizedChainWithOverlaps requested_bandwidth_dimension
+    .
+    makeConfigurationOrthogonalTo
+-- @-node:gcross.20100523170654.1792:generateRandomizedChainProjecting
 -- @+node:gcross.20091119150241.1849:getCanonicalStateRepresentation
 getCanonicalStateRepresentation :: EnergyMinimizationChain → CanonicalStateRepresentation
 getCanonicalStateRepresentation =
@@ -654,6 +661,23 @@ getCanonicalStateRepresentation =
     .
     activateFirstSite
 -- @-node:gcross.20091119150241.1849:getCanonicalStateRepresentation
+-- @+node:gcross.20100522160359.1792:makeConfigurationOrthogonalTo
+makeConfigurationOrthogonalTo :: EnergyMinimizationChain → Configuration
+makeConfigurationOrthogonalTo given_chain =
+    (siteHamiltonianTensor chain,first_overlap_trio:siteOverlapTrios chain):
+    [ (rightNeighborOperator neighbor,overlap_trio:rightNeighborOverlapTrios neighbor)
+    | overlap_trio ← rest_overlap_trios
+    | neighbor ← siteRightNeighbors chain
+    ]
+  where
+    chain = activateFirstSite given_chain
+    first_overlap_trio:rest_overlap_trios = 
+        computeOverlapTriosFromCanonicalStateRepresentation
+        .
+        getCanonicalStateRepresentation
+        $
+        chain
+-- @-node:gcross.20100522160359.1792:makeConfigurationOrthogonalTo
 -- @+node:gcross.20091115105949.1744:increaseChainBandwidth
 increaseChainBandwidth :: Int → EnergyMinimizationChain → IO EnergyMinimizationChain
 increaseChainBandwidth new_bandwidth starting_chain
@@ -853,6 +877,33 @@ siteDegreesOfFreedom = numberOfDegreesOfFreedomInState . siteStateTensor
 -- @+node:gcross.20100522160359.1786:siteProjectorCount
 siteProjectorCount = projectorCount . siteProjectorMatrix
 -- @-node:gcross.20100522160359.1786:siteProjectorCount
+-- @+node:gcross.20100523170654.1791:chainHasProjectors
+chainHasProjectors = (== 0) . chainNumberOfProjectors
+-- @-node:gcross.20100523170654.1791:chainHasProjectors
+-- @+node:gcross.20100522160359.1785:projectChain
+projectChain :: EnergyMinimizationChain → Maybe EnergyMinimizationChain
+projectChain starting_chain
+  | chainHasProjectors starting_chain
+      = Just starting_chain
+  | otherwise
+      = fmap (activateSite . siteNumber $ starting_chain)
+        .
+        go
+        .
+        activateFirstSite
+        $
+        starting_chain
+  where
+    go chain
+      | siteProjectorCount chain < siteDegreesOfFreedom chain
+        = Just (projectSite chain)
+      | siteNumber chain == number_of_sites
+        = Nothing
+      | otherwise
+        = go (activateRightNeighbor chain)
+
+    number_of_sites = chainNumberOfSites starting_chain
+-- @-node:gcross.20100522160359.1785:projectChain
 -- @+node:gcross.20100522160359.1791:chainStateProjector
 chainStateProjector = computeOverlapTriosFromCanonicalStateRepresentation . getCanonicalStateRepresentation
 -- @-node:gcross.20100522160359.1791:chainStateProjector

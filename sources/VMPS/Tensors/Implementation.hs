@@ -486,7 +486,6 @@ withNewPinnedProjectorMatrix number_of_projectors projector_length = do
     >=>
     \((rank,result),tensor) →
         return (result,ProjectorMatrix rank projector_length tensor)
--- @nonl
 -- @-node:gcross.20091116175016.1796:ProjectorMatrix
 -- @-node:gcross.20091111171052.1591:Types
 -- @+node:gcross.20091111171052.1601:Classes

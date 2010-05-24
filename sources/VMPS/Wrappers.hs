@@ -61,6 +61,7 @@ data OptimizerFailure =
   | OptimizerObtainedVanishingEigenvector Double
   | OptimizerObtainedEigenvectorInProjectorSpace
   | OptimizerGivenTooManyProjectors Int Int Int Int
+  | OptimizerGivenGuessInProjectorSpace
   | UnknownOptimizerFailureCode Int
   deriving (Show,Typeable)
 
@@ -476,6 +477,7 @@ computeOptimalSiteStateTensor
         2 → Left $ OptimizerObtainedVanishingEigenvector (realPart eigenvalue)
         3 → Left $ OptimizerObtainedEigenvectorInProjectorSpace
         10 → Left $ OptimizerGivenTooManyProjectors (projectorCount projector_matrix) d bl br
+        11 → Left $ OptimizerGivenGuessInProjectorSpace
         _ → Left $ UnknownOptimizerFailureCode (fromIntegral info)
 -- @nonl
 -- @-node:gcross.20091111171052.1656:computeOptimalSiteStateTensor

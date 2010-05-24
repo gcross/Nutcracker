@@ -973,6 +973,28 @@ main = defaultMain
                 (siteNumber moved_chain_3 == site_number_3)
         -- @nonl
         -- @-node:gcross.20100521141104.1786:activateSite
+        -- @+node:gcross.20100523170654.1793:generateRandomizedChain
+        ,testProperty "generateRandomizedChainProjecting" $ do
+            number_of_sites ← choose (2,10)
+            bandwidth_dimension ← choose (1,2)
+            return $
+                (== 1)
+                .
+                chainNumberOfProjectors
+                .
+                unsafePerformIO
+                .
+                (generateRandomizedChain bandwidth_dimension
+                 >=>
+                 generateRandomizedChainProjecting bandwidth_dimension
+                )
+                .
+                replicate number_of_sites
+                .
+                makeOperatorSiteTensorFromSpecification 1 1 
+                $
+                [(1 ⇨ 1) (identity :: SingleSiteOperator N2)]
+        -- @-node:gcross.20100523170654.1793:generateRandomizedChain
         -- @+node:gcross.20100522160359.1790:projectSite
         ,testProperty "projectSite" $ do
             number_of_sites ← choose (2,10)
@@ -995,20 +1017,12 @@ main = defaultMain
                 .
                 unsafePerformIO
                 .
-                generateRandomizedChainWithOverlaps bandwidth_dimension
-                .
-                makeConfiguration operator_site_tensors
-                .
-                (:[])
-                .
-                chainStateProjector
-                .
-                unsafePerformIO
-                .
-                generateRandomizedChain bandwidth_dimension
+                (generateRandomizedChain bandwidth_dimension
+                 >=>
+                 generateRandomizedChainProjecting bandwidth_dimension
+                )
                 $
                 operator_site_tensors
-        -- @nonl
         -- @-node:gcross.20100522160359.1790:projectSite
         -- @-others
         ]
