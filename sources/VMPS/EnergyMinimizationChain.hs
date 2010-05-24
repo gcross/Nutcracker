@@ -500,7 +500,8 @@ computeEnergy EnergyMinimizationChain
             ,   siteRightBoundaryTensor = right_boundary_tensor
             } = 
     let expectation = computeExpectation left_boundary_tensor state_site_tensor operator_site_tensor right_boundary_tensor
-    in assert (imagPart expectation ~= 0) (realPart expectation)
+    in assert (imagPart expectation ≅ 0) (realPart expectation)
+-- @nonl
 -- @-node:gcross.20091113142219.1679:computeEnergy
 -- @+node:gcross.20091117140132.1798:computeOverlapTriosFromCanonicalStateRepresentation
 computeOverlapTriosFromCanonicalStateRepresentation :: CanonicalStateRepresentation → [OverlapTensorTrio]

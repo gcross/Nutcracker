@@ -22,6 +22,7 @@ import Data.Array.Storable
 import Data.Array.Unboxed
 import Data.Complex
 import Data.Int
+import Data.Maybe
 import Data.Vec ((:.)(..))
 import Data.Vec.Nat
 
@@ -86,7 +87,7 @@ instance Arbitrary (Complex Double) where
 -- @+node:gcross.20091114174920.1734:assertAlmostEqual
 assertAlmostEqual :: (Show a, AlmostEq a) => String → a → a → Assertion
 assertAlmostEqual message x y
-    | x ~= y     = return ()
+    | x ≅ y     = return ()
     | otherwise  = assertFailure $ message ++ " (" ++ show x ++ " /~ " ++ show y ++ ")"
 -- @nonl
 -- @-node:gcross.20091114174920.1734:assertAlmostEqual
@@ -139,7 +140,7 @@ main = defaultMain
                 overlap ← withStorableArray arr $ \p → do
                     normalize number_of_numbers p
                     dotArrays number_of_numbers p p
-                return (overlap ~= 1)
+                return (overlap ≅ 1)
         -- @nonl
         -- @-node:gcross.20091116222034.1798:normalize
         -- @+node:gcross.20091116222034.1800:orthogonalize2 -- does it work?
@@ -159,7 +160,7 @@ main = defaultMain
                             (dotArrays number_of_numbers p2 p2)
                             (dotArrays number_of_numbers p1 p2)
                             (dotArrays number_of_numbers p2 p1)
-                return $ and [(norm1 ~= 1),(norm2 ~= 1),(overlap1 ~= 0),(overlap2 ~= 0)]
+                return $ and [(norm1 ≅ 1),(norm2 ≅ 1),(overlap1 ≅ 0),(overlap2 ≅ 0)]
         -- @nonl
         -- @-node:gcross.20091116222034.1800:orthogonalize2 -- does it work?
         -- @-others
@@ -247,9 +248,9 @@ main = defaultMain
                         assertEqual "is the new left bandwidth dimension the same?" (leftBandwidthOfState state_site_tensor) bl
                         assertEqual "is the new right bandwidth dimension the same?" (rightBandwidthOfState state_site_tensor) br
                         assertEqual "is the new physical dimension the same?" (physicalDimensionOfState state_site_tensor) d
-                        assertBool "are all but the last component of the state zero?" (take 3 components ~= replicate 3 0)
+                        assertBool "are all but the last component of the state zero?" (take 3 components ≅ replicate 3 0)
                         assertBool "is the last components non-zero?" (last components /~ 0)
-                        assertBool "is the eigenvalue correct?" (eigenvalue ~= (-1))
+                        assertBool "is the eigenvalue correct?" (eigenvalue ≅ (-1))
             -- @nonl
             -- @-node:gcross.20091111171052.1661:trivial, d = 4
             -- @-others
@@ -270,7 +271,7 @@ main = defaultMain
                 in do
                     assertEqual "is the new state bandwidth dimension correct?" (rightBandwidthOfState state_site_tensor) br
                     assertEqual "is the new operator bandwidth dimension correct?" (operatorRightBandwidth operator_site_tensor) cr
-                    assertBool "are the components correct?" (components ~= [1])
+                    assertBool "are the components correct?" (components ≅ [1])
             -- @nonl
             -- @-node:gcross.20091112145455.1630:trivial, all dimensions 1
             -- @+node:gcross.20091112145455.1633:trivial, c = 2
@@ -285,7 +286,7 @@ main = defaultMain
                 in do
                     assertEqual "is the new state bandwidth dimension correct?" (rightBandwidthOfState state_site_tensor) br
                     assertEqual "is the new operator bandwidth dimension correct?" (operatorRightBandwidth operator_site_tensor) cr
-                    assertBool "are the components correct?" (components ~= [0,0 :+ 1])
+                    assertBool "are the components correct?" (components ≅ [0,0 :+ 1])
             -- @nonl
             -- @-node:gcross.20091112145455.1633:trivial, c = 2
             -- @+node:gcross.20091112145455.1641:contractSOSRight
@@ -303,7 +304,7 @@ main = defaultMain
                     in do
                         assertEqual "is the new state bandwidth dimension correct?" (leftBandwidthOfState state_site_tensor) br
                         assertEqual "is the new operator bandwidth dimension correct?" (operatorLeftBandwidth operator_site_tensor) cr
-                        assertBool "are the components correct?" (components ~= [1.0,0.0])
+                        assertBool "are the components correct?" (components ≅ [1.0,0.0])
                 -- @nonl
                 -- @-node:gcross.20091112145455.1642:trivial, all dimensions 1
                 -- @+node:gcross.20091112145455.1643:trivial, c = 2
@@ -318,7 +319,8 @@ main = defaultMain
                     in do
                         assertEqual "is the new state bandwidth dimension correct?" (leftBandwidthOfState state_site_tensor) bl
                         assertEqual "is the new operator bandwidth dimension correct?" (operatorLeftBandwidth operator_site_tensor) cl
-                        assertBool "are the components correct?" (components ~= [0,0 :+ 1])
+                        assertBool "are the components correct?" (components ≅ [0,0 :+ 1])
+                -- @nonl
                 -- @-node:gcross.20091112145455.1643:trivial, c = 2
                 -- @-others
                 ]
@@ -339,7 +341,8 @@ main = defaultMain
                 in do
                     assertEqual "is the old state bandwidth dimension correct?" (rightBandwidthOfState overlap_site_tensor) ob
                     assertEqual "is the new state bandwidth dimension correct?" (rightBandwidthOfState state_site_tensor) nb
-                    assertBool "are the components correct?" (components ~= [1])
+                    assertBool "are the components correct?" (components ≅ [1])
+            -- @nonl
             -- @-node:gcross.20091116175016.1777:trivial, all dimensions 1
             -- @+node:gcross.20091116175016.1780:trivial, physical dimensions 2
             ,testCase "trivial, physical dimensions 2" $
@@ -422,7 +425,8 @@ main = defaultMain
                 in do
                     assertEqual "is the old state bandwidth dimension correct?" (leftBandwidthOfState overlap_site_tensor) ob
                     assertEqual "is the new state bandwidth dimension correct?" (leftBandwidthOfState state_site_tensor) nb
-                    assertBool "are the components correct?" (components ~= [1])
+                    assertBool "are the components correct?" (components ≅ [1])
+            -- @nonl
             -- @-node:gcross.20091116175016.1791:trivial, all dimensions 1
             -- @+node:gcross.20091116175016.1793:trivial, physical dimensions 2
             ,testCase "trivial, physical dimensions 2" $
@@ -531,7 +535,7 @@ main = defaultMain
                             unwrapRightAbsorptionNormalizedStateSiteTensor
                             $
                             state_site_tensor
-                    assertBool "is the state site tensor properly normalized?" (1 ~= normalization)
+                    assertBool "is the state site tensor properly normalized?" (1 ≅ normalization)
                 -- @nonl
                 -- @-node:gcross.20091112145455.1666:selected dimensions
                 -- @-others
@@ -701,7 +705,7 @@ main = defaultMain
             number_of_projectors ← choose (0,projector_length-1)
             let projector_matrix = unsafePerformIO $ generateRandomizedProjectorMatrix projector_length number_of_projectors
             return $
-                (~= 0)
+                (≅ 0)
                 .
                 computeOverlapWithProjectors projector_matrix
                 .
@@ -1007,7 +1011,7 @@ main = defaultMain
                     $
                     [(1 ⇨ 1) (identity :: SingleSiteOperator N2)]
             return $
-                (~= 0)
+                (≅ 0)
                 .
                 chainProjectorOverlap
                 .
