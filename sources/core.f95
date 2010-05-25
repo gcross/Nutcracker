@@ -954,6 +954,275 @@ subroutine compute_overlap_with_projectors( &
   overlap = dznrm2(number_of_projectors,projector_weights,1)
 end subroutine
 !@-node:gcross.20100520145029.1765:compute_overlap_with_projectors
+!@+node:gcross.20100525104555.1804:convert_vectors_to_reflectors
+subroutine convert_vectors_to_reflectors( &
+  m, n, &
+  vectors, &
+  rank, &
+  coefficients &
+)
+  implicit none
+  integer, intent(in) :: n, m
+  integer, intent(out) :: rank
+  double complex, intent(inout) :: vectors(m,n)
+  double complex, intent(out) :: coefficients(n)
+
+  integer :: jpvt(n), info, lwork
+  double complex :: lwork_as_complex
+  double precision :: rwork(2*n)
+
+  double complex, allocatable :: work(:)
+
+  external :: zgeqp3, zungqr, dznrm2
+  double precision :: dznrm2
+
+  if (n == 0) then
+    return
+  end if
+
+  if (m < n) then
+    print *, "The input matrix has too many columns and not enough rows (column-major ordering) to orthogonalize!"
+    stop
+  end if
+
+  call zgeqp3( &
+    m, n, &
+    vectors, m, &
+    jpvt, &
+    coefficients, &
+    lwork_as_complex, -1, &
+    rwork, &
+    info &
+  )
+  lwork = int(real(lwork_as_complex))
+
+  if (info /= 0) then
+    print *, "Unable to factorize matrix (zgeqp3, workspace query); info =", info
+    stop
+  end if
+
+  allocate(work(lwork))
+
+  jpvt = 0
+  call zgeqp3( &
+    m, n, &
+    vectors, m, &
+    jpvt, &
+    coefficients, &
+    work, lwork, &
+    rwork, &
+    info &
+  )
+
+  deallocate(work)
+
+  if (info /= 0) then
+    print *, "Unable to factorize matrix (zgeqp3); info =", info
+    stop
+  end if
+
+  rank = n
+  do while (dznrm2(n-rank+1,vectors(rank,rank),m) < 1e-7 .and. rank > 0)
+    rank = rank - 1
+  end do
+
+end subroutine
+!@-node:gcross.20100525104555.1804:convert_vectors_to_reflectors
+!@+node:gcross.20100525120117.1807:compute_q_from_reflectors
+subroutine compute_q_from_reflectors( &
+  m, n, &
+  reflectors, &
+  coefficients, &
+  q &
+)
+  implicit none
+  integer, intent(in) :: n, m
+  double complex, intent(in) :: reflectors(m,n), coefficients(n)
+  double complex, intent(out) :: q(m,m)
+
+  integer :: info, lwork
+  double complex :: lwork_as_complex
+
+  double complex, allocatable :: work(:)
+
+  external :: zungqr, dznrm2
+  double precision :: dznrm2
+
+  q(:,:n) = reflectors
+  q(:,n+1:) = 0
+
+  call zungqr( &
+    m, m, n, &
+    q, m, &
+    coefficients, &
+    lwork_as_complex, -1, &
+    info &
+  )
+  lwork = int(real(lwork_as_complex))
+
+  if (info /= 0) then
+    print *, "Error calling zungqr (workspace query); info =", info
+    stop
+  end if
+
+  allocate(work(lwork))
+
+  call zungqr( &
+    m, m, n, &
+    q, m, &
+    coefficients, &
+    work, lwork, &
+    info &
+  )
+
+  deallocate(work)
+
+  if (info /= 0) then
+    print *, "Error calling zungqr (workspace query); info =", info
+    stop
+  end if
+
+end subroutine
+!@-node:gcross.20100525120117.1807:compute_q_from_reflectors
+!@+node:gcross.20100525104555.1805:project_into_orthogonal_space
+subroutine project_into_orthogonal_space( &
+  full_space_dimension, number_of_reflectors, orthogonal_space_dimension, &
+  reflectors, coefficients, &
+  vector_in_full_space, &
+  vector_in_orthogonal_space &
+)
+  implicit none
+  integer, intent(in) :: full_space_dimension, number_of_reflectors, orthogonal_space_dimension
+  double complex, intent(in) :: &
+    reflectors(full_space_dimension,number_of_reflectors), &
+    coefficients(number_of_reflectors), &
+    vector_in_full_space(full_space_dimension)
+  double complex, intent(out) :: &
+    vector_in_orthogonal_space(orthogonal_space_dimension)
+
+  double complex :: &
+    lwork_as_complex, &
+    intermediate_vector(full_space_dimension)
+  double complex, allocatable :: work(:)
+  integer :: lwork, info, start_of_orthogonal_subspace
+
+  if (full_space_dimension == orthogonal_space_dimension) then
+    vector_in_orthogonal_space = vector_in_full_space
+    return
+  end if
+
+  start_of_orthogonal_subspace = full_space_dimension-(orthogonal_space_dimension-1)
+
+  intermediate_vector = vector_in_full_space
+
+  call zunmqr( &
+    'R','N', &
+    1, full_space_dimension, number_of_reflectors, &
+    reflectors, full_space_dimension, &
+    coefficients, &
+    intermediate_vector, 1, &
+    lwork_as_complex, -1, &
+    info &
+  )
+
+  if (info /= 0) then
+    print *, "Error calling zunmqr (workspace query):  info =", info
+    stop
+  end if
+
+  lwork = int(lwork_as_complex)
+  allocate(work(lwork))
+
+  call zunmqr( &
+    'R','N', &
+    1, full_space_dimension, number_of_reflectors, &
+    reflectors, full_space_dimension, &
+    coefficients, &
+    intermediate_vector, 1, &
+    work, lwork, &
+    info &
+  )
+
+  deallocate(work)
+
+  if (info /= 0) then
+    print *, "Error calling zunmqr:  info =", info
+    stop
+  end if
+
+  vector_in_orthogonal_space = &
+    intermediate_vector(start_of_orthogonal_subspace:full_space_dimension)
+
+end subroutine
+!@-node:gcross.20100525104555.1805:project_into_orthogonal_space
+!@+node:gcross.20100525104555.1809:unproject_from_orthogonal_space
+subroutine unproject_from_orthogonal_space( &
+  full_space_dimension, number_of_reflectors, orthogonal_space_dimension, &
+  reflectors, coefficients, &
+  vector_in_orthogonal_space, &
+  vector_in_full_space &
+)
+  implicit none
+  integer, intent(in) :: full_space_dimension, number_of_reflectors, orthogonal_space_dimension
+  double complex, intent(in) :: &
+    reflectors(full_space_dimension,number_of_reflectors), &
+    coefficients(number_of_reflectors), &
+    vector_in_orthogonal_space(orthogonal_space_dimension)
+  double complex, intent(out) :: &
+    vector_in_full_space(full_space_dimension)
+
+  double complex :: &
+    lwork_as_complex
+  double complex, allocatable :: work(:)
+  integer :: lwork, info, start_of_orthogonal_subspace
+
+  if (full_space_dimension == orthogonal_space_dimension) then
+    vector_in_full_space = vector_in_orthogonal_space
+    return
+  end if
+
+  start_of_orthogonal_subspace = full_space_dimension-(orthogonal_space_dimension-1)
+
+  vector_in_full_space(1:start_of_orthogonal_subspace-1) = 0 
+  vector_in_full_space(start_of_orthogonal_subspace:) = vector_in_orthogonal_space
+
+  call zunmqr( &
+    'R','C', &
+    1, full_space_dimension, number_of_reflectors, &
+    reflectors, full_space_dimension, &
+    coefficients, &
+    vector_in_full_space, 1, &
+    lwork_as_complex, -1, &
+    info &
+  )
+
+  if (info /= 0) then
+    print *, "Error calling zunmqr (workspace query):  info =", info
+    stop
+  end if
+
+  lwork = int(lwork_as_complex)
+  allocate(work(lwork))
+
+  call zunmqr( &
+    'R','C', &
+    1, full_space_dimension, number_of_reflectors, &
+    reflectors, full_space_dimension, &
+    coefficients, &
+    vector_in_full_space, 1, &
+    work, lwork, &
+    info &
+  )
+
+  deallocate(work)
+
+  if (info /= 0) then
+    print *, "Error calling zunmqr:  info =", info
+    stop
+  end if
+
+end subroutine
+!@-node:gcross.20100525104555.1809:unproject_from_orthogonal_space
 !@-node:gcross.20100520145029.1766:Projectors
 !@+node:gcross.20100517000234.1775:optimize
 function optimize( &
