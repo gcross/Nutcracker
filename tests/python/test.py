@@ -258,6 +258,14 @@ def form_contractor(edges,input_tensors,output_tensor):
     )
 #@-node:gcross.20091110135225.1559:form_contractor
 #@-node:gcross.20091108152444.1533:Functions
+#@+node:gcross.20100525120117.1814:Classes
+#@+node:gcross.20100525120117.1815:TestCase
+class TestCase(unittest.TestCase):
+    def assertAllClose(self,v1,v2):
+        self.assertTrue(allclose(v1,v2))
+#@nonl
+#@-node:gcross.20100525120117.1815:TestCase
+#@-node:gcross.20100525120117.1814:Classes
 #@+node:gcross.20091110205054.1947:Tests
 #@+node:gcross.20091108152444.1534:Contractors
 #@+others
@@ -276,7 +284,7 @@ iteration_stage_1_correct_contractor = form_contractor([
 ], ("I",5)
 )
 
-class iteration_stage_1(unittest.TestCase):
+class iteration_stage_1(TestCase):
 
     @with_checker(number_of_calls=10)
     def test_agreement_with_contractor(self,
@@ -289,7 +297,8 @@ class iteration_stage_1(unittest.TestCase):
         sparse_operator_indices, sparse_operator_matrices, operator_site_tensor = generate_random_sparse_matrices(cl,cr,d)
         actual_output_tensor = vmps.iteration_stage_1(cr,left_environment,sparse_operator_indices,sparse_operator_matrices)
         correct_output_tensor = iteration_stage_1_correct_contractor(left_environment,operator_site_tensor)
-        self.assertTrue(allclose(actual_output_tensor,correct_output_tensor))
+        self.assertAllClose(actual_output_tensor,correct_output_tensor)
+#@nonl
 #@-node:gcross.20091106154604.1986:iteration_stage_1
 #@+node:gcross.20091107163338.1531:iteration_stage_2
 iteration_stage_2_correct_contractor = form_contractor([
@@ -305,7 +314,7 @@ iteration_stage_2_correct_contractor = form_contractor([
 ], ("O",4)
 )
 
-class iteration_stage_2(unittest.TestCase):
+class iteration_stage_2(TestCase):
 
     @with_checker(number_of_calls=10)
     def test_agreement_with_contractor(self,
@@ -318,7 +327,8 @@ class iteration_stage_2(unittest.TestCase):
         state_site_tensor = crand(br,bl,d)
         actual_output_tensor = vmps.iteration_stage_2(iteration_stage_1_tensor,state_site_tensor)
         correct_output_tensor = iteration_stage_2_correct_contractor(iteration_stage_1_tensor,state_site_tensor)
-        self.assertTrue(allclose(actual_output_tensor,correct_output_tensor))
+        self.assertAllClose(actual_output_tensor,correct_output_tensor)
+#@nonl
 #@-node:gcross.20091107163338.1531:iteration_stage_2
 #@+node:gcross.20091110011014.1555:iteration_stage_3
 iteration_stage_3_correct_contractor = form_contractor([
@@ -333,7 +343,7 @@ iteration_stage_3_correct_contractor = form_contractor([
 ], ("O",3)
 )
 
-class iteration_stage_3(unittest.TestCase):
+class iteration_stage_3(TestCase):
 
     @with_checker(number_of_calls=10)
     def test_agreement_with_contractor(self,
@@ -346,7 +356,8 @@ class iteration_stage_3(unittest.TestCase):
         right_environment = crand(br,br,cr)
         actual_output_tensor = vmps.iteration_stage_3(iteration_stage_2_tensor,right_environment)
         correct_output_tensor = iteration_stage_3_correct_contractor(iteration_stage_2_tensor,right_environment)
-        self.assertTrue(allclose(actual_output_tensor,correct_output_tensor))
+        self.assertAllClose(actual_output_tensor,correct_output_tensor)
+#@nonl
 #@-node:gcross.20091110011014.1555:iteration_stage_3
 #@-node:gcross.20091110135225.1567:iteration
 #@+node:gcross.20091110135225.1568:contract_sos
@@ -368,7 +379,7 @@ contract_sos_left_correct_contractor = form_contractor([
 ], ("N",3)
 )
 
-class contract_sos_left(unittest.TestCase):
+class contract_sos_left(TestCase):
 
     @with_checker(number_of_calls=10)
     def test_agreement_with_contractor(self,
@@ -393,7 +404,8 @@ class contract_sos_left(unittest.TestCase):
             state_site_tensor,
             state_site_tensor.conj(),
         )
-        self.assertTrue(allclose(actual_output_tensor,correct_output_tensor))
+        self.assertAllClose(actual_output_tensor,correct_output_tensor)
+#@nonl
 #@-node:gcross.20091110011014.1557:contract_sos_left
 #@+node:gcross.20091110135225.1563:contract_sos_right_stage_1
 contract_sos_right_stage_1_correct_contractor = form_contractor([
@@ -408,7 +420,7 @@ contract_sos_right_stage_1_correct_contractor = form_contractor([
 ], ("O",4)
 )
 
-class contract_sos_right_stage_1(unittest.TestCase):
+class contract_sos_right_stage_1(TestCase):
 
     @with_checker(number_of_calls=10)
     def test_agreement_with_contractor(self,
@@ -427,7 +439,8 @@ class contract_sos_right_stage_1(unittest.TestCase):
             right_environment,
             state_site_tensor.conj(),
         )
-        self.assertTrue(allclose(actual_output_tensor,correct_output_tensor))
+        self.assertAllClose(actual_output_tensor,correct_output_tensor)
+#@nonl
 #@-node:gcross.20091110135225.1563:contract_sos_right_stage_1
 #@+node:gcross.20091110135225.1574:contract_sos_right_stage_2a
 contract_sos_right_stage_2a_correct_contractor = form_contractor([
@@ -441,7 +454,7 @@ contract_sos_right_stage_2a_correct_contractor = form_contractor([
 ], ("I",3)
 )
 
-class contract_sos_right_stage_2a(unittest.TestCase):
+class contract_sos_right_stage_2a(TestCase):
 
     @with_checker(number_of_calls=10)
     def test_agreement_with_contractor(self,
@@ -460,7 +473,8 @@ class contract_sos_right_stage_2a(unittest.TestCase):
             matrix,
             state_site_tensor
         )
-        self.assertTrue(allclose(actual_output_tensor,correct_output_tensor))
+        self.assertAllClose(actual_output_tensor,correct_output_tensor)
+#@nonl
 #@-node:gcross.20091110135225.1574:contract_sos_right_stage_2a
 #@+node:gcross.20091110135225.1576:contract_sos_right_stage_2b
 contract_sos_right_stage_2b_correct_contractor = form_contractor([
@@ -474,7 +488,7 @@ contract_sos_right_stage_2b_correct_contractor = form_contractor([
 ], ("C",2)
 )
 
-class contract_sos_right_stage_2b(unittest.TestCase):
+class contract_sos_right_stage_2b(TestCase):
 
     @with_checker(number_of_calls=10)
     def test_agreement_with_contractor(self,
@@ -487,7 +501,8 @@ class contract_sos_right_stage_2b(unittest.TestCase):
         actual_output_tensor = zeros((bl,bl),complex128,order='Fortran')
         vmps.contract_sos_right_stage_2b(A,B,actual_output_tensor)
         correct_output_tensor = contract_sos_right_stage_2b_correct_contractor(A,B)
-        self.assertTrue(allclose(actual_output_tensor,correct_output_tensor))
+        self.assertAllClose(actual_output_tensor,correct_output_tensor)
+#@nonl
 #@-node:gcross.20091110135225.1576:contract_sos_right_stage_2b
 #@+node:gcross.20091110135225.1566:contract_sos_right_stage_2
 contract_sos_right_stage_2_correct_contractor = form_contractor([
@@ -505,7 +520,7 @@ contract_sos_right_stage_2_correct_contractor = form_contractor([
 ], ("R",3)
 )
 
-class contract_sos_right_stage_2(unittest.TestCase):
+class contract_sos_right_stage_2(TestCase):
 
     @with_checker(number_of_calls=10)
     def test_agreement_with_contractor(self,
@@ -529,7 +544,8 @@ class contract_sos_right_stage_2(unittest.TestCase):
             operator_site_tensor,
             state_site_tensor
         )
-        self.assertTrue(allclose(actual_output_tensor,correct_output_tensor))
+        self.assertAllClose(actual_output_tensor,correct_output_tensor)
+#@nonl
 #@-node:gcross.20091110135225.1566:contract_sos_right_stage_2
 #@+node:gcross.20091110205054.1909:contract_sos_right
 contract_sos_right_correct_contractor = form_contractor([
@@ -549,7 +565,7 @@ contract_sos_right_correct_contractor = form_contractor([
 ], ("N",3)
 )
 
-class contract_sos_right(unittest.TestCase):
+class contract_sos_right(TestCase):
 
     @with_checker(number_of_calls=10)
     def test_agreement_with_contractor(self,
@@ -574,7 +590,8 @@ class contract_sos_right(unittest.TestCase):
             state_site_tensor,
             state_site_tensor.conj(),
         )
-        self.assertTrue(allclose(actual_output_tensor,correct_output_tensor))
+        self.assertAllClose(actual_output_tensor,correct_output_tensor)
+#@nonl
 #@-node:gcross.20091110205054.1909:contract_sos_right
 #@-node:gcross.20091110135225.1568:contract_sos
 #@+node:gcross.20091116094945.1741:contract_ss
@@ -592,7 +609,7 @@ contract_ss_left_correct_contractor = form_contractor([
 ], ("L'",2)
 )
 
-class contract_ss_left(unittest.TestCase):
+class contract_ss_left(TestCase):
 
     @with_checker(number_of_calls=10)
     def test_agreement_with_contractor(self,
@@ -615,7 +632,8 @@ class contract_ss_left(unittest.TestCase):
             old_state_site_tensor,
             new_state_site_tensor,
         )
-        self.assertTrue(allclose(actual_output_tensor,correct_output_tensor))
+        self.assertAllClose(actual_output_tensor,correct_output_tensor)
+#@nonl
 #@-node:gcross.20091116094945.1740:contract_ss_left
 #@+node:gcross.20091116094945.1745:contract_ss_right
 contract_ss_right_correct_contractor = form_contractor([
@@ -631,7 +649,7 @@ contract_ss_right_correct_contractor = form_contractor([
 ], ("R'",2)
 )
 
-class contract_ss_right(unittest.TestCase):
+class contract_ss_right(TestCase):
 
     @with_checker(number_of_calls=10)
     def test_agreement_with_contractor(self,
@@ -654,7 +672,8 @@ class contract_ss_right(unittest.TestCase):
             old_state_site_tensor,
             new_state_site_tensor,
         )
-        self.assertTrue(allclose(actual_output_tensor,correct_output_tensor))
+        self.assertAllClose(actual_output_tensor,correct_output_tensor)
+#@nonl
 #@-node:gcross.20091116094945.1745:contract_ss_right
 #@+node:gcross.20091116094945.1750:form_overlap_vector
 form_overlap_vector_correct_contractor = form_contractor([
@@ -670,7 +689,7 @@ form_overlap_vector_correct_contractor = form_contractor([
 ], ("N",3)
 )
 
-class form_overlap_vector(unittest.TestCase):
+class form_overlap_vector(TestCase):
 
     @with_checker(number_of_calls=10)
     def test_agreement_with_contractor(self,
@@ -693,7 +712,8 @@ class form_overlap_vector(unittest.TestCase):
             right_environment,
             old_state_site_tensor,
         )
-        self.assertTrue(allclose(actual_output_tensor,correct_output_tensor))
+        self.assertAllClose(actual_output_tensor,correct_output_tensor)
+#@nonl
 #@-node:gcross.20091116094945.1750:form_overlap_vector
 #@-node:gcross.20091116094945.1741:contract_ss
 #@+node:gcross.20091110205054.1918:compute_expectation
@@ -715,7 +735,7 @@ compute_expectation_correct_contractor = form_contractor([
 ], (None,0)
 )
 
-class compute_expectation(unittest.TestCase):
+class compute_expectation(TestCase):
 
     @with_checker(number_of_calls=10)
     def test_agreement_with_contractor(self,
@@ -742,10 +762,11 @@ class compute_expectation(unittest.TestCase):
             state_site_tensor.conj(),
             right_environment,
         )
-        self.assertTrue(allclose(actual_output_tensor,correct_output_tensor))
+        self.assertAllClose(actual_output_tensor,correct_output_tensor)
+#@nonl
 #@-node:gcross.20091110205054.1918:compute_expectation
 #@+node:gcross.20100513131210.1746:compute_optimization_matrix
-class compute_optimization_matrix(unittest.TestCase):
+class compute_optimization_matrix(TestCase):
 
     correct_contractor = staticmethod(form_contractor([
         ("L2","M2"),
@@ -784,7 +805,8 @@ class compute_optimization_matrix(unittest.TestCase):
             operator_site_tensor,
             right_environment,
         )
-        self.assertTrue(allclose(actual_output_tensor,correct_output_tensor))
+        self.assertAllClose(actual_output_tensor,correct_output_tensor)
+#@nonl
 #@-node:gcross.20100513131210.1746:compute_optimization_matrix
 #@-others
 #@-node:gcross.20091108152444.1534:Contractors
@@ -808,7 +830,7 @@ optimization_matrix_contractor = form_contractor([
 )
 #@-node:gcross.20100517000234.1764:optimization_matrix_contractor
 #@+node:gcross.20091109182634.1543:optimizer_tests
-class optimizer_tests(unittest.TestCase):
+class optimizer_tests(TestCase):
     #@    @+others
     #@+node:gcross.20100506200958.2701:test_correct_result_for_arbitrary_operator
     @with_checker(number_of_calls=10)
@@ -838,7 +860,7 @@ class optimizer_tests(unittest.TestCase):
         actual_eigenvector /= actual_eigenvector[0]
         correct_eigenvector = correct_eigenvectors[correct_solution_index]
         correct_eigenvector /= correct_eigenvector[0]
-        self.assertTrue(allclose(actual_eigenvector,correct_eigenvector))
+        self.assertAllClose(actual_eigenvector,correct_eigenvector)
     #@-node:gcross.20100506200958.2701:test_correct_result_for_arbitrary_operator
     #@+node:gcross.20100517150547.1762:test_correct_result_for_arbitrary_operator_with_projectors
     @with_checker(number_of_calls=10)
@@ -855,7 +877,7 @@ class optimizer_tests(unittest.TestCase):
         right_environment += right_environment.transpose(1,0,2).conj()
         sparse_operator_indices, sparse_operator_matrices, operator_site_tensor = generate_random_sparse_matrices(cl,cr,d)
         optimization_matrix = optimization_matrix_contractor(left_environment,operator_site_tensor,right_environment).transpose().reshape(d*bl*br,d*bl*br).transpose()
-        self.assertTrue(allclose(optimization_matrix,optimization_matrix.conj().transpose()))
+        self.assertAllClose(optimization_matrix,optimization_matrix.conj().transpose())
 
         if d*bl*br == 1:
             number_of_projectors = 0
@@ -887,7 +909,7 @@ class optimizer_tests(unittest.TestCase):
         orthogonal_subspace = projector_matrix[:,projector_rank:]
         projected_optimization_matrix = \
             dot(orthogonal_subspace.transpose(),dot(optimization_matrix,orthogonal_subspace.conj()))
-        self.assertTrue(allclose(projected_optimization_matrix.conj().transpose(),projected_optimization_matrix))
+        self.assertAllClose(projected_optimization_matrix.conj().transpose(),projected_optimization_matrix)
         correct_eigenvalues, correct_projected_eigenvectors = eigh(projected_optimization_matrix)
         correct_eigenvectors = dot(orthogonal_subspace.conj(),correct_projected_eigenvectors).transpose()
         correct_solution_index = argmin(correct_eigenvalues)
@@ -896,7 +918,7 @@ class optimizer_tests(unittest.TestCase):
         actual_eigenvector /= actual_eigenvector[0]
         correct_eigenvector = correct_eigenvectors[correct_solution_index]
         correct_eigenvector /= correct_eigenvector[0]
-        self.assertTrue(allclose(actual_eigenvector,correct_eigenvector))
+        self.assertAllClose(actual_eigenvector,correct_eigenvector)
     #@-node:gcross.20100517150547.1762:test_correct_result_for_arbitrary_operator_with_projectors
     #@+node:gcross.20091109182634.1546:test_correct_result_for_simple_operator
     def test_correct_result_for_simple_operator(self):
@@ -908,7 +930,7 @@ class optimizer_tests(unittest.TestCase):
         info, result, eigenvalue = self.call_optimizer(left_environment,sparse_operator_indices,sparse_operator_matrices,right_environment,zeros((0,0)),"SR",0,10000,crand(1,1,4))
         self.assertEqual(info,0)
         result /= result[0,0,-1]
-        self.assertTrue(allclose(result.ravel(),array([0,0,0,1])))
+        self.assertAllClose(result.ravel(),array([0,0,0,1]))
         self.assertAlmostEqual(-1,eigenvalue)
     #@-node:gcross.20091109182634.1546:test_correct_result_for_simple_operator
     #@+node:gcross.20091115201814.1735:test_orthogonalization_1
@@ -923,7 +945,7 @@ class optimizer_tests(unittest.TestCase):
         info, result, eigenvalue = self.call_optimizer(left_environment,sparse_operator_indices,sparse_operator_matrices,right_environment,projectors,"SR",0,10000,guess)
         self.assertEqual(info,0)
         result /= result[0,0,-2]
-        self.assertTrue(allclose(result.ravel(),array([0,0,1,0])))
+        self.assertAllClose(result.ravel(),array([0,0,1,0]))
         self.assertAlmostEqual(-1,eigenvalue)
     #@-node:gcross.20091115201814.1735:test_orthogonalization_1
     #@+node:gcross.20091119150241.1879:test_orthogonalization_1_complex
@@ -938,7 +960,7 @@ class optimizer_tests(unittest.TestCase):
         info, result, eigenvalue = self.call_optimizer(left_environment,sparse_operator_indices,sparse_operator_matrices,right_environment,projectors,"SR",0,10000,guess)
         self.assertEqual(info,0)
         result /= result[0,0,-2]
-        self.assertTrue(allclose(result.ravel(),array([0,0,1,0])))
+        self.assertAllClose(result.ravel(),array([0,0,1,0]))
         self.assertAlmostEqual(-1,eigenvalue)
     #@-node:gcross.20091119150241.1879:test_orthogonalization_1_complex
     #@+node:gcross.20091115201814.1738:test_orthogonalization_2
@@ -953,7 +975,7 @@ class optimizer_tests(unittest.TestCase):
         info, result, eigenvalue = self.call_optimizer(left_environment,sparse_operator_indices,sparse_operator_matrices,right_environment,projectors,"SR",0,10000,guess)
         self.assertEqual(info,0)
         result /= result[0,0,1]
-        self.assertTrue(allclose(result.ravel(),array([0,1,0,0])))
+        self.assertAllClose(result.ravel(),array([0,1,0,0]))
         self.assertAlmostEqual(-2,eigenvalue)
     #@-node:gcross.20091115201814.1738:test_orthogonalization_2
     #@+node:gcross.20091119150241.1877:test_orthogonalization_2_complex
@@ -968,10 +990,11 @@ class optimizer_tests(unittest.TestCase):
         info, result, eigenvalue = self.call_optimizer(left_environment,sparse_operator_indices,sparse_operator_matrices,right_environment,projectors,"SR",0,10000,guess)
         self.assertEqual(info,0)
         result /= result[0,0,1]
-        self.assertTrue(allclose(result.ravel(),array([0,1,0,0])))
+        self.assertAllClose(result.ravel(),array([0,1,0,0]))
         self.assertAlmostEqual(-2,eigenvalue)
     #@-node:gcross.20091119150241.1877:test_orthogonalization_2_complex
     #@-others
+#@nonl
 #@-node:gcross.20091109182634.1543:optimizer_tests
 #@-others
 
@@ -1001,7 +1024,7 @@ class optimize_strategy_3(optimizer_tests):
 #@-node:gcross.20100517000234.1763:Optimization
 #@+node:gcross.20091123113033.1634:Randomization
 #@+node:gcross.20091110205054.1924:rand_norm_state_site_tensor
-class rand_norm_state_site_tensor(unittest.TestCase):
+class rand_norm_state_site_tensor(TestCase):
     #@    @+others
     #@-others
 
@@ -1010,10 +1033,10 @@ class rand_norm_state_site_tensor(unittest.TestCase):
         d = 2
         normalized_tensor = vmps.rand_norm_state_site_tensor(br,bl,d)
         should_be_identity = tensordot(normalized_tensor.conj(),normalized_tensor,((0,2,),)*2)
-        self.assertTrue(allclose(identity(bl),should_be_identity))
+        self.assertAllClose(identity(bl),should_be_identity)
 #@-node:gcross.20091110205054.1924:rand_norm_state_site_tensor
 #@+node:gcross.20091123113033.1633:rand_unnorm_state_site_tensor
-class rand_unnorm_state_site_tensor(unittest.TestCase):
+class rand_unnorm_state_site_tensor(TestCase):
     #@    @+others
     #@-others
 
@@ -1022,9 +1045,10 @@ class rand_unnorm_state_site_tensor(unittest.TestCase):
         d = 2
         unnormalized_tensor = vmps.rand_unnorm_state_site_tensor(br,bl,d)
         self.assertAlmostEqual(1,norm(unnormalized_tensor.ravel()))
+#@nonl
 #@-node:gcross.20091123113033.1633:rand_unnorm_state_site_tensor
 #@+node:gcross.20100521141104.1772:random_projector_matrix
-class random_projector_matrix(unittest.TestCase):
+class random_projector_matrix(TestCase):
     #@    @+others
     #@-others
 
@@ -1032,34 +1056,34 @@ class random_projector_matrix(unittest.TestCase):
     def test_correctness(self,n=irange(2,10)):
         number_of_projectors = randint(1,n)
         projector_matrix = vmps.random_projector_matrix(n,number_of_projectors)
-        self.assertTrue(allclose(dot(projector_matrix.conj().transpose(),projector_matrix),identity(number_of_projectors)))
+        self.assertAllClose(dot(projector_matrix.conj().transpose(),projector_matrix),identity(number_of_projectors))
 #@-node:gcross.20100521141104.1772:random_projector_matrix
 #@-node:gcross.20091123113033.1634:Randomization
 #@+node:gcross.20100514235202.1744:Utility Functions
 #@+node:gcross.20091116175016.1815:orthogonalize_matrix_in_place
-class orthogonalize_matrix_in_place(unittest.TestCase):
+class orthogonalize_matrix_in_place(TestCase):
     @with_checker
     def test_orthogonality(self,projector_length=irange(8,20),number_of_projectors=irange(1,7)):
         projector_matrix = array(crand(projector_length,number_of_projectors),order='Fortran')
         vmps.orthogonalize_matrix_in_place(projector_matrix)
-        self.assertTrue(allclose(dot(projector_matrix.transpose().conj(),projector_matrix),identity(number_of_projectors)))
+        self.assertAllClose(dot(projector_matrix.transpose().conj(),projector_matrix),identity(number_of_projectors))
 
     @with_checker
     def test_completeness(self,projector_length=irange(8,20),number_of_projectors=irange(1,7)):
         projectors = crand(projector_length,number_of_projectors)
         projector_matrix = array(projectors.copy(),order='Fortran')
         vmps.orthogonalize_matrix_in_place(projector_matrix)
-        self.assertTrue(allclose(dot(projector_matrix,dot(projector_matrix.conj().transpose(),projectors)),projectors))
+        self.assertAllClose(dot(projector_matrix,dot(projector_matrix.conj().transpose(),projectors)),projectors)
 
     @with_checker
     def test_rank(self,projector_length=irange(8,20),number_of_projectors=irange(1,7)):
         rank = randint(1,number_of_projectors)
         projector_matrix = array(dot(crand(projector_length,rank),crand(rank,number_of_projectors)),order='Fortran')
         computed_rank = vmps.orthogonalize_matrix_in_place(projector_matrix)
-        self.assertTrue(computed_rank,rank)
+        self.assertEqual(computed_rank,rank)
 #@-node:gcross.20091116175016.1815:orthogonalize_matrix_in_place
 #@+node:gcross.20100513214001.1748:compute_orthogonal_basis
-class compute_orthogonal_basis(unittest.TestCase):
+class compute_orthogonal_basis(TestCase):
     @with_checker
     def test_shape(self,m=irange(8,20),n=irange(1,7)):
         vectors = array(crand(m,n),order='Fortran')
@@ -1070,7 +1094,7 @@ class compute_orthogonal_basis(unittest.TestCase):
     def test_orthogonality(self,m=irange(8,20),n=irange(1,7)):
         vectors = array(crand(m,n),order='Fortran')
         _, basis = vmps.compute_orthogonal_basis(m,vectors)
-        self.assertTrue(allclose(dot(basis.transpose().conj(),basis),identity(m)))
+        self.assertAllClose(dot(basis.transpose().conj(),basis),identity(m))
 
     @with_checker
     def test_rank(self,m=irange(8,20),n=irange(1,7)):
@@ -1083,7 +1107,7 @@ class compute_orthogonal_basis(unittest.TestCase):
     def test_projector_subspace(self,m=irange(8,20),n=irange(1,7)):
         vectors = array(crand(m,n),order='Fortran')
         _, basis = vmps.compute_orthogonal_basis(n,vectors)
-        self.assertTrue(allclose(dot(basis[:,:],dot(basis[:,:].conj().transpose(),vectors)),vectors))
+        self.assertAllClose(dot(basis[:,:],dot(basis[:,:].conj().transpose(),vectors)),vectors)
 
     @with_checker
     def test_remaining_subspace(self,m=irange(8,20),n=irange(1,7)):
@@ -1092,7 +1116,7 @@ class compute_orthogonal_basis(unittest.TestCase):
         self.assertAlmostEqual(norm(dot(basis[:,n:].conj().transpose(),vectors)),0)
 #@-node:gcross.20100513214001.1748:compute_orthogonal_basis
 #@+node:gcross.20100517000234.1792:compute_orthogonal_subspace
-class compute_orthogonal_subspace(unittest.TestCase):
+class compute_orthogonal_subspace(TestCase):
     @with_checker
     def test_shape(self,m=irange(8,20),n=irange(1,7)):
         vectors = array(crand(m,n),order='Fortran')
@@ -1103,16 +1127,17 @@ class compute_orthogonal_subspace(unittest.TestCase):
     def test_orthogonality(self,m=irange(8,20),n=irange(1,7)):
         vectors = array(crand(m,n),order='Fortran')
         basis = vmps.compute_orthogonal_subspace(vectors)
-        self.assertTrue(allclose(dot(basis.transpose().conj(),basis),identity(n-m)))
+        self.assertAllClose(dot(basis.transpose().conj(),basis),identity(n-m))
 
     @with_checker
     def test_subspace(self,m=irange(8,20),n=irange(1,7)):
         vectors = array(crand(m,n),order='Fortran')
         _, basis = vmps.compute_orthogonal_subspace(vectors)
         self.assertAlmostEqual(norm(dot(basis.conj().transpose(),vectors)),0)
+#@nonl
 #@-node:gcross.20100517000234.1792:compute_orthogonal_subspace
 #@+node:gcross.20100514235202.1745:lapack_eigenvalue_minimizer
-class lapack_eigenvalue_minimizer(unittest.TestCase):
+class lapack_eigenvalue_minimizer(TestCase):
     @with_checker
     def test_correctness(self,n=irange(1,10)):
         matrix = crand(n,n)
@@ -1124,21 +1149,23 @@ class lapack_eigenvalue_minimizer(unittest.TestCase):
         correct_minimal_eigenvector = correct_eigenvectors[:,0]
         correct_minimal_eigenvector /= correct_minimal_eigenvector[0]
         observed_eigenvector /= observed_eigenvector[0]
-        self.assertTrue(allclose(observed_eigenvector,correct_minimal_eigenvector))
+        self.assertAllClose(observed_eigenvector,correct_minimal_eigenvector)
+#@nonl
 #@-node:gcross.20100514235202.1745:lapack_eigenvalue_minimizer
 #@-node:gcross.20100514235202.1744:Utility Functions
 #@+node:gcross.20100521141104.1779:Projectors
 #@+node:gcross.20100517160929.1762:project
-class project(unittest.TestCase):
+class project(TestCase):
     @with_checker
     def test_correctness(self,n=irange(2,10)):
         projectors = vmps.random_projector_matrix(n,randint(1,n-1))
         vector = crand(n)
         projected_vector = vmps.project(projectors,vector)
         self.assertAlmostEqual(norm(dot(projectors.transpose(),projected_vector)),0)
+#@nonl
 #@-node:gcross.20100517160929.1762:project
 #@+node:gcross.20100521141104.1781:compute_overlap_with_projectors
-class compute_overlap_with_projectors(unittest.TestCase):
+class compute_overlap_with_projectors(TestCase):
     @with_checker
     def test_correctness_for_orthogonal_vector(self,n=irange(2,10)):
         projectors = vmps.random_projector_matrix(n,randint(1,n-1))
@@ -1159,11 +1186,12 @@ class compute_overlap_with_projectors(unittest.TestCase):
         vector = crand(n)
         projected_vector = vmps.project(projectors,vector)
         self.assertAlmostEqual(vmps.compute_overlap_with_projectors(projectors,vector),norm(vector-projected_vector))
+#@nonl
 #@-node:gcross.20100521141104.1781:compute_overlap_with_projectors
 #@-node:gcross.20100521141104.1779:Projectors
 #@+node:gcross.20091110205054.1948:Normalization
 #@+node:gcross.20091110205054.1933:norm_denorm_going_left
-class norm_denorm_going_left(unittest.TestCase):
+class norm_denorm_going_left(TestCase):
     #@    @+others
     #@-others
 
@@ -1175,11 +1203,11 @@ class norm_denorm_going_left(unittest.TestCase):
         info, denormalized_tensor, normalized_tensor = vmps.norm_denorm_going_left(tensor_to_denormalize,tensor_to_normalize)
         self.assertEqual(0,info)
         should_be_identity = tensordot(normalized_tensor.conj(),normalized_tensor,((0,2,),)*2)
-        self.assertTrue(allclose(identity(bl),should_be_identity))
-        self.assertTrue(allclose(
+        self.assertAllClose(identity(bl),should_be_identity)
+        self.assertAllClose(
             tensordot(tensor_to_denormalize,tensor_to_normalize,(0,1)),
             tensordot(denormalized_tensor,normalized_tensor,(0,1)),
-        ))
+        )
 
     @with_checker
     def testCorrectnessOnLarge(self):
@@ -1192,14 +1220,15 @@ class norm_denorm_going_left(unittest.TestCase):
         info, denormalized_tensor, normalized_tensor = vmps.norm_denorm_going_left(tensor_to_denormalize,tensor_to_normalize)
         self.assertEqual(0,info)
         should_be_identity = tensordot(normalized_tensor.conj(),normalized_tensor,((0,2,),)*2)
-        self.assertTrue(allclose(identity(bl),should_be_identity))
-        self.assertTrue(allclose(
+        self.assertAllClose(identity(bl),should_be_identity)
+        self.assertAllClose(
             tensordot(tensor_to_denormalize,tensor_to_normalize,(0,1)),
             tensordot(denormalized_tensor,normalized_tensor,(0,1)),
-        ))
+        )
+#@nonl
 #@-node:gcross.20091110205054.1933:norm_denorm_going_left
 #@+node:gcross.20091110205054.1937:norm_denorm_going_right
-class norm_denorm_going_right(unittest.TestCase):
+class norm_denorm_going_right(TestCase):
     #@    @+others
     #@-others
 
@@ -1211,11 +1240,11 @@ class norm_denorm_going_right(unittest.TestCase):
         info, normalized_tensor, denormalized_tensor = vmps.norm_denorm_going_right(tensor_to_normalize,tensor_to_denormalize)
         self.assertEqual(0,info)
         should_be_identity = tensordot(normalized_tensor.conj(),normalized_tensor,((1,2,),)*2)
-        self.assertTrue(allclose(identity(br),should_be_identity))
-        self.assertTrue(allclose(
+        self.assertAllClose(identity(br),should_be_identity)
+        self.assertAllClose(
             tensordot(tensor_to_normalize,tensor_to_denormalize,(0,1)),
             tensordot(normalized_tensor,denormalized_tensor,(0,1)),
-        ))
+        )
 
     @with_checker
     def testCorrectnessOnLarge(self):
@@ -1228,16 +1257,17 @@ class norm_denorm_going_right(unittest.TestCase):
         info, normalized_tensor, denormalized_tensor = vmps.norm_denorm_going_right(tensor_to_normalize,tensor_to_denormalize)
         self.assertEqual(0,info)
         should_be_identity = tensordot(normalized_tensor.conj(),normalized_tensor,((1,2,),)*2)
-        self.assertTrue(allclose(identity(br),should_be_identity))
-        self.assertTrue(allclose(
+        self.assertAllClose(identity(br),should_be_identity)
+        self.assertAllClose(
             tensordot(tensor_to_normalize,tensor_to_denormalize,(0,1)),
             tensordot(normalized_tensor,denormalized_tensor,(0,1)),
-        ))
+        )
+#@nonl
 #@-node:gcross.20091110205054.1937:norm_denorm_going_right
 #@-node:gcross.20091110205054.1948:Normalization
 #@+node:gcross.20091115094257.1724:Bandwidth increase
 #@+node:gcross.20091115094257.1714:create_bandwidth_increase_matrix
-class create_bandwidth_increase_matrix(unittest.TestCase):
+class create_bandwidth_increase_matrix(TestCase):
     #@    @+others
     #@-others
 
@@ -1246,10 +1276,11 @@ class create_bandwidth_increase_matrix(unittest.TestCase):
         matrix = vmps.create_bandwidth_increase_matrix(old_bandwidth,new_bandwidth)
         self.assertEqual((new_bandwidth,old_bandwidth),matrix.shape)
         should_be_identity = dot(matrix.transpose().conj(),matrix)
-        self.assertTrue(allclose(identity(old_bandwidth),should_be_identity))
+        self.assertAllClose(identity(old_bandwidth),should_be_identity)
+#@nonl
 #@-node:gcross.20091115094257.1714:create_bandwidth_increase_matrix
 #@+node:gcross.20091115094257.1723:absorb_bi_matrix_from_left
-class absorb_bi_matrix_from_left(unittest.TestCase):
+class absorb_bi_matrix_from_left(TestCase):
     #@    @+others
     #@-others
 
@@ -1258,12 +1289,13 @@ class absorb_bi_matrix_from_left(unittest.TestCase):
         old_state_site_tensor = crand(br,bl,d)
         matrix = vmps.create_bandwidth_increase_matrix(bl,new_bl)
         new_state_site_tensor = vmps.absorb_bi_matrix_from_left(old_state_site_tensor,matrix)
-        self.assertTrue(allclose(tensordot(old_state_site_tensor,matrix.transpose().conj(),(1,0)).transpose(0,2,1),new_state_site_tensor))
+        self.assertAllClose(tensordot(old_state_site_tensor,matrix.transpose().conj(),(1,0)).transpose(0,2,1),new_state_site_tensor)
         new_state_site_tensor = vmps.absorb_bi_matrix_from_left(new_state_site_tensor,matrix.conj().transpose())
-        self.assertTrue(allclose(old_state_site_tensor,new_state_site_tensor))
+        self.assertAllClose(old_state_site_tensor,new_state_site_tensor)
+#@nonl
 #@-node:gcross.20091115094257.1723:absorb_bi_matrix_from_left
 #@+node:gcross.20091115094257.1719:absorb_bi_matrix_from_right
-class absorb_bi_matrix_from_right(unittest.TestCase):
+class absorb_bi_matrix_from_right(TestCase):
     #@    @+others
     #@-others
 
@@ -1272,12 +1304,13 @@ class absorb_bi_matrix_from_right(unittest.TestCase):
         old_state_site_tensor = crand(br,bl,d)
         matrix = vmps.create_bandwidth_increase_matrix(br,new_br)
         new_state_site_tensor = vmps.absorb_bi_matrix_from_right(old_state_site_tensor,matrix)
-        self.assertTrue(allclose(tensordot(matrix,old_state_site_tensor,(1,0)),new_state_site_tensor))
+        self.assertAllClose(tensordot(matrix,old_state_site_tensor,(1,0)),new_state_site_tensor)
         new_state_site_tensor = vmps.absorb_bi_matrix_from_right(new_state_site_tensor,matrix.transpose().conj())
-        self.assertTrue(allclose(old_state_site_tensor,new_state_site_tensor))
+        self.assertAllClose(old_state_site_tensor,new_state_site_tensor)
+#@nonl
 #@-node:gcross.20091115094257.1719:absorb_bi_matrix_from_right
 #@+node:gcross.20091115094257.1725:increase_bandwidth_between
-class increase_bandwidth_between(unittest.TestCase):
+class increase_bandwidth_between(TestCase):
     #@    @+others
     #@-others
 
@@ -1295,16 +1328,17 @@ class increase_bandwidth_between(unittest.TestCase):
         info, new_left_tensor, new_right_tensor = vmps.increase_bandwidth_between(new_bm,old_left_tensor,old_right_tensor)
         self.assertEqual(0,info)
         should_be_identity = tensordot(new_right_tensor.conj(),new_right_tensor,((0,2,),)*2)
-        self.assertTrue(allclose(identity(new_bm),should_be_identity))
-        self.assertTrue(allclose(
+        self.assertAllClose(identity(new_bm),should_be_identity)
+        self.assertAllClose(
             tensordot(old_left_tensor,old_right_tensor,(0,1)),
             tensordot(new_left_tensor,new_right_tensor,(0,1)),
-        ))
+        )
+#@nonl
 #@-node:gcross.20091115094257.1725:increase_bandwidth_between
 #@-node:gcross.20091115094257.1724:Bandwidth increase
 #@+node:gcross.20091118141720.1805:Overlap tensor formation
 #@+node:gcross.20091118141720.1807:form_overlap_site_tensor
-class form_overlap_site_tensor(unittest.TestCase):
+class form_overlap_site_tensor(TestCase):
     #@    @+others
     #@-others
 
@@ -1312,10 +1346,11 @@ class form_overlap_site_tensor(unittest.TestCase):
     def test_correctness(self,br=irange(2,4),bl=irange(2,4),d=irange(2,4)):
         state_site_tensor = crand(br,bl,d)
         overlap_site_tensor = vmps.form_overlap_site_tensor(state_site_tensor)
-        self.assertTrue(allclose(state_site_tensor.transpose(1,2,0).conj(),overlap_site_tensor))
+        self.assertAllClose(state_site_tensor.transpose(1,2,0).conj(),overlap_site_tensor)
+#@nonl
 #@-node:gcross.20091118141720.1807:form_overlap_site_tensor
 #@+node:gcross.20091118141720.1809:form_norm_overlap_tensors
-class form_norm_overlap_tensors(unittest.TestCase):
+class form_norm_overlap_tensors(TestCase):
     #@    @+others
     #@-others
 
@@ -1328,13 +1363,14 @@ class form_norm_overlap_tensors(unittest.TestCase):
         unnormalized_overlap_tensor_1 = resulting_tensors[1]
         unnormalized_state_tensor_2 = resulting_tensors[2]
         right_norm_overlap_tensor_2 = resulting_tensors[3]
-        self.assertTrue(allclose(right_norm_state_tensor_2,right_norm_overlap_tensor_2.transpose(2,0,1).conj()))
-        self.assertTrue(allclose(unnormalized_state_tensor_1,unnormalized_overlap_tensor_1.transpose(2,0,1).conj()))
+        self.assertAllClose(right_norm_state_tensor_2,right_norm_overlap_tensor_2.transpose(2,0,1).conj())
+        self.assertAllClose(unnormalized_state_tensor_1,unnormalized_overlap_tensor_1.transpose(2,0,1).conj())
         left_norm_state_tensor_1 = left_norm_overlap_tensor_1.transpose(2,0,1).conj()
-        self.assertTrue(allclose(
+        self.assertAllClose(
             tensordot(unnormalized_state_tensor_1,right_norm_state_tensor_2,(0,1)),
             tensordot(left_norm_state_tensor_1,unnormalized_state_tensor_2,(0,1)),
-        ))
+        )
+#@nonl
 #@-node:gcross.20091118141720.1809:form_norm_overlap_tensors
 #@-node:gcross.20091118141720.1805:Overlap tensor formation
 #@-node:gcross.20091110205054.1947:Tests
