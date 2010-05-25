@@ -215,8 +215,7 @@ subroutine lapack_eigenvalue_minimizer(n,matrix,eigenvalue,eigenvector)
   integer, intent(in) :: n
   double complex, intent(in) :: matrix(n,n)
 
-  double precision, intent(out) :: eigenvalue
-  double complex, intent(out) :: eigenvector(n)
+  double complex, intent(out) :: eigenvalue, eigenvector(n)
 
   integer :: number_of_eigenvalues_found, lwork, lrwork, liwork
   double precision :: lrwork_as_double
@@ -226,6 +225,7 @@ subroutine lapack_eigenvalue_minimizer(n,matrix,eigenvalue,eigenvector)
   integer, allocatable :: iwork(:)
 
   integer :: info
+  double precision :: eigenvalue_as_real
 
   external :: zheevr
 
@@ -241,7 +241,7 @@ subroutine lapack_eigenvalue_minimizer(n,matrix,eigenvalue,eigenvector)
     1, 1, &
     0d0, &
     number_of_eigenvalues_found, &
-    eigenvalue, &
+    eigenvalue_as_real, &
     eigenvector, n, &
     0, &
     lwork_as_complex, -1, &
@@ -271,7 +271,7 @@ subroutine lapack_eigenvalue_minimizer(n,matrix,eigenvalue,eigenvector)
     1, 1, &
     0d0, &
     number_of_eigenvalues_found, &
-    eigenvalue, &
+    eigenvalue_as_real, &
     eigenvector, n, &
     0, &
     work, lwork, &
@@ -281,6 +281,8 @@ subroutine lapack_eigenvalue_minimizer(n,matrix,eigenvalue,eigenvector)
   )
 
   deallocate(work,rwork,iwork)
+
+  eigenvalue = eigenvalue_as_real*(1d0,0d0)
 
 end subroutine
 !@-node:gcross.20100514235202.1743:lapack_eigenvalue_minimizer
@@ -988,7 +990,7 @@ function optimize( &
   character, intent(in) :: which*2
   double precision, intent(in) :: tol
 
-  integer :: info, n
+  integer :: info, n, strategy
   double precision :: overlap, norm_of_result
 
   interface
@@ -1011,6 +1013,7 @@ function optimize( &
   end if
 
   if (n-number_of_projectors < 4) then
+    strategy = 1
     call optimize_strategy_1( &
       bl, br, &
       cl, &
@@ -1029,6 +1032,7 @@ function optimize( &
       eigenvalue &
     )
   else if ( bl*br < cl*cr ) then
+    strategy = 2
     call optimize_strategy_2( &
       bl, br, &
       cl, &
@@ -1047,6 +1051,7 @@ function optimize( &
       eigenvalue &
     )
   else
+    strategy = 3
     call optimize_strategy_3( &
       bl, br, &
       cl, &
@@ -1083,11 +1088,9 @@ function optimize( &
     return
   end if
 
-  call project(n,number_of_projectors,projectors,result(1,1,1),result(1,1,1))
+  call compute_overlap_with_projectors(n,number_of_projectors,projectors,result(1,1,1),overlap)
 
-  norm_of_result = dznrm2(n,result(1,1,1),1)
-
-  if (abs(norm_of_result-1) > 1e-7) then
+  if (overlap > 1e-7) then
     info = 3
     return
   end if
@@ -1317,6 +1320,8 @@ subroutine optimize_strategy_2( &
     optimization_matrix(br,bl,d,br,bl,d)
 
   integer :: n
+
+  double complex :: projected_space_amplification
   !@-node:gcross.20091115201814.1730:Work arrays
   !@-others
   !@-node:gcross.20091115201814.1731:<< Declarations >>
@@ -1331,6 +1336,8 @@ subroutine optimize_strategy_2( &
     right_environment, &
     optimization_matrix &
   )
+
+  projected_space_amplification = (1d0,0d0)
 
   call run_arpack(n,nev,ncv,guess,eigenvalue,result(1,1,1))
 
@@ -1398,17 +1405,19 @@ contains
   !@-node:gcross.20100516220142.1754:run_arpack
   !@+node:gcross.20100513000837.1743:operate_on
   subroutine operate_on(input,output)
-    double complex :: input(n), output(n)
+    double complex :: input(n), output(n), projected(n)
 
-    call project(n,number_of_projectors,projectors,input,input)
+    call project(n,number_of_projectors,projectors,input,projected)
     call zhemv( &
       'U', &
       n, &
       (1d0,0d0), optimization_matrix, n, &
-      input, 1, &
+      projected, 1, &
       (0d0,0d0), output, 1 &
     )
     call project(n,number_of_projectors,projectors,output,output)
+    output = output + (input - projected) * projected_space_amplification
+
   end subroutine
   !@-node:gcross.20100513000837.1743:operate_on
   !@-others
@@ -1510,6 +1519,8 @@ subroutine optimize_strategy_3( &
     iteration_stage_2_tensor(br,cr,bl,d)
 
   integer ::  n
+
+  double complex :: projected_space_amplification, overlap
   !@-node:gcross.20100517000234.1760:Work arrays
   !@-others
   !@-node:gcross.20100517000234.1754:<< Declarations >>
@@ -1523,6 +1534,8 @@ subroutine optimize_strategy_3( &
     number_of_matrices, sparse_operator_indices, sparse_operator_matrices, &
     iteration_stage_1_tensor &
   )
+
+  projected_space_amplification = (1d0,0d0)
 
   call run_arpack(n,nev,ncv,guess,eigenvalue,result(1,1,1))
 
@@ -1590,13 +1603,13 @@ contains
   !@-node:gcross.20100517000234.1761:run_arpack
   !@+node:gcross.20100517000234.1762:operate_on
   subroutine operate_on(input,output)
-    double complex :: input(n), output(n)
+    double complex :: input(n), projected(n), output(n)
 
-    call project(n,number_of_projectors,projectors,input,output)
+    call project(n,number_of_projectors,projectors,input,projected)
     call iteration_stage_2( &
       bl, br, cr, d, &
       iteration_stage_1_tensor, &
-      output, &
+      projected, &
       iteration_stage_2_tensor &
     )
     call iteration_stage_3( &
@@ -1606,6 +1619,7 @@ contains
       output &
     )
     call project(n,number_of_projectors,projectors,output,output)
+    output = output + (input - projected) * projected_space_amplification
 
   end subroutine
   !@-node:gcross.20100517000234.1762:operate_on
