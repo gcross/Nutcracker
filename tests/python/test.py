@@ -4,7 +4,7 @@
 #@+node:gcross.20091115094257.1715:<< Import needed modules >>
 import unittest
 from paycheck import *
-from numpy import array, zeros, all, double, tensordot, multiply, complex128, allclose, ones, diag, identity, dot, argmin, rank
+from numpy import array, zeros, all, double, tensordot, multiply, complex128, allclose, ones, diag, identity, dot, argmin, rank, set_printoptions
 from numpy.linalg import norm
 from numpy.random import rand
 from scipy.linalg import qr, eigh
@@ -874,21 +874,22 @@ class optimizer_tests(unittest.TestCase):
 
         projectors = array(projector_matrix[:,:projector_rank],order='Fortran')
 
-        guess = vmps.project(projectors,crand(br*bl*d)).reshape(d,bl,br).transpose()
-        guess /= norm(guess.ravel())
+        guess = vmps.project(projectors,crand(br*bl*d))
+        guess /= norm(guess)
+        guess = guess.reshape(d,bl,br).transpose()
         info, result, actual_eigenvalue = \
             self.call_optimizer(left_environment,sparse_operator_indices,sparse_operator_matrices,right_environment,projectors,"SR",0,10000,guess)
         self.assertEqual(info,0)
         actual_eigenvector = result.transpose().ravel()
-        self.assertAlmostEqual(norm(dot(projectors.conj().transpose(),actual_eigenvector)),0)
+        self.assertAlmostEqual(norm(dot(projectors.transpose(),actual_eigenvector)),0)
         self.assertAlmostEqual(dot(actual_eigenvector.conj(),dot(optimization_matrix,actual_eigenvector))/norm(actual_eigenvector),actual_eigenvalue)
 
         orthogonal_subspace = projector_matrix[:,projector_rank:]
         projected_optimization_matrix = \
-            dot(orthogonal_subspace.conj().transpose(),dot(optimization_matrix,orthogonal_subspace))
+            dot(orthogonal_subspace.transpose(),dot(optimization_matrix,orthogonal_subspace.conj()))
         self.assertTrue(allclose(projected_optimization_matrix.conj().transpose(),projected_optimization_matrix))
         correct_eigenvalues, correct_projected_eigenvectors = eigh(projected_optimization_matrix)
-        correct_eigenvectors = dot(orthogonal_subspace,correct_projected_eigenvectors).transpose()
+        correct_eigenvectors = dot(orthogonal_subspace.conj(),correct_projected_eigenvectors).transpose()
         correct_solution_index = argmin(correct_eigenvalues)
         correct_eigenvalue = correct_eigenvalues[correct_solution_index]
         self.assertAlmostEqual(actual_eigenvalue,correct_eigenvalue)
@@ -1134,7 +1135,7 @@ class project(unittest.TestCase):
         projectors = vmps.random_projector_matrix(n,randint(1,n-1))
         vector = crand(n)
         projected_vector = vmps.project(projectors,vector)
-        self.assertAlmostEqual(norm(dot(projectors.transpose().conj(),projected_vector)),0)
+        self.assertAlmostEqual(norm(dot(projectors.transpose(),projected_vector)),0)
 #@-node:gcross.20100517160929.1762:project
 #@+node:gcross.20100521141104.1781:compute_overlap_with_projectors
 class compute_overlap_with_projectors(unittest.TestCase):
@@ -1311,7 +1312,7 @@ class form_overlap_site_tensor(unittest.TestCase):
     def test_correctness(self,br=irange(2,4),bl=irange(2,4),d=irange(2,4)):
         state_site_tensor = crand(br,bl,d)
         overlap_site_tensor = vmps.form_overlap_site_tensor(state_site_tensor)
-        self.assertTrue(allclose(state_site_tensor.transpose(1,2,0),overlap_site_tensor))
+        self.assertTrue(allclose(state_site_tensor.transpose(1,2,0).conj(),overlap_site_tensor))
 #@-node:gcross.20091118141720.1807:form_overlap_site_tensor
 #@+node:gcross.20091118141720.1809:form_norm_overlap_tensors
 class form_norm_overlap_tensors(unittest.TestCase):
@@ -1327,9 +1328,9 @@ class form_norm_overlap_tensors(unittest.TestCase):
         unnormalized_overlap_tensor_1 = resulting_tensors[1]
         unnormalized_state_tensor_2 = resulting_tensors[2]
         right_norm_overlap_tensor_2 = resulting_tensors[3]
-        self.assertTrue(allclose(right_norm_state_tensor_2,right_norm_overlap_tensor_2.transpose(2,0,1)))
-        self.assertTrue(allclose(unnormalized_state_tensor_1,unnormalized_overlap_tensor_1.transpose(2,0,1)))
-        left_norm_state_tensor_1 = left_norm_overlap_tensor_1.transpose(2,0,1)
+        self.assertTrue(allclose(right_norm_state_tensor_2,right_norm_overlap_tensor_2.transpose(2,0,1).conj()))
+        self.assertTrue(allclose(unnormalized_state_tensor_1,unnormalized_overlap_tensor_1.transpose(2,0,1).conj()))
+        left_norm_state_tensor_1 = left_norm_overlap_tensor_1.transpose(2,0,1).conj()
         self.assertTrue(allclose(
             tensordot(unnormalized_state_tensor_1,right_norm_state_tensor_2,(0,1)),
             tensordot(left_norm_state_tensor_1,unnormalized_state_tensor_2,(0,1)),
@@ -1338,6 +1339,8 @@ class form_norm_overlap_tensors(unittest.TestCase):
 #@-node:gcross.20091118141720.1805:Overlap tensor formation
 #@-node:gcross.20091110205054.1947:Tests
 #@-others
+
+set_printoptions(linewidth=132)
 
 tests = [
     iteration_stage_1,

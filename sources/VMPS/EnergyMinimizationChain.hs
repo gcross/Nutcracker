@@ -115,9 +115,91 @@ data RightNeighbor = RightNeighbor
     ,   rightNeighborOverlapBoundaries :: ![RightOverlapBoundaryTensor]
     ,   rightNeighborOverlapTrios :: ![OverlapTensorTrio]
     }
-
--- @+others
--- @+node:gcross.20091117140132.1792:absorbIntoNew___Neighbor
+-- @-node:gcross.20091115105949.1734:Neighbor
+-- @+node:gcross.20091113142219.1665:EnergyMinimizationChain
+data EnergyMinimizationChain = EnergyMinimizationChain
+    {   siteLeftBoundaryTensor :: !LeftBoundaryTensor
+    ,   siteLeftOverlapBoundaryTensors :: ![LeftOverlapBoundaryTensor]
+    ,   siteStateTensor :: !UnnormalizedStateSiteTensor
+    ,   siteHamiltonianTensor :: !OperatorSiteTensor
+    ,   siteOverlapTrios :: ![OverlapTensorTrio]
+    ,   siteRightBoundaryTensor :: !RightBoundaryTensor
+    ,   siteRightOverlapBoundaryTensors :: ![RightOverlapBoundaryTensor]
+    ,   siteLeftNeighbors :: ![LeftNeighbor]
+    ,   siteRightNeighbors :: ![RightNeighbor]
+    ,   siteNumber :: !Int
+    ,   chainNumberOfSites :: !Int
+    ,   chainEnergy :: Double
+    ,   siteProjectorMatrix :: ProjectorMatrix
+    ,   chainProjectorOverlap :: Double
+    }
+-- @-node:gcross.20091113142219.1665:EnergyMinimizationChain
+-- @+node:gcross.20100522160359.1793:Configuration
+type Configuration = [(OperatorSiteTensor,[OverlapTensorTrio])]
+-- @-node:gcross.20100522160359.1793:Configuration
+-- @-node:gcross.20091113142219.1664:Types
+-- @+node:gcross.20091116222034.2374:Utility Functions
+-- @+node:gcross.20091113142219.1699:computeBandwidthDimensionSequence
+computeBandwidthDimensionSequence :: Int → [Int] → [Int]
+computeBandwidthDimensionSequence requested_bandwidth_dimension physical_dimensions =
+    let computeSequence physical_dimensions = 1:go 1 physical_dimensions
+          where
+            go :: Int → [Int] → [Int]
+            go _ [] = []
+            go last_bandwidth_dimension (current_physical_dimension:remaining_physical_dimensions)
+               | current_bandwidth_dimension >= requested_bandwidth_dimension
+                = []
+               | otherwise
+                = current_bandwidth_dimension : go current_bandwidth_dimension remaining_physical_dimensions
+              where
+                current_bandwidth_dimension = last_bandwidth_dimension*current_physical_dimension
+        left_sequence = computeSequence physical_dimensions
+        right_sequence = reverse . computeSequence . reverse $ physical_dimensions
+        requested_length = length physical_dimensions + 1
+        minimal_length_without_center = length left_sequence + length right_sequence
+    in if minimal_length_without_center >= requested_length
+        then error "The supplied bandwidth dimension is too large for the given physical dimension and number of sites."
+        else
+            left_sequence
+            ++
+            replicate (requested_length - minimal_length_without_center) requested_bandwidth_dimension
+            ++
+            right_sequence
+-- @-node:gcross.20091113142219.1699:computeBandwidthDimensionSequence
+-- @+node:gcross.20091113142219.2519:computeSiteDimensionSequence
+computeSiteDimensionSequence :: Int → [Int] → [(Int,Int,Int)]
+computeSiteDimensionSequence requested_bandwidth_dimension physical_dimensions =
+    zip3
+        physical_dimensions
+        bandwidth_dimension_sequence
+        (tail bandwidth_dimension_sequence)
+  where
+    bandwidth_dimension_sequence =
+        computeBandwidthDimensionSequence
+            requested_bandwidth_dimension
+            physical_dimensions
+-- @-node:gcross.20091113142219.2519:computeSiteDimensionSequence
+-- @+node:gcross.20091120112621.1590:makeConfiguration
+makeConfiguration :: [OperatorSiteTensor] → [[OverlapTensorTrio]] → Configuration
+makeConfiguration operator_site_tensors [] = zip operator_site_tensors (repeat [])
+makeConfiguration operator_site_tensors projectors = zip operator_site_tensors . transpose $ projectors
+-- @-node:gcross.20091120112621.1590:makeConfiguration
+-- @+node:gcross.20100512154636.1738:throwIfEnergyChanged
+throwIfEnergyChanged ::
+    Double →
+    EnergyMinimizationChain →
+    (EnergyMinimizationChain → EnergyMinimizationChain → SanityCheckFailed) →
+    EnergyMinimizationChain →
+    EnergyMinimizationChain
+throwIfEnergyChanged tolerance old_chain createException new_chain
+ | abs (chainEnergy new_chain - chainEnergy old_chain) > tolerance
+    = throw $ createException old_chain new_chain
+ | otherwise
+    = new_chain
+-- @-node:gcross.20100512154636.1738:throwIfEnergyChanged
+-- @-node:gcross.20091116222034.2374:Utility Functions
+-- @+node:gcross.20091113142219.1678:Chain Functions
+-- @+node:gcross.20100524130857.1817:absorbIntoNew___Neighbor
 absorbIntoNewRightNeighbor ::
     RightBoundaryTensor →
     [RightOverlapBoundaryTensor] →
@@ -175,8 +257,8 @@ absorbIntoNewLeftNeighbor
         left_overlap_boundary_tensors
         overlap_tensor_trios
     )
--- @-node:gcross.20091117140132.1792:absorbIntoNew___Neighbor
--- @+node:gcross.20091117140132.1794:prepareAndAbsorbIntoNew___Neighbor
+-- @-node:gcross.20100524130857.1817:absorbIntoNew___Neighbor
+-- @+node:gcross.20100524130857.1819:prepareAndAbsorbIntoNew___Neighbor
 prepareAndAbsorbIntoNewRightNeighbor ::
     LeftNeighbor →
     RightBoundaryTensor →
@@ -266,92 +348,7 @@ prepareAndAbsorbIntoNewLeftNeighbor
         ,(rightNeighborOverlapTrios old_right_neighbor)
         ,new_left_neighbor
         )
--- @-node:gcross.20091117140132.1794:prepareAndAbsorbIntoNew___Neighbor
--- @-others
--- @-node:gcross.20091115105949.1734:Neighbor
--- @+node:gcross.20091113142219.1665:EnergyMinimizationChain
-data EnergyMinimizationChain = EnergyMinimizationChain
-    {   siteLeftBoundaryTensor :: !LeftBoundaryTensor
-    ,   siteLeftOverlapBoundaryTensors :: ![LeftOverlapBoundaryTensor]
-    ,   siteStateTensor :: !UnnormalizedStateSiteTensor
-    ,   siteHamiltonianTensor :: !OperatorSiteTensor
-    ,   siteOverlapTrios :: ![OverlapTensorTrio]
-    ,   siteRightBoundaryTensor :: !RightBoundaryTensor
-    ,   siteRightOverlapBoundaryTensors :: ![RightOverlapBoundaryTensor]
-    ,   siteLeftNeighbors :: ![LeftNeighbor]
-    ,   siteRightNeighbors :: ![RightNeighbor]
-    ,   siteNumber :: !Int
-    ,   chainNumberOfSites :: !Int
-    ,   chainEnergy :: Double
-    ,   siteProjectorMatrix :: ProjectorMatrix
-    ,   chainProjectorOverlap :: Double
-    }
--- @-node:gcross.20091113142219.1665:EnergyMinimizationChain
--- @+node:gcross.20100522160359.1793:Configuration
-type Configuration = [(OperatorSiteTensor,[OverlapTensorTrio])]
--- @-node:gcross.20100522160359.1793:Configuration
--- @-node:gcross.20091113142219.1664:Types
--- @+node:gcross.20091116222034.2374:Utility Functions
--- @+node:gcross.20091113142219.1699:computeBandwidthDimensionSequence
-computeBandwidthDimensionSequence :: Int → [Int] → [Int]
-computeBandwidthDimensionSequence requested_bandwidth_dimension physical_dimensions =
-    let computeSequence physical_dimensions = 1:go 1 physical_dimensions
-          where
-            go :: Int → [Int] → [Int]
-            go _ [] = []
-            go last_bandwidth_dimension (current_physical_dimension:remaining_physical_dimensions)
-               | current_bandwidth_dimension >= requested_bandwidth_dimension
-                = []
-               | otherwise
-                = current_bandwidth_dimension : go current_bandwidth_dimension remaining_physical_dimensions
-              where
-                current_bandwidth_dimension = last_bandwidth_dimension*current_physical_dimension
-        left_sequence = computeSequence physical_dimensions
-        right_sequence = reverse . computeSequence . reverse $ physical_dimensions
-        requested_length = length physical_dimensions + 1
-        minimal_length_without_center = length left_sequence + length right_sequence
-    in if minimal_length_without_center >= requested_length
-        then error "The supplied bandwidth dimension is too large for the given physical dimension and number of sites."
-        else
-            left_sequence
-            ++
-            replicate (requested_length - minimal_length_without_center) requested_bandwidth_dimension
-            ++
-            right_sequence
--- @-node:gcross.20091113142219.1699:computeBandwidthDimensionSequence
--- @+node:gcross.20091113142219.2519:computeSiteDimensionSequence
-computeSiteDimensionSequence :: Int → [Int] → [(Int,Int,Int)]
-computeSiteDimensionSequence requested_bandwidth_dimension physical_dimensions =
-    zip3
-        physical_dimensions
-        bandwidth_dimension_sequence
-        (tail bandwidth_dimension_sequence)
-  where
-    bandwidth_dimension_sequence =
-        computeBandwidthDimensionSequence
-            requested_bandwidth_dimension
-            physical_dimensions
--- @-node:gcross.20091113142219.2519:computeSiteDimensionSequence
--- @+node:gcross.20091120112621.1590:makeConfiguration
-makeConfiguration :: [OperatorSiteTensor] → [[OverlapTensorTrio]] → Configuration
-makeConfiguration operator_site_tensors [] = zip operator_site_tensors (repeat [])
-makeConfiguration operator_site_tensors projectors = zip operator_site_tensors . transpose $ projectors
--- @-node:gcross.20091120112621.1590:makeConfiguration
--- @+node:gcross.20100512154636.1738:throwIfEnergyChanged
-throwIfEnergyChanged ::
-    Double →
-    EnergyMinimizationChain →
-    (EnergyMinimizationChain → EnergyMinimizationChain → SanityCheckFailed) →
-    EnergyMinimizationChain →
-    EnergyMinimizationChain
-throwIfEnergyChanged tolerance old_chain createException new_chain
- | abs (chainEnergy new_chain - chainEnergy old_chain) > tolerance
-    = throw $ createException old_chain new_chain
- | otherwise
-    = new_chain
--- @-node:gcross.20100512154636.1738:throwIfEnergyChanged
--- @-node:gcross.20091116222034.2374:Utility Functions
--- @+node:gcross.20091113142219.1678:Chain Functions
+-- @-node:gcross.20100524130857.1819:prepareAndAbsorbIntoNew___Neighbor
 -- @+node:gcross.20091113142219.1684:activateLeftNeighbor
 activateLeftNeighbor :: EnergyMinimizationChain → EnergyMinimizationChain
 activateLeftNeighbor EnergyMinimizationChain { siteLeftNeighbors = [] } =

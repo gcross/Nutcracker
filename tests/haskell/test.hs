@@ -714,7 +714,6 @@ main = defaultMain
                 unsafePerformIO
                 $
                 generateRandomizedStateSiteTensor d bl br
-        -- @nonl
         -- @-node:gcross.20100521141104.1778:applyProjectorMatrix
         -- @-others
         ]
@@ -810,14 +809,24 @@ main = defaultMain
             ]
         -- @-node:gcross.20091113142219.2532:computeSiteDimensionSequence
         -- @+node:gcross.20091114174920.1728:Chain energy invariant under movement
-        ,testGroup "Chain energy invariant under movement" $
+        ,testGroup "Chain invariant under movement" $
             let 
                 -- @        @+others
-                -- @+node:gcross.20091114174920.1738:createEnergyInvarianceTest
-                createEnergyInvarianceTest :: OperatorDimension n => SingleSiteOperator n → Int → Int → Assertion
-                createEnergyInvarianceTest identity_operator number_of_sites bandwidth_dimension = do
+                -- @+node:gcross.20091114174920.1738:createInvarianceTest
+                createInvarianceTest ::
+                    OperatorDimension n =>
+                    String →
+                    (EnergyMinimizationChain → Double) →
+                    SingleSiteOperator n →
+                    Int →
+                    Int →
+                    Assertion
+                createInvarianceTest invariant_name chainInvariant identity_operator number_of_sites bandwidth_dimension = do
                     chain ←
-                        generateRandomizedChain bandwidth_dimension
+                        (generateRandomizedChain bandwidth_dimension
+                         >=>
+                         generateRandomizedChainProjecting bandwidth_dimension
+                        )
                         .
                         replicate number_of_sites
                         .
@@ -838,25 +847,29 @@ main = defaultMain
                             last
                             $
                             chains_going_right
-                        correct_energy = chainEnergy chain
-                    forM_ (zip [1..] . map chainEnergy $ chains_going_right) $ \(site_number::Int,energy) →
+                        correct_invariant_value = chainInvariant chain
+                    forM_ (zip [1..] . map chainInvariant $ chains_going_right) $ \(site_number::Int,invariant_value) →
                         assertAlmostEqual
-                            (printf "Did the energy change after moving right to site %i?" site_number)
-                            correct_energy energy
-                    forM_ (zip [number_of_sites,number_of_sites-1..] . map chainEnergy $ chains_going_left) $ \(site_number,energy) →
+                            (printf "Did the %s change after moving right to site %i?" invariant_name site_number)
+                            correct_invariant_value invariant_value
+                    forM_ (zip [number_of_sites,number_of_sites-1..] . map chainInvariant $ chains_going_left) $ \(site_number,invariant_value) →
                         assertAlmostEqual
-                            (printf "Did the energy change after moving left to site %i?" site_number)
-                            correct_energy energy
-                -- @nonl
-                -- @-node:gcross.20091114174920.1738:createEnergyInvarianceTest
+                            (printf "Did the %s change after moving left to site %i?" invariant_name site_number)
+                            correct_invariant_value invariant_value
+                -- @-node:gcross.20091114174920.1738:createInvarianceTest
                 -- @+node:gcross.20100505180122.1723:runTestsForIdentityOperator
-                runTestsForIdentityOperator :: OperatorDimension n => SingleSiteOperator n → Test.Framework.Test
-                runTestsForIdentityOperator identity_operator =
+                runTestsForIdentityOperator ::
+                    OperatorDimension n =>
+                    String →
+                    (EnergyMinimizationChain → Double) →
+                    SingleSiteOperator n →
+                    Test.Framework.Test
+                runTestsForIdentityOperator invariant_name chainInvariant identity_operator =
                     let physical_dimension = physicalDimensionOfSingleSiteOperator identity_operator
                     in testGroup (printf "physical dimension = %i" physical_dimension) $
                        map (\(number_of_sites,bandwidth_dimension) →
                             testCase (printf "%i sites, bandwidth = %i" number_of_sites bandwidth_dimension) $ 
-                                createEnergyInvarianceTest identity_operator number_of_sites bandwidth_dimension
+                                createInvarianceTest invariant_name chainInvariant identity_operator number_of_sites bandwidth_dimension
                        ) $
                        concat
                         [[ ( 2,b) | b ← [1,2]]
@@ -868,10 +881,16 @@ main = defaultMain
                 -- @nonl
                 -- @-node:gcross.20100505180122.1723:runTestsForIdentityOperator
                 -- @-others
-            in  [runTestsForIdentityOperator (identity :: SingleSiteOperator N2)
-                ,runTestsForIdentityOperator (identity :: SingleSiteOperator N3)
-                ,runTestsForIdentityOperator (identity :: SingleSiteOperator N4)
-                ,runTestsForIdentityOperator (identity :: SingleSiteOperator N5)
+            in  [testGroup invariant_name
+                    [runTestsForIdentityOperator invariant_name chainInvariant (identity :: SingleSiteOperator N2)
+                    ,runTestsForIdentityOperator invariant_name chainInvariant (identity :: SingleSiteOperator N3)
+                    ,runTestsForIdentityOperator invariant_name chainInvariant (identity :: SingleSiteOperator N4)
+                    ,runTestsForIdentityOperator invariant_name chainInvariant (identity :: SingleSiteOperator N5)
+                    ]
+                | (invariant_name,chainInvariant) ←
+                    [("energy",chainEnergy)
+                    ,("overlap",chainProjectorOverlap)
+                    ]
                 ]
         -- @-node:gcross.20091114174920.1728:Chain energy invariant under movement
         -- @+node:gcross.20091115105949.1747:Chain energy invariant under bandwidth increase
@@ -977,7 +996,7 @@ main = defaultMain
                 (siteNumber moved_chain_3 == site_number_3)
         -- @nonl
         -- @-node:gcross.20100521141104.1786:activateSite
-        -- @+node:gcross.20100523170654.1793:generateRandomizedChain
+        -- @+node:gcross.20100523170654.1793:generateRandomizedChainProjecting
         ,testProperty "generateRandomizedChainProjecting" $ do
             number_of_sites ← choose (2,10)
             bandwidth_dimension ← choose (1,2)
@@ -998,36 +1017,152 @@ main = defaultMain
                 makeOperatorSiteTensorFromSpecification 1 1 
                 $
                 [(1 ⇨ 1) (identity :: SingleSiteOperator N2)]
-        -- @-node:gcross.20100523170654.1793:generateRandomizedChain
-        -- @+node:gcross.20100522160359.1790:projectSite
-        ,testProperty "projectSite" $ do
-            number_of_sites ← choose (2,10)
-            bandwidth_dimension ← choose (1,2)
-            site_number ← choose (1,number_of_sites)
-            let operator_site_tensors =
-                    replicate number_of_sites
+        -- @-node:gcross.20100523170654.1793:generateRandomizedChainProjecting
+        -- @+node:gcross.20100523170654.1800:projectSite
+        ,testGroup "projectSite" $
+            -- @    @+others
+            -- @+node:gcross.20100522160359.1790:no overlap at site of projection
+            [testProperty "no overlap at site of projection" $ do
+                number_of_sites ← choose (2,10)
+                bandwidth_dimension ← choose (1,2)
+                site_number ← choose (1,number_of_sites)
+                let operator_site_tensors =
+                        replicate number_of_sites
+                        .
+                        makeOperatorSiteTensorFromSpecification 1 1 
+                        $
+                        [(1 ⇨ 1) (identity :: SingleSiteOperator N2)]
+                return $
+                    (≅ 0)
                     .
-                    makeOperatorSiteTensorFromSpecification 1 1 
+                    chainProjectorOverlap
+                    .
+                    projectSite
+                    .
+                    activateSite site_number
+                    .
+                    unsafePerformIO
+                    .
+                    (generateRandomizedChain bandwidth_dimension
+                     >=>
+                     generateRandomizedChainProjecting bandwidth_dimension
+                    )
                     $
-                    [(1 ⇨ 1) (identity :: SingleSiteOperator N2)]
-            return $
-                (≅ 0)
-                .
-                chainProjectorOverlap
-                .
-                projectSite
-                .
-                activateSite site_number
-                .
-                unsafePerformIO
-                .
-                (generateRandomizedChain bandwidth_dimension
-                 >=>
-                 generateRandomizedChainProjecting bandwidth_dimension
-                )
-                $
-                operator_site_tensors
-        -- @-node:gcross.20100522160359.1790:projectSite
+                    operator_site_tensors
+            -- @nonl
+            -- @-node:gcross.20100522160359.1790:no overlap at site of projection
+            -- @+node:gcross.20100523170654.1802:no overlap at other site
+            ,testProperty "no overlap at other site" $ do
+                number_of_sites ← choose (2,10)
+                bandwidth_dimension ← choose (1,2)
+                site_number_1 ← choose (1,number_of_sites)
+                site_number_2 ← choose (1,number_of_sites)
+                let operator_site_tensors =
+                        replicate number_of_sites
+                        .
+                        makeOperatorSiteTensorFromSpecification 1 1 
+                        $
+                        [(1 ⇨ 1) (identity :: SingleSiteOperator N2)]
+                return $
+                    (≅ 0)
+                    .
+                    chainProjectorOverlap
+                    .
+                    activateSite site_number_2
+                    .
+                    projectSite
+                    .
+                    activateSite site_number_1
+                    .
+                    unsafePerformIO
+                    .
+                    (generateRandomizedChain bandwidth_dimension
+                     >=>
+                     generateRandomizedChainProjecting bandwidth_dimension
+                    )
+                    $
+                    operator_site_tensors
+            -- @nonl
+            -- @-node:gcross.20100523170654.1802:no overlap at other site
+            -- @-others
+            ]
+        -- @-node:gcross.20100523170654.1800:projectSite
+        -- @+node:gcross.20100523170654.1794:projectChain
+        ,testGroup "projectChain" $
+            -- @    @+others
+            -- @+node:gcross.20100523170654.1795:d = 2, b = 1
+            [testGroup "d = 2, b = 1" $
+                -- @    @+others
+                -- @+node:gcross.20100523170654.1797:one projector chain...
+                [testGroup "one projector chain..." $
+                    -- @    @+others
+                    -- @+node:gcross.20100523170654.1796:...exists
+                    [testProperty "...exists" $ do
+                        number_of_sites ← choose (2,10)
+                        let bandwidth_dimension = 1
+                        site_number ← choose (1,number_of_sites)
+                        let operator_site_tensors =
+                                replicate number_of_sites
+                                .
+                                makeOperatorSiteTensorFromSpecification 1 1 
+                                $
+                                [(1 ⇨ 1) (identity :: SingleSiteOperator N2)]
+                        return $
+                            isJust
+                            .
+                            projectChain
+                            .
+                            activateSite site_number
+                            .
+                            unsafePerformIO
+                            .
+                            (generateRandomizedChain bandwidth_dimension
+                             >=>
+                             generateRandomizedChainProjecting bandwidth_dimension
+                            )
+                            $
+                            operator_site_tensors
+                    -- @-node:gcross.20100523170654.1796:...exists
+                    -- @+node:gcross.20100523170654.1799:...is in orthogonal subspace
+                    ,testProperty "...is in orthogonal subspace" $ do
+                        number_of_sites ← choose (2,10)
+                        let bandwidth_dimension = 1
+                        site_number ← choose (1,number_of_sites)
+                        let operator_site_tensors =
+                                replicate number_of_sites
+                                .
+                                makeOperatorSiteTensorFromSpecification 1 1 
+                                $
+                                [(1 ⇨ 1) (identity :: SingleSiteOperator N2)]
+                        return $
+                            (≅ 0)
+                            .
+                            chainProjectorOverlap
+                            .
+                            fromJust
+                            .
+                            projectChain
+                            .
+                            activateSite site_number
+                            .
+                            unsafePerformIO
+                            .
+                            (generateRandomizedChain bandwidth_dimension
+                             >=>
+                             generateRandomizedChainProjecting bandwidth_dimension
+                            )
+                            $
+                            operator_site_tensors
+                    -- @-node:gcross.20100523170654.1799:...is in orthogonal subspace
+                    -- @-others
+                    ]
+                -- @-node:gcross.20100523170654.1797:one projector chain...
+                -- @-others
+                ]
+            -- @-node:gcross.20100523170654.1795:d = 2, b = 1
+            -- @-others
+            ]
+        -- @-node:gcross.20100523170654.1794:projectChain
         -- @-others
         ]
     -- @-node:gcross.20091113142219.1701:VMPS.EnergyMinimizationChain

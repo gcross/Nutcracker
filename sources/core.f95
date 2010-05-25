@@ -146,7 +146,7 @@ subroutine compute_orthogonal_basis( &
   end if
 
   rank = n
-  do while (dznrm2(n-rank+1,basis(rank,rank),m) < 1e-7)
+  do while (dznrm2(n-rank+1,basis(rank,rank),m) < 1e-7 .and. rank > 0)
     rank = rank - 1
   end do
 
@@ -892,14 +892,19 @@ subroutine project(vector_size,number_of_projectors,projectors,input_vector,outp
   double complex, intent(in) :: projectors(vector_size,number_of_projectors), input_vector(vector_size)
   double complex, intent(out) :: output_vector(vector_size)
   double complex :: projector_weights(number_of_projectors)
+  if (number_of_projectors == 0) then
+    output_vector = input_vector
+    return
+  end if
   call zgemv( &
-    'C', &
+    'T', &
     vector_size,number_of_projectors, &
     (1d0,0d0),projectors,vector_size, &
     input_vector,1, &
     (0d0,0d0),projector_weights,1 &
   )
-  output_vector = input_vector
+  projector_weights = conjg(projector_weights)
+  output_vector = conjg(input_vector)
   call zgemv( &
     'N', &
     vector_size,number_of_projectors, &
@@ -907,17 +912,19 @@ subroutine project(vector_size,number_of_projectors,projectors,input_vector,outp
     projector_weights,1, &
     (1d0,0d0),output_vector,1 &
   )
+  output_vector = conjg(output_vector)
 end subroutine
 !@-node:gcross.20091115201814.1736:project
 !@+node:gcross.20100520145029.1765:compute_overlap_with_projectors
-function compute_overlap_with_projectors( &
+subroutine compute_overlap_with_projectors( &
   vector_size, number_of_projectors, &
   projectors, &
-  vector &
-) result (overlap)
+  vector, &
+  overlap &
+)
   integer, intent(in) :: number_of_projectors, vector_size
   double complex, intent(in) :: projectors(vector_size,number_of_projectors), vector(vector_size)
-  double precision :: overlap
+  double precision, intent(out) :: overlap
 
   interface
     function dznrm2 (n,x,incx)
@@ -931,10 +938,11 @@ function compute_overlap_with_projectors( &
 
   if (number_of_projectors == 0) then
     overlap = 0
+    return
   end if
 
   call zgemv( &
-    'C', &
+    'T', &
     vector_size,number_of_projectors, &
     (1d0,0d0),projectors,vector_size, &
     vector,1, &
@@ -942,7 +950,7 @@ function compute_overlap_with_projectors( &
   )
 
   overlap = dznrm2(number_of_projectors,projector_weights,1)
-end function
+end subroutine
 !@-node:gcross.20100520145029.1765:compute_overlap_with_projectors
 !@-node:gcross.20100520145029.1766:Projectors
 !@+node:gcross.20100517000234.1775:optimize
@@ -981,8 +989,7 @@ function optimize( &
   double precision, intent(in) :: tol
 
   integer :: info, n
-  double precision :: norm_of_result
-  double complex :: resid(br,bl,d)
+  double precision :: overlap, norm_of_result
 
   interface
     function dznrm2 (n,x,incx)
@@ -994,13 +1001,13 @@ function optimize( &
 
   n = d*bl*br
 
-  if (number_of_projectors > 0) then
-    resid = guess / dznrm2(n,guess(1,1,1),1)
-    call project(n,number_of_projectors,projectors,resid(1,1,1),resid(1,1,1))
-    if (abs(dznrm2(n,resid,1)-1) > 1e-7) then
-      info = 11
-      return
-    end if
+  call compute_overlap_with_projectors(n,number_of_projectors,projectors,guess(1,1,1),overlap)
+
+  if ((number_of_projectors > 0) .and. &
+      (overlap > 1e-7) &
+  ) then
+    info = 11
+    return
   end if
 
   if (n-number_of_projectors < 4) then
@@ -1179,6 +1186,8 @@ contains
       projectors, &
       orthogonal_projector_basis &
     )
+
+    orthogonal_projector_basis = conjg(orthogonal_projector_basis)
 
     call zgemm( &
       'N', 'N', &
@@ -2016,11 +2025,11 @@ subroutine form_overlap_site_tensor(br, bl, d, state_site_tensor, overlap_site_t
   double complex, intent(out) :: overlap_site_tensor(bl,d,br)
 
   overlap_site_tensor = &
-    reshape( &
+    conjg(reshape( &
       state_site_tensor, &
       shape(overlap_site_tensor), &
       order=(/3,1,2/) &
-    )
+    ))
 
 end subroutine
 !@-node:gcross.20091117140132.1800:form_overlap_site_tensor
