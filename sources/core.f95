@@ -217,17 +217,40 @@ subroutine lapack_eigenvalue_minimizer(n,matrix,eigenvalue,eigenvector)
 
   double complex, intent(out) :: eigenvalue, eigenvector(n)
 
-  integer :: number_of_eigenvalues_found, lwork, lrwork, liwork
-  double precision :: lrwork_as_double
-  double complex :: lwork_as_complex, temp(n,n)
+  integer :: number_of_eigenvalues_found, lwork, lrwork, liwork(1)
+  double precision :: lrwork_as_double(1)
+  double complex :: lwork_as_complex(1), temp(n,n)
   double complex, allocatable :: work(:)
   double precision, allocatable :: rwork(:)
   integer, allocatable :: iwork(:)
 
-  integer :: info
-  double precision :: eigenvalue_as_real
+  integer :: info, eigenvector_support(2)
+  double precision :: w(n)
 
-  external :: zheevr
+  interface
+    subroutine zheevr( &
+      jobz, range, uplo, &
+      n, &
+      a, lda, &
+      vl, vu, &
+      il, iu, &
+      abstol, &
+      m, w, &
+      z, ldz, isuppz, &
+      work, lwork, &
+      rwork, lrwork, &
+      iwork, liwork, &
+      info &
+    )
+      character, intent(in) :: jobz, range, uplo
+      integer, intent(in) :: il, info, iu, lda, ldz, liwork, lrwork, lwork, n
+      integer, intent(out) :: m
+      double precision, intent(in) :: abstol, vl, vu
+      integer, intent(inout) :: isuppz(2), iwork(liwork)
+      double precision, intent(inout) :: rwork(lrwork), w(n)
+      double complex, intent(inout) :: a(lda,n), work(lwork), z(ldz,1)
+    end subroutine
+  end interface
 
   temp = matrix
 
@@ -241,9 +264,8 @@ subroutine lapack_eigenvalue_minimizer(n,matrix,eigenvalue,eigenvector)
     1, 1, &
     0d0, &
     number_of_eigenvalues_found, &
-    eigenvalue_as_real, &
-    eigenvector, n, &
-    0, &
+    w, &
+    eigenvector, n, eigenvector_support, &
     lwork_as_complex, -1, &
     lrwork_as_double, -1, &
     liwork, -1, &
@@ -256,10 +278,10 @@ subroutine lapack_eigenvalue_minimizer(n,matrix,eigenvalue,eigenvector)
     stop
   end if
 
-  lwork = int(lwork_as_complex)
-  lrwork = int(lrwork_as_double)
+  lwork = int(lwork_as_complex(1))
+  lrwork = int(lrwork_as_double(1))
 
-  allocate(work(lwork),rwork(lrwork),iwork(liwork))
+  allocate(work(lwork),rwork(lrwork),iwork(liwork(1)))
 
   call zheevr(&
     'V', &
@@ -271,18 +293,23 @@ subroutine lapack_eigenvalue_minimizer(n,matrix,eigenvalue,eigenvector)
     1, 1, &
     0d0, &
     number_of_eigenvalues_found, &
-    eigenvalue_as_real, &
-    eigenvector, n, &
-    0, &
+    w, &
+    eigenvector, n, eigenvector_support, &
     work, lwork, &
     rwork, lrwork, &
-    iwork, liwork, &
+    iwork, liwork(1), &
     info &
   )
 
   deallocate(work,rwork,iwork)
 
-  eigenvalue = eigenvalue_as_real*(1d0,0d0)
+  if (info /= 0) then
+    print *, "Error computing eigenvalue (zheevr); info =", info
+      print *, "n=",n
+    stop
+  end if
+
+  eigenvalue = w(1)*(1d0,0d0)
 
 end subroutine
 !@-node:gcross.20100514235202.1743:lapack_eigenvalue_minimizer
