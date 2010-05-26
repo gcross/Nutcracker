@@ -38,6 +38,8 @@ module VMPS.Tensors
     ,OperatorSiteTensor
     ,projectorCount
     ,projectorLength
+    ,projectorReflectorCount
+    ,projectorOrthogonalSubspaceDimension
     ) where
 
 import VMPS.Tensors.Implementation

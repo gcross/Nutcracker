@@ -55,7 +55,7 @@ int optimize_(
     double* left_environment,
     int* number_of_matrices, int* sparse_operator_indices, double* sparse_operator_matrices,
     double* right_environment,
-    int* number_of_projectors, double* projectors,
+    int* number_of_reflectors, int* orthogonal_subspace_dimension, double* reflectors, double* coefficients,
     char* which,
     double* tol,
     int* number_of_iterations,
@@ -73,7 +73,7 @@ int optimize(
     double* left_environment,
     int number_of_matrices, int* sparse_operator_indices, double* sparse_operator_matrices,
     double* right_environment,
-    int number_of_projectors, double* projectors,
+    int number_of_reflectors, int orthogonal_subspace_dimension, double* reflectors, double* coefficients,
     char* which,
     double tol,
     int* number_of_iterations,
@@ -90,7 +90,7 @@ int optimize(
         left_environment,
         &number_of_matrices, sparse_operator_indices, sparse_operator_matrices,
         right_environment,
-        &number_of_projectors, projectors,
+        &number_of_reflectors, &orthogonal_subspace_dimension, reflectors, coefficients,
         which,
         &tol,
         number_of_iterations,
@@ -281,13 +281,6 @@ void rand_norm_state_site_tensor(int br, int bl, int d, double* state_site_tenso
     rand_norm_state_site_tensor_(&br,&bl,&d,state_site_tensor);
 }
 //@-node:gcross.20091112145455.1673:rand_norm_state_site_tensor
-//@+node:gcross.20100521141104.1777:random_projector_matrix
-void random_projector_matrix_(int* projector_length, int* number_of_projectors, double* projector_matrix);
-
-void random_projector_matrix(int projector_length, int number_of_projectors, double* projector_matrix) {
-    random_projector_matrix_(&projector_length,&number_of_projectors,projector_matrix);
-}
-//@-node:gcross.20100521141104.1777:random_projector_matrix
 //@+node:gcross.20091113125544.1647:norm_denorm_going_left
 int norm_denorm_going_left_(
   int* bll, int* bl, int* br,
@@ -375,29 +368,6 @@ int increase_bandwidth_between(
     );
 }
 //@-node:gcross.20091115105949.1731:increase_bandwidth_between
-//@+node:gcross.20091116175016.1801:orthogonalize_projector_matrix
-int orthogonalize_matrix_in_place_(
-  int* n,
-  int* m,
-  double* matrix,
-  int* rank
-);
-
-int orthogonalize_matrix_in_place(
-  int n,
-  int m,
-  double* matrix
-) {
-    int rank;
-    orthogonalize_matrix_in_place_(
-        &n,
-        &m,
-        matrix,
-        &rank
-    );
-    return rank;
-}
-//@-node:gcross.20091116175016.1801:orthogonalize_projector_matrix
 //@+node:gcross.20091118141720.1801:form_overlap_site_tensor
 void form_overlap_site_tensor_(int* br, int* bl, int* d, double* state_site_tensor, double* overlap_site_tensor);
 
@@ -439,21 +409,6 @@ void form_norm_overlap_tensors(
     );
 }
 //@-node:gcross.20091118141720.1804:form_norm_overlap_tensors
-//@+node:gcross.20091120134444.1596:project
-void project_(int* vector_size,int* number_of_projectors,double* projectors,double* input_vector,double* output_vector);
-
-void project(int vector_size,int number_of_projectors,double* projectors,double* input_vector,double* output_vector) {
-    project_(&vector_size,&number_of_projectors,projectors,input_vector,output_vector);
-}
-//@-node:gcross.20091120134444.1596:project
-//@+node:gcross.20100520145029.1768:compute_overlap_with_projectors
-void compute_overlap_with_projectors_(int* vector_size,int* number_of_projectors,double* projectors,double* vector,double* overlap);
-double compute_overlap_with_projectors(int vector_size,int number_of_projectors,double* projectors,double* vector) {
-    double overlap;
-    compute_overlap_with_projectors_(&vector_size,&number_of_projectors,projectors,vector,&overlap);
-    return overlap;
-}
-//@-node:gcross.20100520145029.1768:compute_overlap_with_projectors
 //@+node:gcross.20091211120042.1691:apply_single_site_operator
 void apply_single_site_operator_(int* br, int* bl, int* d, double* state_site_tensor, double* operator, double* new_state_site_tensor);
 
@@ -461,6 +416,92 @@ void apply_single_site_operator(int br, int bl, int d, double* state_site_tensor
     return apply_single_site_operator_(&br,&bl,&d,state_site_tensor,operator,new_state_site_tensor);
 }
 //@-node:gcross.20091211120042.1691:apply_single_site_operator
+//@+node:gcross.20100525190742.1826:Projectors
+//@+node:gcross.20091116175016.1801:convert_vectors_to_reflectors
+int convert_vectors_to_reflectors_(
+  int* n,
+  int* m,
+  double* vectors,
+  int* rank,
+  double* coefficients
+);
+
+int convert_vectors_to_reflectors(
+  int n,
+  int m,
+  double* vectors,
+  double* coefficients
+) {
+    int rank;
+    convert_vectors_to_reflectors_(
+        &n,
+        &m,
+        vectors,
+        &rank,
+        coefficients
+    );
+    return rank;
+}
+//@-node:gcross.20091116175016.1801:convert_vectors_to_reflectors
+//@+node:gcross.20100525190742.1829:filter_components_outside_orthog
+void filter_components_outside_orthog_(
+  int* full_space_dimension,
+  int* number_of_reflectors, int* orthogonal_subspace_dimension, double* reflectors, double* coefficients,
+  double* input,
+  double* output
+);
+
+void filter_components_outside_orthog(
+  int full_space_dimension,
+  int number_of_reflectors, int orthogonal_subspace_dimension, double* reflectors, double* coefficients,
+  double* input,
+  double* output
+) {
+    filter_components_outside_orthog_(
+        &full_space_dimension,
+        &number_of_reflectors, &orthogonal_subspace_dimension, reflectors, coefficients,
+        input,
+        output
+    );
+}
+//@-node:gcross.20100525190742.1829:filter_components_outside_orthog
+//@+node:gcross.20100521141104.1777:random_projector_matrix
+void random_projector_matrix_(
+    int* projector_length, int* number_of_projectors,
+    int* rank,
+    double* reflectors, double* coefficients
+);
+
+int random_projector_matrix(
+    int projector_length, int number_of_projectors,
+    double* reflectors, double* coefficients
+) {
+    int rank;
+    random_projector_matrix_(&projector_length,&number_of_projectors,&rank,reflectors,coefficients);
+    return rank;
+}
+//@-node:gcross.20100521141104.1777:random_projector_matrix
+//@+node:gcross.20100525190742.1831:compute_overlap_with_projectors
+void compute_overlap_with_projectors_(
+  int* number_of_reflectors, int* orthogonal_subspace_dimension, double* reflectors, double* coefficients,
+  int* vector_size, double* vector,
+  double* overlap
+);
+
+double compute_overlap_with_projectors(
+  int number_of_reflectors, int orthogonal_subspace_dimension, double* reflectors, double* coefficients,
+  int vector_size, double* vector
+) {
+    double overlap;
+    compute_overlap_with_projectors_(
+      &number_of_reflectors, &orthogonal_subspace_dimension, reflectors, coefficients,
+      &vector_size, vector,
+      &overlap
+    );
+    return overlap;
+}
+//@-node:gcross.20100525190742.1831:compute_overlap_with_projectors
+//@-node:gcross.20100525190742.1826:Projectors
 //@-others
 //@-node:gcross.20091112145455.1619:@thin core-wrapper.c
 //@-leo

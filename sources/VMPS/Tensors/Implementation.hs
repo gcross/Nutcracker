@@ -468,24 +468,44 @@ instance Connected OperatorSiteTensor RightAbsorptionNormalizedStateSiteTensor w
 -- @-node:gcross.20091111171052.1598:Operator Site Tensor
 -- @-node:gcross.20091113142219.2538:Tensors
 -- @+node:gcross.20091116175016.1796:ProjectorMatrix
-data ProjectorMatrix = NullProjectorMatrix | ProjectorMatrix
+data ProjectorMatrix =
+    NullProjectorMatrix
+  | ProjectorMatrix
     {   projectorCount :: !Int
     ,   projectorLength :: !Int
-    ,   projectorMatrix :: !(ComplexTensor (Int,Int))
+    ,   projectorReflectorCount :: !Int
+    ,   projectorReflectors :: !(ComplexTensor (Int,Int))
+    ,   projectorCoefficients :: !(ComplexTensor Int)
     }
 
-withPinnedProjectorMatrix :: ProjectorMatrix → (Int → Int → Ptr (Complex Double) → IO a) → IO a
-withPinnedProjectorMatrix NullProjectorMatrix thunk = thunk 0 undefined nullPtr
-withPinnedProjectorMatrix (ProjectorMatrix number_of_projectors projector_length matrix) thunk =
-    withPinnedComplexTensor matrix (thunk number_of_projectors projector_length)
+withPinnedProjectorMatrix ::
+    ProjectorMatrix →
+    (Ptr (Complex Double) → Ptr (Complex Double) → IO a) →
+    IO a
+withPinnedProjectorMatrix projector_matrix thunk =
+    case projector_matrix of
+        NullProjectorMatrix -> thunk nullPtr nullPtr
+        ProjectorMatrix _ _ _ reflectors coefficients ->
+            withPinnedComplexTensor reflectors $ \p_reflector ->
+            withPinnedComplexTensor coefficients $ \p_coefficients ->
+                thunk p_reflector p_coefficients
 
-withNewPinnedProjectorMatrix :: Int → Int → (Ptr (Complex Double) → IO (Int,a)) → IO (a,ProjectorMatrix)
-withNewPinnedProjectorMatrix 0 _ = error "You are trying to get a write pointer to an empty array!"
-withNewPinnedProjectorMatrix number_of_projectors projector_length = do
-    withNewPinnedComplexTensor (number_of_projectors,projector_length)
-    >=>
-    \((rank,result),tensor) →
-        return (result,ProjectorMatrix rank projector_length tensor)
+withNewPinnedProjectorMatrix ::
+    Int →
+    Int →
+    (Ptr (Complex Double) → Ptr (Complex Double) → IO (Int,a)) →
+    IO (a,ProjectorMatrix)
+withNewPinnedProjectorMatrix 0 _ _ = error "You are trying to get a write pointer to an empty array!"
+withNewPinnedProjectorMatrix number_of_projectors projector_length thunk =
+    (withNewPinnedComplexTensor (number_of_projectors,projector_length) $ \p_reflectors ->
+     withNewPinnedComplexTensor number_of_projectors $ \p_coefficients ->
+        thunk p_reflectors p_coefficients
+    )
+    >>=
+    \(((rank,result),coefficients),reflectors) →
+        return (result,ProjectorMatrix rank projector_length number_of_projectors reflectors coefficients)
+
+projectorOrthogonalSubspaceDimension = projectorLength <^(-)^> projectorCount
 -- @-node:gcross.20091116175016.1796:ProjectorMatrix
 -- @-node:gcross.20091111171052.1591:Types
 -- @+node:gcross.20091111171052.1601:Classes

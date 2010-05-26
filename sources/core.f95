@@ -1004,8 +1004,11 @@ subroutine convert_vectors_to_reflectors( &
   end if
 
   rank = n
-  do while (dznrm2(n-rank+1,vectors(rank,rank),m) < 1e-7 .and. rank > 0)
+  do while (dznrm2(n-rank+1,vectors(rank,rank),m) < 1e-7)
     rank = rank - 1
+    if (rank == 0) then
+      exit
+    end if
   end do
 
 end subroutine
@@ -1381,7 +1384,7 @@ subroutine compute_opt_matrix_all_cases( &
     stop
   end if
 
-  if (orthogonal_subspace_dimension == full_space_dimension) then
+  if (number_of_reflectors == 0 .or. orthogonal_subspace_dimension == full_space_dimension) then
     call compute_optimization_matrix( &
       bl, br, cl, cr, d, &
       left_environment, &
@@ -1419,6 +1422,11 @@ subroutine filter_components_outside_orthog( &
 
   double complex :: &
     projected(orthogonal_subspace_dimension)
+
+  if (number_of_reflectors == 0 .or. orthogonal_subspace_dimension == full_space_dimension) then
+    output = input
+    return
+  end if
 
   call project_into_orthogonal_space( &
     full_space_dimension, &
@@ -1506,6 +1514,7 @@ function optimize( &
 
   if (orthogonal_subspace_dimension < 4) then
     strategy = 1
+    ! print *, "strategy 1", number_of_reflectors, full_space_dimension, orthogonal_subspace_dimension
     call optimize_strategy_1( &
       bl, br, &
       cl, &
@@ -1525,6 +1534,7 @@ function optimize( &
     )
   else if ( bl*br < cl*cr ) then
     strategy = 2
+    ! print *, "strategy 2"
     call optimize_strategy_2( &
       bl, br, &
       cl, &
@@ -1544,6 +1554,7 @@ function optimize( &
     )
   else
     strategy = 3
+    ! print *, "strategy 3", full_space_dimension, orthogonal_subspace_dimension
     call optimize_strategy_3( &
       bl, br, &
       cl, &
@@ -1656,7 +1667,6 @@ subroutine optimize_strategy_1( &
   info = 0
 
 end subroutine
-!@nonl
 !@-node:gcross.20100517000234.1786:optimize_strategy_1
 !@+node:gcross.20091109182634.1537:optimize_strategy_2
 subroutine optimize_strategy_2( &
@@ -2155,12 +2165,16 @@ end subroutine
 !@+node:gcross.20100521141104.1771:random_projector_matrix
 subroutine random_projector_matrix( &
   projector_length, number_of_projectors, &
-  projector_matrix &
+  rank, &
+  reflectors, coefficients &
 )
   integer, intent(in) :: projector_length, number_of_projectors
-  double complex, intent(out) :: projector_matrix(projector_length,number_of_projectors)
+  double complex, intent(out) :: &
+    reflectors(projector_length,number_of_projectors), &
+    coefficients(number_of_projectors)
+  integer, intent(out) :: rank
 
-  integer :: i, j, rank
+  integer :: i, j
 
   if (number_of_projectors == 0) then
     return
@@ -2168,16 +2182,16 @@ subroutine random_projector_matrix( &
 
   do j = 1, number_of_projectors
   do i = 1, projector_length
-    projector_matrix(i,j) = (0.5d0-rand())*(1d0,0d0) + (0.5d0-rand())*(0d0,1d0)
+    reflectors(i,j) = (0.5d0-rand())*(1d0,0d0) + (0.5d0-rand())*(0d0,1d0)
   end do
   end do
 
-  call orthogonalize_matrix_in_place( &
+  call convert_vectors_to_reflectors( &
     projector_length, number_of_projectors, &
-    projector_matrix, &
-    rank &
+    reflectors, &
+    rank, &
+    coefficients &
   )
-
 end subroutine
 !@-node:gcross.20100521141104.1771:random_projector_matrix
 !@-node:gcross.20091110205054.1942:Randomization

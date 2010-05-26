@@ -401,8 +401,10 @@ foreign import ccall unsafe "optimize" optimize ::
     Ptr Int32 → -- sparse operator indices
     Ptr (Complex Double) → -- sparse operator matrices
     Ptr (Complex Double) → -- right environment
-    Int → -- number of projectors
-    Ptr (Complex Double) → -- projectors
+    Int → -- number of reflectors
+    Int → -- orthogonal subspace dimension
+    Ptr (Complex Double) → -- reflectors
+    Ptr (Complex Double) → -- coefficients
     CString → -- which eigenvectors to select
     Double → -- tolerance
     Ptr Int → -- cap on the number of iterations / number of iterations that were used
@@ -431,46 +433,7 @@ computeOptimalSiteStateTensor
     tolerance
     maximum_number_of_iterations
     =
-    let bl = left_boundary_tensor ←?→ state_site_tensor
-        br = state_site_tensor ←?→ right_boundary_tensor
-        cl = left_boundary_tensor ←?→ operator_site_tensor
-        cr = operator_site_tensor ←?→ right_boundary_tensor
-        d = operator_site_tensor ←?→ state_site_tensor
-        ((info,number_of_iterations,eigenvalue),optimized_state_site_tensor) = unsafePerformIO $
-            withPinnedTensor left_boundary_tensor $ \p_left_boundary →
-            withPinnedTensor state_site_tensor $ \p_state_site_tensor →
-            withPinnedOperatorSiteTensor operator_site_tensor $ \number_of_matrices p_operator_indices p_operator_matrices →
-            withPinnedTensor right_boundary_tensor $ \p_right_boundary →
-            withPinnedProjectorMatrix projector_matrix $ \number_of_projectors projector_length p_projector_matrix →
-            assert (projector_length == d*bl*br) $
-            withStrategyAsCString strategy $ \p_strategy →
-            with maximum_number_of_iterations  $ \p_number_of_iterations →
-            alloca $ \p_eigenvalue →
-            withNewPinnedTensor (d,bl,br) $ \p_result → (
-                optimize
-                    bl
-                    br
-                    cl
-                    cr
-                    d
-                    p_left_boundary
-                    number_of_matrices p_operator_indices p_operator_matrices
-                    p_right_boundary
-                    number_of_projectors
-                    p_projector_matrix
-                    p_strategy
-                    tolerance
-                    p_number_of_iterations
-                    p_state_site_tensor
-                    p_result
-                    p_eigenvalue
-                >>= \info →
-                        liftM3 (,,) 
-                            (return info)
-                            (peek p_number_of_iterations)
-                            (peek p_eigenvalue)
-            )
-    in case info of
+    case info of
         0 → Right (number_of_iterations,realPart eigenvalue,optimized_state_site_tensor)
         -14 → Left OptimizerUnableToConverge
         1 → Left $ OptimizedObtainedComplexEigenvalue eigenvalue
@@ -479,7 +442,54 @@ computeOptimalSiteStateTensor
         10 → Left $ OptimizerGivenTooManyProjectors (projectorCount projector_matrix) d bl br
         11 → Left $ OptimizerGivenGuessInProjectorSpace
         _ → Left $ UnknownOptimizerFailureCode (fromIntegral info)
--- @nonl
+  where
+    bl = left_boundary_tensor ←?→ state_site_tensor
+    br = state_site_tensor ←?→ right_boundary_tensor
+    cl = left_boundary_tensor ←?→ operator_site_tensor
+    cr = operator_site_tensor ←?→ right_boundary_tensor
+    d = operator_site_tensor ←?→ state_site_tensor
+    (number_of_reflectors,orthogonal_subspace_dimension) =
+        case projector_matrix of
+            NullProjectorMatrix -> (0,br*bl*d)
+            _ -> (projectorReflectorCount projector_matrix
+                 ,projectorOrthogonalSubspaceDimension projector_matrix
+                 )
+    ((info,number_of_iterations,eigenvalue),optimized_state_site_tensor) = unsafePerformIO $
+        withPinnedTensor left_boundary_tensor $ \p_left_boundary →
+        withPinnedTensor state_site_tensor $ \p_state_site_tensor →
+        withPinnedOperatorSiteTensor operator_site_tensor $ \number_of_matrices p_operator_indices p_operator_matrices →
+        withPinnedTensor right_boundary_tensor $ \p_right_boundary →
+        withPinnedProjectorMatrix projector_matrix $ \p_reflectors p_coefficients →
+        assert (projectorLength projector_matrix == d*bl*br) $
+        withStrategyAsCString strategy $ \p_strategy →
+        with maximum_number_of_iterations  $ \p_number_of_iterations →
+        alloca $ \p_eigenvalue →
+        withNewPinnedTensor (d,bl,br) $ \p_result → (
+            optimize
+                bl
+                br
+                cl
+                cr
+                d
+                p_left_boundary
+                number_of_matrices p_operator_indices p_operator_matrices
+                p_right_boundary
+                number_of_reflectors
+                orthogonal_subspace_dimension
+                p_reflectors
+                p_coefficients
+                p_strategy
+                tolerance
+                p_number_of_iterations
+                p_state_site_tensor
+                p_result
+                p_eigenvalue
+            >>= \info →
+                    liftM3 (,,) 
+                        (return info)
+                        (peek p_number_of_iterations)
+                        (peek p_eigenvalue)
+        )
 -- @-node:gcross.20091111171052.1656:computeOptimalSiteStateTensor
 -- @+node:gcross.20091115105949.1729:increaseBandwidthBetween
 foreign import ccall unsafe "increase_bandwidth_between" increase_bandwidth_between :: 
@@ -542,6 +552,7 @@ increaseBandwidthBetween new_bm tensor_to_denormalize tensor_to_normalize =
                 else return (denormalized_state_site_tensor,normalized_state_site_tensor)
 -- @nonl
 -- @-node:gcross.20091115105949.1729:increaseBandwidthBetween
+-- @+node:gcross.20100525190742.1827:Projectors
 -- @+node:gcross.20091116175016.1797:formProjectorMatrix
 foreign import ccall unsafe "form_overlap_vector" form_overlap_vector :: 
     Int → -- old state left bandwidth dimension
@@ -555,10 +566,11 @@ foreign import ccall unsafe "form_overlap_vector" form_overlap_vector ::
     Ptr (Complex Double) → -- output overlap vector
     IO ()
 
-foreign import ccall unsafe "orthogonalize_matrix_in_place" orthogonalize_matrix_in_place :: 
+foreign import ccall unsafe "convert_vectors_to_reflectors" convert_vectors_to_reflectors :: 
     Int → -- number of projectors
     Int → -- projector length
-    Ptr (Complex Double) → -- projector matrix
+    Ptr (Complex Double) → -- vectors → reflectors
+    Ptr (Complex Double) → -- coefficients
     IO Int
 
 formProjectorMatrix :: 
@@ -606,24 +618,26 @@ formProjectorMatrix projectors@(first_projector:_) =
 
     projector_matrix = snd . unsafePerformIO $
         withNewPinnedProjectorMatrix number_of_projectors projector_length $
-            \p_projector_matrix →
-                go projectors p_projector_matrix
+            \p_reflectors p_coefficients →
+                go projectors p_reflectors
                 >>
-                orthogonalize_matrix_in_place
+                convert_vectors_to_reflectors
                     projector_length
                     number_of_projectors
-                    p_projector_matrix
+                    p_reflectors
+                    p_coefficients
                 >>=
                 \rank → return (rank,())
--- @nonl
 -- @-node:gcross.20091116175016.1797:formProjectorMatrix
 -- @+node:gcross.20091120134444.1598:applyProjectorMatrix
-foreign import ccall unsafe "project" project :: 
-    Int → -- vector size
-    Int → -- number of projectors
-    Ptr (Complex Double) → -- input: projector matrix
-    Ptr (Complex Double) → -- input: state site tensor
-    Ptr (Complex Double) → -- output: projected state site tensor
+foreign import ccall unsafe "filter_components_outside_orthog" filter_components_outside_orthog :: 
+    Int → -- full space dimension
+    Int → -- number of reflectors
+    Int → -- orthogonal subspace dimension
+    Ptr (Complex Double) → -- input: reflectors
+    Ptr (Complex Double) → -- input: coefficients
+    Ptr (Complex Double) → -- input: input
+    Ptr (Complex Double) → -- input: output
     IO ()
 
 applyProjectorMatrix ::
@@ -632,55 +646,31 @@ applyProjectorMatrix ::
     UnnormalizedStateSiteTensor
 applyProjectorMatrix NullProjectorMatrix state_site_tensor = state_site_tensor
 applyProjectorMatrix projector_matrix state_site_tensor =
-    let br = rightBandwidthOfState state_site_tensor
-        bl = leftBandwidthOfState state_site_tensor
-        d = physicalDimensionOfState state_site_tensor
-    in snd . unsafePerformIO $
-            withPinnedProjectorMatrix projector_matrix $ \number_of_projectors projector_length p_projector_matrix →
-            assert (projector_length == d*bl*br) $
-            withPinnedTensor state_site_tensor $ \p_state_site_tensor →
-            withNewPinnedTensor (d,bl,br) $
-                project
-                    projector_length
-                    number_of_projectors
-                    p_projector_matrix
-                    p_state_site_tensor
--- @nonl
+    snd . unsafePerformIO $
+    withPinnedProjectorMatrix projector_matrix $ \p_reflectors p_coefficients →
+    assert (projector_length == d*bl*br) $
+    withPinnedTensor state_site_tensor $ \p_state_site_tensor →
+    withNewPinnedTensor (d,bl,br) $
+        filter_components_outside_orthog
+            projector_length
+            (projectorReflectorCount projector_matrix)
+            (projectorOrthogonalSubspaceDimension projector_matrix)
+            p_reflectors
+            p_coefficients
+            p_state_site_tensor
+  where
+    br = rightBandwidthOfState state_site_tensor
+    bl = leftBandwidthOfState state_site_tensor
+    d = physicalDimensionOfState state_site_tensor
+    projector_length = projectorLength projector_matrix
 -- @-node:gcross.20091120134444.1598:applyProjectorMatrix
--- @+node:gcross.20100520145029.1769:computeOverlapWithProjectors
-foreign import ccall unsafe "compute_overlap_with_projectors" compute_overlap_with_projectors :: 
-    Int → -- vector size
-    Int → -- number of projectors
-    Ptr (Complex Double) → -- input: projector matrix
-    Ptr (Complex Double) → -- input: state site tensor
-    IO Double
-
-computeOverlapWithProjectors ::
-    ProjectorMatrix →
-    UnnormalizedStateSiteTensor →
-    Double
-computeOverlapWithProjectors NullProjectorMatrix _ = 0
-computeOverlapWithProjectors projector_matrix state_site_tensor =
-    let br = rightBandwidthOfState state_site_tensor
-        bl = leftBandwidthOfState state_site_tensor
-        d = physicalDimensionOfState state_site_tensor
-    in unsafePerformIO $
-            withPinnedProjectorMatrix projector_matrix $ \number_of_projectors projector_length p_projector_matrix →
-            assert (projector_length == d*bl*br) $
-            withPinnedTensor state_site_tensor $ \p_state_site_tensor →
-                compute_overlap_with_projectors
-                    projector_length
-                    number_of_projectors
-                    p_projector_matrix
-                    p_state_site_tensor
--- @nonl
--- @-node:gcross.20100520145029.1769:computeOverlapWithProjectors
 -- @+node:gcross.20100521141104.1773:generateRandomizedProjectorMatrix
 foreign import ccall unsafe "random_projector_matrix" random_projector_matrix :: 
     Int → -- vector size
     Int → -- number of projectors
-    Ptr (Complex Double) → -- output: projector matrix
-    IO ()
+    Ptr (Complex Double) → -- output: reflectors
+    Ptr (Complex Double) → -- output: coefficients
+    IO Int
 
 generateRandomizedProjectorMatrix ::
     Int →
@@ -689,12 +679,44 @@ generateRandomizedProjectorMatrix ::
 generateRandomizedProjectorMatrix _ 0 = return NullProjectorMatrix
 generateRandomizedProjectorMatrix projector_length number_of_projectors =
     fmap snd $
-        withNewPinnedProjectorMatrix number_of_projectors projector_length $
-            fmap (const (number_of_projectors,()))
-            .
-            random_projector_matrix projector_length number_of_projectors
--- @nonl
+        withNewPinnedProjectorMatrix number_of_projectors projector_length $ \p_reflectors p_coefficients →
+            fmap (\rank → (rank,())) $
+                random_projector_matrix projector_length number_of_projectors p_reflectors p_coefficients
 -- @-node:gcross.20100521141104.1773:generateRandomizedProjectorMatrix
+-- @+node:gcross.20100520145029.1769:computeOverlapWithProjectors
+foreign import ccall unsafe "compute_overlap_with_projectors" compute_overlap_with_projectors :: 
+    Int → -- number of reflectors
+    Int → -- orthogonal subspace dimension
+    Ptr (Complex Double) → -- input: reflectors
+    Ptr (Complex Double) → -- input: coefficients
+    Int →                  -- input: vector size
+    Ptr (Complex Double) → -- input: vector
+    IO Double
+
+computeOverlapWithProjectors ::
+    ProjectorMatrix →
+    UnnormalizedStateSiteTensor →
+    Double
+computeOverlapWithProjectors NullProjectorMatrix _ = 0
+computeOverlapWithProjectors projector_matrix state_site_tensor =
+    unsafePerformIO $
+    withPinnedProjectorMatrix projector_matrix $ \p_reflectors p_coefficients →
+    assert (projector_length == d*bl*br) $
+    withPinnedTensor state_site_tensor $ \p_state_site_tensor →
+        compute_overlap_with_projectors
+            (projectorReflectorCount projector_matrix)
+            (projectorOrthogonalSubspaceDimension projector_matrix)
+            p_reflectors
+            p_coefficients
+            projector_length
+            p_state_site_tensor
+  where
+    br = rightBandwidthOfState state_site_tensor
+    bl = leftBandwidthOfState state_site_tensor
+    d = physicalDimensionOfState state_site_tensor
+    projector_length = projectorLength projector_matrix
+-- @-node:gcross.20100520145029.1769:computeOverlapWithProjectors
+-- @-node:gcross.20100525190742.1827:Projectors
 -- @+node:gcross.20091118141720.1810:Overlap tensor formation
 -- @+node:gcross.20091118141720.1812:makeOverlapSiteTensor
 foreign import ccall unsafe "form_overlap_site_tensor" form_overlap_site_tensor :: 
