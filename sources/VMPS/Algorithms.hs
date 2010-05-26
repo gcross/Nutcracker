@@ -456,7 +456,7 @@ solveForMultipleLevels
   where
     initial_bandwidth = 2
 
-solveForMultipleLevels_ = solveForMultipleLevels 1e-7 1e-7 0 1000
+solveForMultipleLevels_ = solveForMultipleLevels 1e-7 1e-7 1e-10 1000
 -- @nonl
 -- @-node:gcross.20091119150241.1853:solveForMultipleLevels
 -- @-node:gcross.20091119150241.1851:Multiple levels
