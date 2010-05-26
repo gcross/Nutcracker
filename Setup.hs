@@ -69,6 +69,13 @@ ghc_flags = ["-O2","-fvia-C","-optc=-O3"]
 flags = ["-O3","-ffast-math","-funroll-loops"]
 gcc_flags = flags
 gfortran_flags = "-cpp":"-fimplicit-none":flags
+
+-- @+at
+--  flags = ["-g"]
+--  gcc_flags = flags
+--  gfortran_flags = "-cpp":"-fimplicit-none":"-fbounds-check":flags
+-- @-at
+-- @@c
 -- @-node:gcross.20091212120817.2108:Flags
 -- @-node:gcross.20091130053756.1973:Values
 -- @+node:gcross.20091130053756.1984:main
