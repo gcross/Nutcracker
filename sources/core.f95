@@ -1401,6 +1401,41 @@ subroutine compute_opt_matrix_all_cases( &
   end if
 end subroutine
 !@-node:gcross.20100525120117.1845:compute_opt_matrix_all_cases
+!@+node:gcross.20100525190742.1822:filter_components_outside_orthog
+subroutine filter_components_outside_orthog( &
+  full_space_dimension, &
+  number_of_reflectors, orthogonal_subspace_dimension, reflectors, coefficients, &
+  input, &
+  output &
+)
+  implicit none
+  integer, intent(in) :: full_space_dimension, number_of_reflectors, orthogonal_subspace_dimension
+  double complex, intent(in) :: &
+    reflectors(full_space_dimension,number_of_reflectors), &
+    coefficients(number_of_reflectors), &
+    input(full_space_dimension)
+  double complex, intent(out) :: &
+    output(full_space_dimension)
+
+  double complex :: &
+    projected(orthogonal_subspace_dimension)
+
+  call project_into_orthogonal_space( &
+    full_space_dimension, &
+    number_of_reflectors, orthogonal_subspace_dimension, reflectors, coefficients, &
+    input, &
+    projected &
+  )
+
+  call unproject_from_orthogonal_space( &
+    full_space_dimension, &
+    number_of_reflectors, orthogonal_subspace_dimension, reflectors, coefficients, &
+    projected, &
+    output &
+  )
+
+end subroutine
+!@-node:gcross.20100525190742.1822:filter_components_outside_orthog
 !@-node:gcross.20100520145029.1766:Projectors
 !@+node:gcross.20100517000234.1775:optimize
 function optimize( &

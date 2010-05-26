@@ -1260,22 +1260,19 @@ class compute_overlap_with_projectors(TestCase):
         projectors, reflectors, coefficients, orthogonal_subspace_dimension = generate_reflectors(full_space_dimension)
         vector = dot(projectors.conj(),rand(projectors.shape[-1]))
         self.assertAlmostEqual(vmps.compute_overlap_with_projectors(orthogonal_subspace_dimension,reflectors,coefficients,vector),norm(vector))
-#@+at
-#     @with_checker
-#     def test_correctness_for_projection_space_vector(self,n=irange(2,10)):
-#         projectors = vmps.random_projector_matrix(n,randint(1,n-1))
-#         vector = crand(n)
-#         vector = vector - vmps.project(projectors,vector)
-# self.assertAlmostEqual(vmps.compute_overlap_with_projectors(projectors,vector),norm(vector))
-# 
-#     @with_checker
-#     def test_correctness_for_general_vector(self,n=irange(2,10)):
-#         projectors = vmps.random_projector_matrix(n,randint(1,n-1))
-#         vector = crand(n)
-#         projected_vector = vmps.project(projectors,vector)
-# self.assertAlmostEqual(vmps.compute_overlap_with_projectors(projectors,vector),norm(vector-projected_vector))
-#@-at
-#@@c
+
+    @with_checker
+    def test_correctness_for_vector_in_orthogonal_space(self,full_space_dimension=irange(2,10)):
+        projectors, reflectors, coefficients, orthogonal_subspace_dimension = generate_reflectors(full_space_dimension)
+        vector = vmps.filter_components_outside_orthog(orthogonal_subspace_dimension,reflectors,coefficients,crand(full_space_dimension))
+        self.assertVanishing(vmps.compute_overlap_with_projectors(orthogonal_subspace_dimension,reflectors,coefficients,vector))
+
+    @with_checker
+    def test_correctness_for_arbirary_vector(self,full_space_dimension=irange(2,10)):
+        projectors, reflectors, coefficients, orthogonal_subspace_dimension = generate_reflectors(full_space_dimension)
+        vector = crand(full_space_dimension)
+        filtered_vector = vmps.filter_components_outside_orthog(orthogonal_subspace_dimension,reflectors,coefficients,vector)
+        self.assertAlmostEqual(vmps.compute_overlap_with_projectors(orthogonal_subspace_dimension,reflectors,coefficients,vector),norm(vector-filtered_vector))
 #@-node:gcross.20100521141104.1781:compute_overlap_with_projectors
 #@+node:gcross.20100525120117.1810:compute_q_from_reflectors
 class compute_q_from_reflectors(TestCase):
@@ -1434,6 +1431,15 @@ class project_matrix_into_orthog_space(TestCase):
     #@-node:gcross.20100525120117.1849:test_agreement_with_project
     #@-others
 #@-node:gcross.20100525120117.1846:project_matrix_into_orthog_space
+#@+node:gcross.20100525190742.1825:filter_components_outside_orthog
+class filter_components_outside_orthog(TestCase):
+    @with_checker
+    def test_result_is_orthogonal(self,full_space_dimension=irange(2,10)):
+        projectors, reflectors, coefficients, orthogonal_subspace_dimension = generate_reflectors(full_space_dimension)
+        vector = dot(projectors.conj(),rand(projectors.shape[-1]))
+        filtered_vector = vmps.filter_components_outside_orthog(orthogonal_subspace_dimension,reflectors,coefficients,vector)
+        self.assertVanishing(dot(filtered_vector,projectors))
+#@-node:gcross.20100525190742.1825:filter_components_outside_orthog
 #@-node:gcross.20100521141104.1779:Projectors
 #@+node:gcross.20091110205054.1948:Normalization
 #@+node:gcross.20091110205054.1933:norm_denorm_going_left
@@ -1662,6 +1668,7 @@ tests = [
     project_matrix_into_orthog_space,
     form_overlap_site_tensor,
     form_norm_overlap_tensors,
+    filter_components_outside_orthog,
 ]
 
 #@<< Runner >>
