@@ -483,18 +483,18 @@ int random_projector_matrix(
 //@-node:gcross.20100521141104.1777:random_projector_matrix
 //@+node:gcross.20100525190742.1831:compute_overlap_with_projectors
 void compute_overlap_with_projectors_(
-  int* number_of_reflectors, int* orthogonal_subspace_dimension, double* reflectors, double* coefficients,
+  int* number_of_reflectors, double* reflectors, double* coefficients,
   int* vector_size, double* vector,
   double* overlap
 );
 
 double compute_overlap_with_projectors(
-  int number_of_reflectors, int orthogonal_subspace_dimension, double* reflectors, double* coefficients,
+  int number_of_reflectors, double* reflectors, double* coefficients,
   int vector_size, double* vector
 ) {
     double overlap;
     compute_overlap_with_projectors_(
-      &number_of_reflectors, &orthogonal_subspace_dimension, reflectors, coefficients,
+      &number_of_reflectors, reflectors, coefficients,
       &vector_size, vector,
       &overlap
     );

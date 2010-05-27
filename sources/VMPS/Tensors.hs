@@ -40,6 +40,7 @@ module VMPS.Tensors
     ,projectorLength
     ,projectorReflectorCount
     ,projectorOrthogonalSubspaceDimension
+    ,numberOfOrthogonalProjectors
     ) where
 
 import VMPS.Tensors.Implementation

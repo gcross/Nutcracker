@@ -277,13 +277,16 @@ increaseBandwidthAndSweepUntilConvergenceWithCallbacks
     = runOptimizer >=> go
   where
     go old_chain =
-        liftM (throwIfEnergyChanged 1e-7 old_chain $
-            \old_chain new_chain →
-                EnergyChangedAfterBandwidthIncreaseError
-                    (maximumBandwidthIn old_chain)
-                    (maximumBandwidthIn new_chain)
-                    (chainEnergy old_chain)
-                    (chainEnergy new_chain)
+        liftM (
+            \new_chain →
+                if abs (chainEnergy old_chain - chainEnergy new_chain) > 1e-7
+                    then throw $
+                        EnergyChangedAfterBandwidthIncreaseError
+                            (maximumBandwidthIn old_chain)
+                            (maximumBandwidthIn new_chain)
+                            (chainEnergy old_chain)
+                            (chainEnergy new_chain)
+                    else new_chain
         ) (callback_to_increase_bandwidth old_chain)
         >>=
         runOptimizer

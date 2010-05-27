@@ -857,7 +857,7 @@ class optimizer_tests(TestCase):
                 left_environment,
                 sparse_operator_indices,sparse_operator_matrices,
                 right_environment,
-                br*bl*d,zeros((br*bl*d,1)),zeros((1,)),
+                br*bl*d,zeros((br*bl*d,0)),zeros((),dtype=complex128,order='F'),
                 "SR",0,10000,
                 guess
             )
@@ -894,10 +894,10 @@ class optimizer_tests(TestCase):
         if d*bl*br == 1:
             return
 
-        number_of_projectors = randint(0,d*bl*br-1)
+        number_of_projectors = randint(1,d*bl*br-1)
 
         self.assertTrue(d*bl*br>1)
-        self.assertTrue(number_of_projectors>1)
+        self.assertTrue(number_of_projectors>0)
         self.assertTrue(d*bl*br>number_of_projectors)
 
         projectors, reflectors, coefficients, orthogonal_subspace_dimension = generate_reflectors(d*bl*br)
@@ -1126,17 +1126,6 @@ class rand_unnorm_state_site_tensor(TestCase):
         self.assertAlmostEqual(1,norm(unnormalized_tensor.ravel()))
 #@nonl
 #@-node:gcross.20091123113033.1633:rand_unnorm_state_site_tensor
-#@+node:gcross.20100521141104.1772:random_projector_matrix
-class random_projector_matrix(TestCase):
-    #@    @+others
-    #@-others
-
-    @with_checker
-    def test_correctness(self,n=irange(2,10)):
-        number_of_projectors = randint(1,n)
-        projector_matrix = vmps.random_projector_matrix(n,number_of_projectors)
-        self.assertAllClose(dot(projector_matrix.conj().transpose(),projector_matrix),identity(number_of_projectors))
-#@-node:gcross.20100521141104.1772:random_projector_matrix
 #@-node:gcross.20091123113033.1634:Randomization
 #@+node:gcross.20100514235202.1744:Utility Functions
 #@+node:gcross.20091116175016.1815:orthogonalize_matrix_in_place
@@ -1235,14 +1224,14 @@ class lapack_eigenvalue_minimizer(TestCase):
 #@+node:gcross.20100521141104.1779:Projectors
 #@+node:gcross.20100525120117.1816:Functions
 #@+node:gcross.20100525120117.1818:generate_reflectors
-def generate_reflectors(full_space_dimension):
-    number_of_projectors = randint(1,full_space_dimension-1)
+def generate_reflectors(full_space_dimension,number_of_projectors=None):
+    if number_of_projectors is None:
+        number_of_projectors = randint(1,full_space_dimension-1)
     projectors = crand(full_space_dimension,number_of_projectors)
     reflectors = array(projectors,order='F')
     rank, coefficients = vmps.convert_vectors_to_reflectors(reflectors)
     orthogonal_subspace_dimension = full_space_dimension - rank
     return projectors, reflectors, coefficients, orthogonal_subspace_dimension
-#@nonl
 #@-node:gcross.20100525120117.1818:generate_reflectors
 #@+node:gcross.20100525120117.1826:generate_q
 def generate_q(full_space_dimension):
@@ -1256,23 +1245,14 @@ def generate_q(full_space_dimension):
 #@+node:gcross.20100521141104.1781:compute_overlap_with_projectors
 class compute_overlap_with_projectors(TestCase):
     @with_checker
-    def test_correctness_for_vector_made_of_projectors(self,full_space_dimension=irange(2,10)):
-        projectors, reflectors, coefficients, orthogonal_subspace_dimension = generate_reflectors(full_space_dimension)
-        vector = dot(projectors.conj(),rand(projectors.shape[-1]))
-        self.assertAlmostEqual(vmps.compute_overlap_with_projectors(orthogonal_subspace_dimension,reflectors,coefficients,vector),norm(vector))
-
-    @with_checker
-    def test_correctness_for_vector_in_orthogonal_space(self,full_space_dimension=irange(2,10)):
-        projectors, reflectors, coefficients, orthogonal_subspace_dimension = generate_reflectors(full_space_dimension)
-        vector = vmps.filter_components_outside_orthog(orthogonal_subspace_dimension,reflectors,coefficients,crand(full_space_dimension))
-        self.assertVanishing(vmps.compute_overlap_with_projectors(orthogonal_subspace_dimension,reflectors,coefficients,vector))
-
-    @with_checker
-    def test_correctness_for_arbirary_vector(self,full_space_dimension=irange(2,10)):
-        projectors, reflectors, coefficients, orthogonal_subspace_dimension = generate_reflectors(full_space_dimension)
+    def test_correctness(self,full_space_dimension=irange(2,2)):
+        projectors, reflectors, coefficients, orthogonal_subspace_dimension = generate_reflectors(full_space_dimension,1)
         vector = crand(full_space_dimension)
-        filtered_vector = vmps.filter_components_outside_orthog(orthogonal_subspace_dimension,reflectors,coefficients,vector)
-        self.assertAlmostEqual(vmps.compute_overlap_with_projectors(orthogonal_subspace_dimension,reflectors,coefficients,vector),norm(vector-filtered_vector))
+        x = vmps.unproject_from_orthogonal_space(reflectors,coefficients,array([1,0]))
+        self.assertAlmostEqual(
+            vmps.compute_overlap_with_projectors(reflectors,coefficients,vector),
+            norm(dot(vector,projectors))
+        )
 #@-node:gcross.20100521141104.1781:compute_overlap_with_projectors
 #@+node:gcross.20100525120117.1810:compute_q_from_reflectors
 class compute_q_from_reflectors(TestCase):
@@ -1651,7 +1631,6 @@ tests = [
     optimize_strategy_3,
     rand_norm_state_site_tensor,
     rand_unnorm_state_site_tensor,
-    random_projector_matrix,
     norm_denorm_going_left,
     norm_denorm_going_right,
     create_bandwidth_increase_matrix,

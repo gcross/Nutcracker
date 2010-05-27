@@ -506,6 +506,9 @@ withNewPinnedProjectorMatrix number_of_projectors projector_length thunk =
         return (result,ProjectorMatrix rank projector_length number_of_projectors reflectors coefficients)
 
 projectorOrthogonalSubspaceDimension = projectorLength <^(-)^> projectorCount
+
+numberOfOrthogonalProjectors NullProjectorMatrix = 0
+numberOfOrthogonalProjectors projector_matrix = projectorCount projector_matrix
 -- @-node:gcross.20091116175016.1796:ProjectorMatrix
 -- @-node:gcross.20091111171052.1591:Types
 -- @+node:gcross.20091111171052.1601:Classes

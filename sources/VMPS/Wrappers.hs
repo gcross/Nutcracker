@@ -59,7 +59,7 @@ data OptimizerFailure =
     OptimizerUnableToConverge
   | OptimizedObtainedComplexEigenvalue (Complex Double)
   | OptimizerObtainedVanishingEigenvector Double
-  | OptimizerObtainedEigenvectorInProjectorSpace
+  | OptimizerObtainedEigenvectorInProjectorSpace Double
   | OptimizerGivenTooManyProjectors Int Int Int Int
   | OptimizerGivenGuessInProjectorSpace
   | UnknownOptimizerFailureCode Int
@@ -434,13 +434,17 @@ computeOptimalSiteStateTensor
     maximum_number_of_iterations
     =
     case info of
-        0 → Right (number_of_iterations,realPart eigenvalue,optimized_state_site_tensor)
         -14 → Left OptimizerUnableToConverge
-        1 → Left $ OptimizedObtainedComplexEigenvalue eigenvalue
-        2 → Left $ OptimizerObtainedVanishingEigenvector (realPart eigenvalue)
-        3 → Left $ OptimizerObtainedEigenvectorInProjectorSpace
         10 → Left $ OptimizerGivenTooManyProjectors (projectorCount projector_matrix) d bl br
         11 → Left $ OptimizerGivenGuessInProjectorSpace
+        0 | abs (imagPart eigenvalue) > 1e-10
+            → Left $ OptimizedObtainedComplexEigenvalue eigenvalue
+          | norm_of_result < (1-1e-7)
+            → Left $ OptimizerObtainedVanishingEigenvector norm_of_result
+          | overlap > 1e-10
+            → Left $ OptimizerObtainedEigenvectorInProjectorSpace overlap
+          | otherwise
+            → Right $ (number_of_iterations,realPart eigenvalue,optimized_state_site_tensor)
         _ → Left $ UnknownOptimizerFailureCode (fromIntegral info)
   where
     bl = left_boundary_tensor ←?→ state_site_tensor
@@ -455,6 +459,8 @@ computeOptimalSiteStateTensor
                  ,projectorOrthogonalSubspaceDimension projector_matrix
                  )
     ((info,number_of_iterations,eigenvalue),optimized_state_site_tensor) = unsafePerformIO $
+        -- @        << Call optimizer >>
+        -- @+node:gcross.20100526165608.1825:<< Call optimizer >>
         withPinnedTensor left_boundary_tensor $ \p_left_boundary →
         withPinnedTensor state_site_tensor $ \p_state_site_tensor →
         withPinnedOperatorSiteTensor operator_site_tensor $ \number_of_matrices p_operator_indices p_operator_matrices →
@@ -490,6 +496,11 @@ computeOptimalSiteStateTensor
                         (peek p_number_of_iterations)
                         (peek p_eigenvalue)
         )
+        -- @nonl
+        -- @-node:gcross.20100526165608.1825:<< Call optimizer >>
+        -- @nl
+    norm_of_result = normOfState optimized_state_site_tensor
+    overlap = computeOverlapWithProjectors projector_matrix optimized_state_site_tensor
 -- @-node:gcross.20091111171052.1656:computeOptimalSiteStateTensor
 -- @+node:gcross.20091115105949.1729:increaseBandwidthBetween
 foreign import ccall unsafe "increase_bandwidth_between" increase_bandwidth_between :: 
@@ -581,9 +592,18 @@ formProjectorMatrix ::
 
 formProjectorMatrix [] = NullProjectorMatrix
 formProjectorMatrix projectors@(first_projector:_) =
-    if projectorCount projector_matrix == 0
-        then NullProjectorMatrix
-        else projector_matrix
+    snd . unsafePerformIO $
+        withNewPinnedProjectorMatrix number_of_projectors projector_length $
+            \p_reflectors p_coefficients →
+                go projectors p_reflectors
+                >>
+                convert_vectors_to_reflectors
+                    projector_length
+                    number_of_projectors
+                    p_reflectors
+                    p_coefficients
+                >>=
+                \rank → return (rank,())
   where
     number_of_projectors = length projectors
     (first_left_boundary,first_right_boundary,first_overlap_site_tensor) = first_projector
@@ -615,19 +635,6 @@ formProjectorMatrix projectors@(first_projector:_) =
                     p_overlap_site_tensor
                     p_projector
             ) >> go rest_projectors (p_projector `plusPtr` pointer_increment)
-
-    projector_matrix = snd . unsafePerformIO $
-        withNewPinnedProjectorMatrix number_of_projectors projector_length $
-            \p_reflectors p_coefficients →
-                go projectors p_reflectors
-                >>
-                convert_vectors_to_reflectors
-                    projector_length
-                    number_of_projectors
-                    p_reflectors
-                    p_coefficients
-                >>=
-                \rank → return (rank,())
 -- @-node:gcross.20091116175016.1797:formProjectorMatrix
 -- @+node:gcross.20091120134444.1598:applyProjectorMatrix
 foreign import ccall unsafe "filter_components_outside_orthog" filter_components_outside_orthog :: 
@@ -686,7 +693,6 @@ generateRandomizedProjectorMatrix projector_length number_of_projectors =
 -- @+node:gcross.20100520145029.1769:computeOverlapWithProjectors
 foreign import ccall unsafe "compute_overlap_with_projectors" compute_overlap_with_projectors :: 
     Int → -- number of reflectors
-    Int → -- orthogonal subspace dimension
     Ptr (Complex Double) → -- input: reflectors
     Ptr (Complex Double) → -- input: coefficients
     Int →                  -- input: vector size
@@ -705,7 +711,6 @@ computeOverlapWithProjectors projector_matrix state_site_tensor =
     withPinnedTensor state_site_tensor $ \p_state_site_tensor →
         compute_overlap_with_projectors
             (projectorReflectorCount projector_matrix)
-            (projectorOrthogonalSubspaceDimension projector_matrix)
             p_reflectors
             p_coefficients
             projector_length

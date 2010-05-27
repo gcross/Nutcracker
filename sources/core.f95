@@ -274,7 +274,7 @@ subroutine lapack_eigenvalue_minimizer(n,matrix,eigenvalue,eigenvector)
 
   if (info /= 0) then
     print *, "Error computing eigenvalue (zheevr, workspace query); info =", info
-      print *, "n=",n
+    print *, "n=",n
     stop
   end if
 
@@ -305,7 +305,7 @@ subroutine lapack_eigenvalue_minimizer(n,matrix,eigenvalue,eigenvector)
 
   if (info /= 0) then
     print *, "Error computing eigenvalue (zheevr); info =", info
-      print *, "n=",n
+    print *, "n=",n
     stop
   end if
 
@@ -917,12 +917,12 @@ end subroutine
 !@+node:gcross.20100520145029.1766:Projectors
 !@+node:gcross.20100520145029.1765:compute_overlap_with_projectors
 subroutine compute_overlap_with_projectors( &
-  number_of_reflectors, orthogonal_subspace_dimension, reflectors, coefficients, &
+  number_of_reflectors, reflectors, coefficients, &
   vector_size, vector, &
   overlap &
 )
   implicit none
-  integer, intent(in) :: vector_size, number_of_reflectors, orthogonal_subspace_dimension
+  integer, intent(in) :: vector_size, number_of_reflectors
   double complex, intent(in) :: &
     reflectors(vector_size,number_of_reflectors), &
     coefficients(number_of_reflectors), &
@@ -935,32 +935,36 @@ subroutine compute_overlap_with_projectors( &
       double complex, intent(in) :: x(n)
       double precision :: dznrm2
     end function
+    subroutine ztrmv (uplo,trans,diag,n,a,lda,x,incx)
+      character, intent(in) :: uplo, trans, diag
+      integer, intent(in) :: n, lda, incx
+      double complex, intent(in) :: a(n,n), x(n)
+    end subroutine
   end interface
 
-  double complex :: projected_vector(orthogonal_subspace_dimension), overlap_vector(vector_size)
+  double complex :: projected_vector(vector_size)
 
-  if (number_of_reflectors == 0 .or. orthogonal_subspace_dimension == vector_size) then
+  if (number_of_reflectors == 0) then
     overlap = 0
     return
   end if
 
   call project_into_orthogonal_space( &
     vector_size, &
-    number_of_reflectors, orthogonal_subspace_dimension, reflectors, coefficients, &
+    number_of_reflectors, vector_size, reflectors, coefficients, &
     vector, &
     projected_vector &
   )
 
-  call unproject_from_orthogonal_space( &
-    vector_size, &
-    number_of_reflectors, orthogonal_subspace_dimension, reflectors, coefficients, &
-    projected_vector, &
-    overlap_vector &
+  call ztrmv( &
+    'U', 'T', 'N', &
+    number_of_reflectors, &
+    reflectors(1,1), vector_size, &
+    projected_vector(1), 1 &
   )
 
-  overlap_vector = vector - overlap_vector
+  overlap = dznrm2(number_of_reflectors,projected_vector,1)
 
-  overlap = dznrm2(vector_size,overlap_vector,1)
 end subroutine
 !@-node:gcross.20100520145029.1765:compute_overlap_with_projectors
 !@+node:gcross.20100525104555.1804:convert_vectors_to_reflectors
@@ -1031,7 +1035,7 @@ subroutine convert_vectors_to_reflectors( &
   end if
 
   rank = n
-  do while (dznrm2(n-rank+1,vectors(rank,rank),m) < 1e-7)
+  do while (dznrm2(n-rank+1,vectors(rank,rank),m) < 1e-12)
     rank = rank - 1
     if (rank == 0) then
       exit
@@ -1118,7 +1122,7 @@ subroutine project_into_orthogonal_space( &
   double complex, allocatable :: work(:)
   integer :: lwork, info, start_of_orthogonal_subspace
 
-  if (number_of_reflectors == 0 .or. full_space_dimension == orthogonal_subspace_dimension) then
+  if (number_of_reflectors == 0) then
     vector_in_orthogonal_space = vector_in_full_space
     return
   end if
@@ -1138,7 +1142,7 @@ subroutine project_into_orthogonal_space( &
   )
 
   if (info /= 0) then
-    print *, "Error calling zunmqr (workspace query):  info =", info
+    print *, "project_into_orthogonal_space:  Error calling zunmqr (workspace query), info =", info
     stop
   end if
 
@@ -1158,7 +1162,7 @@ subroutine project_into_orthogonal_space( &
   deallocate(work)
 
   if (info /= 0) then
-    print *, "Error calling zunmqr:  info =", info
+    print *, "project_into_orthogonal_space:  Error calling zunmqr, info =", info
     stop
   end if
 
@@ -1189,7 +1193,7 @@ subroutine unproject_from_orthogonal_space( &
   double complex, allocatable :: work(:)
   integer :: lwork, info, start_of_orthogonal_subspace
 
-  if (number_of_reflectors == 0 .or. full_space_dimension == orthogonal_subspace_dimension) then
+  if (number_of_reflectors == 0) then
     vector_in_full_space = vector_in_orthogonal_space
     return
   end if
@@ -1210,7 +1214,7 @@ subroutine unproject_from_orthogonal_space( &
   )
 
   if (info /= 0) then
-    print *, "Error calling zunmqr (workspace query):  info =", info
+    print *, "unproject_from_orthogonal_space:  Error calling zunmqr (workspace query), info =", info
     stop
   end if
 
@@ -1230,12 +1234,11 @@ subroutine unproject_from_orthogonal_space( &
   deallocate(work)
 
   if (info /= 0) then
-    print *, "Error calling zunmqr:  info =", info
+    print *, "unproject_from_orthogonal_space:  Error calling zunmqr, info =", info
     stop
   end if
 
 end subroutine
-!@nonl
 !@-node:gcross.20100525104555.1809:unproject_from_orthogonal_space
 !@+node:gcross.20100525120117.1842:project_matrix_into_orthog_space
 subroutine project_matrix_into_orthog_space( &
@@ -1259,7 +1262,7 @@ subroutine project_matrix_into_orthog_space( &
   double complex, allocatable :: work(:)
   integer :: lwork, info, start_of_orthogonal_subspace
 
-  if (number_of_reflectors == 0 .or. full_space_dimension == orthogonal_subspace_dimension) then
+  if (number_of_reflectors == 0) then
     matrix_in_orthogonal_space = matrix_in_full_space
     return
   end if
@@ -1411,7 +1414,7 @@ subroutine compute_opt_matrix_all_cases( &
     stop
   end if
 
-  if (number_of_reflectors == 0 .or. orthogonal_subspace_dimension == full_space_dimension) then
+  if (number_of_reflectors == 0) then
     call compute_optimization_matrix( &
       bl, br, cl, cr, d, &
       left_environment, &
@@ -1450,7 +1453,7 @@ subroutine filter_components_outside_orthog( &
   double complex :: &
     projected(orthogonal_subspace_dimension)
 
-  if (number_of_reflectors == 0 .or. orthogonal_subspace_dimension == full_space_dimension) then
+  if (number_of_reflectors == 0) then
     output = input
     return
   end if
@@ -1527,7 +1530,7 @@ function optimize( &
   end if
 
   call compute_overlap_with_projectors( &
-    number_of_reflectors, orthogonal_subspace_dimension, reflectors, coefficients, &
+    number_of_reflectors, reflectors, coefficients, &
     full_space_dimension, guess(1,1,1), &
     overlap &
   )
@@ -1539,7 +1542,7 @@ function optimize( &
     return
   end if
 
-  if (orthogonal_subspace_dimension < 4) then
+  if (orthogonal_subspace_dimension <= 4) then
     strategy = 1
     ! print *, "strategy 1", number_of_reflectors, full_space_dimension, orthogonal_subspace_dimension
     call optimize_strategy_1( &
@@ -1601,31 +1604,29 @@ function optimize( &
     )
   end if
 
+  if ( info == -14 .and. full_space_dimension < number_of_iterations) then
+    strategy = 1
+    ! print *, "re-trying with strategy 1", d, bl, br, number_of_reflectors, full_space_dimension, orthogonal_subspace_dimension
+    call optimize_strategy_1( &
+      bl, br, &
+      cl, &
+      cr, &
+      d, &
+      left_environment, &
+      number_of_matrices, sparse_operator_indices, sparse_operator_matrices, &
+      right_environment, &
+      number_of_reflectors, orthogonal_subspace_dimension, reflectors, coefficients, &
+      which, &
+      tol, &
+      number_of_iterations, &
+      guess, &
+      info, &
+      result, &
+      eigenvalue &
+    )
+  end if
+
   if ( info < 0 ) then
-    return
-  end if
-
-  if (abs(imag(eigenvalue)) > 1e-7) then
-    info = 1
-    return
-  end if
-
-  norm_of_result = dznrm2(full_space_dimension,result(1,1,1),1)
-
-  if (abs(norm_of_result-1) > 1e-7) then
-    info = 2
-    eigenvalue = norm_of_result*(1d0,0d0)
-    return
-  end if
-
-  call compute_overlap_with_projectors( &
-    number_of_reflectors, orthogonal_subspace_dimension, reflectors, coefficients, &
-    full_space_dimension, result(1,1,1), &
-    overlap &
-  )
-
-  if (overlap > 1e-7) then
-    info = 3
     return
   end if
 

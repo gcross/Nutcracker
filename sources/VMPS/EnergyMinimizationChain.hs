@@ -36,7 +36,6 @@ import VMPS.Tensors.Implementation
     )
 import VMPS.Wrappers
 
-import Debug.Trace
 -- @-node:gcross.20091113142219.1663:<< Import needed modules >>
 -- @nl
 
@@ -44,22 +43,31 @@ import Debug.Trace
 -- @+node:gcross.20100506200958.2694:Exceptions
 -- @+node:gcross.20100512151146.1738:SanityCheckFailed
 data SanityCheckFailed =
-    EnergyChangedAfterMoveError (Either () ()) Int Double Double
+    EnergyChangedAfterMoveError Int Int Double Double
+  | NormalizationChangedAfterMoveError Int Int Double Double
+  | ProjectorOverlapChangedAfterMoveError Int Int Double Double
   | EnergyChangedAfterBandwidthIncreaseError Int Int Double Double
   deriving Typeable
 
 instance Show SanityCheckFailed where
-    show (EnergyChangedAfterMoveError sweep_direction old_site_number old_energy new_energy) =
+    show (EnergyChangedAfterMoveError old_site_number new_site_number old_energy new_energy) =
         printf "SanityCheckFailed:  When moving from site %i to site %i, the energy changed from %f to %f."
             old_site_number
             new_site_number
             old_energy
             new_energy
-      where
-        new_site_number =
-            case sweep_direction of
-                Left () → old_site_number-1
-                Right () → old_site_number+1
+    show (NormalizationChangedAfterMoveError old_site_number new_site_number old_energy new_energy) =
+        printf "SanityCheckFailed:  When moving from site %i to site %i, the normalization changed from %f to %f."
+            old_site_number
+            new_site_number
+            old_energy
+            new_energy
+    show (ProjectorOverlapChangedAfterMoveError old_site_number new_site_number old_energy new_energy) =
+        printf "SanityCheckFailed:  When moving from site %i to site %i, the projecter overlap changed from %f to %f."
+            old_site_number
+            new_site_number
+            old_energy
+            new_energy
     show (EnergyChangedAfterBandwidthIncreaseError old_bandwidth new_bandwidth old_energy new_energy) =
         printf "SanityCheckFailed:  When increasing the bandwidth from %i to %i, the energy changed from %f to %f."
             old_bandwidth
@@ -132,6 +140,7 @@ data EnergyMinimizationChain = EnergyMinimizationChain
     ,   chainEnergy :: Double
     ,   siteProjectorMatrix :: ProjectorMatrix
     ,   chainProjectorOverlap :: Double
+    ,   chainNormalization :: Double
     }
 -- @-node:gcross.20091113142219.1665:EnergyMinimizationChain
 -- @+node:gcross.20100522160359.1793:Configuration
@@ -184,19 +193,37 @@ makeConfiguration :: [OperatorSiteTensor] → [[OverlapTensorTrio]] → Configur
 makeConfiguration operator_site_tensors [] = zip operator_site_tensors (repeat [])
 makeConfiguration operator_site_tensors projectors = zip operator_site_tensors . transpose $ projectors
 -- @-node:gcross.20091120112621.1590:makeConfiguration
--- @+node:gcross.20100512154636.1738:throwIfEnergyChanged
-throwIfEnergyChanged ::
+-- @+node:gcross.20100512154636.1738:throwIfValueChanged
+throwIfValueChanged ::
+    (EnergyMinimizationChain → Double) →
+    (Int → Int → Double → Double → SanityCheckFailed) →
     Double →
     EnergyMinimizationChain →
-    (EnergyMinimizationChain → EnergyMinimizationChain → SanityCheckFailed) →
     EnergyMinimizationChain →
     EnergyMinimizationChain
-throwIfEnergyChanged tolerance old_chain createException new_chain
- | abs (chainEnergy new_chain - chainEnergy old_chain) > tolerance
-    = throw $ createException old_chain new_chain
- | otherwise
+throwIfValueChanged getValue createException tolerance old_chain new_chain
+  | abs (new_value - old_value) > tolerance
+    = throw $ createException old_site_number new_site_number old_value new_value
+  | otherwise
     = new_chain
--- @-node:gcross.20100512154636.1738:throwIfEnergyChanged
+  where
+    old_value = getValue old_chain
+    new_value = getValue new_chain
+    old_site_number = siteNumber old_chain
+    new_site_number = siteNumber new_chain
+
+throwIfEnergyChanged = throwIfValueChanged chainEnergy EnergyChangedAfterMoveError
+throwIfNormalizationChanged = throwIfValueChanged chainNormalization NormalizationChangedAfterMoveError
+throwIfProjectorOverlapChanged = throwIfValueChanged chainProjectorOverlap ProjectorOverlapChangedAfterMoveError
+
+throwIfInvariantChanged tolerance old_chain =
+    throwIfProjectorOverlapChanged tolerance old_chain
+    .
+    throwIfNormalizationChanged tolerance old_chain
+    .
+    throwIfEnergyChanged tolerance old_chain
+
+-- @-node:gcross.20100512154636.1738:throwIfValueChanged
 -- @-node:gcross.20091116222034.2374:Utility Functions
 -- @+node:gcross.20091113142219.1678:Chain Functions
 -- @+node:gcross.20100524130857.1817:absorbIntoNew___Neighbor
@@ -384,6 +411,7 @@ activateLeftNeighbor old_chain =
                 ,   chainEnergy = computeEnergy new_chain
                 ,   siteProjectorMatrix = computeProjectorMatrix new_chain
                 ,   chainProjectorOverlap = computeProjectorOverlap new_chain
+                ,   chainNormalization = computeNormalization new_chain
                 }
     in new_chain
 -- @-node:gcross.20091113142219.1684:activateLeftNeighbor
@@ -425,6 +453,7 @@ activateRightNeighbor old_chain =
                 ,   chainEnergy = computeEnergy new_chain
                 ,   siteProjectorMatrix = computeProjectorMatrix new_chain
                 ,   chainProjectorOverlap = computeProjectorOverlap new_chain
+                ,   chainNormalization = computeNormalization new_chain
                 }
     in new_chain
 -- @-node:gcross.20091113142219.1686:activateRightNeighbor
@@ -475,14 +504,7 @@ chainNorm = normOfState . siteStateTensor
 -- @-node:gcross.20100520170650.1771:chainNorm
 -- @+node:gcross.20100512151146.1740:checkSanityAfterActivatingNeighbor
 checkSanityAfterActivatingNeighbor activateNeighbor direction tolerance old_chain =
-    throwIfEnergyChanged tolerance old_chain (
-        \old_chain new_chain →
-            EnergyChangedAfterMoveError
-                direction
-                (siteNumber old_chain)
-                (chainEnergy old_chain)
-                (chainEnergy new_chain)
-    )
+    throwIfInvariantChanged tolerance old_chain
     .
     activateNeighbor
     $
@@ -565,6 +587,10 @@ computeProjectorMatrix chain =
 -- @+node:gcross.20100520145029.1770:computeProjectorOverlap
 computeProjectorOverlap = liftA2 computeOverlapWithProjectors siteProjectorMatrix siteStateTensor
 -- @-node:gcross.20100520145029.1770:computeProjectorOverlap
+-- @+node:gcross.20100526165608.1828:computeNormalization
+computeNormalization :: EnergyMinimizationChain → Double
+computeNormalization = normOfState . siteStateTensor
+-- @-node:gcross.20100526165608.1828:computeNormalization
 -- @+node:gcross.20091117140132.1796:generateRandomizedChain
 generateRandomizedChain :: Int → [OperatorSiteTensor] → IO (EnergyMinimizationChain)
 generateRandomizedChain requested_bandwidth_dimension =
@@ -636,6 +662,7 @@ generateRandomizedChainWithOverlaps requested_bandwidth_dimension operator_site_
                     ,   chainEnergy = computeEnergy chain
                     ,   siteProjectorMatrix = computeProjectorMatrix chain
                     ,   chainProjectorOverlap = computeProjectorOverlap chain
+                    ,   chainNormalization = computeNormalization chain
                     }
             in chain
 -- @nonl
@@ -849,12 +876,16 @@ optimizeSite tolerance maximum_number_of_iterations chain =
   where
     postProcess (number_of_iterations,new_energy,optimal_site_tensor) =
         (number_of_iterations
-        ,chain
+        ,new_chain
+        )
+      where
+        new_chain =
+            chain
             {   siteStateTensor = optimal_site_tensor
             ,   chainEnergy = new_energy
-            ,   chainProjectorOverlap = computeProjectorOverlap chain
+            ,   chainProjectorOverlap = computeProjectorOverlap new_chain
+            ,   chainNormalization = computeNormalization new_chain
             }
-        )
 
 optimizeSite_ = optimizeSite 0 1000
 -- @-node:gcross.20091113142219.1687:optimizeSite
@@ -867,6 +898,7 @@ projectSite chain = new_chain
         {   siteStateTensor = (liftA2 applyProjectorMatrix siteProjectorMatrix siteStateTensor) chain
         ,   chainEnergy = computeEnergy new_chain
         ,   chainProjectorOverlap = computeProjectorOverlap new_chain
+        ,   chainNormalization = computeNormalization new_chain
         }
 -- @-node:gcross.20100522160359.1788:projectSite
 -- @+node:gcross.20100522160359.1782:siteDegreesOfFreedom
