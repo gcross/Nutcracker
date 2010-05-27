@@ -313,6 +313,42 @@ subroutine lapack_eigenvalue_minimizer(n,matrix,eigenvalue,eigenvector)
 
 end subroutine
 !@-node:gcross.20100514235202.1743:lapack_eigenvalue_minimizer
+!@+node:gcross.20100527135859.1827:swap_inplace
+subroutine swap_inplace(n, swaps, vector)
+  implicit none
+  integer, intent(in) :: n, swaps(n)
+  double complex, intent(inout) :: vector(n)
+
+  integer :: i
+  double complex :: shelf
+
+  do i = 1, n
+    if (swaps(i) /= i) then
+      shelf = vector(i)
+      vector(i) = vector(swaps(i))
+      vector(swaps(i)) = shelf
+    end if
+  end do
+end subroutine
+!@-node:gcross.20100527135859.1827:swap_inplace
+!@+node:gcross.20100527135859.1829:unswap_inplace
+subroutine unswap_inplace(n, swaps, vector)
+  implicit none
+  integer, intent(in) :: n, swaps(n)
+  double complex, intent(inout) :: vector(n)
+
+  integer :: i
+  double complex :: shelf
+
+  do i = n, 1, -1
+    if (swaps(i) /= i) then
+      shelf = vector(i)
+      vector(i) = vector(swaps(i))
+      vector(swaps(i)) = shelf
+    end if
+  end do
+end subroutine
+!@-node:gcross.20100527135859.1829:unswap_inplace
 !@-node:gcross.20100512172859.1739:Utility Functions
 !@+node:gcross.20091110205054.1940:Contractors
 !@+node:gcross.20091110205054.1910:Main iteration

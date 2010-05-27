@@ -261,13 +261,28 @@ def form_contractor(edges,input_tensors,output_tensor):
 #@+node:gcross.20100525120117.1814:Classes
 #@+node:gcross.20100525120117.1815:TestCase
 class TestCase(unittest.TestCase):
+    #@    @+others
+    #@+node:gcross.20100527135859.1831:assertAllClose
     def assertAllClose(self,v1,v2):
         v1 = array(v1)
         v2 = array(v2)
         self.assertEqual(v1.shape,v2.shape)
         self.assertTrue(allclose(v1,v2))
+    #@nonl
+    #@-node:gcross.20100527135859.1831:assertAllClose
+    #@+node:gcross.20100527135859.1832:assertAllEqual
+    def assertAllEqual(self,v1,v2):
+        v1 = array(v1)
+        v2 = array(v2)
+        self.assertEqual(v1.shape,v2.shape)
+        self.assertTrue(all(v1 == v2))
+    #@nonl
+    #@-node:gcross.20100527135859.1832:assertAllEqual
+    #@+node:gcross.20100527135859.1833:assertVanishing
     def assertVanishing(self,v):
         self.assertAlmostEqual(norm(v),0)
+    #@-node:gcross.20100527135859.1833:assertVanishing
+    #@-others
 #@-node:gcross.20100525120117.1815:TestCase
 #@-node:gcross.20100525120117.1814:Classes
 #@+node:gcross.20091110205054.1947:Tests
@@ -1220,6 +1235,54 @@ class lapack_eigenvalue_minimizer(TestCase):
         self.assertAllClose(observed_eigenvector,correct_minimal_eigenvector)
 #@nonl
 #@-node:gcross.20100514235202.1745:lapack_eigenvalue_minimizer
+#@+node:gcross.20100527135859.1830:swap_inplace
+class swap_inplace(TestCase):
+    @with_checker
+    def test_correctness(self,n=irange(1,10)):
+        swaps = [randint(1,n) for _ in xrange(n)]
+        vector = crand(n)
+        correct_vector = vector.copy()
+        for (i,swap) in enumerate(swap-1 for swap in swaps):
+            if i != swap:
+                shelf = correct_vector[i]
+                correct_vector[i] = correct_vector[swap]
+                correct_vector[swap] = shelf
+        vmps.swap_inplace(swaps,vector)
+        self.assertAllEqual(vector,correct_vector)
+
+    @with_checker
+    def test_swap_followed_by_unswap(self,n=irange(1,10)):
+        swaps = [randint(1,n) for _ in xrange(n)]
+        vector = crand(n)
+        correct_vector = vector.copy()
+        vmps.swap_inplace(swaps,vector)
+        vmps.unswap_inplace(swaps,vector)
+        self.assertAllEqual(vector,correct_vector)
+#@-node:gcross.20100527135859.1830:swap_inplace
+#@+node:gcross.20100527135859.1835:unswap_inplace
+class unswap_inplace(TestCase):
+    @with_checker
+    def test_correctness(self,n=irange(1,10)):
+        swaps = [randint(1,n) for _ in xrange(n)]
+        vector = crand(n)
+        correct_vector = vector.copy()
+        for (i,swap) in reversed(list(enumerate(swap-1 for swap in swaps))):
+            if i != swap:
+                shelf = correct_vector[i]
+                correct_vector[i] = correct_vector[swap]
+                correct_vector[swap] = shelf
+        vmps.unswap_inplace(swaps,vector)
+        self.assertAllEqual(vector,correct_vector)
+
+    @with_checker
+    def test_unswap_followed_by_swap(self,n=irange(1,10)):
+        swaps = [randint(1,n) for _ in xrange(n)]
+        vector = crand(n)
+        correct_vector = vector.copy()
+        vmps.unswap_inplace(swaps,vector)
+        vmps.swap_inplace(swaps,vector)
+        self.assertAllEqual(vector,correct_vector)
+#@-node:gcross.20100527135859.1835:unswap_inplace
 #@-node:gcross.20100514235202.1744:Utility Functions
 #@+node:gcross.20100521141104.1779:Projectors
 #@+node:gcross.20100525120117.1816:Functions
@@ -1648,6 +1711,8 @@ tests = [
     form_overlap_site_tensor,
     form_norm_overlap_tensors,
     filter_components_outside_orthog,
+    swap_inplace,
+    unswap_inplace,
 ]
 
 #@<< Runner >>
