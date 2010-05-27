@@ -349,6 +349,29 @@ subroutine unswap_inplace(n, swaps, vector)
   end do
 end subroutine
 !@-node:gcross.20100527135859.1829:unswap_inplace
+!@+node:gcross.20100527135859.1837:swap_matrix_inplace
+subroutine swap_matrix_inplace(n, swaps, matrix)
+  implicit none
+  integer, intent(in) :: n, swaps(n)
+  double complex, intent(inout) :: matrix(n,n)
+
+  interface
+    subroutine zswap(n,x,incx,y,incy)
+      integer, intent(in) :: n, incx, incy
+      double complex, intent(inout) :: x, y
+    end subroutine
+  end interface
+
+  integer :: i
+
+  do i = 1, n
+    if (swaps(i) /= i) then
+      call zswap(n,matrix(1,i),1,matrix(1,swaps(i)),1)
+      call zswap(n,matrix(i,1),n,matrix(swaps(i),1),n)
+    end if
+  end do
+end subroutine
+!@-node:gcross.20100527135859.1837:swap_matrix_inplace
 !@-node:gcross.20100512172859.1739:Utility Functions
 !@+node:gcross.20091110205054.1940:Contractors
 !@+node:gcross.20091110205054.1910:Main iteration

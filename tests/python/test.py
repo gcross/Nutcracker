@@ -1283,6 +1283,46 @@ class unswap_inplace(TestCase):
         vmps.swap_inplace(swaps,vector)
         self.assertAllEqual(vector,correct_vector)
 #@-node:gcross.20100527135859.1835:unswap_inplace
+#@+node:gcross.20100527135859.1838:swap_matrix_inplace
+class swap_matrix_inplace(TestCase):
+    @with_checker
+    def test_correctness(self,n=irange(2,10)):
+        swaps = [randint(1,n) for _ in xrange(n)]
+        matrix = array(crand(n,n),order='F')
+        correct_matrix = matrix.copy()
+        for (i,swap) in enumerate(swap-1 for swap in swaps):
+            if i != swap:
+                shelf = correct_matrix[i,:].copy()
+                correct_matrix[i,:] = correct_matrix[swap,:]
+                correct_matrix[swap,:] = shelf
+        for (i,swap) in enumerate(swap-1 for swap in swaps):
+            if i != swap:
+                shelf = correct_matrix[:,i].copy()
+                correct_matrix[:,i] = correct_matrix[:,swap]
+                correct_matrix[:,swap] = shelf
+        vmps.swap_matrix_inplace(swaps,matrix)
+        self.assertAllEqual(matrix,correct_matrix)
+
+    @with_checker
+    def test_subspace(self,n=irange(2,10)):
+        swaps = [randint(1,n) for _ in xrange(n)]
+        original_matrix = array(crand(n,n),order='F')
+        original_vector_1 = crand(n)
+        original_vector_2 = crand(n)
+
+        matrix = array(original_matrix.copy(),order='F')
+        vector_1 = original_vector_1.copy()
+        vector_2 = original_vector_2.copy()
+
+        vmps.swap_matrix_inplace(swaps,matrix)
+        vmps.swap_inplace(swaps,vector_1)
+        vmps.swap_inplace(swaps,vector_2)
+
+        original_scalar = dot(original_vector_1,dot(original_matrix,original_vector_2))
+        scalar = dot(vector_1,dot(matrix,vector_2))
+
+        self.assertAlmostEqual(scalar,original_scalar)
+#@-node:gcross.20100527135859.1838:swap_matrix_inplace
 #@-node:gcross.20100514235202.1744:Utility Functions
 #@+node:gcross.20100521141104.1779:Projectors
 #@+node:gcross.20100525120117.1816:Functions
@@ -1713,6 +1753,7 @@ tests = [
     filter_components_outside_orthog,
     swap_inplace,
     unswap_inplace,
+    swap_matrix_inplace,
 ]
 
 #@<< Runner >>
