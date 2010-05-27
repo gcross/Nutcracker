@@ -322,6 +322,10 @@ subroutine swap_inplace(n, swaps, vector)
   integer :: i
   double complex :: shelf
 
+  if (n == 0) then
+    return
+  end if
+
   do i = 1, n
     if (swaps(i) /= i) then
       shelf = vector(i)
@@ -340,6 +344,10 @@ subroutine unswap_inplace(n, swaps, vector)
   integer :: i
   double complex :: shelf
 
+  if (n == 0) then
+    return
+  end if
+
   do i = n, 1, -1
     if (swaps(i) /= i) then
       shelf = vector(i)
@@ -350,10 +358,10 @@ subroutine unswap_inplace(n, swaps, vector)
 end subroutine
 !@-node:gcross.20100527135859.1829:unswap_inplace
 !@+node:gcross.20100527135859.1837:swap_matrix_inplace
-subroutine swap_matrix_inplace(n, swaps, matrix)
+subroutine swap_matrix_inplace(n, swaps, matrix, leading_dimension)
   implicit none
-  integer, intent(in) :: n, swaps(n)
-  double complex, intent(inout) :: matrix(n,n)
+  integer, intent(in) :: n, swaps(n), leading_dimension
+  double complex, intent(inout) :: matrix(leading_dimension,n)
 
   interface
     subroutine zswap(n,x,incx,y,incy)
@@ -364,10 +372,14 @@ subroutine swap_matrix_inplace(n, swaps, matrix)
 
   integer :: i
 
+  if (n == 0) then
+    return
+  end if
+
   do i = 1, n
     if (swaps(i) /= i) then
       call zswap(n,matrix(1,i),1,matrix(1,swaps(i)),1)
-      call zswap(n,matrix(i,1),n,matrix(swaps(i),1),n)
+      call zswap(n,matrix(i,1),n,matrix(swaps(i),1),leading_dimension)
     end if
   end do
 end subroutine
@@ -976,12 +988,15 @@ end subroutine
 !@+node:gcross.20100520145029.1766:Projectors
 !@+node:gcross.20100520145029.1765:compute_overlap_with_projectors
 subroutine compute_overlap_with_projectors( &
-  number_of_reflectors, reflectors, coefficients, &
+  number_of_reflectors, reflectors, coefficients, swaps, &
   vector_size, vector, &
   overlap &
 )
   implicit none
-  integer, intent(in) :: vector_size, number_of_reflectors
+  integer, intent(in) :: &
+    vector_size, &
+    number_of_reflectors, &
+    swaps(min(vector_size,number_of_reflectors))
   double complex, intent(in) :: &
     reflectors(vector_size,number_of_reflectors), &
     coefficients(number_of_reflectors), &
@@ -1010,10 +1025,12 @@ subroutine compute_overlap_with_projectors( &
 
   call project_into_orthogonal_space( &
     vector_size, &
-    number_of_reflectors, vector_size, reflectors, coefficients, &
+    number_of_reflectors, vector_size, reflectors, coefficients, swaps, &
     vector, &
     projected_vector &
   )
+
+  call unswap_inplace(size(swaps),swaps,projected_vector(1:size(swaps)))
 
   call ztrmv( &
     'U', 'T', 'N', &
@@ -1031,30 +1048,34 @@ subroutine convert_vectors_to_reflectors( &
   m, n, &
   vectors, &
   rank, &
-  coefficients &
+  coefficients, swaps &
 )
   implicit none
-  integer, intent(in) :: n, m
+  integer, intent(in) :: m, n
   integer, intent(out) :: rank
   double complex, intent(inout) :: vectors(m,n)
-  double complex, intent(out) :: coefficients(n)
+  double complex, intent(out) :: coefficients(min(m,n))
+  integer, intent(out) :: swaps(min(m,n))
 
-  integer :: jpvt(n), info, lwork
+  interface
+    pure function dznrm2 (n,x,incx)
+      integer, intent(in) :: n, incx
+      double complex, intent(in) :: x(n)
+      double precision :: dznrm2
+    end function
+  end interface
+
+  integer :: jpvt(n), info, lwork, i, j
   double complex :: lwork_as_complex
-  double precision :: rwork(2*n)
+  double precision :: rwork(2*n), shelf
 
   double complex, allocatable :: work(:)
 
-  external :: zgeqp3, zungqr, dznrm2
-  double precision :: dznrm2
+  external :: zgeqp3, zungqr
+  double precision :: norms(m)
 
   if (n == 0) then
     return
-  end if
-
-  if (m < n) then
-    print *, "The input matrix has too many columns and not enough rows (column-major ordering) to orthogonalize!"
-    stop
   end if
 
   call zgeqp3( &
@@ -1093,13 +1114,28 @@ subroutine convert_vectors_to_reflectors( &
     stop
   end if
 
-  rank = n
-  do while (dznrm2(n-rank+1,vectors(rank,rank),m) < 1e-12)
-    rank = rank - 1
-    if (rank == 0) then
-      exit
+  forall (i = 1:size(swaps))
+    norms(i) = dznrm2(n-i+1,vectors(i,i),m)
+    swaps(i) = i
+  end forall
+
+  do i = 1, size(swaps)
+    if (norms(i) < 1e-12) then
+      j = i
+      do
+        j = j + 1
+        if (j == size(swaps)+1) exit
+        if (norms(j) > 1e-12) exit
+      end do
+      if (j == size(swaps)+1) exit
+      shelf = norms(i)
+      norms(i) = norms(j)
+      norms(j) = shelf
+      swaps(i) = j
     end if
   end do
+
+  rank = i-1
 
 end subroutine
 !@-node:gcross.20100525104555.1804:convert_vectors_to_reflectors
@@ -1107,21 +1143,28 @@ end subroutine
 subroutine compute_q_from_reflectors( &
   m, n, &
   reflectors, &
-  coefficients, &
+  coefficients, swaps, &
   q &
 )
   implicit none
   integer, intent(in) :: n, m
   double complex, intent(in) :: reflectors(m,n), coefficients(n)
+  integer, intent(in) :: swaps(min(m,n))
   double complex, intent(out) :: q(m,m)
 
-  integer :: info, lwork
+  interface
+    subroutine zswap(n,x,incx,y,incy)
+      integer, intent(in) :: n, incx, incy
+      double complex, intent(inout) :: x, y
+    end subroutine
+  end interface
+
+  integer :: info, lwork, i
   double complex :: lwork_as_complex
 
   double complex, allocatable :: work(:)
 
-  external :: zungqr, dznrm2
-  double precision :: dznrm2
+  external :: zungqr
 
   q(:,:n) = reflectors
   q(:,n+1:) = 0
@@ -1157,17 +1200,26 @@ subroutine compute_q_from_reflectors( &
     stop
   end if
 
+  do i = 1, n
+    if (swaps(i) /= i) then
+      call zswap(m,q(1,i),1,q(1,swaps(i)),1)
+    end if
+  end do
 end subroutine
 !@-node:gcross.20100525120117.1807:compute_q_from_reflectors
 !@+node:gcross.20100525104555.1805:project_into_orthogonal_space
 subroutine project_into_orthogonal_space( &
   full_space_dimension, &
-  number_of_reflectors, orthogonal_subspace_dimension, reflectors, coefficients, &
+  number_of_reflectors, orthogonal_subspace_dimension, reflectors, coefficients, swaps, &
   vector_in_full_space, &
   vector_in_orthogonal_space &
 )
   implicit none
-  integer, intent(in) :: full_space_dimension, number_of_reflectors, orthogonal_subspace_dimension
+  integer, intent(in) :: &
+    full_space_dimension, &
+    number_of_reflectors, &
+    orthogonal_subspace_dimension, &
+    swaps(min(full_space_dimension,number_of_reflectors))
   double complex, intent(in) :: &
     reflectors(full_space_dimension,number_of_reflectors), &
     coefficients(number_of_reflectors), &
@@ -1225,21 +1277,26 @@ subroutine project_into_orthogonal_space( &
     stop
   end if
 
+  call swap_inplace(size(swaps),swaps,intermediate_vector(1:size(swaps)))
+
   vector_in_orthogonal_space = &
     intermediate_vector(start_of_orthogonal_subspace:full_space_dimension)
 
 end subroutine
-!@nonl
 !@-node:gcross.20100525104555.1805:project_into_orthogonal_space
 !@+node:gcross.20100525104555.1809:unproject_from_orthogonal_space
 subroutine unproject_from_orthogonal_space( &
   full_space_dimension, &
-  number_of_reflectors, orthogonal_subspace_dimension, reflectors, coefficients, &
+  number_of_reflectors, orthogonal_subspace_dimension, reflectors, coefficients, swaps, &
   vector_in_orthogonal_space, &
   vector_in_full_space &
 )
   implicit none
-  integer, intent(in) :: full_space_dimension, number_of_reflectors, orthogonal_subspace_dimension
+  integer, intent(in) :: &
+    full_space_dimension, &
+    number_of_reflectors, &
+    orthogonal_subspace_dimension, &
+    swaps(min(full_space_dimension,number_of_reflectors))
   double complex, intent(in) :: &
     reflectors(full_space_dimension,number_of_reflectors), &
     coefficients(number_of_reflectors), &
@@ -1261,6 +1318,8 @@ subroutine unproject_from_orthogonal_space( &
 
   vector_in_full_space(1:start_of_orthogonal_subspace-1) = 0 
   vector_in_full_space(start_of_orthogonal_subspace:) = vector_in_orthogonal_space
+
+  call unswap_inplace(size(swaps),swaps,vector_in_full_space(1:size(swaps)))
 
   call zunmqr( &
     'R','C', &
@@ -1302,12 +1361,16 @@ end subroutine
 !@+node:gcross.20100525120117.1842:project_matrix_into_orthog_space
 subroutine project_matrix_into_orthog_space( &
   full_space_dimension, &
-  number_of_reflectors, orthogonal_subspace_dimension, reflectors, coefficients, &
+  number_of_reflectors, orthogonal_subspace_dimension, reflectors, coefficients, swaps, &
   matrix_in_full_space, &
   matrix_in_orthogonal_space &
 )
   implicit none
-  integer, intent(in) :: full_space_dimension, number_of_reflectors, orthogonal_subspace_dimension
+  integer, intent(in) :: &
+    full_space_dimension, &
+    number_of_reflectors, &
+    orthogonal_subspace_dimension, &
+    swaps(min(full_space_dimension,number_of_reflectors))
   double complex, intent(in) :: &
     reflectors(full_space_dimension,number_of_reflectors), &
     coefficients(number_of_reflectors), &
@@ -1385,6 +1448,8 @@ subroutine project_matrix_into_orthog_space( &
     stop
   end if
 
+  call swap_matrix_inplace(size(swaps),swaps,intermediate_matrix,full_space_dimension)
+
   matrix_in_orthogonal_space = &
     conjg(intermediate_matrix(start_of_orthogonal_subspace:full_space_dimension,start_of_orthogonal_subspace:full_space_dimension))
 
@@ -1399,14 +1464,14 @@ subroutine compute_opt_mat_in_orthog_space( &
   left_environment, &
   number_of_matrices,sparse_operator_indices,sparse_operator_matrices, &
   right_environment, &
-  number_of_reflectors, orthogonal_subspace_dimension, reflectors, coefficients, &
+  number_of_reflectors, orthogonal_subspace_dimension, reflectors, coefficients, swaps, &
   optimization_matrix &
 )
   implicit none
   integer, intent(in) :: &
     bl, br, cl, cr, d, &
     number_of_matrices, sparse_operator_indices(2,number_of_matrices), &
-    number_of_reflectors, orthogonal_subspace_dimension
+    number_of_reflectors, orthogonal_subspace_dimension, swaps(min(br*bl*d,number_of_reflectors))
   double complex, intent(in) :: &
     left_environment(bl,bl,cl), &
     right_environment(br,br,cr), &
@@ -1429,7 +1494,7 @@ subroutine compute_opt_mat_in_orthog_space( &
 
   call project_matrix_into_orthog_space( &
     br*bl*d, &
-    number_of_reflectors, orthogonal_subspace_dimension, reflectors, coefficients, &
+    number_of_reflectors, orthogonal_subspace_dimension, reflectors, coefficients, swaps, &
     intermediate_matrix, &
     optimization_matrix &
   )
@@ -1446,14 +1511,14 @@ subroutine compute_opt_matrix_all_cases( &
   left_environment, &
   number_of_matrices,sparse_operator_indices,sparse_operator_matrices, &
   right_environment, &
-  number_of_reflectors, orthogonal_subspace_dimension, reflectors, coefficients, &
+  number_of_reflectors, orthogonal_subspace_dimension, reflectors, coefficients, swaps, &
   optimization_matrix &
 )
   implicit none
   integer, intent(in) :: &
     bl, br, cl, cr, d, &
     number_of_matrices, sparse_operator_indices(2,number_of_matrices), &
-    number_of_reflectors, orthogonal_subspace_dimension
+    number_of_reflectors, orthogonal_subspace_dimension, swaps(min(br*bl*d,number_of_reflectors))
   double complex, intent(in) :: &
     left_environment(bl,bl,cl), &
     right_environment(br,br,cr), &
@@ -1487,7 +1552,7 @@ subroutine compute_opt_matrix_all_cases( &
       left_environment, &
       number_of_matrices,sparse_operator_indices,sparse_operator_matrices, &
       right_environment, &
-      number_of_reflectors, orthogonal_subspace_dimension, reflectors, coefficients, &
+      number_of_reflectors, orthogonal_subspace_dimension, reflectors, coefficients, swaps, &
       optimization_matrix &
     )
   end if
@@ -1496,12 +1561,16 @@ end subroutine
 !@+node:gcross.20100525190742.1822:filter_components_outside_orthog
 subroutine filter_components_outside_orthog( &
   full_space_dimension, &
-  number_of_reflectors, orthogonal_subspace_dimension, reflectors, coefficients, &
+  number_of_reflectors, orthogonal_subspace_dimension, reflectors, coefficients, swaps, &
   input, &
   output &
 )
   implicit none
-  integer, intent(in) :: full_space_dimension, number_of_reflectors, orthogonal_subspace_dimension
+  integer, intent(in) :: &
+    full_space_dimension, &
+    number_of_reflectors, &
+    orthogonal_subspace_dimension, &
+    swaps(min(full_space_dimension,number_of_reflectors))
   double complex, intent(in) :: &
     reflectors(full_space_dimension,number_of_reflectors), &
     coefficients(number_of_reflectors), &
@@ -1519,14 +1588,14 @@ subroutine filter_components_outside_orthog( &
 
   call project_into_orthogonal_space( &
     full_space_dimension, &
-    number_of_reflectors, orthogonal_subspace_dimension, reflectors, coefficients, &
+    number_of_reflectors, orthogonal_subspace_dimension, reflectors, coefficients, swaps, &
     input, &
     projected &
   )
 
   call unproject_from_orthogonal_space( &
     full_space_dimension, &
-    number_of_reflectors, orthogonal_subspace_dimension, reflectors, coefficients, &
+    number_of_reflectors, orthogonal_subspace_dimension, reflectors, coefficients, swaps, &
     projected, &
     output &
   )
@@ -1543,7 +1612,7 @@ function optimize( &
   left_environment, &
   number_of_matrices, sparse_operator_indices, sparse_operator_matrices, &
   right_environment, &
-  number_of_reflectors, orthogonal_subspace_dimension, reflectors, coefficients, &
+  number_of_reflectors, orthogonal_subspace_dimension, reflectors, coefficients, swaps, &
   which, &
   tol, &
   number_of_iterations, &
@@ -1555,7 +1624,7 @@ function optimize( &
   integer, intent(in) :: &
     bl, br, cl, cr, d, &
     number_of_matrices, sparse_operator_indices(2,number_of_matrices), &
-    number_of_reflectors, orthogonal_subspace_dimension
+    number_of_reflectors, orthogonal_subspace_dimension, swaps(min(bl*br*d,number_of_reflectors))
   integer, intent(inout) :: number_of_iterations
   double complex, intent(in) :: &
     left_environment(bl,bl,cl), &
@@ -1589,10 +1658,15 @@ function optimize( &
   end if
 
   call compute_overlap_with_projectors( &
-    number_of_reflectors, reflectors, coefficients, &
+    number_of_reflectors, reflectors, coefficients, swaps, &
     full_space_dimension, guess(1,1,1), &
     overlap &
   )
+
+  if (orthogonal_subspace_dimension <= 0) then
+    info = 10
+    return
+  end if
 
   if ((orthogonal_subspace_dimension < full_space_dimension) .and. &
       (overlap > 1e-7) &
@@ -1612,7 +1686,7 @@ function optimize( &
       left_environment, &
       number_of_matrices, sparse_operator_indices, sparse_operator_matrices, &
       right_environment, &
-      number_of_reflectors, orthogonal_subspace_dimension, reflectors, coefficients, &
+      number_of_reflectors, orthogonal_subspace_dimension, reflectors, coefficients, swaps, &
       which, &
       tol, &
       number_of_iterations, &
@@ -1632,7 +1706,7 @@ function optimize( &
       left_environment, &
       number_of_matrices, sparse_operator_indices, sparse_operator_matrices, &
       right_environment, &
-      number_of_reflectors, orthogonal_subspace_dimension, reflectors, coefficients, &
+      number_of_reflectors, orthogonal_subspace_dimension, reflectors, coefficients, swaps, &
       which, &
       tol, &
       number_of_iterations, &
@@ -1652,7 +1726,7 @@ function optimize( &
       left_environment, &
       number_of_matrices, sparse_operator_indices, sparse_operator_matrices, &
       right_environment, &
-      number_of_reflectors, orthogonal_subspace_dimension, reflectors, coefficients, &
+      number_of_reflectors, orthogonal_subspace_dimension, reflectors, coefficients, swaps, &
       which, &
       tol, &
       number_of_iterations, &
@@ -1674,7 +1748,7 @@ function optimize( &
       left_environment, &
       number_of_matrices, sparse_operator_indices, sparse_operator_matrices, &
       right_environment, &
-      number_of_reflectors, orthogonal_subspace_dimension, reflectors, coefficients, &
+      number_of_reflectors, orthogonal_subspace_dimension, reflectors, coefficients, swaps, &
       which, &
       tol, &
       number_of_iterations, &
@@ -1700,7 +1774,7 @@ subroutine optimize_strategy_1( &
   left_environment, &
   number_of_matrices, sparse_operator_indices, sparse_operator_matrices, &
   right_environment, &
-  number_of_reflectors, orthogonal_subspace_dimension, reflectors, coefficients, &
+  number_of_reflectors, orthogonal_subspace_dimension, reflectors, coefficients, swaps,  &
   which, &
   tol, &
   number_of_iterations, &
@@ -1713,7 +1787,7 @@ subroutine optimize_strategy_1( &
   integer, intent(in) :: &
     bl, br, cl, cr, d, &
     number_of_matrices, sparse_operator_indices(2,number_of_matrices), &
-    number_of_reflectors, orthogonal_subspace_dimension
+    number_of_reflectors, orthogonal_subspace_dimension, swaps(min(bl*br*d,number_of_reflectors))
   integer, intent(inout) :: number_of_iterations
   integer, intent(out) :: info
   double complex, intent(in) :: &
@@ -1738,7 +1812,7 @@ subroutine optimize_strategy_1( &
     left_environment, &
     number_of_matrices,sparse_operator_indices,sparse_operator_matrices, &
     right_environment, &
-    number_of_reflectors, orthogonal_subspace_dimension, reflectors, coefficients, &
+    number_of_reflectors, orthogonal_subspace_dimension, reflectors, coefficients, swaps, &
     optimization_matrix &
   )
 
@@ -1746,7 +1820,7 @@ subroutine optimize_strategy_1( &
 
   call unproject_from_orthogonal_space( &
     br*bl*d, &
-    number_of_reflectors, orthogonal_subspace_dimension, reflectors, coefficients, &
+    number_of_reflectors, orthogonal_subspace_dimension, reflectors, coefficients, swaps, &
     projected_eigenvector, &
     result(1,1,1) &
   )
@@ -1764,7 +1838,7 @@ subroutine optimize_strategy_2( &
   left_environment, &
   number_of_matrices, sparse_operator_indices, sparse_operator_matrices, &
   right_environment, &
-  number_of_reflectors, orthogonal_subspace_dimension, reflectors, coefficients, &
+  number_of_reflectors, orthogonal_subspace_dimension, reflectors, coefficients, swaps,  &
   which, &
   tol, &
   number_of_iterations, &
@@ -1783,7 +1857,7 @@ subroutine optimize_strategy_2( &
   integer, intent(in) :: &
     bl, br, cl, cr, d, &
     number_of_matrices, sparse_operator_indices(2,number_of_matrices), &
-    number_of_reflectors, orthogonal_subspace_dimension
+    number_of_reflectors, orthogonal_subspace_dimension, swaps(min(bl*br*d,number_of_reflectors))
   integer, intent(inout) :: number_of_iterations
   integer, intent(out) :: info
   double complex, intent(in) :: &
@@ -1863,13 +1937,13 @@ subroutine optimize_strategy_2( &
     left_environment, &
     number_of_matrices,sparse_operator_indices,sparse_operator_matrices, &
     right_environment, &
-    number_of_reflectors, orthogonal_subspace_dimension, reflectors, coefficients, &
+    number_of_reflectors, orthogonal_subspace_dimension, reflectors, coefficients, swaps, &
     optimization_matrix &
   )
 
   call  project_into_orthogonal_space( &
     br*bl*d, &
-    number_of_reflectors, orthogonal_subspace_dimension, reflectors, coefficients, &
+    number_of_reflectors, orthogonal_subspace_dimension, reflectors, coefficients, swaps, &
     guess(1,1,1), &
     projected_guess &
   )
@@ -1878,7 +1952,7 @@ subroutine optimize_strategy_2( &
 
   call unproject_from_orthogonal_space( &
     br*bl*d, &
-    number_of_reflectors, orthogonal_subspace_dimension, reflectors, coefficients, &
+    number_of_reflectors, orthogonal_subspace_dimension, reflectors, coefficients, swaps, &
     projected_result, &
     result(1,1,1) &
   )
@@ -1973,7 +2047,7 @@ subroutine optimize_strategy_3( &
   left_environment, &
   number_of_matrices, sparse_operator_indices, sparse_operator_matrices, &
   right_environment, &
-  number_of_reflectors, orthogonal_subspace_dimension, reflectors, coefficients, &
+  number_of_reflectors, orthogonal_subspace_dimension, reflectors, coefficients, swaps,  &
   which, &
   tol, &
   number_of_iterations, &
@@ -1992,7 +2066,7 @@ subroutine optimize_strategy_3( &
   integer, intent(in) :: &
     bl, br, cl, cr, d, &
     number_of_matrices, sparse_operator_indices(2,number_of_matrices), &
-    number_of_reflectors, orthogonal_subspace_dimension
+    number_of_reflectors, orthogonal_subspace_dimension, swaps(min(bl*br*d,number_of_reflectors))
   integer, intent(inout) :: number_of_iterations
   integer, intent(out) :: info
   double complex, intent(in) :: &
@@ -2078,7 +2152,7 @@ subroutine optimize_strategy_3( &
 
   call  project_into_orthogonal_space( &
     br*bl*d, &
-    number_of_reflectors, orthogonal_subspace_dimension, reflectors, coefficients, &
+    number_of_reflectors, orthogonal_subspace_dimension, reflectors, coefficients, swaps, &
     guess(1,1,1), &
     projected_guess &
   )
@@ -2087,7 +2161,7 @@ subroutine optimize_strategy_3( &
 
   call unproject_from_orthogonal_space( &
     br*bl*d, &
-    number_of_reflectors, orthogonal_subspace_dimension, reflectors, coefficients, &
+    number_of_reflectors, orthogonal_subspace_dimension, reflectors, coefficients, swaps, &
     projected_result, &
     result(1,1,1) &
   )
@@ -2157,10 +2231,9 @@ contains
   !@+node:gcross.20100517000234.1762:operate_on
   subroutine operate_on(input,output)
     double complex :: input(orthogonal_subspace_dimension), projected(br,bl,d), output(orthogonal_subspace_dimension)
-
     call unproject_from_orthogonal_space( &
       br*bl*d, &
-      number_of_reflectors, orthogonal_subspace_dimension, reflectors, coefficients, &
+      number_of_reflectors, orthogonal_subspace_dimension, reflectors, coefficients, swaps, &
       input, &
       projected &
     )
@@ -2178,7 +2251,7 @@ contains
     )
     call project_into_orthogonal_space( &
       br*bl*d, &
-      number_of_reflectors, orthogonal_subspace_dimension, reflectors, coefficients, &
+      number_of_reflectors, orthogonal_subspace_dimension, reflectors, coefficients, swaps, &
       projected, &
       output &
     )

@@ -872,7 +872,7 @@ class optimizer_tests(TestCase):
                 left_environment,
                 sparse_operator_indices,sparse_operator_matrices,
                 right_environment,
-                br*bl*d,zeros((br*bl*d,0)),zeros((),dtype=complex128,order='F'),
+                br*bl*d,zeros((br*bl*d,0)),zeros((),dtype=complex128,order='F'),zeros((),dtype=int),
                 "SR",0,10000,
                 guess
             )
@@ -915,9 +915,9 @@ class optimizer_tests(TestCase):
         self.assertTrue(number_of_projectors>0)
         self.assertTrue(d*bl*br>number_of_projectors)
 
-        projectors, reflectors, coefficients, orthogonal_subspace_dimension = generate_reflectors(d*bl*br)
+        projectors, reflectors, coefficients, swaps, orthogonal_subspace_dimension = generate_reflectors(d*bl*br)
 
-        guess = vmps.unproject_from_orthogonal_space(reflectors,coefficients,crand(orthogonal_subspace_dimension))
+        guess = vmps.unproject_from_orthogonal_space(reflectors,coefficients,swaps,crand(orthogonal_subspace_dimension))
         guess /= norm(guess)
         guess = guess.reshape(d,bl,br).transpose()
         info, result, actual_eigenvalue = \
@@ -925,7 +925,7 @@ class optimizer_tests(TestCase):
                 left_environment,
                 sparse_operator_indices,sparse_operator_matrices,
                 right_environment,
-                orthogonal_subspace_dimension,reflectors,coefficients,
+                orthogonal_subspace_dimension,reflectors,coefficients,swaps,
                 "SR",0,10000,
                 guess
             )
@@ -934,14 +934,14 @@ class optimizer_tests(TestCase):
         self.assertAlmostEqual(norm(dot(projectors.transpose(),actual_eigenvector)),0)
         self.assertAlmostEqual(dot(actual_eigenvector.conj(),dot(optimization_matrix,actual_eigenvector))/norm(actual_eigenvector),actual_eigenvalue)
 
-        projected_optimization_matrix = vmps.project_matrix_into_orthog_space(orthogonal_subspace_dimension,reflectors,coefficients,optimization_matrix)
+        projected_optimization_matrix = vmps.project_matrix_into_orthog_space(orthogonal_subspace_dimension,reflectors,coefficients,swaps,optimization_matrix)
         self.assertAllClose(projected_optimization_matrix,projected_optimization_matrix.conj().transpose())
 
         correct_eigenvalues, correct_projected_eigenvectors = eigh(projected_optimization_matrix)
         correct_solution_index = argmin(correct_eigenvalues)
         correct_eigenvalue = correct_eigenvalues[correct_solution_index]
         self.assertAlmostEqual(actual_eigenvalue,correct_eigenvalue)
-        correct_eigenvector = vmps.unproject_from_orthogonal_space(reflectors,coefficients,correct_projected_eigenvectors[:,correct_solution_index])
+        correct_eigenvector = vmps.unproject_from_orthogonal_space(reflectors,coefficients,swaps,correct_projected_eigenvectors[:,correct_solution_index])
         correct_eigenvector /= correct_eigenvector[0]
         actual_eigenvector /= actual_eigenvector[0]
         self.assertAllClose(actual_eigenvector,correct_eigenvector)
@@ -958,7 +958,7 @@ class optimizer_tests(TestCase):
                 left_environment,
                 sparse_operator_indices,sparse_operator_matrices,
                 right_environment,
-                4,zeros((4,1)),zeros((1)),
+                4,zeros((4,0)),zeros((),dtype=complex128,order='F'),zeros((),dtype=int),
                 "SR",0,10000,
                 crand(1,1,4)
             )
@@ -976,17 +976,17 @@ class optimizer_tests(TestCase):
         sparse_operator_matrices = sparse_operator_matrices.reshape(sparse_operator_matrices.shape + (1,))
         projector = array([0,0,0,1],dtype=complex128)
         reflectors = array(projector.reshape((4,1)),order='F')
-        rank, coefficients = vmps.convert_vectors_to_reflectors(reflectors)
+        rank, coefficients, swaps = vmps.convert_vectors_to_reflectors(reflectors)
         self.assertEqual(rank,1)
         orthogonal_subspace_dimension = 3
-        guess = vmps.unproject_from_orthogonal_space(reflectors,coefficients,crand(3)).reshape(1,1,4)
+        guess = vmps.unproject_from_orthogonal_space(reflectors,coefficients,swaps,crand(3)).reshape(1,1,4)
         guess /= norm(guess)
         info, result, eigenvalue = \
             self.call_optimizer(
                 left_environment,
                 sparse_operator_indices,sparse_operator_matrices,
                 right_environment,
-                orthogonal_subspace_dimension,reflectors,coefficients,
+                orthogonal_subspace_dimension,reflectors,coefficients,swaps,
                 "SR",0,10000,
                 guess
             )
@@ -1006,17 +1006,17 @@ class optimizer_tests(TestCase):
         sparse_operator_matrices = sparse_operator_matrices.reshape(sparse_operator_matrices.shape + (1,))
         projector = array([0,0,0,1j],dtype=complex128)
         reflectors = array(projector.reshape((4,1)),order='F')
-        rank, coefficients = vmps.convert_vectors_to_reflectors(reflectors)
+        rank, coefficients, swaps = vmps.convert_vectors_to_reflectors(reflectors)
         self.assertEqual(rank,1)
         orthogonal_subspace_dimension = 3
-        guess = vmps.unproject_from_orthogonal_space(reflectors,coefficients,crand(3)).reshape(1,1,4)
+        guess = vmps.unproject_from_orthogonal_space(reflectors,coefficients,swaps,crand(3)).reshape(1,1,4)
         guess /= norm(guess)
         info, result, eigenvalue = \
             self.call_optimizer(
                 left_environment,
                 sparse_operator_indices,sparse_operator_matrices,
                 right_environment,
-                orthogonal_subspace_dimension,reflectors,coefficients,
+                orthogonal_subspace_dimension,reflectors,coefficients,swaps,
                 "SR",0,10000,
                 guess
             )
@@ -1036,17 +1036,17 @@ class optimizer_tests(TestCase):
         sparse_operator_matrices = sparse_operator_matrices.reshape(sparse_operator_matrices.shape + (1,))
         projectors = array([[0,0,0,0,1],[0,0,0,1,0]]).transpose()
         reflectors = array(projectors.copy(),dtype=complex128,order='F')
-        rank, coefficients = vmps.convert_vectors_to_reflectors(reflectors)
+        rank, coefficients, swaps = vmps.convert_vectors_to_reflectors(reflectors)
         self.assertEqual(rank,2)
         orthogonal_subspace_dimension = 3
-        guess = vmps.unproject_from_orthogonal_space(reflectors,coefficients,crand(3)).reshape(1,1,5)
+        guess = vmps.unproject_from_orthogonal_space(reflectors,coefficients,swaps,crand(3)).reshape(1,1,5)
         guess /= norm(guess)
         info, result, eigenvalue = \
             self.call_optimizer(
                 left_environment,
                 sparse_operator_indices,sparse_operator_matrices,
                 right_environment,
-                orthogonal_subspace_dimension,reflectors,coefficients,
+                orthogonal_subspace_dimension,reflectors,coefficients,swaps,
                 "SR",0,10000,
                 guess
             )
@@ -1066,17 +1066,17 @@ class optimizer_tests(TestCase):
         sparse_operator_matrices = sparse_operator_matrices.reshape(sparse_operator_matrices.shape + (1,))
         projectors = array([[0,0,0,0,1j],[0,0,0,1,0]]).transpose()
         reflectors = array(projectors.copy(),dtype=complex128,order='F')
-        rank, coefficients = vmps.convert_vectors_to_reflectors(reflectors)
+        rank, coefficients, swaps = vmps.convert_vectors_to_reflectors(reflectors)
         self.assertEqual(rank,2)
         orthogonal_subspace_dimension = 3
-        guess = vmps.unproject_from_orthogonal_space(reflectors,coefficients,crand(3)).reshape(1,1,5)
+        guess = vmps.unproject_from_orthogonal_space(reflectors,coefficients,swaps,crand(3)).reshape(1,1,5)
         guess /= norm(guess)
         info, result, eigenvalue = \
             self.call_optimizer(
                 left_environment,
                 sparse_operator_indices,sparse_operator_matrices,
                 right_environment,
-                orthogonal_subspace_dimension,reflectors,coefficients,
+                orthogonal_subspace_dimension,reflectors,coefficients,swaps,
                 "SR",0,10000,
                 guess
             )
@@ -1332,28 +1332,27 @@ def generate_reflectors(full_space_dimension,number_of_projectors=None):
         number_of_projectors = randint(1,full_space_dimension-1)
     projectors = crand(full_space_dimension,number_of_projectors)
     reflectors = array(projectors,order='F')
-    rank, coefficients = vmps.convert_vectors_to_reflectors(reflectors)
+    rank, coefficients, swaps = vmps.convert_vectors_to_reflectors(reflectors)
     orthogonal_subspace_dimension = full_space_dimension - rank
-    return projectors, reflectors, coefficients, orthogonal_subspace_dimension
+    return projectors, reflectors, coefficients, swaps, orthogonal_subspace_dimension
 #@-node:gcross.20100525120117.1818:generate_reflectors
 #@+node:gcross.20100525120117.1826:generate_q
 def generate_q(full_space_dimension):
-    projectors, reflectors, coefficients, orthogonal_subspace_dimension = generate_reflectors(full_space_dimension)
-    q = vmps.compute_q_from_reflectors(reflectors,coefficients)
+    projectors, reflectors, coefficients, swaps, orthogonal_subspace_dimension = generate_reflectors(full_space_dimension)
+    q = vmps.compute_q_from_reflectors(reflectors,coefficients,swaps)
     rank = full_space_dimension - orthogonal_subspace_dimension
     return projectors.conj().transpose(), q, rank
-#@nonl
 #@-node:gcross.20100525120117.1826:generate_q
 #@-node:gcross.20100525120117.1816:Functions
 #@+node:gcross.20100521141104.1781:compute_overlap_with_projectors
 class compute_overlap_with_projectors(TestCase):
     @with_checker
     def test_correctness(self,full_space_dimension=irange(2,2)):
-        projectors, reflectors, coefficients, orthogonal_subspace_dimension = generate_reflectors(full_space_dimension,1)
+        projectors, reflectors, coefficients, swaps, orthogonal_subspace_dimension = generate_reflectors(full_space_dimension,1)
         vector = crand(full_space_dimension)
-        x = vmps.unproject_from_orthogonal_space(reflectors,coefficients,array([1,0]))
+        x = vmps.unproject_from_orthogonal_space(reflectors,coefficients,swaps,array([1,0]))
         self.assertAlmostEqual(
-            vmps.compute_overlap_with_projectors(reflectors,coefficients,vector),
+            vmps.compute_overlap_with_projectors(reflectors,coefficients,swaps,vector),
             norm(dot(vector,projectors))
         )
 #@-node:gcross.20100521141104.1781:compute_overlap_with_projectors
@@ -1392,31 +1391,30 @@ class project_into_orthogonal_space(TestCase):
     #@+node:gcross.20100525120117.1825:test_agreement_with_multiplication_by_q
     @with_checker
     def test_agreement_with_multiplication_by_q(self,full_space_dimension=irange(2,10)):
-        projectors, reflectors, coefficients, orthogonal_subspace_dimension = generate_reflectors(full_space_dimension)
-        q = vmps.compute_q_from_reflectors(reflectors,coefficients)
+        projectors, reflectors, coefficients, swaps, orthogonal_subspace_dimension = generate_reflectors(full_space_dimension)
+        q = vmps.compute_q_from_reflectors(reflectors,coefficients,swaps)
 
         vector = crand(full_space_dimension)
         correct_projected_vector = dot(vector,q)[-orthogonal_subspace_dimension:]
-        actual_projected_vector = vmps.project_into_orthogonal_space(orthogonal_subspace_dimension,reflectors,coefficients,vector)
+        actual_projected_vector = vmps.project_into_orthogonal_space(orthogonal_subspace_dimension,reflectors,coefficients,swaps,vector)
         self.assertAllClose(correct_projected_vector,actual_projected_vector)
     #@-node:gcross.20100525120117.1825:test_agreement_with_multiplication_by_q
     #@+node:gcross.20100525120117.1827:test_kills_projectors
     @with_checker
     def test_kills_projectors(self,full_space_dimension=irange(2,10)):
-        projectors, reflectors, coefficients, orthogonal_subspace_dimension = generate_reflectors(full_space_dimension)
+        projectors, reflectors, coefficients, swaps, orthogonal_subspace_dimension = generate_reflectors(full_space_dimension)
         for projector in projectors.transpose():
-            orthogonal_space_vector = vmps.project_into_orthogonal_space(orthogonal_subspace_dimension,reflectors,coefficients,projector.conj())
+            orthogonal_space_vector = vmps.project_into_orthogonal_space(orthogonal_subspace_dimension,reflectors,coefficients,swaps,projector.conj())
             self.assertAlmostEqual(norm(orthogonal_space_vector),0)
-    #@nonl
     #@-node:gcross.20100525120117.1827:test_kills_projectors
     #@+node:gcross.20100525120117.1829:test_unproject_dot_project_on_arbitrary_vector
     @with_checker
     def test_unproject_dot_project_on_arbitrary_vector(self,full_space_dimension=irange(2,10)):
-        projectors, reflectors, coefficients, orthogonal_subspace_dimension = generate_reflectors(full_space_dimension)
+        projectors, reflectors, coefficients, swaps, orthogonal_subspace_dimension = generate_reflectors(full_space_dimension)
 
         vector = \
-            vmps.unproject_from_orthogonal_space(reflectors,coefficients,
-                vmps.project_into_orthogonal_space(orthogonal_subspace_dimension,reflectors,coefficients,crand(full_space_dimension))
+            vmps.unproject_from_orthogonal_space(reflectors,coefficients,swaps,
+                vmps.project_into_orthogonal_space(orthogonal_subspace_dimension,reflectors,coefficients,swaps,crand(full_space_dimension))
             )
         self.assertVanishing(dot(vector,projectors))
     #@nonl
@@ -1424,16 +1422,15 @@ class project_into_orthogonal_space(TestCase):
     #@+node:gcross.20100525120117.1831:test_unproject_dot_project_on_orthogonal_random
     @with_checker
     def test_unproject_dot_project_on_orthogonal_random(self,full_space_dimension=irange(2,10)):
-        projectors, reflectors, coefficients, orthogonal_subspace_dimension = generate_reflectors(full_space_dimension)
+        projectors, reflectors, coefficients, swaps, orthogonal_subspace_dimension = generate_reflectors(full_space_dimension)
 
-        old_vector = vmps.unproject_from_orthogonal_space(reflectors,coefficients,crand(orthogonal_subspace_dimension))
+        old_vector = vmps.unproject_from_orthogonal_space(reflectors,coefficients,swaps,crand(orthogonal_subspace_dimension))
         self.assertVanishing(dot(old_vector,projectors))
         new_vector = \
-            vmps.unproject_from_orthogonal_space(reflectors,coefficients,
-                vmps.project_into_orthogonal_space(orthogonal_subspace_dimension,reflectors,coefficients,old_vector)
+            vmps.unproject_from_orthogonal_space(reflectors,coefficients,swaps,
+                vmps.project_into_orthogonal_space(orthogonal_subspace_dimension,reflectors,coefficients,swaps,old_vector)
             )
         self.assertAllClose(old_vector,new_vector)
-    #@nonl
     #@-node:gcross.20100525120117.1831:test_unproject_dot_project_on_orthogonal_random
     #@-others
 
@@ -1444,36 +1441,35 @@ class unproject_from_orthogonal_space(TestCase):
     #@+node:gcross.20100525120117.1838:test_agreement_with_multiplication_by_q
     @with_checker
     def test_agreement_with_multiplication_by_q(self,full_space_dimension=irange(2,10)):
-        projectors, reflectors, coefficients, orthogonal_subspace_dimension = generate_reflectors(full_space_dimension)
-        q = vmps.compute_q_from_reflectors(reflectors,coefficients)
+        projectors, reflectors, coefficients, swaps, orthogonal_subspace_dimension = generate_reflectors(full_space_dimension)
+        q = vmps.compute_q_from_reflectors(reflectors,coefficients,swaps)
 
         vector = crand(orthogonal_subspace_dimension)
         correct_projected_vector = dot(vector,q[:,-orthogonal_subspace_dimension:].conj().transpose())
-        actual_projected_vector = vmps.unproject_from_orthogonal_space(reflectors,coefficients,vector)
+        actual_projected_vector = vmps.unproject_from_orthogonal_space(reflectors,coefficients,swaps,vector)
         self.assertAllClose(correct_projected_vector,actual_projected_vector)
     #@nonl
     #@-node:gcross.20100525120117.1838:test_agreement_with_multiplication_by_q
     #@+node:gcross.20100525120117.1839:test_result_is_in_orthogonal_subspace
     @with_checker
     def test_result_is_in_orthogonal_subspace(self,full_space_dimension=irange(2,10)):
-        projectors, reflectors, coefficients, orthogonal_subspace_dimension = generate_reflectors(full_space_dimension)
+        projectors, reflectors, coefficients, swaps, orthogonal_subspace_dimension = generate_reflectors(full_space_dimension)
 
-        vector = vmps.unproject_from_orthogonal_space(reflectors,coefficients,crand(orthogonal_subspace_dimension))
+        vector = vmps.unproject_from_orthogonal_space(reflectors,coefficients,swaps,crand(orthogonal_subspace_dimension))
         self.assertVanishing(dot(vector,projectors))
     #@nonl
     #@-node:gcross.20100525120117.1839:test_result_is_in_orthogonal_subspace
     #@+node:gcross.20100525120117.1840:test_project_dot_unproject_is_identity
     @with_checker
     def test_project_dot_unproject_is_identity(self,full_space_dimension=irange(2,10)):
-        projectors, reflectors, coefficients, orthogonal_subspace_dimension = generate_reflectors(full_space_dimension)
+        projectors, reflectors, coefficients, swaps, orthogonal_subspace_dimension = generate_reflectors(full_space_dimension)
 
         old_vector = crand(orthogonal_subspace_dimension)
         new_vector = \
-            vmps.project_into_orthogonal_space(orthogonal_subspace_dimension,reflectors,coefficients,
-                vmps.unproject_from_orthogonal_space(reflectors,coefficients,old_vector)
+            vmps.project_into_orthogonal_space(orthogonal_subspace_dimension,reflectors,coefficients,swaps,
+                vmps.unproject_from_orthogonal_space(reflectors,coefficients,swaps,old_vector)
             )
         self.assertAllClose(old_vector,new_vector)
-    #@nonl
     #@-node:gcross.20100525120117.1840:test_project_dot_unproject_is_identity
     #@-others
 
@@ -1484,29 +1480,29 @@ class project_matrix_into_orthog_space(TestCase):
     #@+node:gcross.20100525120117.1848:test_agreement_with_multiplication_by_q
     @with_checker
     def test_agreement_with_multiplication_by_q(self,full_space_dimension=irange(2,10)):
-        projectors, reflectors, coefficients, orthogonal_subspace_dimension = generate_reflectors(full_space_dimension)
-        q = vmps.compute_q_from_reflectors(reflectors,coefficients)
+        projectors, reflectors, coefficients, swaps, orthogonal_subspace_dimension = generate_reflectors(full_space_dimension)
+        q = vmps.compute_q_from_reflectors(reflectors,coefficients,swaps)
 
         matrix = crand(full_space_dimension,full_space_dimension)
         correct_projected_matrix = dot(q.transpose(),dot(matrix,q.conj()))[-orthogonal_subspace_dimension:,-orthogonal_subspace_dimension:]
-        actual_projected_matrix = vmps.project_matrix_into_orthog_space(orthogonal_subspace_dimension,reflectors,coefficients,matrix)
+        actual_projected_matrix = vmps.project_matrix_into_orthog_space(orthogonal_subspace_dimension,reflectors,coefficients,swaps,matrix)
         self.assertAllClose(correct_projected_matrix,actual_projected_matrix)
     #@-node:gcross.20100525120117.1848:test_agreement_with_multiplication_by_q
     #@+node:gcross.20100525120117.1849:test_agreement_with_project
     @with_checker
     def test_agreement_with_project(self,full_space_dimension=irange(2,10)):
-        projectors, reflectors, coefficients, orthogonal_subspace_dimension = generate_reflectors(full_space_dimension)
-        q = vmps.compute_q_from_reflectors(reflectors,coefficients)
+        projectors, reflectors, coefficients, swaps, orthogonal_subspace_dimension = generate_reflectors(full_space_dimension)
+        q = vmps.compute_q_from_reflectors(reflectors,coefficients,swaps)
 
         matrix = crand(full_space_dimension,full_space_dimension)
-        projected_matrix = vmps.project_matrix_into_orthog_space(orthogonal_subspace_dimension,reflectors,coefficients,matrix)
+        projected_matrix = vmps.project_matrix_into_orthog_space(orthogonal_subspace_dimension,reflectors,coefficients,swaps,matrix)
 
         vector = crand(orthogonal_subspace_dimension)
         result_1 = dot(projected_matrix,vector)
         result_2 = \
-            vmps.project_into_orthogonal_space(orthogonal_subspace_dimension,reflectors,coefficients,
+            vmps.project_into_orthogonal_space(orthogonal_subspace_dimension,reflectors,coefficients,swaps,
                 dot(matrix,
-                    vmps.unproject_from_orthogonal_space(reflectors,coefficients,vector)
+                    vmps.unproject_from_orthogonal_space(reflectors,coefficients,swaps,vector)
                 )
             )
 
@@ -1518,9 +1514,9 @@ class project_matrix_into_orthog_space(TestCase):
 class filter_components_outside_orthog(TestCase):
     @with_checker
     def test_result_is_orthogonal(self,full_space_dimension=irange(2,10)):
-        projectors, reflectors, coefficients, orthogonal_subspace_dimension = generate_reflectors(full_space_dimension)
+        projectors, reflectors, coefficients, swaps, orthogonal_subspace_dimension = generate_reflectors(full_space_dimension)
         vector = dot(projectors.conj(),rand(projectors.shape[-1]))
-        filtered_vector = vmps.filter_components_outside_orthog(orthogonal_subspace_dimension,reflectors,coefficients,vector)
+        filtered_vector = vmps.filter_components_outside_orthog(orthogonal_subspace_dimension,reflectors,coefficients,swaps,vector)
         self.assertVanishing(dot(filtered_vector,projectors))
 #@-node:gcross.20100525190742.1825:filter_components_outside_orthog
 #@-node:gcross.20100521141104.1779:Projectors
