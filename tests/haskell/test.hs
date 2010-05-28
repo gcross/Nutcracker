@@ -1372,13 +1372,15 @@ main = defaultMain
                     runTestsForFieldOperator :: OperatorDimension n => SingleSiteOperator n → Test.Framework.Test
                     runTestsForFieldOperator field_operator =
                         let physical_dimension = physicalDimensionOfSingleSiteOperator field_operator
+                            physical_dimension_2 = physical_dimension*physical_dimension
+                            physical_dimension_3 = physical_dimension*physical_dimension_2
                         in testGroup (printf "physical dimension = %i" physical_dimension) $
                            map (\(number_of_sites,correct_energy_levels) →
                             testCase (printf "%i sites" number_of_sites) $ 
                                 createExternalFieldTest field_operator number_of_sites correct_energy_levels
-                           ) $ [( 4,take physical_dimension [-4,-2,-2,-2])
-                               ,( 6,take (physical_dimension*physical_dimension) [-6,-4,-4,-4,-4,-4,-4,-2])
-                               ,(10,[-10,-8,-8,-8])
+                           ) $ [( 4,take (physical_dimension_2-1) $ [ -4] ++ replicate 4 (-2) ++ replicate 6   0 )
+                               ,( 6,take (physical_dimension_3-1) $ [ -6] ++ replicate 6 (-4) ++ replicate 2 (-2))
+                               ,(10,                                [-10] ++ replicate 4 (-8))
                                ]
                     -- @-node:gcross.20100505180122.1726:runTestsForFieldOperator
                     -- @-others
@@ -1419,9 +1421,10 @@ main = defaultMain
                 in map (\(number_of_sites,coupling_strength,correct_energy_levels) →
                         testCase (printf "%i sites, coupling strength = %f" number_of_sites coupling_strength) $ 
                             createTransverseIsingModelTest number_of_sites coupling_strength correct_energy_levels
-                       ) $ [(10,0.1,[-10.0225109571,-8.2137057257,-8.18819723717])
-                           ,(10,0.5,[-10.5696595578,-9.5030059614,-9.32268792732])
-                           ,(10,2.0,[-19.531007915,-19.5280782081,-17.3076728844])
+                       ) $ [( 6,0.1,[ -6.012504691, -4.1912659256,-4.13264494449, -4.0501210912])
+                           ,(10,0.1,[-10.022510957, -8.2137057257,-8.18819723717, -8.1485537719])
+                           ,(10,0.5,[-10.569659557, -9.5030059614,-9.32268792732, -9.0714705801])
+                           ,(10,2.0,[-19.531007915,-19.5280782081,-17.3076728844,-17.3047431766])
                            ]
             -- @-node:gcross.20091119150241.1889:transverse ising model
             -- @-others
