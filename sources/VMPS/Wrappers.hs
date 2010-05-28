@@ -61,6 +61,8 @@ instance Show OptimizerFailure where
                 "Optimizer failed to converge."
             OptimizedObtainedComplexEigenvalue eigenvalue →
                 "Optimizer obtained complex eigenvalue (" ++ show eigenvalue ++ ")."
+            OptimizerObtainedVanishingEigenvector norm →
+                "Optimizer obtained vanishing eigenvector (norm = " ++ show norm ++ ")."
             OptimizerObtainedEigenvectorInProjectorSpace overlap →
                 "Optimizer obtained eigenvector in projector space (overlap = " ++ show overlap ++ ")."
             OptimizerGivenTooManyProjectors projector_count d bl br →
