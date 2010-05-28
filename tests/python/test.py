@@ -1327,9 +1327,12 @@ class swap_matrix_inplace(TestCase):
 #@+node:gcross.20100521141104.1779:Projectors
 #@+node:gcross.20100525120117.1816:Functions
 #@+node:gcross.20100525120117.1818:generate_reflectors
-def generate_reflectors(full_space_dimension,number_of_projectors=None):
+def generate_reflectors(full_space_dimension,number_of_projectors=None,overproject=False):
     if number_of_projectors is None:
-        number_of_projectors = randint(1,full_space_dimension-1)
+        if overproject:
+            number_of_projectors = randint(1,full_space_dimension*3/2)
+        else:
+            number_of_projectors = randint(1,full_space_dimension-1)
     projectors = crand(full_space_dimension,number_of_projectors)
     reflectors = array(projectors,order='F')
     rank, coefficients, swaps = vmps.convert_vectors_to_reflectors(reflectors)
@@ -1338,7 +1341,7 @@ def generate_reflectors(full_space_dimension,number_of_projectors=None):
 #@-node:gcross.20100525120117.1818:generate_reflectors
 #@+node:gcross.20100525120117.1826:generate_q
 def generate_q(full_space_dimension):
-    projectors, reflectors, coefficients, swaps, orthogonal_subspace_dimension = generate_reflectors(full_space_dimension)
+    projectors, reflectors, coefficients, swaps, orthogonal_subspace_dimension = generate_reflectors(full_space_dimension,overproject=True)
     q = vmps.compute_q_from_reflectors(reflectors,coefficients,swaps)
     rank = full_space_dimension - orthogonal_subspace_dimension
     return projectors.conj().transpose(), q, rank
@@ -1347,8 +1350,8 @@ def generate_q(full_space_dimension):
 #@+node:gcross.20100521141104.1781:compute_overlap_with_projectors
 class compute_overlap_with_projectors(TestCase):
     @with_checker
-    def test_correctness(self,full_space_dimension=irange(2,2)):
-        projectors, reflectors, coefficients, swaps, orthogonal_subspace_dimension = generate_reflectors(full_space_dimension,1)
+    def test_correctness(self,full_space_dimension=irange(2,10)):
+        projectors, reflectors, coefficients, swaps, orthogonal_subspace_dimension = generate_reflectors(full_space_dimension,overproject=True)
         vector = crand(full_space_dimension)
         x = vmps.unproject_from_orthogonal_space(reflectors,coefficients,swaps,array([1,0]))
         self.assertAlmostEqual(
@@ -1514,7 +1517,7 @@ class project_matrix_into_orthog_space(TestCase):
 class filter_components_outside_orthog(TestCase):
     @with_checker
     def test_result_is_orthogonal(self,full_space_dimension=irange(2,10)):
-        projectors, reflectors, coefficients, swaps, orthogonal_subspace_dimension = generate_reflectors(full_space_dimension)
+        projectors, reflectors, coefficients, swaps, orthogonal_subspace_dimension = generate_reflectors(full_space_dimension,overproject=True)
         vector = dot(projectors.conj(),rand(projectors.shape[-1]))
         filtered_vector = vmps.filter_components_outside_orthog(orthogonal_subspace_dimension,reflectors,coefficients,swaps,vector)
         self.assertVanishing(dot(filtered_vector,projectors))
