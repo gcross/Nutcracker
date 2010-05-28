@@ -547,17 +547,17 @@ main = defaultMain
         -- @+node:gcross.20100521141104.1774:generateRandomizedProjectorMatrix
         ,testProperty "generateRandomizedProjectorMatrix" $ do
             projector_length ← choose (1,10)
-            number_of_reflectors ← choose (0,projector_length-1)
+            number_of_projectors ← choose (0,projector_length-1)
             return $
-                case (unsafePerformIO $ generateRandomizedProjectorMatrix projector_length number_of_reflectors) of
+                case (unsafePerformIO $ generateRandomizedProjectorMatrix projector_length number_of_projectors) of
                     NullProjectorMatrix →
-                        number_of_reflectors == 0
-                    ProjectorMatrix number_of_projectors_ projector_length_ number_of_reflectors_ _ _ →
-                        (projector_length_ == projector_length)
+                        number_of_projectors == 0
+                    projector_matrix →
+                        (projectorCount projector_matrix == number_of_projectors)
                         &&
-                        (number_of_projectors_ <= number_of_reflectors)
+                        (projectorLength projector_matrix == projector_length)
                         &&
-                        (number_of_reflectors_ == number_of_reflectors)
+                        (projectorReflectorCount projector_matrix == (number_of_projectors `min` projector_length))
         -- @-node:gcross.20100521141104.1774:generateRandomizedProjectorMatrix
         -- @+node:gcross.20091116222034.1801:formProjectorMatrix
         ,testGroup "formProjectorMatrix" $
@@ -583,9 +583,10 @@ main = defaultMain
                        [(left_boundary,right_boundary,overlap_site_tensor)]       
                in case projector_matrix of
                    NullProjectorMatrix → assertFailure "null projector matrix returned"
-                   ProjectorMatrix number_of_projectors projector_length _ _ _ → do
-                       assertEqual "is the projector count correct?" 1 number_of_projectors
-                       assertEqual "is the projector length correct?" 1 projector_length
+                   projector_matrix → do
+                       assertEqual "is the projector count correct?" 1 (projectorCount projector_matrix)
+                       assertEqual "is the projector length correct?" 1 (projectorLength projector_matrix)
+                       assertEqual "is the projector reflector count correct?" 1 (projectorReflectorCount projector_matrix)
            -- @-node:gcross.20091116222034.1803:trivial case
            -- @+node:gcross.20091116222034.1805:d = 4, one projector
            ,testCase "d = 4, one projector" $
@@ -601,9 +602,10 @@ main = defaultMain
                        [(left_boundary,right_boundary,overlap_site_tensor)]       
                in case projector_matrix of
                    NullProjectorMatrix → assertFailure "null projector matrix returned"
-                   ProjectorMatrix number_of_projectors projector_length _ _ _ → do
-                       assertEqual "is the projector count correct?" 1 number_of_projectors
-                       assertEqual "is the projector length correct?" 4 projector_length
+                   projector_matrix → do
+                       assertEqual "is the projector count correct?" 1 (projectorCount projector_matrix)
+                       assertEqual "is the projector length correct?" 4 (projectorLength projector_matrix)
+                       assertEqual "is the projector reflector count correct?" 1 (projectorReflectorCount projector_matrix)
            -- @-node:gcross.20091116222034.1805:d = 4, one projector
            -- @+node:gcross.20091116222034.1807:d = 4, two projectors
            ,testCase "d = 4, two projectors" $
@@ -627,10 +629,10 @@ main = defaultMain
                        ]
                in case projector_matrix of
                    NullProjectorMatrix → assertFailure "null projector matrix returned"
-                   ProjectorMatrix number_of_projectors projector_length _ _ _ → do
-                       assertEqual "is the projector count correct?" 2 number_of_projectors
-                       assertEqual "is the projector length correct?" 4 projector_length
-
+                   projector_matrix → do
+                       assertEqual "is the projector count correct?" 2 (projectorCount projector_matrix)
+                       assertEqual "is the projector length correct?" 4 (projectorLength projector_matrix)
+                       assertEqual "is the projector reflector count correct?" 2 (projectorReflectorCount projector_matrix)
            -- @-node:gcross.20091116222034.1807:d = 4, two projectors
            -- @+node:gcross.20091116222034.1810:d = 4, three projectors
            ,testCase "d = 4, three projectors" $
@@ -655,9 +657,10 @@ main = defaultMain
                        ]
                in case projector_matrix of
                    NullProjectorMatrix → assertFailure "null projector matrix returned"
-                   ProjectorMatrix number_of_projectors projector_length _ _ _ → do
-                       assertEqual "is the projector count correct?" 3 number_of_projectors
-                       assertEqual "is the projector length correct?" 4 projector_length
+                   projector_matrix → do
+                       assertEqual "is the projector count correct?" 3 (projectorCount projector_matrix)
+                       assertEqual "is the projector length correct?" 4 (projectorLength projector_matrix)
+                       assertEqual "is the projector reflector count correct?" 3 (projectorReflectorCount projector_matrix)
            -- @-node:gcross.20091116222034.1810:d = 4, three projectors
            -- @-others
            ]
@@ -1292,7 +1295,7 @@ main = defaultMain
                 -- @-node:gcross.20091118213523.1831:<< createTransverseIsingModelTest >>
                 -- @nl
                 in map (\(number_of_sites,bandwidth_dimension,perturbation_strength,correct_ground_state_energy) →
-                        testCase (printf "%i sites, bandwidth = %i, perturbation strength = %f" number_of_sites bandwidth_dimension (realPart perturbation_strength)) $ 
+                        testCase (printf "%i sites, bandwidth = %i, perturbation strength = %f" number_of_sites bandwidth_dimension  perturbation_strength) $ 
                             createTransverseIsingModelTest number_of_sites
                                                            bandwidth_dimension
                                                            perturbation_strength
@@ -1333,7 +1336,7 @@ main = defaultMain
                 -- @-node:gcross.20091119150241.1845:<< createTransverseIsingModelTest >>
                 -- @nl
                 in map (\(number_of_sites,bandwidth_dimension,perturbation_strength,correct_ground_state_energy) →
-                        testCase (printf "%i sites, bandwidth = %i, perturbation strength = %f" number_of_sites bandwidth_dimension (realPart perturbation_strength)) $ 
+                        testCase (printf "%i sites, bandwidth = %i, perturbation strength = %f" number_of_sites bandwidth_dimension  perturbation_strength) $ 
                             createTransverseIsingModelTest number_of_sites
                                                            bandwidth_dimension
                                                            perturbation_strength
@@ -1373,24 +1376,23 @@ main = defaultMain
                            map (\(number_of_sites,correct_energy_levels) →
                             testCase (printf "%i sites" number_of_sites) $ 
                                 createExternalFieldTest field_operator number_of_sites correct_energy_levels
-                           ) $ [( 4,[ -4,-2,-2,-2])
-                               ,( 6,[ -6,-4,-4,-4])
-                               ,(10,[-10,-8,-8])
+                           ) $ [( 4,take physical_dimension [-4,-2,-2,-2])
+                               ,( 6,take (physical_dimension*physical_dimension) [-6,-4,-4,-4,-4,-4,-4,-2])
+                               ,(10,[-10,-8,-8,-8])
                                ]
-                    -- @nonl
                     -- @-node:gcross.20100505180122.1726:runTestsForFieldOperator
                     -- @-others
                 in [runTestsForFieldOperator pZ
                    ,runTestsForFieldOperator
                       (SingleSiteOperator $
-                        (1 :. 0 :.  0 :. ()) :.
+                        (3 :. 0 :.  0 :. ()) :.
                         (0 :. 1 :.  0 :. ()) :.
                         (0 :. 0 :.(-1):. ()) :.
                         () :: SingleSiteOperator N3 )
                    ,runTestsForFieldOperator
                       (SingleSiteOperator $
-                        (1 :. 0 :. 0 :.  0 :. ()) :.
-                        (0 :. 1 :. 0 :.  0 :. ()) :.
+                        (3 :. 0 :. 0 :.  0 :. ()) :.
+                        (0 :. 3 :. 0 :.  0 :. ()) :.
                         (0 :. 0 :. 1 :.  0 :. ()) :.
                         (0 :. 0 :. 0 :.(-1):. ()) :.
                         () :: SingleSiteOperator N4 )
@@ -1402,7 +1404,7 @@ main = defaultMain
                 -- @nonl
                 -- @<< createTransverseIsingModelTest >>
                 -- @+node:gcross.20091119150241.1890:<< createTransverseIsingModelTest >>
-                createMagneticFieldTest number_of_sites coupling_strength correct_energy_levels =
+                createTransverseIsingModelTest number_of_sites coupling_strength correct_energy_levels =
                     solveForMultipleLevels_
                         (length correct_energy_levels)
                         (makeTransverseIsingModelOperatorSiteTensors coupling_strength number_of_sites)
@@ -1415,11 +1417,12 @@ main = defaultMain
                 -- @-node:gcross.20091119150241.1890:<< createTransverseIsingModelTest >>
                 -- @nl
                 in map (\(number_of_sites,coupling_strength,correct_energy_levels) →
-                        testCase (printf "%i sites" number_of_sites) $ 
-                            createMagneticFieldTest number_of_sites coupling_strength correct_energy_levels
+                        testCase (printf "%i sites, coupling strength = %f" number_of_sites coupling_strength) $ 
+                            createTransverseIsingModelTest number_of_sites coupling_strength correct_energy_levels
                        ) $ [(10,0.1,[-10.0225109571,-8.2137057257,-8.18819723717])
+                           ,(10,0.5,[-10.5696595578,-9.5030059614,-9.32268792732])
+                           ,(10,2.0,[-19.531007915,-19.5280782081,-17.3076728844])
                            ]
-            -- @nonl
             -- @-node:gcross.20091119150241.1889:transverse ising model
             -- @-others
             ]

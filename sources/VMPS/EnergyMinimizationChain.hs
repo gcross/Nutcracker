@@ -50,30 +50,32 @@ data SanityCheckFailed =
   deriving Typeable
 
 instance Show SanityCheckFailed where
-    show (EnergyChangedAfterMoveError old_site_number new_site_number old_energy new_energy) =
-        printf "SanityCheckFailed:  When moving from site %i to site %i, the energy changed from %f to %f."
-            old_site_number
-            new_site_number
-            old_energy
-            new_energy
-    show (NormalizationChangedAfterMoveError old_site_number new_site_number old_energy new_energy) =
-        printf "SanityCheckFailed:  When moving from site %i to site %i, the normalization changed from %f to %f."
-            old_site_number
-            new_site_number
-            old_energy
-            new_energy
-    show (ProjectorOverlapChangedAfterMoveError old_site_number new_site_number old_energy new_energy) =
-        printf "SanityCheckFailed:  When moving from site %i to site %i, the projecter overlap changed from %f to %f."
-            old_site_number
-            new_site_number
-            old_energy
-            new_energy
-    show (EnergyChangedAfterBandwidthIncreaseError old_bandwidth new_bandwidth old_energy new_energy) =
-        printf "SanityCheckFailed:  When increasing the bandwidth from %i to %i, the energy changed from %f to %f."
-            old_bandwidth
-            new_bandwidth
-            old_energy
-            new_energy
+    show e = "Sanity check failed: " ++
+        case e of
+            EnergyChangedAfterMoveError old_site_number new_site_number old_energy new_energy →
+                printf "When moving from site %i to site %i, the energy changed from %f to %f."
+                    old_site_number
+                    new_site_number
+                    old_energy
+                    new_energy
+            NormalizationChangedAfterMoveError old_site_number new_site_number old_energy new_energy →
+                printf "When moving from site %i to site %i, the normalization changed from %f to %f."
+                    old_site_number
+                    new_site_number
+                    old_energy
+                    new_energy
+            ProjectorOverlapChangedAfterMoveError old_site_number new_site_number old_energy new_energy →
+                printf "When moving from site %i to site %i, the projecter overlap changed from %f to %f."
+                    old_site_number
+                    new_site_number
+                    old_energy
+                    new_energy
+            EnergyChangedAfterBandwidthIncreaseError old_bandwidth new_bandwidth old_energy new_energy →
+                printf "When increasing the bandwidth from %i to %i, the energy changed from %f to %f."
+                    old_bandwidth
+                    new_bandwidth
+                    old_energy
+                    new_energy
 
 instance Exception SanityCheckFailed
 -- @-node:gcross.20100512151146.1738:SanityCheckFailed
@@ -905,8 +907,8 @@ projectSite chain = new_chain
 siteDegreesOfFreedom = numberOfDegreesOfFreedomInState . siteStateTensor
 -- @-node:gcross.20100522160359.1782:siteDegreesOfFreedom
 -- @+node:gcross.20100522160359.1786:siteProjectorCount
-siteProjectorCount = projectorCount . siteProjectorMatrix
--- @-node:gcross.20100522160359.1786:siteProjectorCount
+siteProjectorSubspaceDimension = numberOfOrthogonalProjectors . siteProjectorMatrix
+-- @-node:gcross.20100522160359.1786:siteProjectorSubspaceDimension
 -- @+node:gcross.20100523170654.1791:chainHasProjectors
 chainHasProjectors = (== 0) . chainNumberOfProjectors
 -- @-node:gcross.20100523170654.1791:chainHasProjectors
@@ -925,7 +927,7 @@ projectChain starting_chain
         starting_chain
   where
     go chain
-      | siteProjectorCount chain < siteDegreesOfFreedom chain
+      | siteProjectorSubspaceDimension chain < siteDegreesOfFreedom chain
         = Just (projectSite chain)
       | siteNumber chain == number_of_sites
         = Nothing

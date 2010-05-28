@@ -471,44 +471,63 @@ instance Connected OperatorSiteTensor RightAbsorptionNormalizedStateSiteTensor w
 data ProjectorMatrix =
     NullProjectorMatrix
   | ProjectorMatrix
-    {   projectorCount :: !Int
+    {   projectorSubspaceDimension :: !Int
+    ,   projectorCount :: !Int
     ,   projectorLength :: !Int
     ,   projectorReflectorCount :: !Int
     ,   projectorReflectors :: !(ComplexTensor (Int,Int))
     ,   projectorCoefficients :: !(ComplexTensor Int)
+    ,   projectorSwaps :: !(StorableArray Int Int32)
     }
 
 withPinnedProjectorMatrix ::
     ProjectorMatrix →
-    (Ptr (Complex Double) → Ptr (Complex Double) → IO a) →
+    (Ptr (Complex Double) → Ptr (Complex Double) → Ptr Int32 → IO a) →
     IO a
 withPinnedProjectorMatrix projector_matrix thunk =
     case projector_matrix of
-        NullProjectorMatrix -> thunk nullPtr nullPtr
-        ProjectorMatrix _ _ _ reflectors coefficients ->
-            withPinnedComplexTensor reflectors $ \p_reflector ->
-            withPinnedComplexTensor coefficients $ \p_coefficients ->
-                thunk p_reflector p_coefficients
+        NullProjectorMatrix → thunk nullPtr nullPtr nullPtr
+        ProjectorMatrix _ _ _ _ reflectors coefficients swaps →
+            withPinnedComplexTensor reflectors $ \p_reflector →
+            withPinnedComplexTensor coefficients $ \p_coefficients →
+            withStorableArray swaps $ \p_swaps →
+                thunk p_reflector p_coefficients p_swaps
 
 withNewPinnedProjectorMatrix ::
     Int →
     Int →
-    (Ptr (Complex Double) → Ptr (Complex Double) → IO (Int,a)) →
+    (Ptr (Complex Double) → Ptr (Complex Double) → Ptr Int32 → IO (Int,a)) →
     IO (a,ProjectorMatrix)
 withNewPinnedProjectorMatrix 0 _ _ = error "You are trying to get a write pointer to an empty array!"
 withNewPinnedProjectorMatrix number_of_projectors projector_length thunk =
-    (withNewPinnedComplexTensor (number_of_projectors,projector_length) $ \p_reflectors ->
-     withNewPinnedComplexTensor number_of_projectors $ \p_coefficients ->
-        thunk p_reflectors p_coefficients
+    (withNewPinnedComplexTensor (number_of_projectors,projector_length) $ \p_reflectors →
+     withNewPinnedComplexTensor number_of_reflectors $ \p_coefficients → do
+        swaps <- newArray_ (1,number_of_projectors `min` projector_length)
+        (rank,result) <-
+            withStorableArray swaps $ \p_swaps →
+                thunk p_reflectors p_coefficients p_swaps
+        return (result,rank,swaps)
     )
     >>=
-    \(((rank,result),coefficients),reflectors) →
-        return (result,ProjectorMatrix rank projector_length number_of_projectors reflectors coefficients)
+    \(((result,rank,swaps),coefficients),reflectors) →
+        return (result
+               ,ProjectorMatrix
+                {   projectorSubspaceDimension = rank
+                ,   projectorCount = number_of_projectors
+                ,   projectorLength = projector_length
+                ,   projectorReflectorCount = number_of_reflectors
+                ,   projectorReflectors = reflectors
+                ,   projectorCoefficients = coefficients
+                ,   projectorSwaps = swaps
+                }
+               )
+  where
+    number_of_reflectors = number_of_projectors `min` projector_length
 
-projectorOrthogonalSubspaceDimension = projectorLength <^(-)^> projectorCount
+projectorOrthogonalSubspaceDimension = projectorLength <^(-)^> projectorSubspaceDimension
 
 numberOfOrthogonalProjectors NullProjectorMatrix = 0
-numberOfOrthogonalProjectors projector_matrix = projectorCount projector_matrix
+numberOfOrthogonalProjectors projector_matrix = projectorSubspaceDimension projector_matrix
 -- @-node:gcross.20091116175016.1796:ProjectorMatrix
 -- @-node:gcross.20091111171052.1591:Types
 -- @+node:gcross.20091111171052.1601:Classes

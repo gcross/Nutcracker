@@ -12,6 +12,7 @@ module VMPS.Qubits.Models where
 
 -- @<< Import needed modules >>
 -- @+node:gcross.20091118213523.1841:<< Import needed modules >>
+import Data.Complex
 import Data.Int
 
 import VMPS.Operators
@@ -30,7 +31,7 @@ makeTransverseIsingModelOperatorSiteTensors coupling_stringth =
         [(1 ⇨ 1) pI
         ,(1 ⇨ 3) pZ
         ,(1 ⇨ 2) pX
-        ,(2 ⇨ 3) (-coupling_stringth *: pX)
+        ,(2 ⇨ 3) (-(coupling_stringth :+ 0) *: pX)
         ,(3 ⇨ 3) pI
         ]
 -- @nonl

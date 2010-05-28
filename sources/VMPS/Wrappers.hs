@@ -42,6 +42,42 @@ import VMPS.Tensors
 -- @nl
 
 -- @+others
+-- @+node:gcross.20100527120229.1826:Exceptions
+-- @+node:gcross.20091119150241.1880:OptimizerFailure
+data OptimizerFailure =
+    OptimizerUnableToConverge
+  | OptimizedObtainedComplexEigenvalue (Complex Double)
+  | OptimizerObtainedVanishingEigenvector Double
+  | OptimizerObtainedEigenvectorInProjectorSpace Double
+  | OptimizerGivenTooManyProjectors Int Int Int Int
+  | OptimizerGivenGuessInProjectorSpace
+  | UnknownOptimizerFailureCode Int
+  deriving Typeable
+
+instance Show OptimizerFailure where
+    show e = "Optimizer Failure: " ++
+        case e of
+            OptimizerUnableToConverge →
+                "Optimizer failed to converge."
+            OptimizedObtainedComplexEigenvalue eigenvalue →
+                "Optimizer obtained complex eigenvalue (" ++ show eigenvalue ++ ")."
+            OptimizerObtainedEigenvectorInProjectorSpace overlap →
+                "Optimizer obtained eigenvector in projector space (overlap = " ++ show overlap ++ ")."
+            OptimizerGivenTooManyProjectors projector_count d bl br →
+                printf "Optimizer was given too many projectors (%i >= d*bl*br=%i*%i*%i=%i)."
+                    projector_count
+                    d
+                    bl
+                    br
+                    (d*bl*br)
+            OptimizerGivenGuessInProjectorSpace →
+                "Optimizer was given a guess in projector space."
+            UnknownOptimizerFailureCode code →
+                "Optimizer had unknown error with code " ++ show code ++ "."
+
+instance Exception OptimizerFailure
+-- @-node:gcross.20091119150241.1880:OptimizerFailure
+-- @-node:gcross.20100527120229.1826:Exceptions
 -- @+node:gcross.20091113125544.1660:Types
 -- @+node:gcross.20091111171052.1657:SelectionStrategy
 data OptimizerSelectionStrategy = LM | SR
@@ -54,19 +90,6 @@ withStrategyAsCString :: OptimizerSelectionStrategy → (CString → IO a) → I
 withStrategyAsCString = withCString . show
 -- @nonl
 -- @-node:gcross.20091111171052.1657:SelectionStrategy
--- @+node:gcross.20091119150241.1880:OptimizerFailure
-data OptimizerFailure =
-    OptimizerUnableToConverge
-  | OptimizedObtainedComplexEigenvalue (Complex Double)
-  | OptimizerObtainedVanishingEigenvector Double
-  | OptimizerObtainedEigenvectorInProjectorSpace Double
-  | OptimizerGivenTooManyProjectors Int Int Int Int
-  | OptimizerGivenGuessInProjectorSpace
-  | UnknownOptimizerFailureCode Int
-  deriving (Show,Typeable)
-
-instance Exception OptimizerFailure
--- @-node:gcross.20091119150241.1880:OptimizerFailure
 -- @-node:gcross.20091113125544.1660:Types
 -- @+node:gcross.20091113125544.1661:Wrapper functions
 -- @+node:gcross.20091113125544.1656:Contractors
@@ -401,10 +424,12 @@ foreign import ccall unsafe "optimize" optimize ::
     Ptr Int32 → -- sparse operator indices
     Ptr (Complex Double) → -- sparse operator matrices
     Ptr (Complex Double) → -- right environment
+    Int → -- number of projectors
     Int → -- number of reflectors
     Int → -- orthogonal subspace dimension
     Ptr (Complex Double) → -- reflectors
     Ptr (Complex Double) → -- coefficients
+    Ptr Int32            → -- swaps
     CString → -- which eigenvectors to select
     Double → -- tolerance
     Ptr Int → -- cap on the number of iterations / number of iterations that were used
@@ -452,10 +477,11 @@ computeOptimalSiteStateTensor
     cl = left_boundary_tensor ←?→ operator_site_tensor
     cr = operator_site_tensor ←?→ right_boundary_tensor
     d = operator_site_tensor ←?→ state_site_tensor
-    (number_of_reflectors,orthogonal_subspace_dimension) =
+    (number_of_projectors,number_of_reflectors,orthogonal_subspace_dimension) =
         case projector_matrix of
-            NullProjectorMatrix -> (0,br*bl*d)
-            _ -> (projectorReflectorCount projector_matrix
+            NullProjectorMatrix -> (0,0,br*bl*d)
+            _ -> (projectorCount projector_matrix
+                 ,projectorReflectorCount projector_matrix
                  ,projectorOrthogonalSubspaceDimension projector_matrix
                  )
     ((info,number_of_iterations,eigenvalue),optimized_state_site_tensor) = unsafePerformIO $
@@ -465,7 +491,7 @@ computeOptimalSiteStateTensor
         withPinnedTensor state_site_tensor $ \p_state_site_tensor →
         withPinnedOperatorSiteTensor operator_site_tensor $ \number_of_matrices p_operator_indices p_operator_matrices →
         withPinnedTensor right_boundary_tensor $ \p_right_boundary →
-        withPinnedProjectorMatrix projector_matrix $ \p_reflectors p_coefficients →
+        withPinnedProjectorMatrix projector_matrix $ \p_reflectors p_coefficients p_swaps →
         assert (projectorLength projector_matrix == d*bl*br) $
         withStrategyAsCString strategy $ \p_strategy →
         with maximum_number_of_iterations  $ \p_number_of_iterations →
@@ -480,10 +506,12 @@ computeOptimalSiteStateTensor
                 p_left_boundary
                 number_of_matrices p_operator_indices p_operator_matrices
                 p_right_boundary
+                number_of_projectors
                 number_of_reflectors
                 orthogonal_subspace_dimension
                 p_reflectors
                 p_coefficients
+                p_swaps
                 p_strategy
                 tolerance
                 p_number_of_iterations
@@ -582,6 +610,7 @@ foreign import ccall unsafe "convert_vectors_to_reflectors" convert_vectors_to_r
     Int → -- projector length
     Ptr (Complex Double) → -- vectors → reflectors
     Ptr (Complex Double) → -- coefficients
+    Ptr Int32            → -- swaps
     IO Int
 
 formProjectorMatrix :: 
@@ -594,7 +623,7 @@ formProjectorMatrix [] = NullProjectorMatrix
 formProjectorMatrix projectors@(first_projector:_) =
     snd . unsafePerformIO $
         withNewPinnedProjectorMatrix number_of_projectors projector_length $
-            \p_reflectors p_coefficients →
+            \p_reflectors p_coefficients p_swaps →
                 go projectors p_reflectors
                 >>
                 convert_vectors_to_reflectors
@@ -602,6 +631,7 @@ formProjectorMatrix projectors@(first_projector:_) =
                     number_of_projectors
                     p_reflectors
                     p_coefficients
+                    p_swaps
                 >>=
                 \rank → return (rank,())
   where
@@ -639,10 +669,12 @@ formProjectorMatrix projectors@(first_projector:_) =
 -- @+node:gcross.20091120134444.1598:applyProjectorMatrix
 foreign import ccall unsafe "filter_components_outside_orthog" filter_components_outside_orthog :: 
     Int → -- full space dimension
+    Int → -- number of projectors
     Int → -- number of reflectors
     Int → -- orthogonal subspace dimension
     Ptr (Complex Double) → -- input: reflectors
     Ptr (Complex Double) → -- input: coefficients
+    Ptr Int32            → -- input: swaps
     Ptr (Complex Double) → -- input: input
     Ptr (Complex Double) → -- input: output
     IO ()
@@ -654,16 +686,18 @@ applyProjectorMatrix ::
 applyProjectorMatrix NullProjectorMatrix state_site_tensor = state_site_tensor
 applyProjectorMatrix projector_matrix state_site_tensor =
     snd . unsafePerformIO $
-    withPinnedProjectorMatrix projector_matrix $ \p_reflectors p_coefficients →
+    withPinnedProjectorMatrix projector_matrix $ \p_reflectors p_coefficients p_swaps →
     assert (projector_length == d*bl*br) $
     withPinnedTensor state_site_tensor $ \p_state_site_tensor →
     withNewPinnedTensor (d,bl,br) $
         filter_components_outside_orthog
             projector_length
+            (projectorCount projector_matrix)
             (projectorReflectorCount projector_matrix)
             (projectorOrthogonalSubspaceDimension projector_matrix)
             p_reflectors
             p_coefficients
+            p_swaps
             p_state_site_tensor
   where
     br = rightBandwidthOfState state_site_tensor
@@ -677,6 +711,7 @@ foreign import ccall unsafe "random_projector_matrix" random_projector_matrix ::
     Int → -- number of projectors
     Ptr (Complex Double) → -- output: reflectors
     Ptr (Complex Double) → -- output: coefficients
+    Ptr Int32 →            -- output: swaps
     IO Int
 
 generateRandomizedProjectorMatrix ::
@@ -686,15 +721,17 @@ generateRandomizedProjectorMatrix ::
 generateRandomizedProjectorMatrix _ 0 = return NullProjectorMatrix
 generateRandomizedProjectorMatrix projector_length number_of_projectors =
     fmap snd $
-        withNewPinnedProjectorMatrix number_of_projectors projector_length $ \p_reflectors p_coefficients →
+        withNewPinnedProjectorMatrix number_of_projectors projector_length $ \p_reflectors p_coefficients p_swaps →
             fmap (\rank → (rank,())) $
-                random_projector_matrix projector_length number_of_projectors p_reflectors p_coefficients
+                random_projector_matrix projector_length number_of_projectors p_reflectors p_coefficients p_swaps
 -- @-node:gcross.20100521141104.1773:generateRandomizedProjectorMatrix
 -- @+node:gcross.20100520145029.1769:computeOverlapWithProjectors
 foreign import ccall unsafe "compute_overlap_with_projectors" compute_overlap_with_projectors :: 
+    Int → -- number of projectors
     Int → -- number of reflectors
     Ptr (Complex Double) → -- input: reflectors
     Ptr (Complex Double) → -- input: coefficients
+    Ptr Int32 →            -- input: swaps
     Int →                  -- input: vector size
     Ptr (Complex Double) → -- input: vector
     IO Double
@@ -706,13 +743,15 @@ computeOverlapWithProjectors ::
 computeOverlapWithProjectors NullProjectorMatrix _ = 0
 computeOverlapWithProjectors projector_matrix state_site_tensor =
     unsafePerformIO $
-    withPinnedProjectorMatrix projector_matrix $ \p_reflectors p_coefficients →
+    withPinnedProjectorMatrix projector_matrix $ \p_reflectors p_coefficients p_swaps →
     assert (projector_length == d*bl*br) $
     withPinnedTensor state_site_tensor $ \p_state_site_tensor →
         compute_overlap_with_projectors
+            (projectorCount projector_matrix)
             (projectorReflectorCount projector_matrix)
             p_reflectors
             p_coefficients
+            p_swaps
             projector_length
             p_state_site_tensor
   where

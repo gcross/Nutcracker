@@ -55,7 +55,7 @@ int optimize_(
     double* left_environment,
     int* number_of_matrices, int* sparse_operator_indices, double* sparse_operator_matrices,
     double* right_environment,
-    int* number_of_reflectors, int* orthogonal_subspace_dimension, double* reflectors, double* coefficients,
+    int* number_of_projectors, int* number_of_reflectors, int* orthogonal_subspace_dimension, double* reflectors, double* coefficients, int* swaps,
     char* which,
     double* tol,
     int* number_of_iterations,
@@ -73,7 +73,7 @@ int optimize(
     double* left_environment,
     int number_of_matrices, int* sparse_operator_indices, double* sparse_operator_matrices,
     double* right_environment,
-    int number_of_reflectors, int orthogonal_subspace_dimension, double* reflectors, double* coefficients,
+    int number_of_projectors, int number_of_reflectors, int orthogonal_subspace_dimension, double* reflectors, double* coefficients, int* swaps,
     char* which,
     double tol,
     int* number_of_iterations,
@@ -90,7 +90,7 @@ int optimize(
         left_environment,
         &number_of_matrices, sparse_operator_indices, sparse_operator_matrices,
         right_environment,
-        &number_of_reflectors, &orthogonal_subspace_dimension, reflectors, coefficients,
+        &number_of_projectors, &number_of_reflectors, &orthogonal_subspace_dimension, reflectors, coefficients, swaps,
         which,
         &tol,
         number_of_iterations,
@@ -423,14 +423,16 @@ int convert_vectors_to_reflectors_(
   int* m,
   double* vectors,
   int* rank,
-  double* coefficients
+  double* coefficients,
+  int* swaps
 );
 
 int convert_vectors_to_reflectors(
   int n,
   int m,
   double* vectors,
-  double* coefficients
+  double* coefficients,
+  int* swaps
 ) {
     int rank;
     convert_vectors_to_reflectors_(
@@ -438,7 +440,8 @@ int convert_vectors_to_reflectors(
         &m,
         vectors,
         &rank,
-        coefficients
+        coefficients,
+        swaps
     );
     return rank;
 }
@@ -446,20 +449,20 @@ int convert_vectors_to_reflectors(
 //@+node:gcross.20100525190742.1829:filter_components_outside_orthog
 void filter_components_outside_orthog_(
   int* full_space_dimension,
-  int* number_of_reflectors, int* orthogonal_subspace_dimension, double* reflectors, double* coefficients,
+  int* number_of_projectors, int* number_of_reflectors, int* orthogonal_subspace_dimension, double* reflectors, double* coefficients, int* swaps,
   double* input,
   double* output
 );
 
 void filter_components_outside_orthog(
   int full_space_dimension,
-  int number_of_reflectors, int orthogonal_subspace_dimension, double* reflectors, double* coefficients,
+  int number_of_projectors, int number_of_reflectors, int orthogonal_subspace_dimension, double* reflectors, double* coefficients, int* swaps,
   double* input,
   double* output
 ) {
     filter_components_outside_orthog_(
         &full_space_dimension,
-        &number_of_reflectors, &orthogonal_subspace_dimension, reflectors, coefficients,
+        &number_of_projectors, &number_of_reflectors, &orthogonal_subspace_dimension, reflectors, coefficients, swaps,
         input,
         output
     );
@@ -469,32 +472,32 @@ void filter_components_outside_orthog(
 void random_projector_matrix_(
     int* projector_length, int* number_of_projectors,
     int* rank,
-    double* reflectors, double* coefficients
+    double* reflectors, double* coefficients, int* swaps
 );
 
 int random_projector_matrix(
     int projector_length, int number_of_projectors,
-    double* reflectors, double* coefficients
+    double* reflectors, double* coefficients, int* swaps
 ) {
     int rank;
-    random_projector_matrix_(&projector_length,&number_of_projectors,&rank,reflectors,coefficients);
+    random_projector_matrix_(&projector_length,&number_of_projectors,&rank,reflectors,coefficients,swaps);
     return rank;
 }
 //@-node:gcross.20100521141104.1777:random_projector_matrix
 //@+node:gcross.20100525190742.1831:compute_overlap_with_projectors
 void compute_overlap_with_projectors_(
-  int* number_of_reflectors, double* reflectors, double* coefficients,
+  int* number_of_projectors, int* number_of_reflectors, double* reflectors, double* coefficients, int* swaps,
   int* vector_size, double* vector,
   double* overlap
 );
 
 double compute_overlap_with_projectors(
-  int number_of_reflectors, double* reflectors, double* coefficients,
+  int number_of_projectors, int number_of_reflectors, double* reflectors, double* coefficients, int* swaps,
   int vector_size, double* vector
 ) {
     double overlap;
     compute_overlap_with_projectors_(
-      &number_of_reflectors, reflectors, coefficients,
+      &number_of_projectors, &number_of_reflectors, reflectors, coefficients, swaps,
       &vector_size, vector,
       &overlap
     );

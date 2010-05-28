@@ -70,7 +70,7 @@ makeModelWithSpecialEndpointsOperatorSiteTensors bandwidth left_model middle_mod
     [makeOperatorSiteTensorFromSpecification bandwidth 1 $ right_model]
 -- @nonl
 -- @-node:gcross.20100505152919.1738:makeModelWithSpecialEndpointsOperatorSiteTensors
--- @+node:gcross.20100505152919.1759:makeMagneticFieldOperatorSiteTensors
+-- @+node:gcross.20100505152919.1759:makeExternalFieldOperatorSiteTensors
 makeExternalFieldOperatorSiteTensors :: OperatorDimension n => SingleSiteOperator n → Int → [OperatorSiteTensor]
 makeExternalFieldOperatorSiteTensors field_operator =
     makeSimpleModelOperatorSiteTensors 2
@@ -79,7 +79,7 @@ makeExternalFieldOperatorSiteTensors field_operator =
         ,(2 ⇨ 2) identity
         ]
 -- @nonl
--- @-node:gcross.20100505152919.1759:makeMagneticFieldOperatorSiteTensors
+-- @-node:gcross.20100505152919.1759:makeExternalFieldOperatorSiteTensors
 -- @-node:gcross.20100505152919.1735:Models
 -- @-others
 -- @-node:gcross.20100505152919.1729:@thin Models.hs

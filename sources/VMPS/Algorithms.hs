@@ -72,8 +72,9 @@ ignoreSweepCallback _ _ = return ()
 -- @-node:gcross.20091120112621.1593:sweep callbacks
 -- @+node:gcross.20091120112621.1596:bandwidth increase callbacks
 -- @+node:gcross.20091120112621.1597:newChainCreator
-newChainCreator :: MonadIO m => m a → Int → [OperatorSiteTensor] → [[OverlapTensorTrio]] → m EnergyMinimizationChain
-newChainCreator post_initialization initial_bandwidth operator_site_tensors overlap_tensor_trios = do
+newChainCreator :: MonadIO m => (Int → m Int) → [OperatorSiteTensor] → [[OverlapTensorTrio]] → m EnergyMinimizationChain
+newChainCreator initialization operator_site_tensors overlap_tensor_trios = do
+    initial_bandwidth ← initialization (length overlap_tensor_trios)
     new_chain ←
         liftIO
         .
@@ -86,7 +87,6 @@ newChainCreator post_initialization initial_bandwidth operator_site_tensors over
         generateRandomizedChainWithOverlaps initial_bandwidth
         $
         makeConfiguration operator_site_tensors overlap_tensor_trios
-    post_initialization
     return new_chain
 -- @-node:gcross.20091120112621.1597:newChainCreator
 -- @-node:gcross.20091120112621.1596:bandwidth increase callbacks
@@ -446,7 +446,14 @@ solveForMultipleLevels
     = flip evalStateT undefined $
         solveForMultipleLevelsWithCallbacks
             alwaysDeclareVictory
-            (newChainCreator (put initial_bandwidth) initial_bandwidth operator_site_tensors)
+            (newChainCreator
+                (\number_of_projectors ->
+                    put (number_of_projectors+1)
+                    >>
+                    return (number_of_projectors+1)
+                )
+                operator_site_tensors
+            )
             singleIncrementBandwidthIncreaser
             ignoreSweepCallback
             ignoreSiteCallback
@@ -456,8 +463,6 @@ solveForMultipleLevels
             maximum_number_of_iterations
             number_of_levels
             projectors
-  where
-    initial_bandwidth = 2
 
 solveForMultipleLevels_ = solveForMultipleLevels 1e-7 1e-7 1e-10 1000
 -- @nonl
