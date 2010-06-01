@@ -29,19 +29,18 @@ import Debug.Trace
 -- @+node:gcross.20091113142219.1691:Classes
 -- @+node:gcross.20091113142219.1692:AlmostEq
 class AlmostEq a where
-    (≅) :: a → a → Bool
+    (≈) :: a → a → Bool
 
 instance AlmostEq Double where
-    x ≅ y = abs (x-y) < 1e-7
+    x ≈ y = (abs x + abs y < 1e-13) || (abs (x-y) / abs(x+y) * 2 < 1e-7)
 
 instance (AlmostEq a) => AlmostEq [a] where
-    x ≅ y = all (uncurry (≅)) $ zip x y
+    x ≈ y = all (uncurry (≈)) $ zip x y
 
 instance (AlmostEq a, RealFloat a) => AlmostEq (Complex a) where
-    (a :+ b) ≅ (c :+ d) = (a ≅ c) && (b ≅ d)
+    (a :+ b) ≈ (c :+ d) = (a ≈ c) && (b ≈ d)
 
-x /~ y = not (x ≅ y)
--- @nonl
+x /≈ y = not (x ≈ y)
 -- @-node:gcross.20091113142219.1692:AlmostEq
 -- @+node:gcross.20091211120042.1687:Pinnable
 class Pinnable a where
