@@ -206,7 +206,8 @@ performRepeatedSweepsUntilConvergenceWithCallbacks
     \new_chain →
         let new_energy = chainEnergy new_chain
             old_energy = chainEnergy old_chain
-        in if old_energy - new_energy <= energy_change_convergence_criterion
+            relative_change_in_energy = (old_energy - new_energy) / (abs old_energy + abs new_energy) * 2
+        in if relative_change_in_energy <= energy_change_convergence_criterion
             then callback_after_each_sweep True new_chain >> return new_chain
             else
                 callback_after_each_sweep False new_chain
@@ -294,7 +295,8 @@ increaseBandwidthAndSweepUntilConvergenceWithCallbacks
         \new_chain →
             let new_energy = chainEnergy new_chain
                 old_energy = chainEnergy old_chain
-            in if old_energy - new_energy <= bandwidth_increase_energy_change_convergence_criterion
+                relative_change_in_energy = (old_energy - new_energy) / (abs old_energy + abs new_energy) * 2
+            in if relative_change_in_energy <= bandwidth_increase_energy_change_convergence_criterion
                 then return old_chain
                 else go new_chain
 
