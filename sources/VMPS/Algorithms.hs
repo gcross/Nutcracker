@@ -102,6 +102,14 @@ alwaysDeclareVictory = return . Just . (chainEnergy &&& getCanonicalStateReprese
 data SweepDirection = SweepingRight | SweepingLeft deriving (Show,Typeable)
 -- @-node:gcross.20091118213523.1815:SweepDirection
 -- @-node:gcross.20100512154636.1737:Types
+-- @+node:gcross.20100603220533.1858:Utility functions
+-- @+node:gcross.20100603220533.1859:relativeChange
+relativeChange old new =
+    if abs new < 1e-10
+        then 1e-10
+        else abs (old - new) / (abs old + abs new) * 2
+-- @-node:gcross.20100603220533.1859:relativeChange
+-- @-node:gcross.20100603220533.1858:Utility functions
 -- @+node:gcross.20091118213523.1814:Functions
 -- @+node:gcross.20091118213523.1822:Single sweep optimization
 -- @+node:gcross.20091118213523.1817:performOptimizationSweep
@@ -206,7 +214,8 @@ performRepeatedSweepsUntilConvergenceWithCallbacks
     \new_chain →
         let new_energy = chainEnergy new_chain
             old_energy = chainEnergy old_chain
-            relative_change_in_energy = (old_energy - new_energy) / (abs old_energy + abs new_energy) * 2
+            relative_change_in_energy = relativeChange old_energy new_energy                    
+
         in if relative_change_in_energy <= energy_change_convergence_criterion
             then callback_after_each_sweep True new_chain >> return new_chain
             else
@@ -221,7 +230,6 @@ performRepeatedSweepsUntilConvergenceWithCallbacks
                     new_chain
 
 {-# INLINE performRepeatedSweepsUntilConvergenceWithCallbacks #-}
--- @nonl
 -- @-node:gcross.20091118213523.1825:performRepeatedSweepsUntilConvergenceWithCallbacks
 -- @-node:gcross.20091118213523.1823:Multiple sweep optimization
 -- @+node:gcross.20091118213523.1844:Bandwidth increasing
@@ -293,10 +301,7 @@ increaseBandwidthAndSweepUntilConvergenceWithCallbacks
         runOptimizer
         >>=
         \new_chain →
-            let new_energy = chainEnergy new_chain
-                old_energy = chainEnergy old_chain
-                relative_change_in_energy = (old_energy - new_energy) / (abs old_energy + abs new_energy) * 2
-            in if relative_change_in_energy <= bandwidth_increase_energy_change_convergence_criterion
+            if relativeChange (chainEnergy old_chain) (chainEnergy new_chain) <= bandwidth_increase_energy_change_convergence_criterion
                 then return old_chain
                 else go new_chain
 
