@@ -104,10 +104,12 @@ data SweepDirection = SweepingRight | SweepingLeft deriving (Show,Typeable)
 -- @-node:gcross.20100512154636.1737:Types
 -- @+node:gcross.20100603220533.1858:Utility functions
 -- @+node:gcross.20100603220533.1859:relativeChange
-relativeChange old new =
-    if abs new < 1e-10
-        then 1e-10
-        else abs (old - new) / (abs old + abs new) * 2
+relativeChange old new
+  | average < 1e-10 = 1e-10
+  | otherwise = change / average
+  where
+   change = abs (old - new)
+   average = (abs old + abs new) / 2
 -- @-node:gcross.20100603220533.1859:relativeChange
 -- @-node:gcross.20100603220533.1858:Utility functions
 -- @+node:gcross.20091118213523.1814:Functions
@@ -302,7 +304,7 @@ increaseBandwidthAndSweepUntilConvergenceWithCallbacks
         >>=
         \new_chain →
             if relativeChange (chainEnergy old_chain) (chainEnergy new_chain) <= bandwidth_increase_energy_change_convergence_criterion
-                then return old_chain
+                then return new_chain
                 else go new_chain
 
     runOptimizer = 
