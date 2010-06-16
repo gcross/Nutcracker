@@ -230,10 +230,11 @@ def crand(*shape):
     return rand(*shape)*2-1+rand(*shape)*2j-1j
 #@-node:gcross.20091110205054.1968:crand
 #@+node:gcross.20091110011014.1558:generate_random_sparse_matrices
-def generate_random_sparse_matrices(cl,cr,d):
+def generate_random_sparse_matrices(cl,cr,d,symmetric=False):
     sparse_operator_indices = array([(randint(1,cl),randint(1,cr)) for _ in xrange(randint(2,cl+cr))]).transpose()
     sparse_operator_matrices = crand(d,d,sparse_operator_indices.shape[-1])
-    sparse_operator_matrices += sparse_operator_matrices.transpose(1,0,2).conj()
+    if symmetric:
+        sparse_operator_matrices += sparse_operator_matrices.transpose(1,0,2).conj()
     operator_site_tensor = zeros((d,d,cr,cl),complex128)
     for (index1,index2),matrix in zip(sparse_operator_indices.transpose(),sparse_operator_matrices.transpose(2,0,1)):
         operator_site_tensor[...,index2-1,index1-1] += matrix
@@ -863,7 +864,7 @@ class optimizer_tests(TestCase):
         left_environment += left_environment.transpose(1,0,2).conj()
         right_environment = crand(br,br,cr)
         right_environment += right_environment.transpose(1,0,2).conj()
-        sparse_operator_indices, sparse_operator_matrices, operator_site_tensor = generate_random_sparse_matrices(cl,cr,d)
+        sparse_operator_indices, sparse_operator_matrices, operator_site_tensor = generate_random_sparse_matrices(cl,cr,d,symmetric=True)
         optimization_matrix = optimization_matrix_contractor(left_environment,operator_site_tensor,right_environment).transpose().reshape(d*bl*br,d*bl*br).transpose()
         self.assertTrue(allclose(optimization_matrix,optimization_matrix.conj().transpose()))
         guess = crand(br,bl,d)
@@ -902,7 +903,7 @@ class optimizer_tests(TestCase):
         left_environment += left_environment.transpose(1,0,2).conj()
         right_environment = crand(br,br,cr)
         right_environment += right_environment.transpose(1,0,2).conj()
-        sparse_operator_indices, sparse_operator_matrices, operator_site_tensor = generate_random_sparse_matrices(cl,cr,d)
+        sparse_operator_indices, sparse_operator_matrices, operator_site_tensor = generate_random_sparse_matrices(cl,cr,d,symmetric=True)
         optimization_matrix = optimization_matrix_contractor(left_environment,operator_site_tensor,right_environment).transpose().reshape(d*bl*br,d*bl*br).transpose()
         self.assertAllClose(optimization_matrix,optimization_matrix.conj().transpose())
 
