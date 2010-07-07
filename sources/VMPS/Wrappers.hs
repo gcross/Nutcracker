@@ -46,6 +46,7 @@ import VMPS.Tensors
 -- @+node:gcross.20091119150241.1880:OptimizerFailure
 data OptimizerFailure =
     OptimizerUnableToConverge
+  | OptimizerObtainedEigenvalueNotEqualToExpectedValue (Complex Double) (Complex Double)
   | OptimizedObtainedComplexEigenvalue (Complex Double)
   | OptimizerObtainedVanishingEigenvector Double
   | OptimizerObtainedEigenvectorInProjectorSpace Double
@@ -59,6 +60,8 @@ instance Show OptimizerFailure where
         case e of
             OptimizerUnableToConverge →
                 "Optimizer failed to converge."
+            OptimizerObtainedEigenvalueNotEqualToExpectedValue eigenvalue expected_value →
+                "Optimizer obtained eigenvalue that was not equal to the expected value (" ++ show eigenvalue ++ " /= " ++ show expected_value ++ ")."
             OptimizedObtainedComplexEigenvalue eigenvalue →
                 "Optimizer obtained complex eigenvalue (" ++ show eigenvalue ++ ")."
             OptimizerObtainedVanishingEigenvector norm →
@@ -464,7 +467,9 @@ computeOptimalSiteStateTensor
         -14 → Left OptimizerUnableToConverge
         10 → Left $ OptimizerGivenTooManyProjectors (projectorCount projector_matrix) d bl br
         11 → Left $ OptimizerGivenGuessInProjectorSpace
-        0 | abs (imagPart eigenvalue) > 1e-10
+        0 | eigenvalue /≈ expected_value
+            → Left $ OptimizerObtainedEigenvalueNotEqualToExpectedValue eigenvalue expected_value
+          | abs (imagPart eigenvalue) > 1e-10
             → Left $ OptimizedObtainedComplexEigenvalue eigenvalue
           | norm_of_result < (1-1e-7)
             → Left $ OptimizerObtainedVanishingEigenvector norm_of_result
@@ -531,6 +536,12 @@ computeOptimalSiteStateTensor
         -- @nl
     norm_of_result = normOfState optimized_state_site_tensor
     overlap = computeOverlapWithProjectors projector_matrix optimized_state_site_tensor
+    expected_value =
+        computeExpectation 
+            left_boundary_tensor
+            optimized_state_site_tensor
+            operator_site_tensor
+            right_boundary_tensor
 -- @-node:gcross.20091111171052.1656:computeOptimalSiteStateTensor
 -- @+node:gcross.20091115105949.1729:increaseBandwidthBetween
 foreign import ccall unsafe "increase_bandwidth_between" increase_bandwidth_between :: 

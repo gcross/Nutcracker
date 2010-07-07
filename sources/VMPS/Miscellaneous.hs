@@ -32,7 +32,7 @@ class AlmostEq a where
     (≈) :: a → a → Bool
 
 instance AlmostEq Double where
-    x ≈ y = (abs x + abs y < 1e-13) || (abs (x-y) / abs(x+y) * 2 < 1e-7)
+    x ≈ y = (abs x + abs y < 1e-11) || (abs (x-y) / abs(x+y) * 2 < 1e-7)
 
 instance (AlmostEq a) => AlmostEq [a] where
     x ≈ y = all (uncurry (≈)) $ zip x y

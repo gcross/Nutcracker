@@ -1706,8 +1706,6 @@ function optimize( &
   end if
 
   if (orthogonal_subspace_dimension <= 4) then
-    strategy = 1
-    ! print *, "strategy 1", number_of_reflectors, full_space_dimension, orthogonal_subspace_dimension
     call optimize_strategy_1( &
       bl, br, &
       cl, &
@@ -1726,8 +1724,6 @@ function optimize( &
       eigenvalue &
     )
   else if ( bl*br < cl*cr ) then
-    strategy = 2
-    ! print *, "strategy 2"
     call optimize_strategy_2( &
       bl, br, &
       cl, &
@@ -1746,31 +1742,7 @@ function optimize( &
       eigenvalue &
     )
   else
-    strategy = 3
-    ! print *, "strategy 3", full_space_dimension, orthogonal_subspace_dimension
     call optimize_strategy_3( &
-      bl, br, &
-      cl, &
-      cr, &
-      d, &
-      left_environment, &
-      number_of_matrices, sparse_operator_indices, sparse_operator_matrices, &
-      right_environment, &
-      number_of_projectors, number_of_reflectors, orthogonal_subspace_dimension, reflectors, coefficients, swaps, &
-      which, &
-      tol, &
-      number_of_iterations, &
-      guess, &
-      info, &
-      result, &
-      eigenvalue &
-    )
-  end if
-
-  if ( info == -14 .and. full_space_dimension < number_of_iterations) then
-    strategy = 1
-    ! print *, "re-trying with strategy 1", d, bl, br, number_of_reflectors, full_space_dimension, orthogonal_subspace_dimension
-    call optimize_strategy_1( &
       bl, br, &
       cl, &
       cr, &
@@ -1950,7 +1922,8 @@ subroutine optimize_strategy_2( &
   end interface
   !@-node:gcross.20091109182634.1538:Interface
   !@+node:gcross.20091115201814.1730:Work arrays
-  integer, parameter :: nev = 1, ncv = 3
+  integer, parameter :: nev = 1
+  integer :: full_space_dimension
 
   double complex :: &
     optimization_matrix(orthogonal_subspace_dimension,orthogonal_subspace_dimension), &
@@ -1962,6 +1935,8 @@ subroutine optimize_strategy_2( &
   !@-node:gcross.20091115201814.1731:<< Declarations >>
   !@nl
 
+  full_space_dimension = d*bl*br
+
   call compute_opt_matrix_all_cases( &
     bl, br, cl, cr, d, &
     left_environment, &
@@ -1972,28 +1947,23 @@ subroutine optimize_strategy_2( &
   )
 
   call  project_into_orthogonal_space( &
-    br*bl*d, &
+    full_space_dimension, &
     number_of_projectors, number_of_reflectors, orthogonal_subspace_dimension, reflectors, coefficients, swaps, &
     guess(1,1,1), &
     projected_guess &
   )
 
-  call run_arpack(orthogonal_subspace_dimension,nev,ncv,projected_guess,eigenvalue,projected_result)
-
-  call unproject_from_orthogonal_space( &
-    br*bl*d, &
-    number_of_projectors, number_of_reflectors, orthogonal_subspace_dimension, reflectors, coefficients, swaps, &
-    projected_result, &
-    result(1,1,1) &
-  )
+  call doit
 
 contains
 
   !@  @+others
   !@+node:gcross.20100516220142.1754:run_arpack
-  subroutine run_arpack(n,nev,ncv,guess,eigenvalue,eigenvector)
+  subroutine run_arpack(n,nev,ncv,tolerance,guess,eigenvalue,eigenvector)
 
     integer, intent(in) :: n, nev, ncv
+
+    double precision, intent(in) :: tolerance
 
     double complex, intent(in) :: guess(n)
 
@@ -2010,7 +1980,9 @@ contains
     integer :: &
       iparam(11), &
       ipntr(14), &
-      ido
+      ido, &
+      index_of_solution(1), &
+      number_of_converged_eigenvalues
 
     logical :: &
       select(ncv)
@@ -2029,7 +2001,7 @@ contains
 
     do while (ido /= 99)
       call znaupd ( &
-        ido, 'I', n, which, nev, tol, resid, ncv, v, n, &
+        ido, 'I', n, which, nev, tolerance, resid, ncv, v, n, &
         iparam, ipntr, workd, workl, 3*ncv**2+5*ncv, rwork, info &
       ) 
       if (ido == -1 .or. ido == 1) then
@@ -2038,14 +2010,16 @@ contains
     end do
 
     number_of_iterations = iparam(3)
+    number_of_converged_eigenvalues = iparam(5)
 
     call zneupd (.true.,'A', select, eigenvalues, v, n, (0d0,0d0), workev, &
-                  'I', n, which, nev, tol, resid, ncv, &
+                  'I', n, which, nev, tolerance, resid, ncv, &
                   v, n, iparam, ipntr, workd, workl, 3*ncv**2+5*ncv, &
                   rwork, info)
 
-    eigenvalue = eigenvalues(1)
-    eigenvector = v(:,1)
+    index_of_solution = minloc(real(eigenvalues(:number_of_converged_eigenvalues)))
+    eigenvalue = eigenvalues(index_of_solution(1))
+    eigenvector = v(:,index_of_solution(1))
 
   end subroutine
   !@-node:gcross.20100516220142.1754:run_arpack
@@ -2063,10 +2037,69 @@ contains
 
   end subroutine
   !@-node:gcross.20100513000837.1743:operate_on
+  !@+node:gcross.20100601131107.1844:postprocess
+  subroutine postprocess
+    call unproject_from_orthogonal_space( &
+      full_space_dimension, &
+      number_of_projectors, number_of_reflectors, orthogonal_subspace_dimension, reflectors, coefficients, swaps, &
+      projected_result, &
+      result(1,1,1) &
+    )
+  end subroutine
+  !@-node:gcross.20100601131107.1844:postprocess
+  !@+node:gcross.20100603220533.1852:doit
+  subroutine doit
+    integer :: ncv
+    ncv = nev*2+1
+
+    call run_arpack(orthogonal_subspace_dimension,nev,ncv,tol,projected_guess,eigenvalue,projected_result)
+
+    if (info == -14) then
+      if (full_space_dimension < number_of_iterations) then
+        ! print *, "Retrying with strategy 1"
+        !@      << Branch to optimization strategy 1 >>
+        !@+node:gcross.20100603220533.1853:<< Branch to optimization strategy 1 >>
+        call optimize_strategy_1( &
+          bl, br, &
+          cl, &
+          cr, &
+          d, &
+          left_environment, &
+          number_of_matrices, sparse_operator_indices, sparse_operator_matrices, &
+          right_environment, &
+          number_of_projectors, number_of_reflectors, orthogonal_subspace_dimension, reflectors, coefficients, swaps, &
+          which, &
+          tol, &
+          number_of_iterations, &
+          guess, &
+          info, &
+          result, &
+          eigenvalue &
+        )
+        !@nonl
+        !@-node:gcross.20100603220533.1853:<< Branch to optimization strategy 1 >>
+        !@nl
+      else
+        do while (ncv <= number_of_iterations)
+          ncv = ncv * 3 / 2
+          call run_arpack(orthogonal_subspace_dimension,nev,ncv,tol,projected_guess,eigenvalue,projected_result)
+          ! print *, "Retried with ncv = ", ncv, "; new info = ", info
+          if (info /= -14) then
+            ! print *, "Success with ncv = ", ncv
+            call postprocess
+            return
+          end if
+        end do
+      end if
+    else
+      call postprocess
+    end if
+
+  end subroutine
+  !@-node:gcross.20100603220533.1852:doit
   !@-others
 
 end subroutine
-!@nonl
 !@-node:gcross.20091109182634.1537:optimize_strategy_2
 !@+node:gcross.20100517000234.1753:optimize_strategy_3
 subroutine optimize_strategy_3( &
@@ -2159,7 +2192,8 @@ subroutine optimize_strategy_3( &
   end interface
   !@-node:gcross.20100517000234.1756:Interface
   !@+node:gcross.20100517000234.1760:Work arrays
-  integer, parameter :: nev = 1, ncv = 3
+  integer, parameter :: nev = 1
+  integer :: full_space_dimension
 
   double complex :: &
     iteration_stage_1_tensor(bl,d,cr,bl,d), &
@@ -2173,6 +2207,8 @@ subroutine optimize_strategy_3( &
   !@-node:gcross.20100517000234.1754:<< Declarations >>
   !@nl
 
+  full_space_dimension = br*bl*d
+
   call iteration_stage_1( &
     bl, cl, cr, d, &
     left_environment, &
@@ -2181,28 +2217,23 @@ subroutine optimize_strategy_3( &
   )
 
   call  project_into_orthogonal_space( &
-    br*bl*d, &
+    full_space_dimension, &
     number_of_projectors, number_of_reflectors, orthogonal_subspace_dimension, reflectors, coefficients, swaps, &
     guess(1,1,1), &
     projected_guess &
   )
 
-  call run_arpack(orthogonal_subspace_dimension,nev,ncv,projected_guess,eigenvalue,projected_result)
-
-  call unproject_from_orthogonal_space( &
-    br*bl*d, &
-    number_of_projectors, number_of_reflectors, orthogonal_subspace_dimension, reflectors, coefficients, swaps, &
-    projected_result, &
-    result(1,1,1) &
-  )
+  call doit
 
 contains
 
   !@  @+others
   !@+node:gcross.20100517000234.1761:run_arpack
-  subroutine run_arpack(n,nev,ncv,guess,eigenvalue,eigenvector)
+  subroutine run_arpack(n,nev,ncv,tolerance,guess,eigenvalue,eigenvector)
 
     integer, intent(in) :: n, nev, ncv
+
+    double precision, intent(in) :: tolerance
 
     double complex, intent(in) :: guess(n)
 
@@ -2219,7 +2250,9 @@ contains
     integer :: &
       iparam(11), &
       ipntr(14), &
-      ido
+      ido, &
+      index_of_solution(1), &
+      number_of_converged_eigenvalues
 
     logical :: &
       select(ncv)
@@ -2238,7 +2271,7 @@ contains
 
     do while (ido /= 99)
       call znaupd ( &
-        ido, 'I', n, which, nev, tol, resid, ncv, v, n, &
+        ido, 'I', n, which, nev, tolerance, resid, ncv, v, n, &
         iparam, ipntr, workd, workl, 3*ncv**2+5*ncv, rwork, info &
       ) 
       if (ido == -1 .or. ido == 1) then
@@ -2247,22 +2280,25 @@ contains
     end do
 
     number_of_iterations = iparam(3)
+    number_of_converged_eigenvalues = iparam(5)
 
     call zneupd (.true.,'A', select, eigenvalues, v, n, (0d0,0d0), workev, &
-                  'I', n, which, nev, tol, resid, ncv, &
+                  'I', n, which, nev, tolerance, resid, ncv, &
                   v, n, iparam, ipntr, workd, workl, 3*ncv**2+5*ncv, &
                   rwork, info)
 
-    eigenvalue = eigenvalues(1)
-    eigenvector = v(:,1)
+    index_of_solution = minloc(real(eigenvalues(:number_of_converged_eigenvalues)))
+    eigenvalue = eigenvalues(index_of_solution(1))
+    eigenvector = v(:,index_of_solution(1))
 
   end subroutine
+
   !@-node:gcross.20100517000234.1761:run_arpack
   !@+node:gcross.20100517000234.1762:operate_on
   subroutine operate_on(input,output)
     double complex :: input(orthogonal_subspace_dimension), projected(br,bl,d), output(orthogonal_subspace_dimension)
     call unproject_from_orthogonal_space( &
-      br*bl*d, &
+      full_space_dimension, &
       number_of_projectors, number_of_reflectors, orthogonal_subspace_dimension, reflectors, coefficients, swaps, &
       input, &
       projected &
@@ -2280,7 +2316,7 @@ contains
       projected &
     )
     call project_into_orthogonal_space( &
-      br*bl*d, &
+      full_space_dimension, &
       number_of_projectors, number_of_reflectors, orthogonal_subspace_dimension, reflectors, coefficients, swaps, &
       projected, &
       output &
@@ -2288,6 +2324,66 @@ contains
 
   end subroutine
   !@-node:gcross.20100517000234.1762:operate_on
+  !@+node:gcross.20100601131107.1842:postprocess
+  subroutine postprocess
+    call unproject_from_orthogonal_space( &
+      full_space_dimension, &
+      number_of_projectors, number_of_reflectors, orthogonal_subspace_dimension, reflectors, coefficients, swaps, &
+      projected_result, &
+      result(1,1,1) &
+    )
+  end subroutine
+  !@-node:gcross.20100601131107.1842:postprocess
+  !@+node:gcross.20100603220533.1856:doit
+  subroutine doit
+    integer :: ncv
+    ncv = nev*2+1
+
+    call run_arpack(orthogonal_subspace_dimension,nev,ncv,tol,projected_guess,eigenvalue,projected_result)
+
+    if (info == -14) then
+      if (full_space_dimension < number_of_iterations) then
+        ! print *, "Retrying with strategy 1"
+        !@      << Branch to optimization strategy 1 >>
+        !@+node:gcross.20100603220533.1857:<< Branch to optimization strategy 1 >>
+        call optimize_strategy_1( &
+          bl, br, &
+          cl, &
+          cr, &
+          d, &
+          left_environment, &
+          number_of_matrices, sparse_operator_indices, sparse_operator_matrices, &
+          right_environment, &
+          number_of_projectors, number_of_reflectors, orthogonal_subspace_dimension, reflectors, coefficients, swaps, &
+          which, &
+          tol, &
+          number_of_iterations, &
+          guess, &
+          info, &
+          result, &
+          eigenvalue &
+        )
+        !@nonl
+        !@-node:gcross.20100603220533.1857:<< Branch to optimization strategy 1 >>
+        !@nl
+      else
+        do while (ncv <= number_of_iterations)
+          ncv = ncv * 3 / 2
+          call run_arpack(orthogonal_subspace_dimension,nev,ncv,tol,projected_guess,eigenvalue,projected_result)
+          ! print *, "Retried with ncv = ", ncv, "; new info = ", info
+          if (info /= -14) then
+            ! print *, "Success with ncv = ", ncv
+            call postprocess
+            return
+          end if
+        end do
+      end if
+    else
+      call postprocess
+    end if
+
+  end subroutine
+  !@-node:gcross.20100603220533.1856:doit
   !@-others
 
 end subroutine
