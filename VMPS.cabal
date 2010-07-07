@@ -29,7 +29,8 @@ Library
                     ConfigFile == 1.*,
                     uuid == 1.*,
                     Takusen == 0.8.*,
-                    either-unwrap == 1.1.*
+                    either-unwrap == 1.1.*,
+                    monad-loops >= 0.3 && < 0.4
 
     Extra-Libraries: blas, lapack, arpack, gfortran
 -- @-node:gcross.20091130053756.1986:@thin VMPS.cabal

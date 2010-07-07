@@ -505,6 +505,28 @@ double compute_overlap_with_projectors(
 }
 //@-node:gcross.20100525190742.1831:compute_overlap_with_projectors
 //@-node:gcross.20100525190742.1826:Projectors
+//@+node:gcross.20100706175820.1852:contract_operator_random_left
+void contract_operator_random_left_(
+    int* cl, int* cr, int* d,
+    double* left_boundary_1, double* left_boundary_2,
+    int* number_of_matrices, int* sparse_operator_indices, double* sparse_operator_matrices,
+    double* new_left_boundary_1, double* new_left_boundary_2
+);
+
+void contract_operator_random_left(
+    int cl, int cr, int d,
+    double* left_boundary_1, double* left_boundary_2,
+    int number_of_matrices, int* sparse_operator_indices, double* sparse_operator_matrices,
+    double* new_left_boundary_1, double* new_left_boundary_2
+) {
+    contract_operator_random_left_(
+        &cl, &cr, &d,
+        left_boundary_1, left_boundary_2,
+        &number_of_matrices, sparse_operator_indices, sparse_operator_matrices,
+        new_left_boundary_1, new_left_boundary_2
+    );
+}
+//@-node:gcross.20100706175820.1852:contract_operator_random_left
 //@-others
 //@-node:gcross.20091112145455.1619:@thin core-wrapper.c
 //@-leo

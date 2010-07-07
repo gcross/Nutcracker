@@ -9,7 +9,7 @@
 -- @-node:gcross.20100505152919.1757:<< Language extensions >>
 -- @nl
 
-module VMPS.Qubits.Operators (QubitOperatorSiteSpecification,SingleQubitOperator,pI,pX,pY,pZ) where
+module VMPS.Qubits.Operators (QubitOperatorSiteSpecification,SingleQubitOperator,pI,pX,pY,pZ,i) where
 
 -- @<< Import needed modules >>
 -- @+node:gcross.20100505152919.1710:<< Import needed modules >>

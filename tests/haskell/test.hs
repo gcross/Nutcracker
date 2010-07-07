@@ -1219,6 +1219,21 @@ main = defaultMain
                 (-new_state_expectation)
         -- @nonl
         -- @-node:gcross.20091211120042.1700:both-flip test
+        -- @+node:gcross.20100706175820.1858:Hermiticity testing
+        ,testGroup "Hermiticity testing" $
+            [ testCase name $
+                testForHermiticityMultipleTimes 10 operators
+                >>=
+                assertBool
+                    "Did the hermiticity test obtain the correct result?"
+                    .
+                    (if is_hermitian then id else not)
+            | (name,is_hermitian,operators) ←
+                [("Z magnetic field",True,makeExternalFieldOperatorSiteTensors pZ 10)
+                ,("iY magnetic field",False,makeExternalFieldOperatorSiteTensors (i *: pY) 10)
+                ]
+            ]
+        -- @-node:gcross.20100706175820.1858:Hermiticity testing
         -- @-others
         ]
     -- @-node:gcross.20091211120042.1694:VMPS.Operators

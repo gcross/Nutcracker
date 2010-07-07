@@ -859,7 +859,6 @@ subroutine form_overlap_vector( &
 end subroutine
 !@-node:gcross.20091116094945.1748:form_overlap_vector
 !@-node:gcross.20091115224921.1737:Environment SS contraction
-!@+node:gcross.20100617144515.1848:Operator trace contractors
 !@+node:gcross.20100617144515.1851:contract_operator_random_left
 subroutine contract_operator_random_left( &
   cl, cr, d, &
@@ -897,7 +896,6 @@ subroutine contract_operator_random_left( &
   end do
 end subroutine
 !@-node:gcross.20100617144515.1851:contract_operator_random_left
-!@-node:gcross.20100617144515.1848:Operator trace contractors
 !@+node:gcross.20091110205054.1916:compute_expectation
 subroutine compute_expectation( &
   bl, & ! state left bandwidth dimension

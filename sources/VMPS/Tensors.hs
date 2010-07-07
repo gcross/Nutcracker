@@ -41,6 +41,10 @@ module VMPS.Tensors
     ,projectorReflectorCount
     ,projectorOrthogonalSubspaceDimension
     ,numberOfOrthogonalProjectors
+    ,TestingBoundaryTensor()
+    ,testingBoundaryBandwidth
+    ,doTestingBoundariesMatch
+    ,trivial_testing_boundary
     ) where
 
 import VMPS.Tensors.Implementation

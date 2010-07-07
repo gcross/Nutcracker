@@ -26,6 +26,7 @@ module VMPS.Operators where
 -- @+node:gcross.20100504143114.1698:<< Import needed modules >>
 import Control.Exception
 import Control.Monad
+import Control.Monad.Loops
 
 import Data.Array.Storable
 import Data.Complex
@@ -45,6 +46,7 @@ import VMPS.States
 import VMPS.Tensors
 import VMPS.Tensors.Implementation (OperatorSiteTensor(..))
 import VMPS.Miscellaneous
+import VMPS.Wrappers
 -- @-node:gcross.20100504143114.1698:<< Import needed modules >>
 -- @nl
 
@@ -250,6 +252,17 @@ makeOperatorSiteTensorFromSpecification left_bandwidth right_bandwidth elements@
             }
 -- @nonl
 -- @-node:gcross.20100504143114.1691:makeOperatorSiteTensorFromSpecification
+-- @+node:gcross.20100706175820.1857:testForHermiticity
+testForHermiticity :: [OperatorSiteTensor] → IO Bool
+testForHermiticity =
+    fmap (uncurry doTestingBoundariesMatch)
+    .
+    foldM randomlyContractOperatorLeft (trivial_testing_boundary,trivial_testing_boundary)
+-- @-node:gcross.20100706175820.1857:testForHermiticity
+-- @+node:gcross.20100706175820.1861:testForHermiticityMultipleTimes
+testForHermiticityMultipleTimes :: Int → [OperatorSiteTensor] → IO Bool
+testForHermiticityMultipleTimes n = andM . replicate n . testForHermiticity
+-- @-node:gcross.20100706175820.1861:testForHermiticityMultipleTimes
 -- @-node:gcross.20100504143114.1695:Functions
 -- @-others
 -- @-node:gcross.20091201134050.1634:@thin Operators.hs

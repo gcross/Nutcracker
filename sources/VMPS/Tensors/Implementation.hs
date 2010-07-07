@@ -466,6 +466,37 @@ instance Connected OperatorSiteTensor RightAbsorptionNormalizedStateSiteTensor w
 -- @-others
 
 -- @-node:gcross.20091111171052.1598:Operator Site Tensor
+-- @+node:gcross.20100706175820.1855:Testing Left Boundary
+data TestingBoundaryTensor = TestingBoundaryTensor
+    {   testingBoundaryBandwidth :: !Int
+    ,   testingBoundaryData :: !(ComplexTensor Int)
+    }
+
+trivial_testing_boundary = TestingBoundaryTensor 1 trivial_complex_tensor
+
+instance Pinnable TestingBoundaryTensor where 
+    withPinnedTensor = withPinnedComplexTensor . testingBoundaryData
+
+instance Creatable TestingBoundaryTensor Int where
+    withNewPinnedTensor c =
+        fmap (second $ TestingBoundaryTensor c)
+        .
+        withNewPinnedComplexTensor c
+
+instance Connected TestingBoundaryTensor OperatorSiteTensor where
+    (←?→) = makeConnectedTest
+        "Testing left boundary and operator site tensors disagree over the bandwidth dimension!"
+        testingBoundaryBandwidth
+        operatorLeftBandwidth
+
+doTestingBoundariesMatch :: TestingBoundaryTensor → TestingBoundaryTensor → Bool
+doTestingBoundariesMatch testing_boundary_1 testing_boundary_2 =
+    testing_boundary_1_as_list ≈ map conjugate testing_boundary_2_as_list
+  where
+    getTestingBoundaryElements = unsafePerformIO . getElems . unwrapComplexTensor . testingBoundaryData
+    testing_boundary_1_as_list = getTestingBoundaryElements testing_boundary_1
+    testing_boundary_2_as_list = getTestingBoundaryElements testing_boundary_2
+-- @-node:gcross.20100706175820.1855:Testing Left Boundary
 -- @-node:gcross.20091113142219.2538:Tensors
 -- @+node:gcross.20091116175016.1796:ProjectorMatrix
 data ProjectorMatrix =

@@ -294,6 +294,47 @@ contractSSRight state_site_tensor right_boundary_tensor overlap_site_tensor  =
                 p_state_site_tensor
 -- @nonl
 -- @-node:gcross.20091116175016.1788:contractSSRight
+-- @+node:gcross.20100706175820.1854:randomlyContractOperatorLeft
+foreign import ccall unsafe "contract_operator_random_left" contract_operator_random_left :: 
+    Int → -- operator left bandwidth dimension
+    Int → -- operator right bandwidth dimension
+    Int → -- physical dimension
+    Ptr (Complex Double) → -- old left boundary (1)
+    Ptr (Complex Double) → -- old left boundary (2)
+    Int → -- number of matrices
+    Ptr Int32 → -- sparse operator indices
+    Ptr (Complex Double) → -- sparse operator matrices
+    Ptr (Complex Double) → -- new left boundary (1)
+    Ptr (Complex Double) → -- old left boundary (1)
+    IO ()
+
+randomlyContractOperatorLeft ::
+    (TestingBoundaryTensor,TestingBoundaryTensor) →
+    OperatorSiteTensor →
+    IO (TestingBoundaryTensor,TestingBoundaryTensor)
+randomlyContractOperatorLeft (testing_boundary_tensor_1,testing_boundary_tensor_2) operator_site_tensor =
+    let c_old = testing_boundary_tensor_1 ←?→ operator_site_tensor
+        c_new = operatorRightBandwidth operator_site_tensor
+        d = operatorPhysicalDimension operator_site_tensor
+    in fmap (snd &&& (snd . fst)) $
+        assert (c_old == testingBoundaryBandwidth testing_boundary_tensor_2) $
+        withPinnedTensor testing_boundary_tensor_1 $ \p_testing_boundary_tensor_1 →
+        withPinnedTensor testing_boundary_tensor_2 $ \p_testing_boundary_tensor_2 →
+        withPinnedOperatorSiteTensor operator_site_tensor $ \number_of_matrices p_operator_indices p_operator_matrices →
+        withNewPinnedTensor c_new $ \p_new_testing_boundary_tensor_1 →
+        withNewPinnedTensor c_new $ \p_new_testing_boundary_tensor_2 →
+            contract_operator_random_left
+                c_old
+                c_new
+                d
+                p_testing_boundary_tensor_1
+                p_testing_boundary_tensor_2
+                number_of_matrices
+                p_operator_indices
+                p_operator_matrices
+                p_new_testing_boundary_tensor_1
+                p_new_testing_boundary_tensor_2
+-- @-node:gcross.20100706175820.1854:randomlyContractOperatorLeft
 -- @-node:gcross.20091113125544.1656:Contractors
 -- @+node:gcross.20091113125544.1664:Normalizers
 -- @+node:gcross.20091113125544.1667:makeNormalizedForAbsorbingLeft
