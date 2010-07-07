@@ -859,6 +859,45 @@ subroutine form_overlap_vector( &
 end subroutine
 !@-node:gcross.20091116094945.1748:form_overlap_vector
 !@-node:gcross.20091115224921.1737:Environment SS contraction
+!@+node:gcross.20100617144515.1848:Operator trace contractors
+!@+node:gcross.20100617144515.1851:contract_operator_random_left
+subroutine contract_operator_random_left( &
+  cl, cr, d, &
+  left_boundary_1, left_boundary_2, &
+  number_of_matrices,sparse_operator_indices,sparse_operator_matrices, &
+  new_left_boundary_1, new_left_boundary_2 &
+)
+  integer, intent(in) :: cl, cr, d, number_of_matrices, sparse_operator_indices(2,number_of_matrices)
+  double complex, intent(in) :: &
+    left_boundary_1(cl), left_boundary_2(cl), &
+    sparse_operator_matrices(d*d,number_of_matrices)
+  double complex, intent(out) :: new_left_boundary_1(cr), new_left_boundary_2(cr)
+
+  integer :: matrix_number, left_index, right_index, i, j
+  double complex :: matrix(d,d), vector_1(d*d), vector_2(d*d), x
+
+  do i = 1, d
+  do j = 1, d
+    matrix(i,j) = (0.5d0,0d0)-rand()*(1d0,0d0) + (0,0.5d0)-rand()*(0d0,1d0)
+  end do
+  end do
+
+  vector_1 = reshape(matrix,shape(vector_1))
+  vector_2 = reshape(conjg(transpose(matrix)),shape(vector_2))
+
+  new_left_boundary_1 = 0
+  new_left_boundary_2 = 0
+  do matrix_number = 1, number_of_matrices
+    left_index = sparse_operator_indices(1,matrix_number)
+    right_index = sparse_operator_indices(2,matrix_number)
+    new_left_boundary_1(right_index) = new_left_boundary_1(right_index) &
+      + dot_product(vector_1,sparse_operator_matrices(:,matrix_number)*left_boundary_1(left_index))
+    new_left_boundary_2(right_index) = new_left_boundary_2(right_index) &
+      + dot_product(vector_2,sparse_operator_matrices(:,matrix_number)*left_boundary_2(left_index))
+  end do
+end subroutine
+!@-node:gcross.20100617144515.1851:contract_operator_random_left
+!@-node:gcross.20100617144515.1848:Operator trace contractors
 !@+node:gcross.20091110205054.1916:compute_expectation
 subroutine compute_expectation( &
   bl, & ! state left bandwidth dimension

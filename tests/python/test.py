@@ -1708,6 +1708,55 @@ class form_norm_overlap_tensors(TestCase):
 #@nonl
 #@-node:gcross.20091118141720.1809:form_norm_overlap_tensors
 #@-node:gcross.20091118141720.1805:Overlap tensor formation
+#@+node:gcross.20100706151922.1852:non_hermitian_matrix_detection
+class non_hermitian_matrix_detection(TestCase):
+    @with_checker
+    def test_hermitian_operators(self,number_of_sites=irange(2,10)):
+        left_boundary_1 = ones((1,),complex128)
+        left_boundary_2 = ones((1,),complex128)
+        old_c = 1
+        for i in xrange(number_of_sites):
+            if i == number_of_sites-1:
+                new_c = 1
+            else:
+                new_c = randint(1,5)
+            d = randint(1,5)
+            sparse_operator_indices, sparse_operator_matrices, _ = generate_random_sparse_matrices(old_c,new_c,d,symmetric=True)
+            left_boundary_1, left_boundary_2 = vmps.contract_operator_random_left(
+                new_c, d,
+                left_boundary_1, left_boundary_2,
+                sparse_operator_indices, sparse_operator_matrices.reshape(d*d,sparse_operator_matrices.shape[-1])
+            )
+            old_c = new_c
+        self.assertEqual(left_boundary_1.shape,(1,))
+        self.assertEqual(left_boundary_2.shape,(1,))
+        self.assertAlmostEqual(left_boundary_1.ravel(),left_boundary_2.conj().ravel())
+
+
+    @with_checker
+    def test_non_hermitian_operators(self,number_of_sites=irange(2,10)):
+        left_boundary_1 = ones((1,),complex128)
+        left_boundary_2 = ones((1,),complex128)
+        old_c = 1
+        for i in xrange(number_of_sites):
+            if i == number_of_sites-1:
+                new_c = 1
+            else:
+                new_c = randint(1,5)
+            d = randint(1,5)
+            sparse_operator_indices, sparse_operator_matrices, _ = generate_random_sparse_matrices(old_c,new_c,d,symmetric=False)
+            left_boundary_1, left_boundary_2 = vmps.contract_operator_random_left(
+                new_c, d,
+                left_boundary_1, left_boundary_2,
+                sparse_operator_indices, sparse_operator_matrices.reshape(d*d,sparse_operator_matrices.shape[-1])
+            )
+            old_c = new_c
+        self.assertEqual(left_boundary_1.shape,(1,))
+        self.assertEqual(left_boundary_2.shape,(1,))
+        if norm(left_boundary_1) > 1e-7:
+            self.assertNotAlmostEqual(left_boundary_1.ravel(),left_boundary_2.conj().ravel())
+
+#@-node:gcross.20100706151922.1852:non_hermitian_matrix_detection
 #@-node:gcross.20091110205054.1947:Tests
 #@-others
 
@@ -1754,6 +1803,7 @@ tests = [
     swap_inplace,
     unswap_inplace,
     swap_matrix_inplace,
+    non_hermitian_matrix_detection,
 ]
 
 #@<< Runner >>
