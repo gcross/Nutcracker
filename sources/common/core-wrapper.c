@@ -1,11 +1,11 @@
-//@+leo-ver=4-thin
-//@+node:gcross.20091112145455.1619:@thin core-wrapper.c
+//@+leo-ver=5-thin
+//@+node:gcross.20091112145455.1619: * @thin core-wrapper.c
 //@@language C
 
 // #include <stdio.h>
 
 //@+others
-//@+node:gcross.20091112145455.1621:compute_expectation
+//@+node:gcross.20091112145455.1621: ** compute_expectation
 void compute_expectation_(
     int*,
     int*,
@@ -44,8 +44,7 @@ void compute_expectation(
         expectation
     );
 }
-//@-node:gcross.20091112145455.1621:compute_expectation
-//@+node:gcross.20091112145455.1622:optimize
+//@+node:gcross.20091112145455.1622: ** optimize
 int optimize_(
     int* bl,
     int* br,
@@ -99,8 +98,7 @@ int optimize(
         eigenvalue
     );
 }
-//@-node:gcross.20091112145455.1622:optimize
-//@+node:gcross.20091112145455.1623:contract_sos_left
+//@+node:gcross.20091112145455.1623: ** contract_sos_left
 void contract_sos_left_(
     int* bl,
     int* br,
@@ -136,8 +134,7 @@ void contract_sos_left(
         new_left_environment
     );
 }
-//@-node:gcross.20091112145455.1623:contract_sos_left
-//@+node:gcross.20091112145455.1637:contract_sos_right
+//@+node:gcross.20091112145455.1637: ** contract_sos_right
 void contract_sos_right_(
     int* bl,
     int* br,
@@ -173,8 +170,7 @@ void contract_sos_right(
         new_right_environment
     );
 }
-//@-node:gcross.20091112145455.1637:contract_sos_right
-//@+node:gcross.20091116175016.1772:contract_ss_left
+//@+node:gcross.20091116175016.1772: ** contract_ss_left
 void contract_ss_left_(
     int* b_left_old, int* b_right_old,
     int* b_left_new, int* b_right_new,
@@ -204,8 +200,7 @@ void contract_ss_left(
         new_left_environment
     );
 }
-//@-node:gcross.20091116175016.1772:contract_ss_left
-//@+node:gcross.20091116175016.1784:contract_ss_right
+//@+node:gcross.20091116175016.1784: ** contract_ss_right
 void contract_ss_right_(
     int* b_left_old, int* b_right_old,
     int* b_left_new, int* b_right_new,
@@ -235,8 +230,7 @@ void contract_ss_right(
         new_right_environment
     );
 }
-//@-node:gcross.20091116175016.1784:contract_ss_right
-//@+node:gcross.20091116175016.1799:form_overlap_vector
+//@+node:gcross.20091116175016.1799: ** form_overlap_vector
 void form_overlap_vector_(
   int* b_left_old, int* b_right_old,
   int* b_left_new, int* b_right_new,
@@ -266,22 +260,19 @@ void form_overlap_vector(
       overlap_vector
     );
 }
-//@-node:gcross.20091116175016.1799:form_overlap_vector
-//@+node:gcross.20091112145455.1655:rand_unnorm_state_site_tensor
+//@+node:gcross.20091112145455.1655: ** rand_unnorm_state_site_tensor
 void rand_unnorm_state_site_tensor_(int* br, int* bl, int* d, double* state_site_tensor);
 
 void rand_unnorm_state_site_tensor(int br, int bl, int d, double* state_site_tensor) {
     rand_unnorm_state_site_tensor_(&br,&bl,&d,state_site_tensor);
 }
-//@-node:gcross.20091112145455.1655:rand_unnorm_state_site_tensor
-//@+node:gcross.20091112145455.1673:rand_norm_state_site_tensor
+//@+node:gcross.20091112145455.1673: ** rand_norm_state_site_tensor
 void rand_norm_state_site_tensor_(int* br, int* bl, int* d, double* state_site_tensor);
 
 void rand_norm_state_site_tensor(int br, int bl, int d, double* state_site_tensor) {
     rand_norm_state_site_tensor_(&br,&bl,&d,state_site_tensor);
 }
-//@-node:gcross.20091112145455.1673:rand_norm_state_site_tensor
-//@+node:gcross.20091113125544.1647:norm_denorm_going_left
+//@+node:gcross.20091113125544.1647: ** norm_denorm_going_left
 int norm_denorm_going_left_(
   int* bll, int* bl, int* br,
   int* dl, int* d,
@@ -308,8 +299,7 @@ int norm_denorm_going_left(
       normalized_site_tensor
     );
 }
-//@-node:gcross.20091113125544.1647:norm_denorm_going_left
-//@+node:gcross.20091113125544.1648:norm_denorm_going_right
+//@+node:gcross.20091113125544.1648: ** norm_denorm_going_right
 int norm_denorm_going_right_(
   int* bl, int* br, int* brr,
   int* d, int* dr,
@@ -336,8 +326,7 @@ int norm_denorm_going_right(
       denormalized_site_tensor
     );
 }
-//@-node:gcross.20091113125544.1648:norm_denorm_going_right
-//@+node:gcross.20091115105949.1731:increase_bandwidth_between
+//@+node:gcross.20091115105949.1731: ** increase_bandwidth_between
 int increase_bandwidth_between_(
   int* bl, int* bm, int* br,
   int* dl, int* dr,
@@ -367,15 +356,13 @@ int increase_bandwidth_between(
       denormalized_site_tensor
     );
 }
-//@-node:gcross.20091115105949.1731:increase_bandwidth_between
-//@+node:gcross.20091118141720.1801:form_overlap_site_tensor
+//@+node:gcross.20091118141720.1801: ** form_overlap_site_tensor
 void form_overlap_site_tensor_(int* br, int* bl, int* d, double* state_site_tensor, double* overlap_site_tensor);
 
 void form_overlap_site_tensor(int br, int bl, int d, double* state_site_tensor, double* overlap_site_tensor) {
     return form_overlap_site_tensor_(&br,&bl,&d,state_site_tensor,overlap_site_tensor);
 }
-//@-node:gcross.20091118141720.1801:form_overlap_site_tensor
-//@+node:gcross.20091118141720.1804:form_norm_overlap_tensors
+//@+node:gcross.20091118141720.1804: ** form_norm_overlap_tensors
 void form_norm_overlap_tensors_(
   int* bl, int* bm, int* br,
   int* dl, int* dr,
@@ -408,16 +395,14 @@ void form_norm_overlap_tensors(
       right_norm_overlap_tensor_2
     );
 }
-//@-node:gcross.20091118141720.1804:form_norm_overlap_tensors
-//@+node:gcross.20091211120042.1691:apply_single_site_operator
+//@+node:gcross.20091211120042.1691: ** apply_single_site_operator
 void apply_single_site_operator_(int* br, int* bl, int* d, double* state_site_tensor, double* operator, double* new_state_site_tensor);
 
 void apply_single_site_operator(int br, int bl, int d, double* state_site_tensor, double* operator, double* new_state_site_tensor) {
     return apply_single_site_operator_(&br,&bl,&d,state_site_tensor,operator,new_state_site_tensor);
 }
-//@-node:gcross.20091211120042.1691:apply_single_site_operator
-//@+node:gcross.20100525190742.1826:Projectors
-//@+node:gcross.20091116175016.1801:convert_vectors_to_reflectors
+//@+node:gcross.20100525190742.1826: ** Projectors
+//@+node:gcross.20091116175016.1801: *3* convert_vectors_to_reflectors
 int convert_vectors_to_reflectors_(
   int* n,
   int* m,
@@ -445,8 +430,7 @@ int convert_vectors_to_reflectors(
     );
     return rank;
 }
-//@-node:gcross.20091116175016.1801:convert_vectors_to_reflectors
-//@+node:gcross.20100525190742.1829:filter_components_outside_orthog
+//@+node:gcross.20100525190742.1829: *3* filter_components_outside_orthog
 void filter_components_outside_orthog_(
   int* full_space_dimension,
   int* number_of_projectors, int* number_of_reflectors, int* orthogonal_subspace_dimension, double* reflectors, double* coefficients, int* swaps,
@@ -467,8 +451,7 @@ void filter_components_outside_orthog(
         output
     );
 }
-//@-node:gcross.20100525190742.1829:filter_components_outside_orthog
-//@+node:gcross.20100521141104.1777:random_projector_matrix
+//@+node:gcross.20100521141104.1777: *3* random_projector_matrix
 void random_projector_matrix_(
     int* projector_length, int* number_of_projectors,
     int* rank,
@@ -483,8 +466,7 @@ int random_projector_matrix(
     random_projector_matrix_(&projector_length,&number_of_projectors,&rank,reflectors,coefficients,swaps);
     return rank;
 }
-//@-node:gcross.20100521141104.1777:random_projector_matrix
-//@+node:gcross.20100525190742.1831:compute_overlap_with_projectors
+//@+node:gcross.20100525190742.1831: *3* compute_overlap_with_projectors
 void compute_overlap_with_projectors_(
   int* number_of_projectors, int* number_of_reflectors, double* reflectors, double* coefficients, int* swaps,
   int* vector_size, double* vector,
@@ -503,9 +485,7 @@ double compute_overlap_with_projectors(
     );
     return overlap;
 }
-//@-node:gcross.20100525190742.1831:compute_overlap_with_projectors
-//@-node:gcross.20100525190742.1826:Projectors
-//@+node:gcross.20100706175820.1852:contract_operator_random_left
+//@+node:gcross.20100706175820.1852: ** contract_operator_random_left
 void contract_operator_random_left_(
     int* cl, int* cr, int* d,
     double* left_boundary_1, double* left_boundary_2,
@@ -526,7 +506,5 @@ void contract_operator_random_left(
         new_left_boundary_1, new_left_boundary_2
     );
 }
-//@-node:gcross.20100706175820.1852:contract_operator_random_left
 //@-others
-//@-node:gcross.20091112145455.1619:@thin core-wrapper.c
 //@-leo
