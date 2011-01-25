@@ -1643,7 +1643,8 @@ function optimize( &
   number_of_iterations, &
   guess, &
   result, &
-  eigenvalue &
+  eigenvalue, &
+  normal &
 ) result (info)
   implicit none
   integer, intent(in) :: &
@@ -1661,6 +1662,7 @@ function optimize( &
   double complex, intent(out) :: &
     result(br,bl,d), &
     eigenvalue
+  integer, intent(out) :: normal
   character, intent(in) :: which*2
   double precision, intent(in) :: tol
 
@@ -1755,6 +1757,8 @@ function optimize( &
       eigenvalue &
     )
   end if
+
+  normal = dznrm2(br*bl*d,result,1)
 
   if ( info < 0 ) then
     return
