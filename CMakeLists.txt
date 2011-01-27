@@ -9,8 +9,6 @@ find_package( Boost 1.45 COMPONENTS thread )
 link_directories ( ${Boost_LIBRARY_DIRS} )
 include_directories ( ${Boost_INCLUDE_DIRS} )
 
-include(FindBlitz.cmake)
-include_directories ( ${Blitz_INCLUDE_DIR} )
 
 if(UNIX)
     if(CMAKE_COMPILER_IS_GNUCC)

@@ -4,7 +4,6 @@ add_library(Nutcracker
     core.f95
     core.cpp
 )
-target_link_libraries(Nutcracker
-    ${Blitz_LIBRARIES}
-)
+#target_link_libraries(Nutcracker
+#)
 #@-leo

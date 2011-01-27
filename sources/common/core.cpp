@@ -697,135 +697,153 @@ complex<double> computeExpectationValue(
         ,operator_site || state_site
         ,left_boundary
         ,state_site
-        ,operator_site.numberOfMatrices(),operator_site,operator_site
+        ,operator_site.number_of_matrices,operator_site,operator_site
         ,right_boundary
     );
 }
 //@+node:gcross.20110124175241.1589: *4* contractSOSLeft
-ExpectationBoundary<Left> contractSOSLeft(
+auto_ptr<ExpectationBoundary<Left> const> contractSOSLeft(
       ExpectationBoundary<Left> const& old_boundary
     , StateSite<Left> const& state_site
     , OperatorSite const& operator_site
 ) {
-    ExpectationBoundary<Left> new_boundary(state_site.rightDimension(),operator_site.rightDimension());
+    auto_ptr<ExpectationBoundary<Left> > new_boundary(
+        new ExpectationBoundary<Left>
+            (state_site.right_dimension,operator_site.right_dimension)
+    );
     contract_sos_left(
          old_boundary || state_site
-        ,state_site.rightDimension()
+        ,state_site.right_dimension
         ,old_boundary || operator_site
-        ,operator_site.rightDimension()
+        ,operator_site.right_dimension
         ,operator_site || state_site
         ,old_boundary
-        ,operator_site.numberOfMatrices(),operator_site,operator_site
+        ,operator_site.number_of_matrices,operator_site,operator_site
         ,state_site
-        ,new_boundary
+        ,*new_boundary
     );
-    return new_boundary;
+    return (auto_ptr<ExpectationBoundary<Left> const>) new_boundary;
 }
 //@+node:gcross.20110124175241.1593: *4* contractSOSRight
-ExpectationBoundary<Right> contractSOSRight(
+auto_ptr<ExpectationBoundary<Right> const> contractSOSRight(
       ExpectationBoundary<Right> const& old_boundary
     , StateSite<Right> const& state_site
     , OperatorSite const& operator_site
 ) {
-    ExpectationBoundary<Right> new_boundary(state_site.leftDimension(),operator_site.leftDimension());
+    auto_ptr<ExpectationBoundary<Right> > new_boundary(
+        new ExpectationBoundary<Right>
+            (state_site.left_dimension,operator_site.left_dimension)
+    );
     contract_sos_right(
-         state_site.leftDimension()
+         state_site.left_dimension
         ,state_site || old_boundary
-        ,operator_site.leftDimension()
+        ,operator_site.left_dimension
         ,operator_site || old_boundary
         ,operator_site || state_site
         ,old_boundary
-        ,operator_site.numberOfMatrices(),operator_site,operator_site
+        ,operator_site.number_of_matrices,operator_site,operator_site
         ,state_site
-        ,new_boundary
+        ,*new_boundary
     );
-    return new_boundary;
+    return (auto_ptr<ExpectationBoundary<Right> const>) new_boundary;
 }
 //@+node:gcross.20110124175241.1595: *4* contractSSLeft
-OverlapBoundary<Left> contractSSLeft(
+auto_ptr<OverlapBoundary<Left> const> contractSSLeft(
       OverlapBoundary<Left> const& old_boundary
     , OverlapSite<Left> const& overlap_site
     , StateSite<Left> const& state_site
 ) {
-    OverlapBoundary<Left> new_boundary(state_site.rightDimension());
+    auto_ptr<OverlapBoundary<Left> > new_boundary(
+        new OverlapBoundary<Left>(state_site.right_dimension)
+    );
     contract_ss_left(
          old_boundary || overlap_site
-        ,overlap_site.rightDimension()
+        ,overlap_site.right_dimension
         ,old_boundary || state_site
-        ,state_site.rightDimension()
+        ,state_site.right_dimension
         ,overlap_site || state_site
         ,old_boundary
         ,overlap_site
         ,state_site
-        ,new_boundary
+        ,*new_boundary
     );
-    return new_boundary;
+    return (auto_ptr<OverlapBoundary<Left> const>) new_boundary;
 }
 //@+node:gcross.20110124175241.1597: *4* contractSSRight
-OverlapBoundary<Right> contractSSRight(
+auto_ptr<OverlapBoundary<Right> const> contractSSRight(
       OverlapBoundary<Right> const& old_boundary
     , OverlapSite<Right> const& overlap_site
     , StateSite<Right> const& state_site
 ) {
-    OverlapBoundary<Right> new_boundary(state_site.leftDimension());
+    auto_ptr<OverlapBoundary<Right> > new_boundary(
+        new OverlapBoundary<Right>(state_site.left_dimension)
+    );
     contract_ss_right(
-         overlap_site.leftDimension()
+         overlap_site.left_dimension
         ,overlap_site || old_boundary
-        ,state_site.leftDimension()
+        ,state_site.left_dimension
         ,state_site || old_boundary
         ,overlap_site || state_site
         ,old_boundary
         ,overlap_site
         ,state_site
-        ,new_boundary
+        ,*new_boundary
     );
-    return new_boundary;
+    return (auto_ptr<OverlapBoundary<Right> const>) (new_boundary);
 }
 //@+node:gcross.20110124175241.1652: *3* Cursor movement
 //@+node:gcross.20110124175241.1654: *4* moveSiteCursorLeft
-pair <StateSite<Middle>
-     ,StateSite<Right>
+pair <shared_ptr<StateSite<Middle> const>
+     ,shared_ptr<StateSite<Right> const>
 > moveSiteCursorLeft(
       StateSite<Left> const& old_state_site_1
     , StateSite<Middle> const& old_state_site_2
 ) {
-    StateSite<Middle> new_state_site_1(dimensionsOf,old_state_site_1);
-    StateSite<Right>  new_state_site_2(dimensionsOf,old_state_site_2);
+    shared_ptr<StateSite<Middle> > new_state_site_1(
+        new StateSite<Middle>(dimensionsOf,old_state_site_1)
+    );
+    shared_ptr<StateSite<Right> >  new_state_site_2(
+        new StateSite<Right>(dimensionsOf,old_state_site_2)
+    );
     unsigned int const info =
     norm_denorm_going_left(
-         old_state_site_1.leftDimension()
+         old_state_site_1.left_dimension
         ,old_state_site_1 || old_state_site_2
-        ,old_state_site_2.rightDimension()
-        ,old_state_site_1.physicalDimension()
-        ,old_state_site_2.physicalDimension()
+        ,old_state_site_2.right_dimension
+        ,old_state_site_1.physical_dimension
+        ,old_state_site_2.physical_dimension
         ,old_state_site_1
         ,old_state_site_2
-        ,new_state_site_1
-        ,new_state_site_2
+        ,*new_state_site_1
+        ,*new_state_site_2
     );
     if(info != 0) throw NormalizationError(info);
     return make_pair(new_state_site_1,new_state_site_2);
 }
 //@+node:gcross.20110125120748.1518: *4* moveSiteCursorRight
-pair <StateSite<Left>
-     ,StateSite<Middle>
+pair <shared_ptr<StateSite<Left> const>
+     ,shared_ptr<StateSite<Middle> const>
 > moveSiteCursorRight(
       StateSite<Middle> const& old_state_site_1
     , StateSite<Right> const& old_state_site_2
 ) {
-    StateSite<Left> new_state_site_1(dimensionsOf,old_state_site_1);
-    StateSite<Middle>  new_state_site_2(dimensionsOf,old_state_site_2);
+    shared_ptr<StateSite<Left> > new_state_site_1(
+        new StateSite<Left>(dimensionsOf,old_state_site_1)
+    );
+    shared_ptr<StateSite<Middle> >  new_state_site_2(
+        new StateSite<Middle>(dimensionsOf,old_state_site_2)
+    );
     unsigned int const info =
     norm_denorm_going_right(
-         old_state_site_1.leftDimension()
+         old_state_site_1.left_dimension
         ,old_state_site_1 || old_state_site_2
-        ,old_state_site_2.rightDimension()
-        ,old_state_site_1.physicalDimension()
-        ,old_state_site_2.physicalDimension()
+        ,old_state_site_2.right_dimension
+        ,old_state_site_1.physical_dimension
+        ,old_state_site_2.physical_dimension
         ,old_state_site_1
         ,old_state_site_2
-        ,new_state_site_1
-        ,new_state_site_2
+        ,*new_state_site_1
+        ,*new_state_site_2
     );
     if(info != 0) throw NormalizationError(info);
     return make_pair(new_state_site_1,new_state_site_2);
@@ -834,66 +852,72 @@ pair <StateSite<Left>
 //@+node:gcross.20110124175241.1649: *4* increaseDimensionBetween
 template<Side side1,Side side2>
 static
-pair <StateSite<side1>
-     ,StateSite<side2>
+pair <shared_ptr<StateSite<side1> const>
+     ,shared_ptr<StateSite<side2> const>
 > implIncreaseDimensionBetween(
       unsigned int const new_dimension
     , StateSite<side1> const& old_site_1
     , StateSite<side2> const& old_site_2
 ) {
-    assert(old_site_1.rightDimension() == old_site_2.leftDimension());
-    unsigned int const old_dimension = old_site_1.rightDimension();
+    assert(old_site_1.right_dimension == old_site_2.left_dimension);
+    unsigned int const old_dimension = old_site_1.right_dimension;
     assert(new_dimension >= old_dimension);
-    StateSite<side1> new_site_1(
-                         old_site_1.physicalDimension()
-                        ,old_site_1.leftDimension()
-                        ,new_dimension
-                      );
-    StateSite<side2> new_site_2(
-                         old_site_2.physicalDimension()
-                        ,new_dimension
-                        ,old_site_2.rightDimension()
-                      );
+
+    shared_ptr<StateSite<side1> > new_site_1(
+        new StateSite<side1>(
+             old_site_1.physical_dimension
+            ,old_site_1.left_dimension
+            ,new_dimension
+        )
+    );
+    shared_ptr<StateSite<side2> > new_site_2(
+        new StateSite<side2>(
+             old_site_2.physical_dimension
+            ,new_dimension
+            ,old_site_2.right_dimension
+        )
+    );
+
     int const info =
         new_dimension > old_dimension
             ? increase_bandwidth_between(
-                 old_site_1.leftDimension()
+                 old_site_1.left_dimension
                 ,old_dimension
-                ,old_site_2.rightDimension()
-                ,old_site_1.physicalDimension()
-                ,old_site_2.physicalDimension()
+                ,old_site_2.right_dimension
+                ,old_site_1.physical_dimension
+                ,old_site_2.physical_dimension
                 ,new_dimension
                 ,old_site_1
                 ,old_site_2
-                ,new_site_1
-                ,new_site_2
+                ,*new_site_1
+                ,*new_site_2
               )
             : norm_denorm_going_left(
-                 old_site_1.leftDimension()
+                 old_site_1.left_dimension
                 ,old_dimension
-                ,old_site_2.rightDimension()
-                ,old_site_1.physicalDimension()
-                ,old_site_2.physicalDimension()
+                ,old_site_2.right_dimension
+                ,old_site_1.physical_dimension
+                ,old_site_2.physical_dimension
                 ,old_site_1
                 ,old_site_2
-                ,new_site_1
-                ,new_site_2
+                ,*new_site_1
+                ,*new_site_2
               )
     ;
     if(info != 0) throw NormalizationError(info);
     return make_pair(new_site_1,new_site_2);
 }
 
-pair <const StateSite<Right>
-     ,const StateSite<Right>
+pair <shared_ptr<StateSite<Right> const>
+     ,shared_ptr<StateSite<Right> const>
 > increaseDimensionBetween(
       unsigned int new_dimension
     , const StateSite<Right> old_site_1
     , const StateSite<Right> old_site_2
 ) { return implIncreaseDimensionBetween(new_dimension,old_site_1,old_site_2); }
 
-pair <const StateSite<Middle>
-     ,const StateSite<Right>
+pair <shared_ptr<StateSite<Middle> const>
+     ,shared_ptr<StateSite<Right> const>
 > increaseDimensionBetween(
       unsigned int new_dimension
     , const StateSite<Middle> old_site_1
@@ -902,7 +926,7 @@ pair <const StateSite<Middle>
 //@+node:gcross.20110124175241.1587: *4* optimizeStateSite
 tuple<unsigned int
      ,double
-     ,StateSite<Middle>
+     ,shared_ptr<StateSite<Middle> const>
 > optimizeStateSite(
       ExpectationBoundary<Left> const& left_boundary
     , StateSite<Middle> const& current_state_site
@@ -915,7 +939,9 @@ tuple<unsigned int
 ) {
     unsigned int number_of_iterations = maximum_number_of_iterations;
     complex<double> eigenvalue;
-    StateSite<Middle> new_state_site(dimensionsOf,current_state_site);
+    shared_ptr<StateSite<Middle> > new_state_site(
+        new StateSite<Middle>(dimensionsOf,current_state_site)
+    );
     double normal;
     int const status =
     optimize(
@@ -925,11 +951,11 @@ tuple<unsigned int
         ,operator_site || right_boundary
         ,operator_site || current_state_site
         ,left_boundary
-        ,operator_site.numberOfMatrices(),operator_site,operator_site
+        ,operator_site.number_of_matrices,operator_site,operator_site
         ,right_boundary
-        ,projector_matrix.numberOfProjectors()
-        ,projector_matrix.numberOfReflectors()
-        ,projector_matrix.subspaceDimension()
+        ,projector_matrix.number_of_projectors
+        ,projector_matrix.number_of_reflectors
+        ,projector_matrix.subspace_dimension
         ,projector_matrix.reflectorData()
         ,projector_matrix.coefficientData()
         ,projector_matrix.swapData()
@@ -937,31 +963,31 @@ tuple<unsigned int
         ,tolerance
         ,number_of_iterations
         ,current_state_site
-        ,new_state_site
+        ,*new_state_site
         ,eigenvalue
         ,normal
     );
     complex<double> const expectation_value =
         computeExpectationValue(
              left_boundary
-            ,new_state_site
+            ,*new_state_site
             ,operator_site
             ,right_boundary
         );
     double const overlap =
         computeOverlapWithProjectors(
              projector_matrix
-            ,new_state_site
+            ,*new_state_site
         );
     switch(status) {
         case -14:
             throw OptimizerUnableToConverge(number_of_iterations);
         case  10:
             throw OptimizerGivenTooManyProjectors(
-                 projector_matrix.numberOfProjectors()
-                ,current_state_site.physicalDimension()
-                ,current_state_site.leftDimension()
-                ,current_state_site.rightDimension()
+                 projector_matrix.number_of_projectors
+                ,current_state_site.physical_dimension
+                ,current_state_site.left_dimension
+                ,current_state_site.right_dimension
             );
         case 11:
             throw OptimizerGivenGuessInProjectorSpace();
@@ -985,42 +1011,53 @@ tuple<unsigned int
 }
 //@+node:gcross.20110126102637.2187: *3* Overlap tensor formation
 //@+node:gcross.20110126102637.2188: *4* computeMiddleOverlapSiteFromStateSite
-OverlapSite<Middle> computeOverlapSiteFromStateSite(StateSite<Middle> const& state_site) {
-    OverlapSite<Middle> overlap_site(dimensionsOf,state_site);
-    form_overlap_site_tensor(
-         state_site.rightDimension()
-        ,state_site.leftDimension()
-        ,state_site.physicalDimension()
-        ,state_site
-        ,overlap_site
+auto_ptr<OverlapSite<Middle> const>
+computeOverlapSiteFromStateSite(StateSite<Middle> const& state_site) {
+    auto_ptr<OverlapSite<Middle> > overlap_site(
+        new OverlapSite<Middle>(dimensionsOf,state_site)
     );
-    return overlap_site;
+    form_overlap_site_tensor(
+         state_site.right_dimension
+        ,state_site.left_dimension
+        ,state_site.physical_dimension
+        ,state_site
+        ,*overlap_site
+    );
+    return (auto_ptr<OverlapSite<Middle> const>) overlap_site;
 }
 //@+node:gcross.20110126102637.2189: *4* computeOverlapSitesFromStateSitesAndNormalize
-tuple<OverlapSite<Left>
-     ,OverlapSite<Middle>
-     ,StateSite<Middle>
-     ,OverlapSite<Right>
+tuple<shared_ptr<OverlapSite<Left> const>
+     ,shared_ptr<OverlapSite<Middle> const>
+     ,shared_ptr<StateSite<Middle> const>
+     ,shared_ptr<OverlapSite<Right> const>
 > computeOverlapSitesFromStateSitesAndNormalize(
       StateSite<Middle> const& middle_state_site
      ,StateSite<Right> const& right_state_site
 ) {
-    OverlapSite<Left> left_overlap_site_from_middle_state_site(dimensionsOf,middle_state_site);
-    OverlapSite<Middle> middle_overlap_site_from_middle_state_site(dimensionsOf,middle_state_site);
-    StateSite<Middle> middle_state_site_from_right_state_site(dimensionsOf,right_state_site);
-    OverlapSite<Right> right_overlap_site_from_right_state_site(dimensionsOf,right_state_site);
+    shared_ptr<OverlapSite<Left> > left_overlap_site_from_middle_state_site(
+        new OverlapSite<Left>(dimensionsOf,middle_state_site)
+    );
+    shared_ptr<OverlapSite<Middle> > middle_overlap_site_from_middle_state_site(
+        new OverlapSite<Middle>(dimensionsOf,middle_state_site)
+    );
+    shared_ptr<StateSite<Middle> > middle_state_site_from_right_state_site(
+        new StateSite<Middle>(dimensionsOf,right_state_site)
+    );
+    shared_ptr<OverlapSite<Right> > right_overlap_site_from_right_state_site(
+        new OverlapSite<Right>(dimensionsOf,right_state_site)
+    );
     form_norm_overlap_tensors(
-         middle_state_site.leftDimension()
+         middle_state_site.left_dimension
         ,middle_state_site || right_state_site
-        ,right_state_site.rightDimension()
-        ,middle_state_site.physicalDimension()
-        ,right_state_site.physicalDimension()
+        ,right_state_site.right_dimension
+        ,middle_state_site.physical_dimension
+        ,right_state_site.physical_dimension
         ,middle_state_site
         ,right_state_site
-        ,left_overlap_site_from_middle_state_site
-        ,middle_overlap_site_from_middle_state_site
-        ,middle_state_site_from_right_state_site
-        ,right_overlap_site_from_right_state_site
+        ,*left_overlap_site_from_middle_state_site
+        ,*middle_overlap_site_from_middle_state_site
+        ,*middle_state_site_from_right_state_site
+        ,*right_overlap_site_from_right_state_site
     );
     return
         make_tuple(
@@ -1032,22 +1069,24 @@ tuple<OverlapSite<Left>
 }
 //@+node:gcross.20110126102637.2190: *3* Projectors
 //@+node:gcross.20110126102637.2196: *4* applyProjectorMatrix
-StateSite<Middle> applyProjectorMatrix(
+shared_ptr<StateSite<Middle> const> applyProjectorMatrix(
       ProjectorMatrix const& projector_matrix
-    , StateSite<Middle> const& old_state_site
+    , shared_ptr<StateSite<Middle> const> old_state_site
 ) {
     if(!projector_matrix) return old_state_site;
-    StateSite<Middle> new_state_site(dimensionsOf,old_state_site);
+    shared_ptr<StateSite<Middle> > new_state_site(
+        new StateSite<Middle>(dimensionsOf,*old_state_site)
+    );
     filter_components_outside_orthog(
          projector_matrix || old_state_site
-        ,projector_matrix.numberOfProjectors()
-        ,projector_matrix.numberOfReflectors()
-        ,projector_matrix.subspaceDimension()
+        ,projector_matrix.number_of_projectors
+        ,projector_matrix.number_of_reflectors
+        ,projector_matrix.subspace_dimension
         ,projector_matrix.reflectorData()
         ,projector_matrix.coefficientData()
         ,projector_matrix.swapData()
-        ,old_state_site
-        ,new_state_site
+        ,*old_state_site
+        ,*new_state_site
     );
     return new_state_site;
 }
@@ -1058,8 +1097,8 @@ double computeOverlapWithProjectors(
 ) {
     if(!projector_matrix) return 0;
     return abs(compute_overlap_with_projectors(
-         projector_matrix.numberOfProjectors()
-        ,projector_matrix.numberOfReflectors()
+         projector_matrix.number_of_projectors
+        ,projector_matrix.number_of_reflectors
         ,projector_matrix.reflectorData()
         ,projector_matrix.coefficientData()
         ,projector_matrix.swapData()
@@ -1068,111 +1107,129 @@ double computeOverlapWithProjectors(
     ));
 }
 //@+node:gcross.20110126102637.2191: *4* formProjectorMatrix
-ProjectorMatrix formProjectorMatrix(
+auto_ptr<ProjectorMatrix const> formProjectorMatrix(
     vector<OverlapVectorTrio> const& overlaps
 ) {
     unsigned int const number_of_projectors = overlaps.size();
-    if(number_of_projectors == 0) return ProjectorMatrix();
+    if(number_of_projectors == 0)
+        return auto_ptr<ProjectorMatrix const>(new ProjectorMatrix());
     unsigned int const
-         state_physical_dimension = overlaps[0].middle_site.physicalDimension()
-        ,state_left_dimension = overlaps[0].left_boundary.stateDimension()
-        ,state_right_dimension = overlaps[0].right_boundary.stateDimension()
+         state_physical_dimension = overlaps[0].middle_site->physical_dimension
+        ,state_left_dimension = overlaps[0].left_boundary->state_dimension
+        ,state_right_dimension = overlaps[0].right_boundary->state_dimension
         ,overlap_vector_length = state_physical_dimension*state_left_dimension*state_right_dimension
         ,number_of_reflectors = min(overlap_vector_length,number_of_projectors)
         ;
-    Array<complex<double>,2> overlap_vectors(number_of_projectors,overlap_vector_length);
-    complex<double>* overlap_vector = overlap_vectors.data();
+    complex<double>* overlap_vectors
+        = new complex<double>[number_of_projectors*overlap_vector_length];
+    complex<double>* overlap_vector = overlap_vectors;
     BOOST_FOREACH(
          OverlapVectorTrio const& overlap
         ,overlaps
     ) {
         form_overlap_vector(
-             overlap.left_boundary || overlap.middle_site
-            ,overlap.middle_site || overlap.right_boundary
+             *overlap.left_boundary || *overlap.middle_site
+            ,*overlap.middle_site || *overlap.right_boundary
             ,state_left_dimension
             ,state_right_dimension
             ,state_physical_dimension
-            ,overlap.left_boundary
-            ,overlap.right_boundary
-            ,overlap.middle_site
+            ,*overlap.left_boundary
+            ,*overlap.right_boundary
+            ,*overlap.middle_site
             ,overlap_vector
         );
         overlap_vector += overlap_vector_length;
     }
-    Array<complex<double>,1> coefficients(number_of_reflectors);
-    Array<uint32_t,1> swaps(number_of_reflectors);
+    complex<double>* coefficients = new complex<double>[number_of_reflectors];
+    uint32_t* swaps = new uint32_t[number_of_reflectors];
     unsigned int const subspace_dimension = 
     convert_vectors_to_reflectors(
          overlap_vector_length
         ,number_of_projectors
-        ,overlap_vectors.data()
-        ,coefficients.data()
-        ,swaps.data()
+        ,overlap_vectors
+        ,coefficients
+        ,swaps
     );
-    return
-        ProjectorMatrix(
-             overlap_vectors
+    return auto_ptr<ProjectorMatrix const>(
+        new ProjectorMatrix(
+             number_of_projectors
+            ,overlap_vector_length
+            ,number_of_reflectors
+            ,subspace_dimension
+            ,overlap_vectors
             ,coefficients
             ,swaps
-            ,subspace_dimension
-        );
+        )
+    );
 }
 //@+node:gcross.20110126102637.2201: *4* randomProjectorMatrix
-ProjectorMatrix randomProjectorMatrix(
+auto_ptr<ProjectorMatrix const> randomProjectorMatrix(
      unsigned int const vector_length
     ,unsigned int const number_of_projectors
 ) {
-    if(number_of_projectors == 0) return ProjectorMatrix();
+    if(number_of_projectors == 0)
+        return auto_ptr<ProjectorMatrix const>(new ProjectorMatrix());
     unsigned int const number_of_reflectors = min(number_of_projectors,vector_length);
-    Array<complex<double>,2> reflectors(number_of_projectors,vector_length);
-    Array<complex<double>,1> coefficients(number_of_reflectors);
-    Array<uint32_t,1> swaps(number_of_reflectors);
+    complex<double>* reflectors
+        = new complex<double>[number_of_projectors*vector_length];
+    complex<double>* coefficients
+        = new complex<double>[number_of_reflectors];
+    uint32_t* swaps
+        = new uint32_t[number_of_reflectors];
     unsigned const int subspace_dimension =
     random_projector_matrix(
          vector_length
         ,number_of_projectors
-        ,reflectors.data()
-        ,coefficients.data()
-        ,swaps.data()
+        ,reflectors
+        ,coefficients
+        ,swaps
     );
-    return
-        ProjectorMatrix(
-             reflectors
+    return auto_ptr<ProjectorMatrix const>(
+        new ProjectorMatrix(
+             number_of_projectors
+            ,vector_length
+            ,number_of_reflectors
+            ,subspace_dimension
+            ,reflectors
             ,coefficients
             ,swaps
-            ,subspace_dimension
-        );
+        )
+    );
 }
 //@+node:gcross.20110124175241.1601: *3* Randomizers
 //@+node:gcross.20110124175241.1645: *4* randomStateSiteMiddle
-StateSite<Middle> randomStateSiteMiddle(
+auto_ptr<StateSite<Middle> const> randomStateSiteMiddle(
       unsigned int const physical_dimension
     , unsigned int const left_dimension
     , unsigned int const right_dimension
 ) {
-    StateSite<Middle> state_site(physical_dimension,left_dimension,right_dimension);
+    auto_ptr<StateSite<Middle> > state_site(
+        new StateSite<Middle>(physical_dimension,left_dimension,right_dimension)
+    );
     rand_unnorm_state_site_tensor(
          right_dimension
         ,left_dimension
         ,physical_dimension
-        ,state_site
+        ,*state_site
     );  
-    return state_site;
+    return (auto_ptr<StateSite<Middle> const>) state_site;
 }
 //@+node:gcross.20110124175241.1647: *4* randomStateSiteRight
-StateSite<Right> randomStateSiteRight(
+auto_ptr<StateSite<Right> const> randomStateSiteRight(
       unsigned int const physical_dimension
     , unsigned int const left_dimension
     , unsigned int const right_dimension
 ) {
-    StateSite<Right> state_site(physical_dimension,left_dimension,right_dimension);
+    auto_ptr<StateSite<Right> > state_site(
+        new StateSite<Right>(physical_dimension,left_dimension,right_dimension)
+    );
     rand_norm_state_site_tensor(
          right_dimension
         ,left_dimension
         ,physical_dimension
-        ,state_site
+        ,*state_site
     );
-    return state_site;
+    return (auto_ptr<StateSite<Right> const>) state_site;
 }
 //@-others
 
