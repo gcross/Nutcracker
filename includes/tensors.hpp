@@ -7,7 +7,11 @@
 
 //@+<< Includes >>
 //@+node:gcross.20110124161335.2010: ** << Includes >>
+#include <boost/assign/list_of.hpp>
+#include <boost/concept_check.hpp>
 #include <boost/format.hpp>
+#include <boost/range/algorithm/copy.hpp>
+#include <boost/range/concepts.hpp>
 #include <boost/smart_ptr/scoped_array.hpp>
 #include <boost/utility.hpp>
 #include <complex>
@@ -20,6 +24,7 @@ namespace Nutcracker {
 //@+<< Usings >>
 //@+node:gcross.20110124161335.2011: ** << Usings >>
 using namespace boost;
+using namespace boost::assign;
 using namespace std;
 //@-<< Usings >>
 
@@ -30,16 +35,26 @@ enum Side { Left, Right, Middle };
 struct DimensionsOf {} dimensionsOf;
 //@+node:gcross.20110124161335.2012: ** Classes
 //@+node:gcross.20110126150230.1601: *3* BaseTensor
-class BaseTensor : public noncopyable {
+struct BaseTensor : public noncopyable {
+    unsigned int const size;
+protected:
     scoped_array<complex<double> > data;
 public:
-    unsigned int const size;
 
-    BaseTensor() : data(0), size(0) { };
+    BaseTensor() : size(0), data(0) { };
+
     BaseTensor(unsigned int const size)
-      : data(new complex<double>(size))
-      , size(size)
+      : size(size)
+      , data(new complex<double>[size])
     { }
+
+    template<typename Range> BaseTensor(Range const& init)
+      : size(init.size())
+      , data(new complex<double>[size])
+    {
+        BOOST_CONCEPT_ASSERT(( RandomAccessRangeConcept<Range> ));
+        copy(init,data.get());
+    }
 
     operator complex<double>*() { return data.get(); }
     operator complex<double> const*() const { return data.get(); }
@@ -58,11 +73,23 @@ template<Side side> struct ExpectationBoundary : public BaseTensor {
     ExpectationBoundary(
           unsigned int const state_dimension
         , unsigned int const operator_dimension
-    ) : BaseTensor(state_dimension*operator_dimension)
+    ) : BaseTensor(state_dimension*state_dimension*operator_dimension)
       , state_dimension(state_dimension)
       , operator_dimension(operator_dimension)
     { }
+
+    template<typename Range> ExpectationBoundary(
+          unsigned int const state_dimension
+        , Range const& init
+    ) : BaseTensor(init)
+      , state_dimension(state_dimension)
+      , operator_dimension(size/(state_dimension*state_dimension))
+    { }
+
+    static ExpectationBoundary const trivial;
 };
+
+template<Side side> ExpectationBoundary<side> const ExpectationBoundary<side>::trivial(1,list_of(1));
 //@+node:gcross.20110124175241.1526: *4* OverlapBoundary
 template<Side side> struct OverlapBoundary : public BaseTensor {
     unsigned int const state_dimension;
@@ -72,9 +99,19 @@ template<Side side> struct OverlapBoundary : public BaseTensor {
     ) : BaseTensor(state_dimension*state_dimension)
       , state_dimension(state_dimension)
     { }
+
+    template<typename Range> OverlapBoundary(
+          Range const& init
+    ) : BaseTensor(init)
+      , state_dimension((unsigned int)sqrt(size))
+    { }
+
+    static OverlapBoundary const trivial;
 };
+
+template<Side side> OverlapBoundary<side> const OverlapBoundary<side>::trivial(list_of(1));
 //@+node:gcross.20110124175241.1538: *3* ProjectorMatrix
-class ProjectorMatrix : public BaseTensor {
+class ProjectorMatrix {
     scoped_array<complex<double> > reflector_data, coefficient_data;
     scoped_array<uint32_t> swap_data;
 public:
@@ -126,30 +163,49 @@ public:
 //@+node:gcross.20110124175241.1531: *3* Site
 //@+node:gcross.20110124175241.1533: *4* OperatorSite
 struct OperatorSite : public BaseTensor {
-protected:
-    scoped_array<uint32_t> index_data;
-public:
     unsigned int const
           number_of_matrices
         , physical_dimension
         , left_dimension
         , right_dimension
         ;
+protected:
+    scoped_array<uint32_t> index_data;
+public:
+
     OperatorSite(
           unsigned int const number_of_matrices
         , unsigned int const physical_dimension
         , unsigned int const left_dimension
         , unsigned int const right_dimension
     ) : BaseTensor(number_of_matrices*physical_dimension*physical_dimension)
-      , index_data(new uint32_t[number_of_matrices*2])
       , number_of_matrices(number_of_matrices)
       , physical_dimension(physical_dimension)
       , left_dimension(left_dimension)
       , right_dimension(right_dimension)
+      , index_data(new uint32_t[number_of_matrices*2])
     { }
+
+    template<typename Range1, typename Range2> OperatorSite(
+          unsigned int const left_dimension
+        , unsigned int const right_dimension
+        , Range1 const& matrix_init
+        , Range2 const& index_init
+    ) : BaseTensor(matrix_init)
+      , number_of_matrices(index_init.size()/2)
+      , physical_dimension((unsigned int)sqrt(size/number_of_matrices))
+      , left_dimension(left_dimension)
+      , right_dimension(right_dimension)
+      , index_data(new uint32_t[index_init.size()])
+    {
+        BOOST_CONCEPT_ASSERT(( RandomAccessRangeConcept<Range2> ));
+        copy(index_init,index_data.get());
+    }
 
     operator uint32_t*() { return index_data.get(); }
     operator uint32_t const*() const { return index_data.get(); }
+
+    static OperatorSite const trivial;
 };
 //@+node:gcross.20110124175241.1535: *4* StateSite
 template<Side side> struct StateSite : public BaseTensor {
@@ -158,12 +214,23 @@ template<Side side> struct StateSite : public BaseTensor {
         , left_dimension
         , right_dimension
         ;
+
     StateSite(
           unsigned int const physical_dimension
         , unsigned int const left_dimension
         , unsigned int const right_dimension
     ) : BaseTensor(physical_dimension*left_dimension*right_dimension)
       , physical_dimension(physical_dimension)
+      , left_dimension(left_dimension)
+      , right_dimension(right_dimension)
+    { }
+
+    template<typename Range> StateSite(
+          unsigned int const left_dimension
+        , unsigned int const right_dimension
+        , Range const& init
+    ) : BaseTensor(init)
+      , physical_dimension(size/(left_dimension*right_dimension))
       , left_dimension(left_dimension)
       , right_dimension(right_dimension)
     { }
@@ -180,7 +247,11 @@ template<Side side> struct StateSite : public BaseTensor {
       , left_dimension(other_site.left_dimension)
       , right_dimension(other_site.right_dimension)
     { }
+
+    static StateSite const trivial;
 };
+
+template<Side side> StateSite<side> const StateSite<side>::trivial(1,1,list_of(1));
 //@+node:gcross.20110124175241.1537: *4* OverlapSite
 template<Side side> struct OverlapSite : public BaseTensor {
     unsigned int const
@@ -198,6 +269,16 @@ template<Side side> struct OverlapSite : public BaseTensor {
       , right_dimension(right_dimension)
     { }
 
+    template<typename Range> OverlapSite(
+          unsigned int const left_dimension
+        , unsigned int const right_dimension
+        , Range const& init
+    ) : BaseTensor(init)
+      , physical_dimension(size/(left_dimension*right_dimension))
+      , left_dimension(left_dimension)
+      , right_dimension(right_dimension)
+    { }
+
     template<Side other_side> OverlapSite(
           DimensionsOf const _
         , StateSite<other_side> const& other_site
@@ -210,7 +291,11 @@ template<Side side> struct OverlapSite : public BaseTensor {
       , left_dimension(other_site.left_dimension)
       , right_dimension(other_site.right_dimension)
     { }
+
+    static OverlapSite const trivial;
 };
+
+template<Side side> OverlapSite<side> const OverlapSite<side>::trivial(1,1,list_of(1));
 //@+node:gcross.20110126102637.2192: *3* OverlapVectorTrio
 struct OverlapVectorTrio {
     shared_ptr<OverlapBoundary<Left> const> left_boundary;

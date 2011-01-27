@@ -3,6 +3,7 @@
 add_library(Nutcracker
     core.f95
     core.cpp
+    tensors.cpp
 )
 #target_link_libraries(Nutcracker
 #)
