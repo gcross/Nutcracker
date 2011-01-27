@@ -17,6 +17,8 @@
 #include <complex>
 #include <exception>
 #include <stdint.h>
+
+#include "utilities.hpp"
 //@-<< Includes >>
 
 namespace Nutcracker {
@@ -189,8 +191,8 @@ public:
     template<typename Range1, typename Range2> OperatorSite(
           unsigned int const left_dimension
         , unsigned int const right_dimension
-        , Range1 const& matrix_init
-        , Range2 const& index_init
+        , Range1 const& index_init
+        , Range2 const& matrix_init
     ) : BaseTensor(matrix_init)
       , number_of_matrices(index_init.size()/2)
       , physical_dimension((unsigned int)sqrt(size/number_of_matrices))
@@ -198,7 +200,7 @@ public:
       , right_dimension(right_dimension)
       , index_data(new uint32_t[index_init.size()])
     {
-        BOOST_CONCEPT_ASSERT(( RandomAccessRangeConcept<Range2> ));
+        BOOST_CONCEPT_ASSERT(( RandomAccessRangeConcept<Range1> ));
         copy(index_init,index_data.get());
     }
 
@@ -304,20 +306,14 @@ struct OverlapVectorTrio {
 };
 //@+node:gcross.20110125120748.2431: ** Connectors
 //@+node:gcross.20110125120748.2434: *3* exception DimensionMismatch
-struct DimensionMismatch : public std::exception {
-    const string message;
-
+struct DimensionMismatch : public Exception {
     DimensionMismatch(
           const char* n1
         , unsigned int const d1
         , const char* n2
         , unsigned int const d2
-    ) : message((format("%1% dimension (%2%) does not match %3% dimension (%4%)") % n1 % d1 % n2 % d2).str())
+    ) : Exception((format("%1% dimension (%2%) does not match %3% dimension (%4%)") % n1 % d1 % n2 % d2).str())
     { }
-
-    virtual const char* what() { return message.c_str(); }
-
-    virtual ~DimensionMismatch() throw() { }
 };
 //@+node:gcross.20110125120748.2435: *3* function connectDimensions
 inline unsigned int connectDimensions(
