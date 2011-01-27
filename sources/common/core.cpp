@@ -680,6 +680,13 @@ OptimizerUnknownFailure::OptimizerUnknownFailure(
     )
   , error_code(error_code)
 { }
+//@+node:gcross.20110127123226.2816: ** Values
+OptimizerSelectionStrategy const
+     optimize_for_lowest_real_part("SR")
+    ,optimize_for_largest_magnitude("LM")
+    ;
+
+DimensionsOf const dimensionsOf = {};
 //@+node:gcross.20110124175241.1583: ** Functions
 //@+node:gcross.20110124175241.1600: *3* Contractors
 //@+node:gcross.20110124175241.1585: *4* computeExpectationValue

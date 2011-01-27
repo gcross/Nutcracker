@@ -4,7 +4,12 @@ add_library(Nutcracker
     core.f95
     core.cpp
     tensors.cpp
+    utilities.cpp
 )
-#target_link_libraries(Nutcracker
-#)
+target_link_libraries(Nutcracker
+    ${BOOST_LIBRARIES}
+    ${BLAS_LIBRARIES}
+    ${LAPACK_LIBRARIES}
+    ${ARPACK_LIBRARIES}
+)
 #@-leo

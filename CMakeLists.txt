@@ -1,14 +1,26 @@
 #@+leo-ver=5-thin
 #@+node:gcross.20110125120748.2417: * @thin CMakeLists.txt
-cmake_minimum_required (VERSION 2.6)
+cmake_minimum_required (VERSION 2.8)
 project (Nutcracker C CXX Fortran)
+
+set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/CMakeModules/")
 
 SET(Boost_ADDITIONAL_VERSIONS "1.43" "1.43.0" "1.44" "1.44.0" "1.45" "1.45.0")
 
-find_package( Boost 1.45 COMPONENTS thread )
+find_package( Boost 1.45 COMPONENTS thread REQUIRED )
 link_directories ( ${Boost_LIBRARY_DIRS} )
 include_directories ( ${Boost_INCLUDE_DIRS} )
 
+find_package( BLAS REQUIRED )
+link_directories ( ${BLAS_LIBRARY_DIRS} )
+include_directories ( ${BLAS_INCLUDE_DIRS} )
+
+find_package( LAPACK REQUIRED )
+link_directories ( ${LAPACK_LIBRARY_DIRS} )
+include_directories ( ${LAPACK_INCLUDE_DIRS} )
+
+find_package( ARPACK REQUIRED )
+link_directories ( ${ARPACK_LIBRARY_DIRS} )
 
 if(UNIX)
     if(CMAKE_COMPILER_IS_GNUCC)
@@ -30,5 +42,5 @@ message (STATUS "Build type is " ${CMAKE_BUILD_TYPE})
 include_directories ("includes")
 
 add_subdirectory ("sources")
-#add_subdirectory ("tests")
+add_subdirectory ("tests")
 #@-leo

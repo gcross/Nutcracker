@@ -3,6 +3,7 @@
 include_directories(".")
 
 set(test-SOURCES
+    core
 )
 
 add_executable(test EXCLUDE_FROM_ALL ${test-SOURCES})

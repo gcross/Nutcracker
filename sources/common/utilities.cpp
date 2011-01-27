@@ -4,7 +4,9 @@
 
 //@+<< Includes >>
 //@+node:gcross.20110125202132.2161: ** << Includes >>
-#include <exception>
+#include <string>
+
+#include "utilities.hpp"
 //@-<< Includes >>
 
 namespace Nutcracker {

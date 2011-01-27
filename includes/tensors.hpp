@@ -32,7 +32,7 @@ using namespace std;
 //@+node:gcross.20110124175241.1520: ** enum Side
 enum Side { Left, Right, Middle };
 //@+node:gcross.20110125120748.1516: ** struct DimensionsOf
-struct DimensionsOf {} dimensionsOf;
+extern struct DimensionsOf {} const dimensionsOf;
 //@+node:gcross.20110124161335.2012: ** Classes
 //@+node:gcross.20110126150230.1601: *3* BaseTensor
 struct BaseTensor : public noncopyable {

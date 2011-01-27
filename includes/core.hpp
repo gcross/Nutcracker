@@ -25,13 +25,11 @@ using namespace std;
 
 //@+others
 //@+node:gcross.20110125120748.2469: ** class OptimizerSelectionStrategy
-struct OptimizerSelectionStrategy {
+extern struct OptimizerSelectionStrategy {
     const string argument;
     OptimizerSelectionStrategy(const string argument) : argument(argument) { }
     operator const char*() const { return argument.c_str(); }
-} optimize_for_lowest_real_part("SR")
- ,optimize_for_largest_magnitude("LM")
- ;
+} const optimize_for_lowest_real_part, optimize_for_largest_magnitude;
 //@+node:gcross.20110125120748.2467: ** Exceptions
 //@+node:gcross.20110125120748.2468: *3* NormalizationError
 struct NormalizationError : public Exception {
