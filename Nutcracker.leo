@@ -8,7 +8,6 @@
 <vnodes>
 <v t="gcross.20091113142219.1658"><vh>@chapters</vh></v>
 <v t="gcross.20110125120748.2417"><vh>@thin CMakeLists.txt</vh></v>
-<v t="gcross.20110125120748.2429"><vh>@thin FindBlitz.cmake</vh></v>
 <v t="gcross.20110124161335.1866"><vh>@path includes</vh>
 <v t="gcross.20110125120748.2458"><vh>@thin core.hpp</vh></v>
 <v t="gcross.20110124161335.2009"><vh>@thin tensors.hpp</vh></v>
