@@ -43,6 +43,12 @@ protected:
     scoped_array<complex<double> > data;
 public:
 
+    typedef complex<double> value_type;
+    typedef value_type* iterator;
+    typedef value_type const* const_iterator;
+    typedef value_type& reference;
+    typedef value_type const& const_reference;
+
     BaseTensor() : size(0), data(0) { };
 
     BaseTensor(unsigned int const size)
