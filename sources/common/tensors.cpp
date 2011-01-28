@@ -15,7 +15,12 @@ namespace Nutcracker {
 
 //@+others
 //@+node:gcross.20110127123226.2517: ** OperatorSite
-OperatorSite const OperatorSite::trivial(1,1,list_of(1)(1),list_of(1));
+OperatorSite const OperatorSite::trivial
+    (LeftDimension(1)
+    ,RightDimension(1)
+    ,list_of(1)(1)
+    ,list_of(1)
+    );
 //@-others
 
 }

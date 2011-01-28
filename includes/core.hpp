@@ -71,17 +71,16 @@ struct OptimizerObtainedEigenvectorInProjectorSpace : public OptimizerFailure {
 };
 //@+node:gcross.20110125202132.2178: *4* OptimizerGivenTooManyProjectors
 struct OptimizerGivenTooManyProjectors : public OptimizerFailure {
-    unsigned int const
-         number_of_projectors
-        ,physical_dimension
-        ,left_dimension
-        ,right_dimension
-        ;
+    unsigned int const number_of_projectors;
+    PhysicalDimension const physical_dimension;
+    LeftDimension const left_dimension;
+    RightDimension const right_dimension;
+
     OptimizerGivenTooManyProjectors(
           unsigned int number_of_projectors
-        , unsigned int physical_dimension
-        , unsigned int left_dimension
-        , unsigned int right_dimension
+        , PhysicalDimension physical_dimension
+        , LeftDimension left_dimension
+        , RightDimension right_dimension
     );
 };
 //@+node:gcross.20110125202132.2182: *4* OptimizerGivenGuessInProjectorSpace

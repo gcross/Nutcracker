@@ -600,16 +600,16 @@ OptimizerGivenGuessInProjectorSpace::OptimizerGivenGuessInProjectorSpace()
 //@+node:gcross.20110125202132.2180: *4* OptimizerGivenTooManyProjectors
 OptimizerGivenTooManyProjectors::OptimizerGivenTooManyProjectors(
       unsigned int const number_of_projectors
-    , unsigned int const physical_dimension
-    , unsigned int const left_dimension
-    , unsigned int const right_dimension
+    , PhysicalDimension const physical_dimension
+    , LeftDimension const left_dimension
+    , RightDimension const right_dimension
 ) : OptimizerFailure(
         (format("Optimizer was given too many projectors (%1% >= %2%*%3%*%4% = %5%)") 
             % number_of_projectors
-            % physical_dimension
-            % left_dimension
-            % right_dimension
-            % (physical_dimension*left_dimension*right_dimension)
+            % physical_dimension()
+            % left_dimension()
+            % right_dimension()
+            % (physical_dimension()*left_dimension()*right_dimension())
         ).str()
     )
   , number_of_projectors(number_of_projectors)
@@ -716,13 +716,15 @@ auto_ptr<ExpectationBoundary<Left> const> contractSOSLeft(
 ) {
     auto_ptr<ExpectationBoundary<Left> > new_boundary(
         new ExpectationBoundary<Left>
-            (state_site.right_dimension,operator_site.right_dimension)
+            (OperatorDimension(operator_site.right_dimension())
+            ,StateDimension(state_site.right_dimension())
+            )
     );
     contract_sos_left(
          old_boundary || state_site
-        ,state_site.right_dimension
+        ,state_site.right_dimension()
         ,old_boundary || operator_site
-        ,operator_site.right_dimension
+        ,operator_site.right_dimension()
         ,operator_site || state_site
         ,old_boundary
         ,operator_site.number_of_matrices,operator_site,operator_site
@@ -739,12 +741,14 @@ auto_ptr<ExpectationBoundary<Right> const> contractSOSRight(
 ) {
     auto_ptr<ExpectationBoundary<Right> > new_boundary(
         new ExpectationBoundary<Right>
-            (state_site.left_dimension,operator_site.left_dimension)
+            (OperatorDimension(operator_site.left_dimension())
+            ,StateDimension(state_site.left_dimension())
+            )
     );
     contract_sos_right(
-         state_site.left_dimension
+         state_site.left_dimension()
         ,state_site || old_boundary
-        ,operator_site.left_dimension
+        ,operator_site.left_dimension()
         ,operator_site || old_boundary
         ,operator_site || state_site
         ,old_boundary
@@ -761,13 +765,16 @@ auto_ptr<OverlapBoundary<Left> const> contractSSLeft(
     , StateSite<Left> const& state_site
 ) {
     auto_ptr<OverlapBoundary<Left> > new_boundary(
-        new OverlapBoundary<Left>(state_site.right_dimension)
+        new OverlapBoundary<Left>
+            (OverlapDimension(overlap_site.right_dimension())
+            ,StateDimension(state_site.right_dimension())
+            )
     );
     contract_ss_left(
          old_boundary || overlap_site
-        ,overlap_site.right_dimension
+        ,overlap_site.right_dimension()
         ,old_boundary || state_site
-        ,state_site.right_dimension
+        ,state_site.right_dimension()
         ,overlap_site || state_site
         ,old_boundary
         ,overlap_site
@@ -783,12 +790,15 @@ auto_ptr<OverlapBoundary<Right> const> contractSSRight(
     , StateSite<Right> const& state_site
 ) {
     auto_ptr<OverlapBoundary<Right> > new_boundary(
-        new OverlapBoundary<Right>(state_site.left_dimension)
+        new OverlapBoundary<Right>
+            (OverlapDimension(overlap_site.left_dimension())
+            ,StateDimension(state_site.left_dimension())
+            )
     );
     contract_ss_right(
-         overlap_site.left_dimension
+         overlap_site.left_dimension()
         ,overlap_site || old_boundary
-        ,state_site.left_dimension
+        ,state_site.left_dimension()
         ,state_site || old_boundary
         ,overlap_site || state_site
         ,old_boundary
@@ -814,11 +824,11 @@ pair <shared_ptr<StateSite<Middle> const>
     );
     unsigned int const info =
     norm_denorm_going_left(
-         old_state_site_1.left_dimension
+         old_state_site_1.left_dimension()
         ,old_state_site_1 || old_state_site_2
-        ,old_state_site_2.right_dimension
-        ,old_state_site_1.physical_dimension
-        ,old_state_site_2.physical_dimension
+        ,old_state_site_2.right_dimension()
+        ,old_state_site_1.physical_dimension()
+        ,old_state_site_2.physical_dimension()
         ,old_state_site_1
         ,old_state_site_2
         ,*new_state_site_1
@@ -842,11 +852,11 @@ pair <shared_ptr<StateSite<Left> const>
     );
     unsigned int const info =
     norm_denorm_going_right(
-         old_state_site_1.left_dimension
+         old_state_site_1.left_dimension()
         ,old_state_site_1 || old_state_site_2
-        ,old_state_site_2.right_dimension
-        ,old_state_site_1.physical_dimension
-        ,old_state_site_2.physical_dimension
+        ,old_state_site_2.right_dimension()
+        ,old_state_site_1.physical_dimension()
+        ,old_state_site_2.physical_dimension()
         ,old_state_site_1
         ,old_state_site_2
         ,*new_state_site_1
@@ -866,21 +876,20 @@ pair <shared_ptr<StateSite<side1> const>
     , StateSite<side1> const& old_site_1
     , StateSite<side2> const& old_site_2
 ) {
-    assert(old_site_1.right_dimension == old_site_2.left_dimension);
-    unsigned int const old_dimension = old_site_1.right_dimension;
+    unsigned int const old_dimension = old_site_1 || old_site_2;
     assert(new_dimension >= old_dimension);
 
     shared_ptr<StateSite<side1> > new_site_1(
         new StateSite<side1>(
              old_site_1.physical_dimension
             ,old_site_1.left_dimension
-            ,new_dimension
+            ,RightDimension(new_dimension)
         )
     );
     shared_ptr<StateSite<side2> > new_site_2(
         new StateSite<side2>(
              old_site_2.physical_dimension
-            ,new_dimension
+            ,LeftDimension(new_dimension)
             ,old_site_2.right_dimension
         )
     );
@@ -888,11 +897,11 @@ pair <shared_ptr<StateSite<side1> const>
     int const info =
         new_dimension > old_dimension
             ? increase_bandwidth_between(
-                 old_site_1.left_dimension
+                 old_site_1.left_dimension()
                 ,old_dimension
-                ,old_site_2.right_dimension
-                ,old_site_1.physical_dimension
-                ,old_site_2.physical_dimension
+                ,old_site_2.right_dimension()
+                ,old_site_1.physical_dimension()
+                ,old_site_2.physical_dimension()
                 ,new_dimension
                 ,old_site_1
                 ,old_site_2
@@ -900,11 +909,11 @@ pair <shared_ptr<StateSite<side1> const>
                 ,*new_site_2
               )
             : norm_denorm_going_left(
-                 old_site_1.left_dimension
+                 old_site_1.left_dimension()
                 ,old_dimension
-                ,old_site_2.right_dimension
-                ,old_site_1.physical_dimension
-                ,old_site_2.physical_dimension
+                ,old_site_2.right_dimension()
+                ,old_site_1.physical_dimension()
+                ,old_site_2.physical_dimension()
                 ,old_site_1
                 ,old_site_2
                 ,*new_site_1
@@ -1024,9 +1033,9 @@ computeOverlapSiteFromStateSite(StateSite<Middle> const& state_site) {
         new OverlapSite<Middle>(dimensionsOf,state_site)
     );
     form_overlap_site_tensor(
-         state_site.right_dimension
-        ,state_site.left_dimension
-        ,state_site.physical_dimension
+         state_site.right_dimension()
+        ,state_site.left_dimension()
+        ,state_site.physical_dimension()
         ,state_site
         ,*overlap_site
     );
@@ -1054,11 +1063,11 @@ tuple<shared_ptr<OverlapSite<Left> const>
         new OverlapSite<Right>(dimensionsOf,right_state_site)
     );
     form_norm_overlap_tensors(
-         middle_state_site.left_dimension
+         middle_state_site.left_dimension()
         ,middle_state_site || right_state_site
-        ,right_state_site.right_dimension
-        ,middle_state_site.physical_dimension
-        ,right_state_site.physical_dimension
+        ,right_state_site.right_dimension()
+        ,middle_state_site.physical_dimension()
+        ,right_state_site.physical_dimension()
         ,middle_state_site
         ,right_state_site
         ,*left_overlap_site_from_middle_state_site
@@ -1121,9 +1130,9 @@ auto_ptr<ProjectorMatrix const> formProjectorMatrix(
     if(number_of_projectors == 0)
         return auto_ptr<ProjectorMatrix const>(new ProjectorMatrix());
     unsigned int const
-         state_physical_dimension = overlaps[0].middle_site->physical_dimension
-        ,state_left_dimension = overlaps[0].left_boundary->state_dimension
-        ,state_right_dimension = overlaps[0].right_boundary->state_dimension
+         state_physical_dimension = overlaps[0].middle_site->physical_dimension()
+        ,state_left_dimension = overlaps[0].left_boundary->state_dimension()
+        ,state_right_dimension = overlaps[0].right_boundary->state_dimension()
         ,overlap_vector_length = state_physical_dimension*state_left_dimension*state_right_dimension
         ,number_of_reflectors = min(overlap_vector_length,number_of_projectors)
         ;
@@ -1211,7 +1220,11 @@ auto_ptr<StateSite<Middle> const> randomStateSiteMiddle(
     , unsigned int const right_dimension
 ) {
     auto_ptr<StateSite<Middle> > state_site(
-        new StateSite<Middle>(physical_dimension,left_dimension,right_dimension)
+        new StateSite<Middle>
+            (PhysicalDimension(physical_dimension)
+            ,LeftDimension(left_dimension)
+            ,RightDimension(right_dimension)
+            )
     );
     rand_unnorm_state_site_tensor(
          right_dimension
@@ -1228,7 +1241,11 @@ auto_ptr<StateSite<Right> const> randomStateSiteRight(
     , unsigned int const right_dimension
 ) {
     auto_ptr<StateSite<Right> > state_site(
-        new StateSite<Right>(physical_dimension,left_dimension,right_dimension)
+        new StateSite<Right>
+            (PhysicalDimension(physical_dimension)
+            ,LeftDimension(left_dimension)
+            ,RightDimension(right_dimension)
+            )
     );
     rand_norm_state_site_tensor(
          right_dimension
