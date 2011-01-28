@@ -28,11 +28,6 @@ if(UNIX)
     endif(CMAKE_COMPILER_IS_GNUCC)
 endif(UNIX)
 
-if(APPLE)
-    message (STATUS "Compiling on Darwin")
-    add_definitions(-arch x86_64)
-endif(APPLE)
-
 if( NOT CMAKE_BUILD_TYPE )
 set( CMAKE_BUILD_TYPE "RelWithDebInfo" )
 endif ()
