@@ -302,8 +302,8 @@ template<Side side> struct OverlapSite : public BaseTensor {
     { }
 
     template<typename Range> OverlapSite(
-          LeftDimension const left_dimension
-        , RightDimension const right_dimension
+          RightDimension const right_dimension
+        , LeftDimension const left_dimension
         , Range const& init
     ) : BaseTensor(init)
       , right_dimension(right_dimension)
@@ -328,8 +328,8 @@ template<Side side> struct OverlapSite : public BaseTensor {
 };
 
 template<Side side> OverlapSite<side> const OverlapSite<side>::trivial
-    (LeftDimension(1)
-    ,RightDimension(1)
+    (RightDimension(1)
+    ,LeftDimension(1)
     ,list_of(1)
     );
 //@+node:gcross.20110126102637.2192: *3* OverlapVectorTrio
@@ -384,6 +384,18 @@ inline unsigned int operator||(
         ,state_site.left_dimension()
     );
 }
+//@+node:gcross.20110127123226.2871: *4* ExpectationBoundary<Left> || StateSite<Left>
+inline unsigned int operator||(
+      ExpectationBoundary<Left> const& expectation_boundary
+    , StateSite<Left> const& state_site
+) {
+    return connectDimensions(
+         "left expectation boundary state"
+        ,expectation_boundary.state_dimension()
+        ,"middle state site left"
+        ,state_site.left_dimension()
+    );
+}
 //@+node:gcross.20110125120748.2451: *4* OperatorSite || ExpectationBoundary<Right>
 inline unsigned int operator||(
       OperatorSite const& operator_site
@@ -408,16 +420,16 @@ template<Side side> inline unsigned int operator||(
         ,state_site.physical_dimension()
     );
 }
-//@+node:gcross.20110125120748.2445: *4* OverlapBoundary<Left> || StateSite<Middle>
+//@+node:gcross.20110127123226.2843: *4* OverlapBoundary<Left> || OverlapSite<Left>
 inline unsigned int operator||(
       OverlapBoundary<Left> const& overlap_boundary
-    , StateSite<Middle> const& state_site
+    , OverlapSite<Left> const& overlap_site
 ) {
     return connectDimensions(
-         "left overlap boundary state"
-        ,overlap_boundary.state_dimension()
-        ,"middle state site left"
-        ,state_site.left_dimension()
+         "left overlap boundary overlap"
+        ,overlap_boundary.overlap_dimension()
+        ,"left overlap site left"
+        ,overlap_site.left_dimension()
     );
 }
 //@+node:gcross.20110127123226.2841: *4* OverlapBoundary<Left> || StateSite<Left>
@@ -432,16 +444,16 @@ inline unsigned int operator||(
         ,state_site.left_dimension()
     );
 }
-//@+node:gcross.20110127123226.2843: *4* OverlapBoundary<Left> || OverlapSite<Left>
+//@+node:gcross.20110125120748.2445: *4* OverlapBoundary<Left> || StateSite<Middle>
 inline unsigned int operator||(
       OverlapBoundary<Left> const& overlap_boundary
-    , OverlapSite<Left> const& overlap_site
+    , StateSite<Middle> const& state_site
 ) {
     return connectDimensions(
-         "left overlap boundary overlap"
-        ,overlap_boundary.overlap_dimension()
-        ,"left overlap site left"
-        ,overlap_site.left_dimension()
+         "left overlap boundary state"
+        ,overlap_boundary.state_dimension()
+        ,"middle state site left"
+        ,state_site.left_dimension()
     );
 }
 //@+node:gcross.20110125120748.2453: *4* OverlapSite<*> || StateSite<*>
@@ -526,6 +538,30 @@ inline unsigned int operator||(
         ,state_site_1.right_dimension()
         ,"right state site left"
         ,state_site_2.left_dimension()
+    );
+}
+//@+node:gcross.20110127123226.2869: *4* StateSite<Right> || ExpectationBoundary<Right>
+inline unsigned int operator||(
+      StateSite<Right> const& state_site
+    , ExpectationBoundary<Right> const& expectation_boundary
+) {
+    return connectDimensions(
+         "right state site right"
+        ,state_site.right_dimension()
+        ,"right overlap boundary state"
+        ,expectation_boundary.state_dimension()
+    );
+}
+//@+node:gcross.20110127123226.2867: *4* StateSite<Right> || OverlapBoundary<Right>
+inline unsigned int operator||(
+      StateSite<Right> const& state_site
+    , OverlapBoundary<Right> const& overlap_boundary
+) {
+    return connectDimensions(
+         "right state site right"
+        ,state_site.right_dimension()
+        ,"right overlap boundary state"
+        ,overlap_boundary.state_dimension()
     );
 }
 //@+node:gcross.20110127123226.2855: *4* StateSite<Right> || StateSite<Right>

@@ -7,6 +7,7 @@
 
 //@+<< Includes >>
 //@+node:gcross.20110125202132.2157: ** << Includes >>
+#include <complex>
 #include <exception>
 //@-<< Includes >>
 
@@ -25,6 +26,8 @@ struct Exception : public std::exception {
     virtual char const* what() const throw();
     virtual ~Exception() throw();
 };
+//@+node:gcross.20110127123226.2857: ** function c
+inline complex<double> c(double x, double y) { return complex<double>(x,y); }
 //@-others
 
 }
