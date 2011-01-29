@@ -124,8 +124,8 @@ TEST_SUITE(computeSOSLeft) {
         ASSERT_EQ(StateDimension(1),new_boundary->state_dimension);
         ASSERT_TRUE(equal(list_of(complex<double>(0))(complex<double>(0,1)),*new_boundary));
     }
-    //@+node:gcross.20110127123226.2875: *4* trivial, varied bandwidth dimensions
-    TEST_CASE(trivial_with_varied_bandwidth_dimensions) {
+    //@+node:gcross.20110127123226.2875: *4* non-trivial
+    TEST_CASE(non_trivial) {
         auto_ptr<ExpectationBoundary<Left> const> actual_boundary(
             contractSOSLeft(
                  ExpectationBoundary<Left>
@@ -212,8 +212,8 @@ TEST_SUITE(computeSOSRight) {
         ASSERT_EQ(StateDimension(1),new_boundary->state_dimension);
         ASSERT_TRUE(equal(list_of(complex<double>(0))(complex<double>(0,1)),*new_boundary));
     }
-    //@+node:gcross.20110127123226.2873: *4* trivial, varied bandwidth dimensions
-    TEST_CASE(trivial_with_varied_bandwidth_dimensions) {
+    //@+node:gcross.20110127123226.2873: *4* non-trivial
+    TEST_CASE(non_trivial) {
         auto_ptr<ExpectationBoundary<Right> const> actual_boundary(
             contractSOSRight(
                  ExpectationBoundary<Right>
@@ -305,8 +305,8 @@ TEST_SUITE(computeSSLeft) {
         ASSERT_EQ(StateDimension(1),new_boundary->state_dimension);
         ASSERT_TRUE(equal(list_of(complex<double>(4)),*new_boundary));
     }
-    //@+node:gcross.20110127123226.2851: *4* trivial, varied bandwidth dimensions
-    TEST_CASE(trivial_with_varied_bandwidth_dimensions) {
+    //@+node:gcross.20110127123226.2851: *4* non-trivial
+    TEST_CASE(non_trivial) {
         auto_ptr<OverlapBoundary<Left> const> actual_boundary(
             contractSSLeft(
                  OverlapBoundary<Left>
@@ -386,8 +386,8 @@ TEST_SUITE(computeSSRight) {
         ASSERT_EQ(StateDimension(1),new_boundary->state_dimension);
         ASSERT_TRUE(equal(list_of(complex<double>(4)),*new_boundary));
     }
-    //@+node:gcross.20110127123226.2865: *4* trivial, varied bandwidth dimensions
-    TEST_CASE(trivial_with_varied_bandwidth_dimensions) {
+    //@+node:gcross.20110127123226.2865: *4* non-trivial
+    TEST_CASE(non_trivial) {
         auto_ptr<OverlapBoundary<Right> const> actual_boundary(
             contractSSRight(
                  OverlapBoundary<Right>
