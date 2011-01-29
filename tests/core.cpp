@@ -47,9 +47,8 @@ TEST_SUITE(computeExpectationValue) {
                 ,OperatorSite
                     (LeftDimension(1)
                     ,RightDimension(1)
-                    ,fillWithRange
-                    ,list_of(1)(1)
-                    ,list_of(complex<double>(0,1))
+                    ,fillWithRange(list_of(1)(1))
+                    ,fillWithRange(list_of(complex<double>(0,1)))
                     )
                 ,ExpectationBoundary<Right>::trivial
             );
@@ -69,15 +68,13 @@ TEST_SUITE(computeExpectationValue) {
                     ,StateSite<Middle>
                         (LeftDimension(1)
                         ,RightDimension(1)
-                        ,fillWithRange
-                        ,list_of(a)(b)
+                        ,fillWithRange(list_of(a)(b))
                         )
                     ,OperatorSite
                         (LeftDimension(1)
                         ,RightDimension(1)
-                        ,fillWithRange
-                        ,list_of(1)(1)
-                        ,list_of(1)(0)(0)(-1)
+                        ,fillWithRange(list_of(1)(1))
+                        ,fillWithRange(list_of(1)(0)(0)(-1))
                         )
                     ,ExpectationBoundary<Right>::trivial
                 );
@@ -114,8 +111,7 @@ TEST_SUITE(contractExpectationBoundaries) {
             contractExpectationBoundaries(
                  ExpectationBoundary<Left>
                     (OperatorDimension(2)
-                    ,fillWithRange
-                    ,list_of
+                    ,fillWithRange(list_of
                         (c(1,2))(c(2,3))(c(3,4))
                         (c(4,5))(c(5,6))(c(6,7))
                         (c(7,8))(c(8,9))(c(9,10))
@@ -123,11 +119,10 @@ TEST_SUITE(contractExpectationBoundaries) {
                         (c(1,9))(c(2,8))(c(3,7))
                         (c(4,6))(c(5,5))(c(6,4))
                         (c(7,3))(c(8,2))(c(9,1))
-                    )
+                    ))
                 ,ExpectationBoundary<Right>
                     (OperatorDimension(2)
-                    ,fillWithRange
-                    ,list_of
+                    ,fillWithRange(list_of
                         (c(1,1))(c(2,2))(c(3,3))
                         (c(6,6))(c(5,5))(c(4,4))
                         (c(7,7))(c(8,8))(c(9,9))
@@ -135,14 +130,14 @@ TEST_SUITE(contractExpectationBoundaries) {
                         (c(1,-1))(c(2,-2))(c(3,-3))
                         (c(6,-6))(c(5,-5))(c(4,-4))
                         (c(7,-7))(c(8,-8))(c(9,-9))
-                    )
+                    ))
             );
         ASSERT_EQ(expected_value,actual_value);
     }
     //@-others
 
 }
-//@+node:gcross.20110127123226.2822: *3* computeSOSLeft
+//@+node:gcross.20110127123226.2822: *3* contractSOSLeft
 TEST_SUITE(computeSOSLeft) {
 
     //@+others
@@ -168,9 +163,8 @@ TEST_SUITE(computeSOSLeft) {
                 ,OperatorSite
                     (LeftDimension(1)
                     ,RightDimension(2)
-                    ,fillWithRange
-                    ,list_of(1)(2)
-                    ,list_of(complex<double>(0,1))
+                    ,fillWithRange(list_of(1)(2))
+                    ,fillWithRange(list_of(complex<double>(0,1)))
                     )
             )
         );
@@ -184,8 +178,7 @@ TEST_SUITE(computeSOSLeft) {
             contractSOSLeft(
                  ExpectationBoundary<Left>
                     (OperatorDimension(3)
-                    ,fillWithRange
-                    ,list_of
+                    ,fillWithRange(list_of
                         (c(2,0))(c(0,4))
                         (c(1,0))(c(0,5))
 
@@ -194,21 +187,19 @@ TEST_SUITE(computeSOSLeft) {
 
                         (c(3,0))(c(0,6))
                         (c(0,2))(c(-2,0))
-                    )
+                    ))
                 ,StateSite<Left>
                     (LeftDimension(2)
                     ,RightDimension(4)
-                    ,fillWithRange
-                    ,list_of
+                    ,fillWithRange(list_of
                         (c(1,0))(c(1,0))(c(-1,0))(c(0,2))
                         (c(1,0))(c(-1,0))(c(2,0))(c(-2,0))
-                    )
+                    ))
                 ,OperatorSite
                     (LeftDimension(3)
                     ,RightDimension(2)
-                    ,fillWithRange
-                    ,list_of(1)(2)(3)(1)
-                    ,list_of(complex<double>(1,0))(complex<double>(0,1))
+                    ,fillWithRange(list_of(1)(2)(3)(1))
+                    ,fillWithRange(list_of(complex<double>(1,0))(complex<double>(0,1)))
                     )
             )
         );
@@ -234,7 +225,7 @@ TEST_SUITE(computeSOSLeft) {
     //@-others
 
 }
-//@+node:gcross.20110127123226.2831: *3* computeSOSRight
+//@+node:gcross.20110127123226.2831: *3* contractSOSRight
 TEST_SUITE(computeSOSRight) {
 
     //@+others
@@ -260,9 +251,8 @@ TEST_SUITE(computeSOSRight) {
                 ,OperatorSite
                     (LeftDimension(2)
                     ,RightDimension(1)
-                    ,fillWithRange
-                    ,list_of(2)(1)
-                    ,list_of(complex<double>(0,1))
+                    ,fillWithRange(list_of(2)(1))
+                    ,fillWithRange(list_of(complex<double>(0,1)))
                     )
             )
         );
@@ -276,8 +266,7 @@ TEST_SUITE(computeSOSRight) {
             contractSOSRight(
                  ExpectationBoundary<Right>
                     (OperatorDimension(3)
-                    ,fillWithRange
-                    ,list_of
+                    ,fillWithRange(list_of
                         (c(2,0))(c(0,4))
                         (c(1,0))(c(0,5))
 
@@ -286,23 +275,21 @@ TEST_SUITE(computeSOSRight) {
 
                         (c(3,0))(c(0,6))
                         (c(0,2))(c(-2,0))
-                    )
+                    ))
                 ,StateSite<Right>
                     (LeftDimension(4)
                     ,RightDimension(2)
-                    ,fillWithRange
-                    ,list_of
+                    ,fillWithRange(list_of
                         (c(1,0))(c(1,0))
                         (c(1,0))(c(-1,0))
                         (c(-1,0))(c(2,0))
                         (c(0,2))(c(-2,0))
-                    )
+                    ))
                 ,OperatorSite
                     (LeftDimension(2)
                     ,RightDimension(3)
-                    ,fillWithRange
-                    ,list_of(2)(1)(1)(3)
-                    ,list_of(complex<double>(1,0))(complex<double>(0,1))
+                    ,fillWithRange(list_of(2)(1)(1)(3))
+                    ,fillWithRange(list_of(complex<double>(1,0))(complex<double>(0,1)))
                     )
             )
         );
@@ -328,7 +315,7 @@ TEST_SUITE(computeSOSRight) {
     //@-others
 
 }
-//@+node:gcross.20110127123226.2837: *3* computeSSLeft
+//@+node:gcross.20110127123226.2837: *3* contractSSLeft
 TEST_SUITE(computeSSLeft) {
 
     //@+others
@@ -353,14 +340,12 @@ TEST_SUITE(computeSSLeft) {
                 ,OverlapSite<Left>
                     (RightDimension(1)
                     ,LeftDimension(1)
-                    ,fillWithRange
-                    ,list_of(5)(-1)
+                    ,fillWithRange(list_of(5)(-1))
                     )
                 ,StateSite<Left>
                     (LeftDimension(1)
                     ,RightDimension(1)
-                    ,fillWithRange
-                    ,list_of(1)(1)
+                    ,fillWithRange(list_of(1)(1))
                     )
             )
         );
@@ -374,28 +359,25 @@ TEST_SUITE(computeSSLeft) {
             contractSSLeft(
                  OverlapBoundary<Left>
                     (OverlapDimension(3)
-                    ,fillWithRange
-                    ,list_of
+                    ,fillWithRange(list_of
                         (c(2,0))(c(0,4))
                         (c(1,0))(c(0,5))
                         (c(3,0))(c(0,6))
-                    )
+                    ))
                 ,OverlapSite<Left>
                     (RightDimension(2)
                     ,LeftDimension(3)
-                    ,fillWithRange
-                    ,list_of
+                    ,fillWithRange(list_of
                         (c( 1,0))(c( 0,-1))(c(0, 1))
                         (c( 1,0))(c( 1, 0))(c(0,-1))
-                    )
+                    ))
                 ,StateSite<Left>
                     (LeftDimension(2)
                     ,RightDimension(5)
-                    ,fillWithRange
-                    ,list_of
+                    ,fillWithRange(list_of
                         (c(1,0))(c(1,0))(c( 1,0))(c(-1, 0))(c(-1,0))
                         (c(2,0))(c(0,2))(c(-2,0))(c( 1,-2))(c( 2,0))
-                    )
+                    ))
             )
         );
         ASSERT_EQ(OverlapDimension(2),actual_boundary->overlap_dimension);
@@ -414,7 +396,7 @@ TEST_SUITE(computeSSLeft) {
     //@-others
 
 }
-//@+node:gcross.20110127123226.2862: *3* computeSSRight
+//@+node:gcross.20110127123226.2862: *3* contractSSRight
 TEST_SUITE(computeSSRight) {
 
     //@+others
@@ -439,15 +421,13 @@ TEST_SUITE(computeSSRight) {
                 ,OverlapSite<Right>
                     (RightDimension(1)
                     ,LeftDimension(1)
-                    ,fillWithRange
-                    ,list_of(5)(-1)
-                    )
+                    ,fillWithRange(list_of(5)(-1)
+                    ))
                 ,StateSite<Right>
                     (LeftDimension(1)
                     ,RightDimension(1)
-                    ,fillWithRange
-                    ,list_of(1)(1)
-                    )
+                    ,fillWithRange(list_of(1)(1)
+                    ))
             )
         );
         ASSERT_EQ(OverlapDimension(1),new_boundary->overlap_dimension);
@@ -460,30 +440,27 @@ TEST_SUITE(computeSSRight) {
             contractSSRight(
                  OverlapBoundary<Right>
                     (OverlapDimension(2)
-                    ,fillWithRange
-                    ,list_of
+                    ,fillWithRange(list_of
                         (c(2,0))(c(1,0))
                         (c(3,0))(c(1,1))
                         (c(1,2))(c(0,6))
                         (c(0,4))(c(0,5))
                         (c(1,1))(c(2,1))
-                    )
+                    ))
                 ,OverlapSite<Right>
                     (RightDimension(2)
                     ,LeftDimension(3)
-                    ,fillWithRange
-                    ,list_of
+                    ,fillWithRange(list_of
                         (c( 1,0))(c( 0,-1))(c(0, 1))
                         (c( 1,0))(c( 1, 0))(c(0,-1))
-                    )
+                    ))
                 ,StateSite<Right>
                     (LeftDimension(2)
                     ,RightDimension(5)
-                    ,fillWithRange
-                    ,list_of
+                    ,fillWithRange(list_of
                         (c(1,0))(c(1,0))(c( 1,0))(c(-1, 0))(c(-1,0))
                         (c(2,0))(c(0,2))(c(-2,0))(c( 1,-2))(c( 2,0))
-                    )
+                    ))
             )
         );
         ASSERT_EQ(OverlapDimension(3),actual_boundary->overlap_dimension);

@@ -862,10 +862,10 @@ pair <shared_ptr<StateSite<Middle> const>
     , StateSite<Middle> const& old_state_site_2
 ) {
     shared_ptr<StateSite<Middle> > new_state_site_1(
-        new StateSite<Middle>(dimensionsOf,old_state_site_1)
+        new StateSite<Middle>(dimensionsOf(old_state_site_1))
     );
     shared_ptr<StateSite<Right> >  new_state_site_2(
-        new StateSite<Right>(dimensionsOf,old_state_site_2)
+        new StateSite<Right>(dimensionsOf(old_state_site_2))
     );
     unsigned int const info =
     norm_denorm_going_left(
@@ -890,10 +890,10 @@ pair <shared_ptr<StateSite<Left> const>
     , StateSite<Right> const& old_state_site_2
 ) {
     shared_ptr<StateSite<Left> > new_state_site_1(
-        new StateSite<Left>(dimensionsOf,old_state_site_1)
+        new StateSite<Left>(dimensionsOf(old_state_site_1))
     );
     shared_ptr<StateSite<Middle> >  new_state_site_2(
-        new StateSite<Middle>(dimensionsOf,old_state_site_2)
+        new StateSite<Middle>(dimensionsOf(old_state_site_2))
     );
     unsigned int const info =
     norm_denorm_going_right(
@@ -1001,7 +1001,7 @@ tuple<unsigned int
     unsigned int number_of_iterations = maximum_number_of_iterations;
     complex<double> eigenvalue;
     shared_ptr<StateSite<Middle> > new_state_site(
-        new StateSite<Middle>(dimensionsOf,current_state_site)
+        new StateSite<Middle>(dimensionsOf(current_state_site))
     );
     double normal;
     int const status =
@@ -1075,7 +1075,7 @@ tuple<unsigned int
 auto_ptr<OverlapSite<Middle> const>
 computeOverlapSiteFromStateSite(StateSite<Middle> const& state_site) {
     auto_ptr<OverlapSite<Middle> > overlap_site(
-        new OverlapSite<Middle>(dimensionsOf,state_site)
+        new OverlapSite<Middle>(dimensionsOf(state_site))
     );
     form_overlap_site_tensor(
          state_site.right_dimension()
@@ -1096,16 +1096,16 @@ tuple<shared_ptr<OverlapSite<Left> const>
      ,StateSite<Right> const& right_state_site
 ) {
     shared_ptr<OverlapSite<Left> > left_overlap_site_from_middle_state_site(
-        new OverlapSite<Left>(dimensionsOf,middle_state_site)
+        new OverlapSite<Left>(dimensionsOf(middle_state_site))
     );
     shared_ptr<OverlapSite<Middle> > middle_overlap_site_from_middle_state_site(
-        new OverlapSite<Middle>(dimensionsOf,middle_state_site)
+        new OverlapSite<Middle>(dimensionsOf(middle_state_site))
     );
     shared_ptr<StateSite<Middle> > middle_state_site_from_right_state_site(
-        new StateSite<Middle>(dimensionsOf,right_state_site)
+        new StateSite<Middle>(dimensionsOf(right_state_site))
     );
     shared_ptr<OverlapSite<Right> > right_overlap_site_from_right_state_site(
-        new OverlapSite<Right>(dimensionsOf,right_state_site)
+        new OverlapSite<Right>(dimensionsOf(right_state_site))
     );
     form_norm_overlap_tensors(
          middle_state_site.left_dimension()
@@ -1136,7 +1136,7 @@ shared_ptr<StateSite<Middle> const> applyProjectorMatrix(
 ) {
     if(!projector_matrix) return old_state_site;
     shared_ptr<StateSite<Middle> > new_state_site(
-        new StateSite<Middle>(dimensionsOf,*old_state_site)
+        new StateSite<Middle>(dimensionsOf(*old_state_site))
     );
     filter_components_outside_orthog(
          projector_matrix || old_state_site

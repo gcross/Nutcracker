@@ -34,9 +34,19 @@ using namespace std;
 //@+others
 //@+node:gcross.20110124175241.1520: ** enum Side
 enum Side { Left, Right, Middle };
-//@+node:gcross.20110127123226.2852: ** Dummy classes
-extern struct DimensionsOf {} const dimensionsOf;
-extern struct FillWithRange {} const fillWithRange;
+//@+node:gcross.20110127123226.2852: ** Parameters wrappers
+#define DEFINE_TEMPLATIZED_PARAMETER(Parameter,parameter) \
+    template<typename T> struct Parameter { \
+        T& data; \
+        Parameter(T& data) : data(data) {} \
+        T& operator*() const { return data; } \
+        T* operator->() const { return &data; } \
+    }; \
+    template<typename T> Parameter<T> parameter(T& data) { return Parameter<T>(data); } \
+    template<typename T> Parameter<T const> parameter(T const& data) { return Parameter<T const>(data); }
+
+DEFINE_TEMPLATIZED_PARAMETER(DimensionsOf,dimensionsOf)
+DEFINE_TEMPLATIZED_PARAMETER(FillWithRange,fillWithRange)
 //@+node:gcross.20110127123226.2856: ** Dimension wrappers
 #define DEFINE_DIMENSION(CapsName) \
     class CapsName##Dimension { \
@@ -76,12 +86,14 @@ public:
       , data(new complex<double>[size])
     { }
 
-    template<typename Range> BaseTensor(Range const& init)
-      : size(init.size())
+    template<typename Range> BaseTensor
+        ( FillWithRange<Range> const init
+        )
+      : size(init->size())
       , data(new complex<double>[size])
     {
         BOOST_CONCEPT_ASSERT(( RandomAccessRangeConcept<Range> ));
-        copy(init,data.get());
+        copy(*init,data.get());
     }
 
     operator complex<double>*() { return data.get(); }
@@ -109,8 +121,7 @@ template<Side side> struct ExpectationBoundary : public BaseTensor {
 
     template<typename Range> ExpectationBoundary(
           OperatorDimension const operator_dimension
-        , FillWithRange const _
-        , Range const& init
+        , FillWithRange<Range> const init
     ) : BaseTensor(init)
       , operator_dimension(operator_dimension)
       , state_dimension((unsigned int)sqrt(size/operator_dimension()))
@@ -119,7 +130,7 @@ template<Side side> struct ExpectationBoundary : public BaseTensor {
     static ExpectationBoundary const trivial;
 };
 
-template<Side side> ExpectationBoundary<side> const ExpectationBoundary<side>::trivial(OperatorDimension(1),fillWithRange,list_of(1));
+template<Side side> ExpectationBoundary<side> const ExpectationBoundary<side>::trivial(OperatorDimension(1),fillWithRange(list_of(1)));
 //@+node:gcross.20110124175241.1526: *4* OverlapBoundary
 template<Side side> struct OverlapBoundary : public BaseTensor {
     OverlapDimension const overlap_dimension;
@@ -135,8 +146,7 @@ template<Side side> struct OverlapBoundary : public BaseTensor {
 
     template<typename Range> OverlapBoundary(
           OverlapDimension const overlap_dimension
-        , FillWithRange const _
-        , Range const& init
+        , FillWithRange<Range> const init
     ) : BaseTensor(init)
       , overlap_dimension(overlap_dimension)
       , state_dimension(size/overlap_dimension())
@@ -145,7 +155,7 @@ template<Side side> struct OverlapBoundary : public BaseTensor {
     static OverlapBoundary const trivial;
 };
 
-template<Side side> OverlapBoundary<side> const OverlapBoundary<side>::trivial(OverlapDimension(1),fillWithRange,list_of(1));
+template<Side side> OverlapBoundary<side> const OverlapBoundary<side>::trivial(OverlapDimension(1),fillWithRange(list_of(1)));
 //@+node:gcross.20110124175241.1538: *3* ProjectorMatrix
 class ProjectorMatrix {
     scoped_array<complex<double> > reflector_data, coefficient_data;
@@ -223,18 +233,17 @@ public:
     template<typename Range1, typename Range2> OperatorSite(
           LeftDimension const left_dimension
         , RightDimension const right_dimension
-        , FillWithRange const _
-        , Range1 const& index_init
-        , Range2 const& matrix_init
+        , FillWithRange<Range1> const index_init
+        , FillWithRange<Range2> const matrix_init
     ) : BaseTensor(matrix_init)
-      , number_of_matrices(index_init.size()/2)
+      , number_of_matrices(index_init->size()/2)
       , physical_dimension((unsigned int)sqrt(size/number_of_matrices))
       , left_dimension(left_dimension)
       , right_dimension(right_dimension)
-      , index_data(new uint32_t[index_init.size()])
+      , index_data(new uint32_t[index_init->size()])
     {
         BOOST_CONCEPT_ASSERT(( RandomAccessRangeConcept<Range1> ));
-        copy(index_init,index_data.get());
+        copy(*index_init,index_data.get());
     }
 
     operator uint32_t*() { return index_data.get(); }
@@ -261,8 +270,7 @@ template<Side side> struct StateSite : public BaseTensor {
     template<typename Range> StateSite(
           LeftDimension const left_dimension
         , RightDimension const right_dimension
-        , FillWithRange const _
-        , Range const& init
+        , FillWithRange<Range> const init
     ) : BaseTensor(init)
       , physical_dimension(size/(left_dimension()*right_dimension()))
       , left_dimension(left_dimension)
@@ -270,16 +278,15 @@ template<Side side> struct StateSite : public BaseTensor {
     { }
 
     template<Side other_side> StateSite(
-          DimensionsOf const _
-        , StateSite<other_side> const& other_site
+          DimensionsOf<StateSite<other_side> const> const other_site
     ) : BaseTensor(
-             other_site.physical_dimension()
-            *other_site.left_dimension()
-            *other_site.right_dimension()
+             other_site->physical_dimension()
+            *other_site->left_dimension()
+            *other_site->right_dimension()
         )
-      , physical_dimension(other_site.physical_dimension)
-      , left_dimension(other_site.left_dimension)
-      , right_dimension(other_site.right_dimension)
+      , physical_dimension(other_site->physical_dimension)
+      , left_dimension(other_site->left_dimension)
+      , right_dimension(other_site->right_dimension)
     { }
 
     static StateSite const trivial;
@@ -288,8 +295,7 @@ template<Side side> struct StateSite : public BaseTensor {
 template<Side side> StateSite<side> const StateSite<side>::trivial
     (LeftDimension(1)
     ,RightDimension(1)
-    ,fillWithRange
-    ,list_of(1)
+    ,fillWithRange(list_of(1))
     );
 //@+node:gcross.20110124175241.1537: *4* OverlapSite
 template<Side side> struct OverlapSite : public BaseTensor {
@@ -310,8 +316,7 @@ template<Side side> struct OverlapSite : public BaseTensor {
     template<typename Range> OverlapSite(
           RightDimension const right_dimension
         , LeftDimension const left_dimension
-        , FillWithRange const _
-        , Range const& init
+        , FillWithRange<Range> const init
     ) : BaseTensor(init)
       , right_dimension(right_dimension)
       , physical_dimension(size/(left_dimension()*right_dimension()))
@@ -319,16 +324,15 @@ template<Side side> struct OverlapSite : public BaseTensor {
     { }
 
     template<Side other_side> OverlapSite(
-          DimensionsOf const _
-        , StateSite<other_side> const& other_site
+          DimensionsOf<StateSite<other_side> const> const other_site
     ) : BaseTensor(
-             other_site.right_dimension()
-            *other_site.physical_dimension()
-            *other_site.left_dimension()
+             other_site->right_dimension()
+            *other_site->physical_dimension()
+            *other_site->left_dimension()
         )
-      , right_dimension(other_site.right_dimension)
-      , physical_dimension(other_site.physical_dimension)
-      , left_dimension(other_site.left_dimension)
+      , right_dimension(other_site->right_dimension)
+      , physical_dimension(other_site->physical_dimension)
+      , left_dimension(other_site->left_dimension)
     { }
 
     static OverlapSite const trivial;
@@ -337,8 +341,7 @@ template<Side side> struct OverlapSite : public BaseTensor {
 template<Side side> OverlapSite<side> const OverlapSite<side>::trivial
     (RightDimension(1)
     ,LeftDimension(1)
-    ,fillWithRange
-    ,list_of(1)
+    ,fillWithRange(list_of(1))
     );
 //@+node:gcross.20110126102637.2192: *3* OverlapVectorTrio
 struct OverlapVectorTrio {

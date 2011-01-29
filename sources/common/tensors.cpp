@@ -14,16 +14,12 @@ namespace Nutcracker {
 //@-<< Usings >>
 
 //@+others
-//@+node:gcross.20110128131637.2105: ** Dummy class values
-DimensionsOf const dimensionsOf = {};
-FillWithRange const fillWithRange = {};
 //@+node:gcross.20110127123226.2517: ** OperatorSite
 OperatorSite const OperatorSite::trivial
     (LeftDimension(1)
     ,RightDimension(1)
-    ,fillWithRange
-    ,list_of(1)(1)
-    ,list_of(1)
+    ,fillWithRange(list_of(1)(1))
+    ,fillWithRange(list_of(1))
     );
 //@-others
 
