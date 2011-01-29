@@ -7,6 +7,6 @@ set(test-SOURCES
 )
 
 add_executable(test EXCLUDE_FROM_ALL ${test-SOURCES})
-target_link_libraries(test Nutcracker illuminate-main illuminate ${Boost_LIBRARIES})
+target_link_libraries(test Nutcracker illuminate-main illuminate)
 set_property(TARGET test PROPERTY RUNTIME_OUTPUT_DIRECTORY .)
 #@-leo

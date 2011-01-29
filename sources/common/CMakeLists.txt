@@ -7,7 +7,7 @@ add_library(Nutcracker
     utilities.cpp
 )
 target_link_libraries(Nutcracker
-    ${BOOST_LIBRARIES}
+    ${Boost_LIBRARIES}
     ${BLAS_LIBRARIES}
     ${LAPACK_LIBRARIES}
     ${ARPACK_LIBRARIES}
