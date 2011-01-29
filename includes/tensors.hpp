@@ -44,9 +44,9 @@ extern struct DimensionsOf {} const dimensionsOf;
     public: \
         explicit CapsName##Dimension(unsigned int const dimension) : dimension(dimension) { } \
         unsigned int operator ()() const { return dimension; } \
-        bool operator==(CapsName##Dimension other) { return dimension == other.dimension; } \
+        bool operator==(CapsName##Dimension const other) const { return dimension == other.dimension; } \
     }; \
-    inline ostream& operator<<(ostream& out, CapsName##Dimension d) { return (out << d()); }
+    inline ostream& operator<<(ostream& out, CapsName##Dimension const d) { return (out << d()); }
 
 DEFINE_DIMENSION(Left);
 DEFINE_DIMENSION(Operator);
