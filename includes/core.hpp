@@ -101,6 +101,11 @@ complex<double> computeExpectationValue(
     , ExpectationBoundary<Right> const& right_boundary
 );
 
+complex<double> contractExpectationBoundaries(
+      ExpectationBoundary<Left> const& left_boundary
+    , ExpectationBoundary<Right> const& right_boundary
+);
+
 auto_ptr<ExpectationBoundary<Left> const> contractSOSLeft(
       ExpectationBoundary<Left> const& old_boundary
     , StateSite<Left> const& state_site

@@ -89,6 +89,54 @@ TEST_SUITE(computeExpectationValue) {
     //@-others
 
 }
+//@+node:gcross.20110128131637.1649: *3* contractExpectationBoundaries
+TEST_SUITE(contractExpectationBoundaries) {
+
+    //@+others
+    //@+node:gcross.20110128131637.1650: *4* trivial, all dimensions 1
+    TEST_CASE(trivial_with_all_dimensions_1) {
+        complex<double> expected_value = 1;
+        complex<double> actual_value =
+            contractExpectationBoundaries(
+                 ExpectationBoundary<Left>::trivial
+                ,ExpectationBoundary<Right>::trivial
+            );
+        ASSERT_EQ(expected_value,actual_value);
+    }
+    //@+node:gcross.20110128131637.1654: *4* non-trivial
+    TEST_CASE(non_trivial) {
+
+        complex<double> expected_value = c(405,495);
+        complex<double> actual_value =
+            contractExpectationBoundaries(
+                 ExpectationBoundary<Left>
+                    (OperatorDimension(2)
+                    ,list_of
+                        (c(1,2))(c(2,3))(c(3,4))
+                        (c(4,5))(c(5,6))(c(6,7))
+                        (c(7,8))(c(8,9))(c(9,10))
+
+                        (c(1,9))(c(2,8))(c(3,7))
+                        (c(4,6))(c(5,5))(c(6,4))
+                        (c(7,3))(c(8,2))(c(9,1))
+                    )
+                ,ExpectationBoundary<Right>
+                    (OperatorDimension(2)
+                    ,list_of
+                        (c(1,1))(c(2,2))(c(3,3))
+                        (c(6,6))(c(5,5))(c(4,4))
+                        (c(7,7))(c(8,8))(c(9,9))
+
+                        (c(1,-1))(c(2,-2))(c(3,-3))
+                        (c(6,-6))(c(5,-5))(c(4,-4))
+                        (c(7,-7))(c(8,-8))(c(9,-9))
+                    )
+            );
+        ASSERT_EQ(expected_value,actual_value);
+    }
+    //@-others
+
+}
 //@+node:gcross.20110127123226.2822: *3* computeSOSLeft
 TEST_SUITE(computeSOSLeft) {
 

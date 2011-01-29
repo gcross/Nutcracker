@@ -111,6 +111,31 @@ static complex<double> compute_overlap_with_projectors(
     );
     return overlap;
 }
+//@+node:gcross.20110128003411.1644: *3* contract_expectation_boundaries
+extern "C" void contract_expectation_boundaries_(
+      uint32_t const* b
+    , uint32_t const* c
+    , complex<double> const* left_boundary
+    , complex<double> const* right_boundary
+    , complex<double>* expectation
+);
+
+complex<double> contract_expectation_boundaries(
+      uint32_t const b
+    , uint32_t const c
+    , complex<double> const* left_boundary
+    , complex<double> const* right_boundary
+) {
+    complex<double> expectation;
+    contract_expectation_boundaries_(
+         &b
+        ,&c
+        ,left_boundary
+        ,right_boundary
+        ,&expectation
+    );
+    return expectation;
+}
 //@+node:gcross.20110124175241.1626: *3* contract_sos_left
 extern "C" void contract_sos_left_(
     uint32_t const* bl,
@@ -705,6 +730,28 @@ complex<double> computeExpectationValue(
         ,left_boundary
         ,state_site
         ,operator_site.number_of_matrices,operator_site,operator_site
+        ,right_boundary
+    );
+}
+//@+node:gcross.20110128003411.1643: *4* contractExpectationBoundaries
+complex<double> contractExpectationBoundaries(
+      ExpectationBoundary<Left> const& left_boundary
+    , ExpectationBoundary<Right> const& right_boundary
+) {
+    return contract_expectation_boundaries(
+         connectDimensions(
+             "left boundary state"
+            ,left_boundary.state_dimension()
+            ,"right boundary state"
+            ,right_boundary.state_dimension()
+         )
+        ,connectDimensions(
+             "left boundary operator"
+            ,left_boundary.operator_dimension()
+            ,"right boundary operator"
+            ,right_boundary.operator_dimension()
+         )
+        ,left_boundary
         ,right_boundary
     );
 }

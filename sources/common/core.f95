@@ -963,6 +963,33 @@ subroutine compute_optimization_matrix( &
   end do
 
 end subroutine
+!@+node:gcross.20110128003411.1642: *3* contract_expectation_boundaries
+subroutine contract_expectation_boundaries( &
+  b, & ! state bandwidth dimension
+  c, & ! operator bandwidth dimension
+  left_environment, &
+  right_environment, &
+  expectation &
+)
+  integer, intent(in) :: b,c
+  double complex, intent(in) :: &
+    left_environment(b,b,c), &
+    right_environment(b,b,c)
+  double complex :: expectation, transposed_left_environment(b,b,c)
+
+  interface
+    function zdotu(n,x,incx,y,incy)
+      integer, intent(in) :: n, incx, incy
+      double complex, intent(in) :: x, y
+      double complex :: zdotu
+    end function
+  end interface
+
+  transposed_left_environment = reshape(left_environment,shape(left_environment),order=(/2,1,3/))
+
+  expectation = zdotu(b*b*c,transposed_left_environment(1,1,1),1,right_environment(1,1,1),1)
+
+end subroutine
 !@+node:gcross.20091211120042.1683: ** apply_single_site_operator
 subroutine apply_single_site_operator( &
   bl, & ! state left bandwidth dimension
