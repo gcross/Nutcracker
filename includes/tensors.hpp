@@ -34,8 +34,9 @@ using namespace std;
 //@+others
 //@+node:gcross.20110124175241.1520: ** enum Side
 enum Side { Left, Right, Middle };
-//@+node:gcross.20110127123226.2852: ** struct DimensionOf
+//@+node:gcross.20110127123226.2852: ** Dummy classes
 extern struct DimensionsOf {} const dimensionsOf;
+extern struct FillWithRange {} const fillWithRange;
 //@+node:gcross.20110127123226.2856: ** Dimension wrappers
 #define DEFINE_DIMENSION(CapsName) \
     class CapsName##Dimension { \
@@ -108,6 +109,7 @@ template<Side side> struct ExpectationBoundary : public BaseTensor {
 
     template<typename Range> ExpectationBoundary(
           OperatorDimension const operator_dimension
+        , FillWithRange const _
         , Range const& init
     ) : BaseTensor(init)
       , operator_dimension(operator_dimension)
@@ -117,7 +119,7 @@ template<Side side> struct ExpectationBoundary : public BaseTensor {
     static ExpectationBoundary const trivial;
 };
 
-template<Side side> ExpectationBoundary<side> const ExpectationBoundary<side>::trivial(OperatorDimension(1),list_of(1));
+template<Side side> ExpectationBoundary<side> const ExpectationBoundary<side>::trivial(OperatorDimension(1),fillWithRange,list_of(1));
 //@+node:gcross.20110124175241.1526: *4* OverlapBoundary
 template<Side side> struct OverlapBoundary : public BaseTensor {
     OverlapDimension const overlap_dimension;
@@ -133,6 +135,7 @@ template<Side side> struct OverlapBoundary : public BaseTensor {
 
     template<typename Range> OverlapBoundary(
           OverlapDimension const overlap_dimension
+        , FillWithRange const _
         , Range const& init
     ) : BaseTensor(init)
       , overlap_dimension(overlap_dimension)
@@ -142,7 +145,7 @@ template<Side side> struct OverlapBoundary : public BaseTensor {
     static OverlapBoundary const trivial;
 };
 
-template<Side side> OverlapBoundary<side> const OverlapBoundary<side>::trivial(OverlapDimension(1),list_of(1));
+template<Side side> OverlapBoundary<side> const OverlapBoundary<side>::trivial(OverlapDimension(1),fillWithRange,list_of(1));
 //@+node:gcross.20110124175241.1538: *3* ProjectorMatrix
 class ProjectorMatrix {
     scoped_array<complex<double> > reflector_data, coefficient_data;
@@ -220,6 +223,7 @@ public:
     template<typename Range1, typename Range2> OperatorSite(
           LeftDimension const left_dimension
         , RightDimension const right_dimension
+        , FillWithRange const _
         , Range1 const& index_init
         , Range2 const& matrix_init
     ) : BaseTensor(matrix_init)
@@ -257,6 +261,7 @@ template<Side side> struct StateSite : public BaseTensor {
     template<typename Range> StateSite(
           LeftDimension const left_dimension
         , RightDimension const right_dimension
+        , FillWithRange const _
         , Range const& init
     ) : BaseTensor(init)
       , physical_dimension(size/(left_dimension()*right_dimension()))
@@ -283,6 +288,7 @@ template<Side side> struct StateSite : public BaseTensor {
 template<Side side> StateSite<side> const StateSite<side>::trivial
     (LeftDimension(1)
     ,RightDimension(1)
+    ,fillWithRange
     ,list_of(1)
     );
 //@+node:gcross.20110124175241.1537: *4* OverlapSite
@@ -304,6 +310,7 @@ template<Side side> struct OverlapSite : public BaseTensor {
     template<typename Range> OverlapSite(
           RightDimension const right_dimension
         , LeftDimension const left_dimension
+        , FillWithRange const _
         , Range const& init
     ) : BaseTensor(init)
       , right_dimension(right_dimension)
@@ -330,6 +337,7 @@ template<Side side> struct OverlapSite : public BaseTensor {
 template<Side side> OverlapSite<side> const OverlapSite<side>::trivial
     (RightDimension(1)
     ,LeftDimension(1)
+    ,fillWithRange
     ,list_of(1)
     );
 //@+node:gcross.20110126102637.2192: *3* OverlapVectorTrio
