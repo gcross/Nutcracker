@@ -9,9 +9,11 @@
 //@+node:gcross.20110124161335.2010: ** << Includes >>
 #include <boost/assign/list_of.hpp>
 #include <boost/concept_check.hpp>
+#include <boost/foreach.hpp>
 #include <boost/format.hpp>
 #include <boost/range/algorithm/copy.hpp>
 #include <boost/range/concepts.hpp>
+#include <boost/range/irange.hpp>
 #include <boost/smart_ptr/scoped_array.hpp>
 #include <boost/utility.hpp>
 #include <complex>
@@ -45,7 +47,9 @@ enum Side { Left, Right, Middle };
     template<typename T> Parameter<T> parameter(T& data) { return Parameter<T>(data); } \
     template<typename T> Parameter<T const> parameter(T const& data) { return Parameter<T const>(data); }
 
+DEFINE_TEMPLATIZED_PARAMETER(CopyFrom,copyFrom)
 DEFINE_TEMPLATIZED_PARAMETER(DimensionsOf,dimensionsOf)
+DEFINE_TEMPLATIZED_PARAMETER(FillWithGenerator,fillWithGenerator)
 DEFINE_TEMPLATIZED_PARAMETER(FillWithRange,fillWithRange)
 //@+node:gcross.20110127123226.2856: ** Dimension wrappers
 #define DEFINE_DIMENSION(CapsName) \
@@ -81,10 +85,32 @@ public:
 
     BaseTensor() : size(0), data(0) { };
 
-    BaseTensor(unsigned int const size)
+    BaseTensor
+        ( unsigned int const size
+        )
       : size(size)
       , data(new complex<double>[size])
     { }
+
+    template<typename Tensor> BaseTensor
+        ( CopyFrom<Tensor> const other
+        )
+      : size(other->size)
+      , data(new complex<double>[size])
+    {
+        copy(*other,data.get());
+    }
+
+    template<typename G> BaseTensor
+        ( unsigned int const size
+        , FillWithGenerator<G> const generator
+        )
+      : size(size)
+      , data(new complex<double>[size])
+    {
+        BOOST_CONCEPT_ASSERT(( Generator<G,complex<double> > ));
+        generate_n(data.get(),size,*generator);
+    }
 
     template<typename Range> BaseTensor
         ( FillWithRange<Range> const init
@@ -119,6 +145,15 @@ template<Side side> struct ExpectationBoundary : public BaseTensor {
       , state_dimension(state_dimension)
     { }
 
+    template<typename G> ExpectationBoundary(
+          OperatorDimension const operator_dimension
+        , StateDimension const state_dimension
+        , FillWithGenerator<G> const generator
+    ) : BaseTensor(operator_dimension()*state_dimension()*state_dimension(),generator)
+      , operator_dimension(operator_dimension)
+      , state_dimension(state_dimension)
+    { }
+
     template<typename Range> ExpectationBoundary(
           OperatorDimension const operator_dimension
         , FillWithRange<Range> const init
@@ -140,6 +175,15 @@ template<Side side> struct OverlapBoundary : public BaseTensor {
           OverlapDimension const overlap_dimension
         , StateDimension const state_dimension
     ) : BaseTensor(overlap_dimension()*state_dimension())
+      , overlap_dimension(overlap_dimension)
+      , state_dimension(state_dimension)
+    { }
+
+    template<typename G> OverlapBoundary(
+          OverlapDimension const overlap_dimension
+        , StateDimension const state_dimension
+        , FillWithGenerator<G> const generator
+    ) : BaseTensor(overlap_dimension()*state_dimension(),generator)
       , overlap_dimension(overlap_dimension)
       , state_dimension(state_dimension)
     { }
@@ -230,6 +274,34 @@ public:
       , index_data(new uint32_t[number_of_matrices*2])
     { }
 
+    template<typename G1, typename G2> OperatorSite(
+          unsigned int const number_of_matrices
+        , PhysicalDimension const physical_dimension
+        , LeftDimension const left_dimension
+        , RightDimension const right_dimension
+        , FillWithGenerator<G1> const index_generator
+        , FillWithGenerator<G2> const matrix_generator
+    ) : BaseTensor(number_of_matrices*physical_dimension()*physical_dimension(),matrix_generator)
+      , number_of_matrices(number_of_matrices)
+      , physical_dimension(physical_dimension)
+      , left_dimension(left_dimension)
+      , right_dimension(right_dimension)
+      , index_data(new uint32_t[number_of_matrices*2])
+    {
+        BOOST_CONCEPT_ASSERT(( Generator<G1,uint32_t> ));
+        uint32_t* index = index_data.get();
+        BOOST_FOREACH(const unsigned int i, irange(0u,number_of_matrices)) {
+            uint32_t left_index = (*index_generator)()
+                   , right_index = (*index_generator)()
+                   ;
+            assert(left_index >= 1 && left_index <= left_dimension());
+            assert(right_index >= 1 && right_index <= right_dimension());
+            *index++ = left_index;
+            *index++ = right_index;
+        }
+        //generate_n(index_data.get(),size,*index_generator);
+    }
+
     template<typename Range1, typename Range2> OperatorSite(
           LeftDimension const left_dimension
         , RightDimension const right_dimension
@@ -267,14 +339,12 @@ template<Side side> struct StateSite : public BaseTensor {
       , right_dimension(right_dimension)
     { }
 
-    template<typename Range> StateSite(
-          LeftDimension const left_dimension
-        , RightDimension const right_dimension
-        , FillWithRange<Range> const init
-    ) : BaseTensor(init)
-      , physical_dimension(size/(left_dimension()*right_dimension()))
-      , left_dimension(left_dimension)
-      , right_dimension(right_dimension)
+    template<Side other_side> StateSite(
+          CopyFrom<StateSite<other_side> const> const other_site
+    ) : BaseTensor(other_site)
+      , physical_dimension(other_site->physical_dimension)
+      , left_dimension(other_site->left_dimension)
+      , right_dimension(other_site->right_dimension)
     { }
 
     template<Side other_side> StateSite(
@@ -287,6 +357,27 @@ template<Side side> struct StateSite : public BaseTensor {
       , physical_dimension(other_site->physical_dimension)
       , left_dimension(other_site->left_dimension)
       , right_dimension(other_site->right_dimension)
+    { }
+
+    template<typename G> StateSite(
+          PhysicalDimension const physical_dimension
+        , LeftDimension const left_dimension
+        , RightDimension const right_dimension
+        , FillWithGenerator<G> const generator
+    ) : BaseTensor(physical_dimension()*left_dimension()*right_dimension(),generator)
+      , physical_dimension(physical_dimension)
+      , left_dimension(left_dimension)
+      , right_dimension(right_dimension)
+    { }
+
+    template<typename Range> StateSite(
+          LeftDimension const left_dimension
+        , RightDimension const right_dimension
+        , FillWithRange<Range> const init
+    ) : BaseTensor(init)
+      , physical_dimension(size/(left_dimension()*right_dimension()))
+      , left_dimension(left_dimension)
+      , right_dimension(right_dimension)
     { }
 
     static StateSite const trivial;
@@ -308,6 +399,17 @@ template<Side side> struct OverlapSite : public BaseTensor {
         , PhysicalDimension const physical_dimension
         , LeftDimension const left_dimension
     ) : BaseTensor(right_dimension()*physical_dimension()*left_dimension())
+      , right_dimension(right_dimension)
+      , physical_dimension(physical_dimension)
+      , left_dimension(left_dimension)
+    { }
+
+    template<typename G> OverlapSite(
+          RightDimension const right_dimension
+        , PhysicalDimension const physical_dimension
+        , LeftDimension const left_dimension
+        , FillWithGenerator<G> const generator
+    ) : BaseTensor(right_dimension()*physical_dimension()*left_dimension(),generator)
       , right_dimension(right_dimension)
       , physical_dimension(physical_dimension)
       , left_dimension(left_dimension)
