@@ -847,7 +847,7 @@ subroutine contract_operator_random_left( &
   double complex, intent(out) :: new_left_boundary_1(cr), new_left_boundary_2(cr)
 
   integer :: matrix_number, left_index, right_index, i, j
-  double complex :: matrix(d,d), vector_1(d*d), vector_2(d*d), x
+  double complex :: matrix(d,d), vector_1(d*d), vector_2(d*d)
 
   do i = 1, d
   do j = 1, d
@@ -1693,8 +1693,8 @@ function optimize( &
   character, intent(in) :: which*2
   double precision, intent(in) :: tol
 
-  integer :: info, full_space_dimension, strategy
-  double precision :: overlap, norm_of_result
+  integer :: info, full_space_dimension
+  double precision :: overlap
 
   interface
     function dznrm2 (n,x,incx)
