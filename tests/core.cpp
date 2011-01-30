@@ -39,17 +39,19 @@ TEST_SUITE(computeExpectationValue) {
     }
     //@+node:gcross.20110127123226.2819: *4* trivial, all dimensions 1, imaginary
     TEST_CASE(trivial_with_all_dimensions_1_and_imaginary_component) {
+        OperatorSite const operator_site
+            (LeftDimension(1)
+            ,RightDimension(1)
+            ,fillWithRange(list_of(1)(1))
+            ,fillWithRange(list_of(complex<double>(0,1)))
+            );
+
         complex<double> expected_expectation_value(0,1);
         complex<double> actual_expectation_value =
             computeExpectationValue(
                  ExpectationBoundary<Left>::trivial
                 ,StateSite<Middle>::trivial
-                ,OperatorSite
-                    (LeftDimension(1)
-                    ,RightDimension(1)
-                    ,fillWithRange(list_of(1)(1))
-                    ,fillWithRange(list_of(complex<double>(0,1)))
-                    )
+                ,operator_site
                 ,ExpectationBoundary<Right>::trivial
             );
         ASSERT_EQ(expected_expectation_value,actual_expectation_value);
@@ -62,20 +64,22 @@ TEST_SUITE(computeExpectationValue) {
             , complex<double> const b
             , complex<double> const c
         ) {
+            StateSite<Middle> const state_site
+                (LeftDimension(1)
+                ,RightDimension(1)
+                ,fillWithRange(list_of(a)(b))
+                );
+            OperatorSite const operator_site
+                (LeftDimension(1)
+                ,RightDimension(1)
+                ,fillWithRange(list_of(1)(1))
+                ,fillWithRange(list_of(1)(0)(0)(-1))
+                );
             complex<double> expectation_value =
                 computeExpectationValue(
                      ExpectationBoundary<Left>::trivial
-                    ,StateSite<Middle>
-                        (LeftDimension(1)
-                        ,RightDimension(1)
-                        ,fillWithRange(list_of(a)(b))
-                        )
-                    ,OperatorSite
-                        (LeftDimension(1)
-                        ,RightDimension(1)
-                        ,fillWithRange(list_of(1)(1))
-                        ,fillWithRange(list_of(1)(0)(0)(-1))
-                        )
+                    ,state_site
+                    ,operator_site
                     ,ExpectationBoundary<Right>::trivial
                 );
             ASSERT_EQ(c,expectation_value);
@@ -106,31 +110,35 @@ TEST_SUITE(contractExpectationBoundaries) {
     //@+node:gcross.20110128131637.1654: *4* non-trivial
     TEST_CASE(non_trivial) {
 
+        ExpectationBoundary<Left> const left_boundary
+            (OperatorDimension(2)
+            ,fillWithRange(list_of
+                (c(1,2))(c(2,3))(c(3,4))
+                (c(4,5))(c(5,6))(c(6,7))
+                (c(7,8))(c(8,9))(c(9,10))
+
+                (c(1,9))(c(2,8))(c(3,7))
+                (c(4,6))(c(5,5))(c(6,4))
+                (c(7,3))(c(8,2))(c(9,1))
+            ));
+
+        ExpectationBoundary<Right> const right_boundary
+            (OperatorDimension(2)
+            ,fillWithRange(list_of
+                (c(1,1))(c(2,2))(c(3,3))
+                (c(6,6))(c(5,5))(c(4,4))
+                (c(7,7))(c(8,8))(c(9,9))
+
+                (c(1,-1))(c(2,-2))(c(3,-3))
+                (c(6,-6))(c(5,-5))(c(4,-4))
+                (c(7,-7))(c(8,-8))(c(9,-9))
+            ));
+
         complex<double> expected_value = c(405,495);
         complex<double> actual_value =
             contractExpectationBoundaries(
-                 ExpectationBoundary<Left>
-                    (OperatorDimension(2)
-                    ,fillWithRange(list_of
-                        (c(1,2))(c(2,3))(c(3,4))
-                        (c(4,5))(c(5,6))(c(6,7))
-                        (c(7,8))(c(8,9))(c(9,10))
-
-                        (c(1,9))(c(2,8))(c(3,7))
-                        (c(4,6))(c(5,5))(c(6,4))
-                        (c(7,3))(c(8,2))(c(9,1))
-                    ))
-                ,ExpectationBoundary<Right>
-                    (OperatorDimension(2)
-                    ,fillWithRange(list_of
-                        (c(1,1))(c(2,2))(c(3,3))
-                        (c(6,6))(c(5,5))(c(4,4))
-                        (c(7,7))(c(8,8))(c(9,9))
-
-                        (c(1,-1))(c(2,-2))(c(3,-3))
-                        (c(6,-6))(c(5,-5))(c(4,-4))
-                        (c(7,-7))(c(8,-8))(c(9,-9))
-                    ))
+                 left_boundary
+                ,right_boundary
             );
         ASSERT_EQ(expected_value,actual_value);
     }
@@ -156,16 +164,17 @@ TEST_SUITE(computeSOSLeft) {
     }
     //@+node:gcross.20110127123226.2827: *4* trivial, c = 2
     TEST_CASE(trivial_with_operator_dimension_2) {
+        OperatorSite const operator_site
+            (LeftDimension(1)
+            ,RightDimension(2)
+            ,fillWithRange(list_of(1)(2))
+            ,fillWithRange(list_of(complex<double>(0,1)))
+            );
         auto_ptr<ExpectationBoundary<Left> const> new_boundary(
             contractSOSLeft(
                  ExpectationBoundary<Left>::trivial
                 ,StateSite<Left>::trivial
-                ,OperatorSite
-                    (LeftDimension(1)
-                    ,RightDimension(2)
-                    ,fillWithRange(list_of(1)(2))
-                    ,fillWithRange(list_of(complex<double>(0,1)))
-                    )
+                ,operator_site
             )
         );
         ASSERT_EQ(OperatorDimension(2),new_boundary->operator_dimension);
@@ -174,33 +183,36 @@ TEST_SUITE(computeSOSLeft) {
     }
     //@+node:gcross.20110127123226.2875: *4* non-trivial
     TEST_CASE(non_trivial) {
+        ExpectationBoundary<Left> const boundary
+            (OperatorDimension(3)
+            ,fillWithRange(list_of
+                (c(2,0))(c(0,4))
+                (c(1,0))(c(0,5))
+
+                (c(1,0))(c(0,5))
+                (c(1,0))(c(1,0))
+
+                (c(3,0))(c(0,6))
+                (c(0,2))(c(-2,0))
+            ));
+        StateSite<Left> const state_site
+            (LeftDimension(2)
+            ,RightDimension(4)
+            ,fillWithRange(list_of
+                (c(1,0))(c(1,0))(c(-1,0))(c(0,2))
+                (c(1,0))(c(-1,0))(c(2,0))(c(-2,0))
+            ));
+        OperatorSite const operator_site
+            (LeftDimension(3)
+            ,RightDimension(2)
+            ,fillWithRange(list_of(1)(2)(3)(1))
+            ,fillWithRange(list_of(complex<double>(1,0))(complex<double>(0,1)))
+            );
         auto_ptr<ExpectationBoundary<Left> const> actual_boundary(
             contractSOSLeft(
-                 ExpectationBoundary<Left>
-                    (OperatorDimension(3)
-                    ,fillWithRange(list_of
-                        (c(2,0))(c(0,4))
-                        (c(1,0))(c(0,5))
-
-                        (c(1,0))(c(0,5))
-                        (c(1,0))(c(1,0))
-
-                        (c(3,0))(c(0,6))
-                        (c(0,2))(c(-2,0))
-                    ))
-                ,StateSite<Left>
-                    (LeftDimension(2)
-                    ,RightDimension(4)
-                    ,fillWithRange(list_of
-                        (c(1,0))(c(1,0))(c(-1,0))(c(0,2))
-                        (c(1,0))(c(-1,0))(c(2,0))(c(-2,0))
-                    ))
-                ,OperatorSite
-                    (LeftDimension(3)
-                    ,RightDimension(2)
-                    ,fillWithRange(list_of(1)(2)(3)(1))
-                    ,fillWithRange(list_of(complex<double>(1,0))(complex<double>(0,1)))
-                    )
+                 boundary
+                ,state_site
+                ,operator_site
             )
         );
         ASSERT_EQ(OperatorDimension(2),actual_boundary->operator_dimension);
@@ -244,16 +256,17 @@ TEST_SUITE(computeSOSRight) {
     }
     //@+node:gcross.20110127123226.2833: *4* trivial, c = 2
     TEST_CASE(trivial_with_operator_dimension_2) {
+        OperatorSite const operator_site
+            (LeftDimension(2)
+            ,RightDimension(1)
+            ,fillWithRange(list_of(2)(1))
+            ,fillWithRange(list_of(complex<double>(0,1)))
+            );
         auto_ptr<ExpectationBoundary<Right> const> new_boundary(
             contractSOSRight(
                  ExpectationBoundary<Right>::trivial
                 ,StateSite<Right>::trivial
-                ,OperatorSite
-                    (LeftDimension(2)
-                    ,RightDimension(1)
-                    ,fillWithRange(list_of(2)(1))
-                    ,fillWithRange(list_of(complex<double>(0,1)))
-                    )
+                ,operator_site
             )
         );
         ASSERT_EQ(OperatorDimension(2),new_boundary->operator_dimension);
@@ -262,35 +275,38 @@ TEST_SUITE(computeSOSRight) {
     }
     //@+node:gcross.20110127123226.2873: *4* non-trivial
     TEST_CASE(non_trivial) {
+        ExpectationBoundary<Right> const boundary
+            (OperatorDimension(3)
+            ,fillWithRange(list_of
+                (c(2,0))(c(0,4))
+                (c(1,0))(c(0,5))
+
+                (c(1,0))(c(0,5))
+                (c(1,0))(c(1,0))
+
+                (c(3,0))(c(0,6))
+                (c(0,2))(c(-2,0))
+            ));
+        StateSite<Right> const state_site
+            (LeftDimension(4)
+            ,RightDimension(2)
+            ,fillWithRange(list_of
+                (c(1,0))(c(1,0))
+                (c(1,0))(c(-1,0))
+                (c(-1,0))(c(2,0))
+                (c(0,2))(c(-2,0))
+            ));
+        OperatorSite const operator_site
+            (LeftDimension(2)
+            ,RightDimension(3)
+            ,fillWithRange(list_of(2)(1)(1)(3))
+            ,fillWithRange(list_of(complex<double>(1,0))(complex<double>(0,1)))
+            );
         auto_ptr<ExpectationBoundary<Right> const> actual_boundary(
             contractSOSRight(
-                 ExpectationBoundary<Right>
-                    (OperatorDimension(3)
-                    ,fillWithRange(list_of
-                        (c(2,0))(c(0,4))
-                        (c(1,0))(c(0,5))
-
-                        (c(1,0))(c(0,5))
-                        (c(1,0))(c(1,0))
-
-                        (c(3,0))(c(0,6))
-                        (c(0,2))(c(-2,0))
-                    ))
-                ,StateSite<Right>
-                    (LeftDimension(4)
-                    ,RightDimension(2)
-                    ,fillWithRange(list_of
-                        (c(1,0))(c(1,0))
-                        (c(1,0))(c(-1,0))
-                        (c(-1,0))(c(2,0))
-                        (c(0,2))(c(-2,0))
-                    ))
-                ,OperatorSite
-                    (LeftDimension(2)
-                    ,RightDimension(3)
-                    ,fillWithRange(list_of(2)(1)(1)(3))
-                    ,fillWithRange(list_of(complex<double>(1,0))(complex<double>(0,1)))
-                    )
+                 boundary
+                ,state_site
+                ,operator_site
             )
         );
         ASSERT_EQ(OperatorDimension(2),actual_boundary->operator_dimension);
@@ -334,19 +350,21 @@ TEST_SUITE(computeSSLeft) {
     }
     //@+node:gcross.20110127123226.2849: *4* trivial, physical dimension 2
     TEST_CASE(trivial_with_physical_dimension_2) {
+        OverlapSite<Left> const overlap_site
+            (RightDimension(1)
+            ,LeftDimension(1)
+            ,fillWithRange(list_of(5)(-1))
+            );
+        StateSite<Left> const state_site
+            (LeftDimension(1)
+            ,RightDimension(1)
+            ,fillWithRange(list_of(1)(1))
+            );
         auto_ptr<OverlapBoundary<Left> const> new_boundary(
             contractSSLeft(
                  OverlapBoundary<Left>::trivial
-                ,OverlapSite<Left>
-                    (RightDimension(1)
-                    ,LeftDimension(1)
-                    ,fillWithRange(list_of(5)(-1))
-                    )
-                ,StateSite<Left>
-                    (LeftDimension(1)
-                    ,RightDimension(1)
-                    ,fillWithRange(list_of(1)(1))
-                    )
+                ,overlap_site
+                ,state_site
             )
         );
         ASSERT_EQ(OverlapDimension(1),new_boundary->overlap_dimension);
@@ -355,29 +373,32 @@ TEST_SUITE(computeSSLeft) {
     }
     //@+node:gcross.20110127123226.2851: *4* non-trivial
     TEST_CASE(non_trivial) {
+        OverlapBoundary<Left> const boundary
+            (OverlapDimension(3)
+            ,fillWithRange(list_of
+                (c(2,0))(c(0,4))
+                (c(1,0))(c(0,5))
+                (c(3,0))(c(0,6))
+            ));
+        OverlapSite<Left> const overlap_site
+            (RightDimension(2)
+            ,LeftDimension(3)
+            ,fillWithRange(list_of
+                (c( 1,0))(c( 0,-1))(c(0, 1))
+                (c( 1,0))(c( 1, 0))(c(0,-1))
+            ));
+        StateSite<Left> const state_site
+            (LeftDimension(2)
+            ,RightDimension(5)
+            ,fillWithRange(list_of
+                (c(1,0))(c(1,0))(c( 1,0))(c(-1, 0))(c(-1,0))
+                (c(2,0))(c(0,2))(c(-2,0))(c( 1,-2))(c( 2,0))
+            ));
         auto_ptr<OverlapBoundary<Left> const> actual_boundary(
             contractSSLeft(
-                 OverlapBoundary<Left>
-                    (OverlapDimension(3)
-                    ,fillWithRange(list_of
-                        (c(2,0))(c(0,4))
-                        (c(1,0))(c(0,5))
-                        (c(3,0))(c(0,6))
-                    ))
-                ,OverlapSite<Left>
-                    (RightDimension(2)
-                    ,LeftDimension(3)
-                    ,fillWithRange(list_of
-                        (c( 1,0))(c( 0,-1))(c(0, 1))
-                        (c( 1,0))(c( 1, 0))(c(0,-1))
-                    ))
-                ,StateSite<Left>
-                    (LeftDimension(2)
-                    ,RightDimension(5)
-                    ,fillWithRange(list_of
-                        (c(1,0))(c(1,0))(c( 1,0))(c(-1, 0))(c(-1,0))
-                        (c(2,0))(c(0,2))(c(-2,0))(c( 1,-2))(c( 2,0))
-                    ))
+                 boundary
+                ,overlap_site
+                ,state_site
             )
         );
         ASSERT_EQ(OverlapDimension(2),actual_boundary->overlap_dimension);
@@ -415,19 +436,21 @@ TEST_SUITE(computeSSRight) {
     }
     //@+node:gcross.20110127123226.2864: *4* trivial, physical dimension 2
     TEST_CASE(trivial_with_physical_dimension_2) {
+        OverlapSite<Right> const overlap_site
+            (RightDimension(1)
+            ,LeftDimension(1)
+            ,fillWithRange(list_of(5)(-1)
+            ));
+        StateSite<Right> const state_site
+            (LeftDimension(1)
+            ,RightDimension(1)
+            ,fillWithRange(list_of(1)(1)
+            ));
         auto_ptr<OverlapBoundary<Right> const> new_boundary(
             contractSSRight(
                  OverlapBoundary<Right>::trivial
-                ,OverlapSite<Right>
-                    (RightDimension(1)
-                    ,LeftDimension(1)
-                    ,fillWithRange(list_of(5)(-1)
-                    ))
-                ,StateSite<Right>
-                    (LeftDimension(1)
-                    ,RightDimension(1)
-                    ,fillWithRange(list_of(1)(1)
-                    ))
+                ,overlap_site
+                ,state_site
             )
         );
         ASSERT_EQ(OverlapDimension(1),new_boundary->overlap_dimension);
@@ -436,31 +459,34 @@ TEST_SUITE(computeSSRight) {
     }
     //@+node:gcross.20110127123226.2865: *4* non-trivial
     TEST_CASE(non_trivial) {
+        OverlapBoundary<Right> const boundary
+            (OverlapDimension(2)
+            ,fillWithRange(list_of
+                (c(2,0))(c(1,0))
+                (c(3,0))(c(1,1))
+                (c(1,2))(c(0,6))
+                (c(0,4))(c(0,5))
+                (c(1,1))(c(2,1))
+            ));
+        OverlapSite<Right> const overlap_site
+            (RightDimension(2)
+            ,LeftDimension(3)
+            ,fillWithRange(list_of
+                (c( 1,0))(c( 0,-1))(c(0, 1))
+                (c( 1,0))(c( 1, 0))(c(0,-1))
+            ));
+        StateSite<Right> const state_site
+            (LeftDimension(2)
+            ,RightDimension(5)
+            ,fillWithRange(list_of
+                (c(1,0))(c(1,0))(c( 1,0))(c(-1, 0))(c(-1,0))
+                (c(2,0))(c(0,2))(c(-2,0))(c( 1,-2))(c( 2,0))
+            ));
         auto_ptr<OverlapBoundary<Right> const> actual_boundary(
             contractSSRight(
-                 OverlapBoundary<Right>
-                    (OverlapDimension(2)
-                    ,fillWithRange(list_of
-                        (c(2,0))(c(1,0))
-                        (c(3,0))(c(1,1))
-                        (c(1,2))(c(0,6))
-                        (c(0,4))(c(0,5))
-                        (c(1,1))(c(2,1))
-                    ))
-                ,OverlapSite<Right>
-                    (RightDimension(2)
-                    ,LeftDimension(3)
-                    ,fillWithRange(list_of
-                        (c( 1,0))(c( 0,-1))(c(0, 1))
-                        (c( 1,0))(c( 1, 0))(c(0,-1))
-                    ))
-                ,StateSite<Right>
-                    (LeftDimension(2)
-                    ,RightDimension(5)
-                    ,fillWithRange(list_of
-                        (c(1,0))(c(1,0))(c( 1,0))(c(-1, 0))(c(-1,0))
-                        (c(2,0))(c(0,2))(c(-2,0))(c( 1,-2))(c( 2,0))
-                    ))
+                 boundary
+                ,overlap_site
+                ,state_site
             )
         );
         ASSERT_EQ(OverlapDimension(3),actual_boundary->overlap_dimension);
