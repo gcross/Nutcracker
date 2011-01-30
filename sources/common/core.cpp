@@ -1159,13 +1159,12 @@ tuple<shared_ptr<OverlapSite<Left> const>
 }
 //@+node:gcross.20110126102637.2190: *3* Projectors
 //@+node:gcross.20110126102637.2196: *4* applyProjectorMatrix
-shared_ptr<StateSite<Middle> const> applyProjectorMatrix(
+auto_ptr<StateSite<Middle> const> applyProjectorMatrix(
       ProjectorMatrix const& projector_matrix
-    , shared_ptr<StateSite<Middle> const> old_state_site
+    , StateSite<Middle> const& old_state_site
 ) {
-    if(!projector_matrix) return old_state_site;
-    shared_ptr<StateSite<Middle> > new_state_site(
-        new StateSite<Middle>(dimensionsOf(*old_state_site))
+    auto_ptr<StateSite<Middle> > new_state_site(
+        new StateSite<Middle>(dimensionsOf(old_state_site))
     );
     filter_components_outside_orthog(
          projector_matrix || old_state_site
@@ -1175,10 +1174,10 @@ shared_ptr<StateSite<Middle> const> applyProjectorMatrix(
         ,projector_matrix.reflectorData()
         ,projector_matrix.coefficientData()
         ,projector_matrix.swapData()
-        ,*old_state_site
+        ,old_state_site
         ,*new_state_site
     );
-    return new_state_site;
+    return (auto_ptr<StateSite<Middle> const>) new_state_site;
 }
 //@+node:gcross.20110126102637.2194: *4* computeOverlapWithProjectors
 double computeOverlapWithProjectors(
@@ -1242,7 +1241,7 @@ auto_ptr<ProjectorMatrix const> formProjectorMatrix(
              number_of_projectors
             ,overlap_vector_length
             ,number_of_reflectors
-            ,subspace_dimension
+            ,overlap_vector_length-subspace_dimension
             ,overlap_vectors
             ,coefficients
             ,swaps
@@ -1274,7 +1273,7 @@ auto_ptr<ProjectorMatrix const> randomProjectorMatrix(
              number_of_projectors
             ,vector_length
             ,number_of_reflectors
-            ,subspace_dimension
+            ,vector_length-subspace_dimension
             ,reflectors
             ,coefficients
             ,swaps

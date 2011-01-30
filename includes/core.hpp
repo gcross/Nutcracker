@@ -199,9 +199,9 @@ tuple<shared_ptr<OverlapSite<Left> const>
      ,StateSite<Right> const& right_state_site
 );
 //@+node:gcross.20110126102637.2195: *3* Projectors
-shared_ptr<StateSite<Middle> const> applyProjectorMatrix(
+auto_ptr<StateSite<Middle> const> applyProjectorMatrix(
       ProjectorMatrix const& projector_matrix
-    , shared_ptr<StateSite<Middle> const> old_state_site
+    , StateSite<Middle> const& old_state_site
 );
 
 double computeOverlapWithProjectors(

@@ -69,87 +69,11 @@ struct RNG {
 TEST_SUITE(Core) {
 
 //@+others
-//@+node:gcross.20110129220506.1653: *3* Contractors
-TEST_SUITE(Contractors) {
-
-//@+others
-//@+node:gcross.20110127123226.2507: *4* computeExpectationValue
-TEST_SUITE(computeExpectationValue) {
+//@+node:gcross.20110129220506.1650: *3* Consistency
+TEST_SUITE(Consistency) {
 
     //@+others
-    //@+node:gcross.20110127123226.2518: *5* trivial, all dimensions 1
-    TEST_CASE(trivial_with_all_dimensions_1) {
-        complex<double> expected_expectation_value = 1;
-        complex<double> actual_expectation_value =
-            computeExpectationValue(
-                 ExpectationBoundary<Left>::trivial
-                ,StateSite<Middle>::trivial
-                ,OperatorSite::trivial
-                ,ExpectationBoundary<Right>::trivial
-            );
-        ASSERT_EQ(expected_expectation_value,actual_expectation_value);
-    }
-    //@+node:gcross.20110127123226.2819: *5* trivial, all dimensions 1, imaginary
-    TEST_CASE(trivial_with_all_dimensions_1_and_imaginary_component) {
-        OperatorSite const operator_site
-            (LeftDimension(1)
-            ,RightDimension(1)
-            ,fillWithRange(list_of(1)(1))
-            ,fillWithRange(list_of(complex<double>(0,1)))
-            );
-
-        complex<double> expected_expectation_value(0,1);
-        complex<double> actual_expectation_value =
-            computeExpectationValue(
-                 ExpectationBoundary<Left>::trivial
-                ,StateSite<Middle>::trivial
-                ,operator_site
-                ,ExpectationBoundary<Right>::trivial
-            );
-        ASSERT_EQ(expected_expectation_value,actual_expectation_value);
-    }
-    //@+node:gcross.20110127123226.2821: *5* trivial, d = 2
-    TEST_SUITE(trivial_with_physical_dimension_2) {
-
-        void runTest(
-              complex<double> const a
-            , complex<double> const b
-            , complex<double> const c
-        ) {
-            StateSite<Middle> const state_site
-                (LeftDimension(1)
-                ,RightDimension(1)
-                ,fillWithRange(list_of(a)(b))
-                );
-            OperatorSite const operator_site
-                (LeftDimension(1)
-                ,RightDimension(1)
-                ,fillWithRange(list_of(1)(1))
-                ,fillWithRange(list_of(1)(0)(0)(-1))
-                );
-            complex<double> expectation_value =
-                computeExpectationValue(
-                     ExpectationBoundary<Left>::trivial
-                    ,state_site
-                    ,operator_site
-                    ,ExpectationBoundary<Right>::trivial
-                );
-            ASSERT_EQ(c,expectation_value);
-        }
-
-        TEST_CASE(_1_0) { runTest(1,0,1); }
-        TEST_CASE(_i_0) { runTest(complex<double>(0,1),0,1); }
-        TEST_CASE(_0_1) { runTest(0,1,-1); }
-        TEST_CASE(_0_i) { runTest(0,complex<double>(0,1),-1); }
-    }
-    //@-others
-
-}
-//@+node:gcross.20110129220506.1650: *4* consistency
-TEST_SUITE(consistency) {
-
-    //@+others
-    //@+node:gcross.20110129220506.1651: *5* expectation value contraction
+    //@+node:gcross.20110129220506.1651: *4* expectation value contraction
     TEST_CASE(expectation_value_contraction) {
 
         RNG random;
@@ -225,6 +149,146 @@ TEST_SUITE(consistency) {
             ASSERT_NEAR_QUOTED(result_from_computeExpectationValue,result_from_contractSOSLeft,1e-10);
             ASSERT_NEAR_QUOTED(result_from_computeExpectationValue,result_from_contractSOSRight,1e-10);
         }
+    }
+    //@+node:gcross.20110129220506.1658: *4* apply projector overlap
+    TEST_CASE(apply_projector_overlap) {
+
+        RNG random;
+
+        REPEAT(10) {
+
+            unsigned int const
+                  physical_dimension = random
+                , left_dimension = random
+                , right_dimension = random
+                , projector_length =
+                     physical_dimension
+                    *left_dimension
+                    *right_dimension
+                , number_of_projectors =
+                    RNG::IndexGenerator(random,1,projector_length-1)()
+                ;
+
+            StateSite<Middle> const state_site(
+                 PhysicalDimension(physical_dimension)
+                ,LeftDimension(left_dimension)
+                ,RightDimension(right_dimension)
+                ,fillWithGenerator(random.randomComplexDouble)
+            );
+
+            auto_ptr<ProjectorMatrix const> const projector_matrix(
+                randomProjectorMatrix(
+                     projector_length
+                    ,number_of_projectors
+                )
+            );
+
+            auto_ptr<StateSite<Middle> const> const projected_state_site(
+                applyProjectorMatrix(
+                     *projector_matrix
+                    ,state_site
+                )
+            );
+
+            double const overlap =
+                computeOverlapWithProjectors(
+                     *projector_matrix
+                    ,*projected_state_site
+                );
+
+            ASSERT_EQ_QUOTED(
+                 physical_dimension
+                ,projected_state_site->physical_dimension()
+            );
+            ASSERT_EQ_QUOTED(
+                 left_dimension
+                ,projected_state_site->left_dimension()
+            );
+            ASSERT_EQ_QUOTED(
+                 right_dimension
+                ,projected_state_site->right_dimension()
+            );
+
+            ASSERT_NEAR(0,overlap,1e-12);
+
+        }
+
+    }
+    //@-others
+
+}
+//@+node:gcross.20110129220506.1653: *3* Contractors
+TEST_SUITE(Contractors) {
+
+//@+others
+//@+node:gcross.20110127123226.2507: *4* computeExpectationValue
+TEST_SUITE(computeExpectationValue) {
+
+    //@+others
+    //@+node:gcross.20110127123226.2518: *5* trivial, all dimensions 1
+    TEST_CASE(trivial_with_all_dimensions_1) {
+        complex<double> expected_expectation_value = 1;
+        complex<double> actual_expectation_value =
+            computeExpectationValue(
+                 ExpectationBoundary<Left>::trivial
+                ,StateSite<Middle>::trivial
+                ,OperatorSite::trivial
+                ,ExpectationBoundary<Right>::trivial
+            );
+        ASSERT_EQ(expected_expectation_value,actual_expectation_value);
+    }
+    //@+node:gcross.20110127123226.2819: *5* trivial, all dimensions 1, imaginary
+    TEST_CASE(trivial_with_all_dimensions_1_and_imaginary_component) {
+        OperatorSite const operator_site
+            (LeftDimension(1)
+            ,RightDimension(1)
+            ,fillWithRange(list_of(1)(1))
+            ,fillWithRange(list_of(complex<double>(0,1)))
+            );
+
+        complex<double> expected_expectation_value(0,1);
+        complex<double> actual_expectation_value =
+            computeExpectationValue(
+                 ExpectationBoundary<Left>::trivial
+                ,StateSite<Middle>::trivial
+                ,operator_site
+                ,ExpectationBoundary<Right>::trivial
+            );
+        ASSERT_EQ(expected_expectation_value,actual_expectation_value);
+    }
+    //@+node:gcross.20110127123226.2821: *5* trivial, d = 2
+    TEST_SUITE(trivial_with_physical_dimension_2) {
+
+        void runTest(
+              complex<double> const a
+            , complex<double> const b
+            , complex<double> const c
+        ) {
+            StateSite<Middle> const state_site
+                (LeftDimension(1)
+                ,RightDimension(1)
+                ,fillWithRange(list_of(a)(b))
+                );
+            OperatorSite const operator_site
+                (LeftDimension(1)
+                ,RightDimension(1)
+                ,fillWithRange(list_of(1)(1))
+                ,fillWithRange(list_of(1)(0)(0)(-1))
+                );
+            complex<double> expectation_value =
+                computeExpectationValue(
+                     ExpectationBoundary<Left>::trivial
+                    ,state_site
+                    ,operator_site
+                    ,ExpectationBoundary<Right>::trivial
+                );
+            ASSERT_EQ(c,expectation_value);
+        }
+
+        TEST_CASE(_1_0) { runTest(1,0,1); }
+        TEST_CASE(_i_0) { runTest(complex<double>(0,1),0,1); }
+        TEST_CASE(_0_1) { runTest(0,1,-1); }
+        TEST_CASE(_0_i) { runTest(0,complex<double>(0,1),-1); }
     }
     //@-others
 

@@ -240,8 +240,6 @@ public:
 
     uint32_t* swapData() { return swap_data.get(); }
     uint32_t const* swapData() const { return swap_data.get(); }
-
-    operator bool() const { return number_of_projectors != 0; }
 };
 //@+node:gcross.20110124175241.1531: *3* Site
 //@+node:gcross.20110124175241.1533: *4* OperatorSite
