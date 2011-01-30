@@ -7,6 +7,7 @@
 
 //@+<< Includes >>
 //@+node:gcross.20110125120748.2459: ** << Includes >>
+#include <boost/optional.hpp>
 #include <boost/tuple/tuple.hpp>
 #include <complex>
 #include <utility>
@@ -24,7 +25,23 @@ using namespace std;
 //@-<< Usings >>
 
 //@+others
-//@+node:gcross.20110125120748.2469: ** class OptimizerSelectionStrategy
+//@+node:gcross.20110129220506.1656: ** Classes
+//@+node:gcross.20110129220506.1657: *3* OptimizerResult
+struct OptimizerResult {
+    unsigned int const number_of_iterations;
+    double const eigenvalue;
+    shared_ptr<StateSite<Middle> const> const state_site;
+
+    OptimizerResult(
+          unsigned int const number_of_iterations
+        , double const eigenvalue
+        , shared_ptr<StateSite<Middle> const> const state_site
+    ) : number_of_iterations(number_of_iterations)
+      , eigenvalue(eigenvalue)
+      , state_site(state_site)
+    {}
+};
+//@+node:gcross.20110125120748.2469: *3* OptimizerSelectionStrategy
 extern struct OptimizerSelectionStrategy {
     const string argument;
     OptimizerSelectionStrategy(const string argument) : argument(argument) { }
@@ -160,15 +177,12 @@ pair <shared_ptr<StateSite<Middle> const>
     , const StateSite<Right> old_site_2
 );
 
-tuple<unsigned int
-     ,double
-     ,shared_ptr<StateSite<Middle> const>
-> optimizeStateSite(
+OptimizerResult optimizeStateSite(
       ExpectationBoundary<Left> const& left_boundary
     , StateSite<Middle> const& current_state_site
     , OperatorSite const& operator_site
     , ExpectationBoundary<Right> const& right_boundary
-    , ProjectorMatrix const& projector_matrix
+    , optional<ProjectorMatrix const&> projector_matrix
     , OptimizerSelectionStrategy const& strategy
     , double const tolerance
     , unsigned int const maximum_number_of_iterations

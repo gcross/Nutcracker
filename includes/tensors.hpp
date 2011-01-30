@@ -130,6 +130,9 @@ public:
 
     complex<double>* end() { return data.get()+size; }
     complex<double> const* end() const { return data.get()+size; }
+
+    complex<double>& operator[](unsigned int const index) { return *(data.get()+index); }
+    complex<double> operator[](unsigned int const index) const { return *(data.get()+index); }
 };
 //@+node:gcross.20110124175241.1530: *3* Boundary
 //@+node:gcross.20110124161335.2013: *4* ExpectationBoundary
@@ -211,15 +214,6 @@ public:
         , number_of_reflectors
         , subspace_dimension
         ;
-    ProjectorMatrix()
-      : reflector_data(0)
-      , coefficient_data(0)
-      , swap_data(0)
-      , number_of_projectors(0)
-      , projector_length(0)
-      , number_of_reflectors(0)
-      , subspace_dimension(0)
-    { }
 
     ProjectorMatrix(
           unsigned int const number_of_projectors
@@ -248,7 +242,6 @@ public:
     uint32_t const* swapData() const { return swap_data.get(); }
 
     operator bool() const { return number_of_projectors != 0; }
-
 };
 //@+node:gcross.20110124175241.1531: *3* Site
 //@+node:gcross.20110124175241.1533: *4* OperatorSite
@@ -290,7 +283,7 @@ public:
     {
         BOOST_CONCEPT_ASSERT(( Generator<G1,uint32_t> ));
         uint32_t* index = index_data.get();
-        BOOST_FOREACH(const unsigned int i, irange(0u,number_of_matrices)) {
+        REPEAT(number_of_matrices) {
             uint32_t left_index = (*index_generator)()
                    , right_index = (*index_generator)()
                    ;

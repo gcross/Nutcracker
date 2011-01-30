@@ -1689,7 +1689,7 @@ function optimize( &
   double complex, intent(out) :: &
     result(br,bl,d), &
     eigenvalue
-  integer, intent(out) :: normal
+  double precision, intent(out) :: normal
   character, intent(in) :: which*2
   double precision, intent(in) :: tol
 
@@ -1853,6 +1853,7 @@ subroutine optimize_strategy_1( &
   )
 
   info = 0
+  number_of_iterations = 0
 
 end subroutine
 !@+node:gcross.20091109182634.1537: ** optimize_strategy_2

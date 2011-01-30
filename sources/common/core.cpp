@@ -985,49 +985,71 @@ pair <shared_ptr<StateSite<Middle> const>
     , const StateSite<Right> old_site_2
 ) { return implIncreaseDimensionBetween(new_dimension,old_site_1,old_site_2); }
 //@+node:gcross.20110124175241.1587: *4* optimizeStateSite
-tuple<unsigned int
-     ,double
-     ,shared_ptr<StateSite<Middle> const>
-> optimizeStateSite(
+OptimizerResult optimizeStateSite(
       ExpectationBoundary<Left> const& left_boundary
     , StateSite<Middle> const& current_state_site
     , OperatorSite const& operator_site
     , ExpectationBoundary<Right> const& right_boundary
-    , ProjectorMatrix const& projector_matrix
+    , optional<ProjectorMatrix const&> projector_matrix
     , OptimizerSelectionStrategy const& strategy
     , double const tolerance
     , unsigned int const maximum_number_of_iterations
 ) {
-    unsigned int number_of_iterations = maximum_number_of_iterations;
+    uint32_t number_of_iterations = maximum_number_of_iterations;
     complex<double> eigenvalue;
     shared_ptr<StateSite<Middle> > new_state_site(
         new StateSite<Middle>(dimensionsOf(current_state_site))
     );
     double normal;
     int const status =
-    optimize(
-         left_boundary || current_state_site
-        ,current_state_site || right_boundary
-        ,left_boundary || operator_site
-        ,operator_site || right_boundary
-        ,operator_site || current_state_site
-        ,left_boundary
-        ,operator_site.number_of_matrices,operator_site,operator_site
-        ,right_boundary
-        ,projector_matrix.number_of_projectors
-        ,projector_matrix.number_of_reflectors
-        ,projector_matrix.subspace_dimension
-        ,projector_matrix.reflectorData()
-        ,projector_matrix.coefficientData()
-        ,projector_matrix.swapData()
-        ,strategy
-        ,tolerance
-        ,number_of_iterations
-        ,current_state_site
-        ,*new_state_site
-        ,eigenvalue
-        ,normal
-    );
+        projector_matrix
+            ? optimize(
+                 left_boundary || current_state_site
+                ,current_state_site || right_boundary
+                ,left_boundary || operator_site
+                ,operator_site || right_boundary
+                ,operator_site || current_state_site
+                ,left_boundary
+                ,operator_site.number_of_matrices,operator_site,operator_site
+                ,right_boundary
+                ,projector_matrix->number_of_projectors
+                ,projector_matrix->number_of_reflectors
+                ,projector_matrix->subspace_dimension
+                ,projector_matrix->reflectorData()
+                ,projector_matrix->coefficientData()
+                ,projector_matrix->swapData()
+                ,strategy
+                ,tolerance
+                ,number_of_iterations
+                ,current_state_site
+                ,*new_state_site
+                ,eigenvalue
+                ,normal
+              )
+            : optimize(
+                 left_boundary || current_state_site
+                ,current_state_site || right_boundary
+                ,left_boundary || operator_site
+                ,operator_site || right_boundary
+                ,operator_site || current_state_site
+                ,left_boundary
+                ,operator_site.number_of_matrices,operator_site,operator_site
+                ,right_boundary
+                ,0
+                ,0
+                ,current_state_site.size
+                ,NULL
+                ,NULL
+                ,NULL
+                ,strategy
+                ,tolerance
+                ,number_of_iterations
+                ,current_state_site
+                ,*new_state_site
+                ,eigenvalue
+                ,normal
+              )
+            ;
     complex<double> const expectation_value =
         computeExpectationValue(
              left_boundary
@@ -1036,16 +1058,19 @@ tuple<unsigned int
             ,right_boundary
         );
     double const overlap =
-        computeOverlapWithProjectors(
-             projector_matrix
-            ,*new_state_site
-        );
+        projector_matrix
+            ? computeOverlapWithProjectors(
+                 *projector_matrix
+                ,*new_state_site
+              )
+            : 0
+            ;
     switch(status) {
         case -14:
             throw OptimizerUnableToConverge(number_of_iterations);
         case  10:
             throw OptimizerGivenTooManyProjectors(
-                 projector_matrix.number_of_projectors
+                 projector_matrix->number_of_projectors
                 ,current_state_site.physical_dimension
                 ,current_state_site.left_dimension
                 ,current_state_site.right_dimension
@@ -1068,7 +1093,11 @@ tuple<unsigned int
         default:
             throw OptimizerUnknownFailure(status);
     }
-    return make_tuple(number_of_iterations,eigenvalue.real(),new_state_site);
+    return OptimizerResult(
+         number_of_iterations
+        ,eigenvalue.real()
+        ,new_state_site
+    );
 }
 //@+node:gcross.20110126102637.2187: *3* Overlap tensor formation
 //@+node:gcross.20110126102637.2188: *4* computeMiddleOverlapSiteFromStateSite
@@ -1156,7 +1185,6 @@ double computeOverlapWithProjectors(
      ProjectorMatrix const& projector_matrix
     ,StateSite<Middle> const& state_site
 ) {
-    if(!projector_matrix) return 0;
     return abs(compute_overlap_with_projectors(
          projector_matrix.number_of_projectors
         ,projector_matrix.number_of_reflectors
@@ -1171,11 +1199,9 @@ double computeOverlapWithProjectors(
 auto_ptr<ProjectorMatrix const> formProjectorMatrix(
     vector<OverlapVectorTrio> const& overlaps
 ) {
-    unsigned int const number_of_projectors = overlaps.size();
-    if(number_of_projectors == 0)
-        return auto_ptr<ProjectorMatrix const>(new ProjectorMatrix());
     unsigned int const
-         state_physical_dimension = overlaps[0].middle_site->physical_dimension()
+         number_of_projectors = overlaps.size()
+        ,state_physical_dimension = overlaps[0].middle_site->physical_dimension()
         ,state_left_dimension = overlaps[0].left_boundary->state_dimension()
         ,state_right_dimension = overlaps[0].right_boundary->state_dimension()
         ,overlap_vector_length = state_physical_dimension*state_left_dimension*state_right_dimension
@@ -1228,8 +1254,6 @@ auto_ptr<ProjectorMatrix const> randomProjectorMatrix(
      unsigned int const vector_length
     ,unsigned int const number_of_projectors
 ) {
-    if(number_of_projectors == 0)
-        return auto_ptr<ProjectorMatrix const>(new ProjectorMatrix());
     unsigned int const number_of_reflectors = min(number_of_projectors,vector_length);
     complex<double>* reflectors
         = new complex<double>[number_of_projectors*vector_length];

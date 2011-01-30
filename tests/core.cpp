@@ -4,6 +4,7 @@
 
 //@+<< Includes >>
 //@+node:gcross.20110127123226.2505: ** << Includes >>
+#include <boost/assign.hpp>
 #include <boost/foreach.hpp>
 #include <boost/range/algorithm/equal.hpp>
 #include <boost/range/algorithm/generate.hpp>
@@ -68,11 +69,15 @@ struct RNG {
 TEST_SUITE(Core) {
 
 //@+others
-//@+node:gcross.20110127123226.2507: *3* computeExpectationValue
+//@+node:gcross.20110129220506.1653: *3* Contractors
+TEST_SUITE(Contractors) {
+
+//@+others
+//@+node:gcross.20110127123226.2507: *4* computeExpectationValue
 TEST_SUITE(computeExpectationValue) {
 
     //@+others
-    //@+node:gcross.20110127123226.2518: *4* trivial, all dimensions 1
+    //@+node:gcross.20110127123226.2518: *5* trivial, all dimensions 1
     TEST_CASE(trivial_with_all_dimensions_1) {
         complex<double> expected_expectation_value = 1;
         complex<double> actual_expectation_value =
@@ -84,7 +89,7 @@ TEST_SUITE(computeExpectationValue) {
             );
         ASSERT_EQ(expected_expectation_value,actual_expectation_value);
     }
-    //@+node:gcross.20110127123226.2819: *4* trivial, all dimensions 1, imaginary
+    //@+node:gcross.20110127123226.2819: *5* trivial, all dimensions 1, imaginary
     TEST_CASE(trivial_with_all_dimensions_1_and_imaginary_component) {
         OperatorSite const operator_site
             (LeftDimension(1)
@@ -103,7 +108,7 @@ TEST_SUITE(computeExpectationValue) {
             );
         ASSERT_EQ(expected_expectation_value,actual_expectation_value);
     }
-    //@+node:gcross.20110127123226.2821: *4* trivial, d = 2
+    //@+node:gcross.20110127123226.2821: *5* trivial, d = 2
     TEST_SUITE(trivial_with_physical_dimension_2) {
 
         void runTest(
@@ -140,11 +145,11 @@ TEST_SUITE(computeExpectationValue) {
     //@-others
 
 }
-//@+node:gcross.20110129220506.1650: *3* consistency
+//@+node:gcross.20110129220506.1650: *4* consistency
 TEST_SUITE(consistency) {
 
     //@+others
-    //@+node:gcross.20110129220506.1651: *4* expectation value contraction
+    //@+node:gcross.20110129220506.1651: *5* expectation value contraction
     TEST_CASE(expectation_value_contraction) {
 
         RNG random;
@@ -224,11 +229,11 @@ TEST_SUITE(consistency) {
     //@-others
 
 }
-//@+node:gcross.20110128131637.1649: *3* contractExpectationBoundaries
+//@+node:gcross.20110128131637.1649: *4* contractExpectationBoundaries
 TEST_SUITE(contractExpectationBoundaries) {
 
     //@+others
-    //@+node:gcross.20110128131637.1650: *4* trivial, all dimensions 1
+    //@+node:gcross.20110128131637.1650: *5* trivial, all dimensions 1
     TEST_CASE(trivial_with_all_dimensions_1) {
         complex<double> expected_value = 1;
         complex<double> actual_value =
@@ -238,7 +243,7 @@ TEST_SUITE(contractExpectationBoundaries) {
             );
         ASSERT_EQ(expected_value,actual_value);
     }
-    //@+node:gcross.20110128131637.1654: *4* non-trivial
+    //@+node:gcross.20110128131637.1654: *5* non-trivial
     TEST_CASE(non_trivial) {
 
         ExpectationBoundary<Left> const left_boundary
@@ -276,11 +281,11 @@ TEST_SUITE(contractExpectationBoundaries) {
     //@-others
 
 }
-//@+node:gcross.20110127123226.2822: *3* contractSOSLeft
+//@+node:gcross.20110127123226.2822: *4* contractSOSLeft
 TEST_SUITE(computeSOSLeft) {
 
     //@+others
-    //@+node:gcross.20110127123226.2823: *4* trivial with all dimensions 1
+    //@+node:gcross.20110127123226.2823: *5* trivial with all dimensions 1
     TEST_CASE(trivial_with_all_dimensions_1) {
         auto_ptr<ExpectationBoundary<Left> const> new_boundary(
             contractSOSLeft(
@@ -293,7 +298,7 @@ TEST_SUITE(computeSOSLeft) {
         ASSERT_EQ(StateDimension(1),new_boundary->state_dimension);
         ASSERT_TRUE(equal(list_of(complex<double>(1)),*new_boundary));
     }
-    //@+node:gcross.20110127123226.2827: *4* trivial, c = 2
+    //@+node:gcross.20110127123226.2827: *5* trivial, c = 2
     TEST_CASE(trivial_with_operator_dimension_2) {
         OperatorSite const operator_site
             (LeftDimension(1)
@@ -312,7 +317,7 @@ TEST_SUITE(computeSOSLeft) {
         ASSERT_EQ(StateDimension(1),new_boundary->state_dimension);
         ASSERT_TRUE(equal(list_of(complex<double>(0))(complex<double>(0,1)),*new_boundary));
     }
-    //@+node:gcross.20110127123226.2875: *4* non-trivial
+    //@+node:gcross.20110127123226.2875: *5* non-trivial
     TEST_CASE(non_trivial) {
         ExpectationBoundary<Left> const boundary
             (OperatorDimension(3)
@@ -368,11 +373,11 @@ TEST_SUITE(computeSOSLeft) {
     //@-others
 
 }
-//@+node:gcross.20110127123226.2831: *3* contractSOSRight
+//@+node:gcross.20110127123226.2831: *4* contractSOSRight
 TEST_SUITE(computeSOSRight) {
 
     //@+others
-    //@+node:gcross.20110127123226.2832: *4* trivial with all dimensions 1
+    //@+node:gcross.20110127123226.2832: *5* trivial with all dimensions 1
     TEST_CASE(trivial_with_all_dimensions_1) {
         auto_ptr<ExpectationBoundary<Right> const> new_boundary(
             contractSOSRight(
@@ -385,7 +390,7 @@ TEST_SUITE(computeSOSRight) {
         ASSERT_EQ(StateDimension(1),new_boundary->state_dimension);
         ASSERT_TRUE(equal(list_of(complex<double>(1)),*new_boundary));
     }
-    //@+node:gcross.20110127123226.2833: *4* trivial, c = 2
+    //@+node:gcross.20110127123226.2833: *5* trivial, c = 2
     TEST_CASE(trivial_with_operator_dimension_2) {
         OperatorSite const operator_site
             (LeftDimension(2)
@@ -404,7 +409,7 @@ TEST_SUITE(computeSOSRight) {
         ASSERT_EQ(StateDimension(1),new_boundary->state_dimension);
         ASSERT_TRUE(equal(list_of(complex<double>(0))(complex<double>(0,1)),*new_boundary));
     }
-    //@+node:gcross.20110127123226.2873: *4* non-trivial
+    //@+node:gcross.20110127123226.2873: *5* non-trivial
     TEST_CASE(non_trivial) {
         ExpectationBoundary<Right> const boundary
             (OperatorDimension(3)
@@ -462,11 +467,11 @@ TEST_SUITE(computeSOSRight) {
     //@-others
 
 }
-//@+node:gcross.20110127123226.2837: *3* contractSSLeft
+//@+node:gcross.20110127123226.2837: *4* contractSSLeft
 TEST_SUITE(computeSSLeft) {
 
     //@+others
-    //@+node:gcross.20110127123226.2838: *4* trivial with all dimensions 1
+    //@+node:gcross.20110127123226.2838: *5* trivial with all dimensions 1
     TEST_CASE(trivial_with_all_dimensions_1) {
         auto_ptr<OverlapBoundary<Left> const> new_boundary(
             contractSSLeft(
@@ -479,7 +484,7 @@ TEST_SUITE(computeSSLeft) {
         ASSERT_EQ(StateDimension(1),new_boundary->state_dimension);
         ASSERT_TRUE(equal(list_of(complex<double>(1)),*new_boundary));
     }
-    //@+node:gcross.20110127123226.2849: *4* trivial, physical dimension 2
+    //@+node:gcross.20110127123226.2849: *5* trivial, physical dimension 2
     TEST_CASE(trivial_with_physical_dimension_2) {
         OverlapSite<Left> const overlap_site
             (RightDimension(1)
@@ -502,7 +507,7 @@ TEST_SUITE(computeSSLeft) {
         ASSERT_EQ(StateDimension(1),new_boundary->state_dimension);
         ASSERT_TRUE(equal(list_of(complex<double>(4)),*new_boundary));
     }
-    //@+node:gcross.20110127123226.2851: *4* non-trivial
+    //@+node:gcross.20110127123226.2851: *5* non-trivial
     TEST_CASE(non_trivial) {
         OverlapBoundary<Left> const boundary
             (OverlapDimension(3)
@@ -548,11 +553,11 @@ TEST_SUITE(computeSSLeft) {
     //@-others
 
 }
-//@+node:gcross.20110127123226.2862: *3* contractSSRight
+//@+node:gcross.20110127123226.2862: *4* contractSSRight
 TEST_SUITE(computeSSRight) {
 
     //@+others
-    //@+node:gcross.20110127123226.2863: *4* trivial with all dimensions 1
+    //@+node:gcross.20110127123226.2863: *5* trivial with all dimensions 1
     TEST_CASE(trivial_with_all_dimensions_1) {
         auto_ptr<OverlapBoundary<Right> const> new_boundary(
             contractSSRight(
@@ -565,7 +570,7 @@ TEST_SUITE(computeSSRight) {
         ASSERT_EQ(StateDimension(1),new_boundary->state_dimension);
         ASSERT_TRUE(equal(list_of(complex<double>(1)),*new_boundary));
     }
-    //@+node:gcross.20110127123226.2864: *4* trivial, physical dimension 2
+    //@+node:gcross.20110127123226.2864: *5* trivial, physical dimension 2
     TEST_CASE(trivial_with_physical_dimension_2) {
         OverlapSite<Right> const overlap_site
             (RightDimension(1)
@@ -588,7 +593,7 @@ TEST_SUITE(computeSSRight) {
         ASSERT_EQ(StateDimension(1),new_boundary->state_dimension);
         ASSERT_TRUE(equal(list_of(complex<double>(4)),*new_boundary));
     }
-    //@+node:gcross.20110127123226.2865: *4* non-trivial
+    //@+node:gcross.20110127123226.2865: *5* non-trivial
     TEST_CASE(non_trivial) {
         OverlapBoundary<Right> const boundary
             (OverlapDimension(2)
@@ -634,6 +639,63 @@ TEST_SUITE(computeSSRight) {
         }
     }
     //@-others
+
+}
+//@-others
+
+}
+//@+node:gcross.20110129220506.1654: *3* Optimizer
+TEST_SUITE(Optimizer) {
+
+//@+others
+//@+node:gcross.20110129220506.1655: *4* trivial, d = 4
+TEST_CASE(trivial_with_physical_dimension_4) {
+    RNG rng;
+
+    StateSite<Middle> state_site(
+         PhysicalDimension(4)
+        ,LeftDimension(1)
+        ,RightDimension(1)
+        ,fillWithGenerator(rng.randomComplexDouble)
+    );
+
+    OperatorSite operator_site(
+         LeftDimension(1)
+        ,RightDimension(1)
+        ,fillWithRange(list_of(1)(1))
+        ,fillWithRange(list_of
+            ( 1)( 0)( 0)( 0)
+            ( 0)( 1)( 0)( 0)
+            ( 0)( 0)( 1)( 0)
+            ( 0)( 0)( 0)(-1)
+         )
+    );
+
+    OptimizerResult optimizer_result =
+        optimizeStateSite(
+             ExpectationBoundary<Left>::trivial
+            ,state_site
+            ,operator_site
+            ,ExpectationBoundary<Right>::trivial
+            ,none
+            ,optimize_for_lowest_real_part
+            ,0
+            ,10000
+        );
+
+    StateSite<Middle> const& new_state_site = *optimizer_result.state_site;
+
+    ASSERT_EQ(4,new_state_site.physical_dimension());
+    ASSERT_EQ(1,new_state_site.left_dimension());
+    ASSERT_EQ(1,new_state_site.right_dimension());
+    ASSERT_NEAR(c(0,0),new_state_site[0],1e-7);
+    ASSERT_NEAR(c(0,0),new_state_site[1],1e-7);
+    ASSERT_NEAR(c(0,0),new_state_site[2],1e-7);
+    ASSERT_NEAR(1,abs(new_state_site[3]),1e-7);
+    ASSERT_NEAR(-1,optimizer_result.eigenvalue,1e-7);
+    ASSERT_EQ(0,optimizer_result.number_of_iterations);
+}
+//@-others
 
 }
 //@-others

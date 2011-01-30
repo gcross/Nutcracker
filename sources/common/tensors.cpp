@@ -14,7 +14,7 @@ namespace Nutcracker {
 //@-<< Usings >>
 
 //@+others
-//@+node:gcross.20110127123226.2517: ** OperatorSite
+//@+node:gcross.20110127123226.2517: ** Values
 OperatorSite const OperatorSite::trivial
     (LeftDimension(1)
     ,RightDimension(1)
