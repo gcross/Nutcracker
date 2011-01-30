@@ -6,6 +6,10 @@
 //@+node:gcross.20110127123226.2505: ** << Includes >>
 #include <boost/foreach.hpp>
 #include <boost/range/algorithm/equal.hpp>
+#include <boost/range/algorithm/generate.hpp>
+#include <boost/random.hpp>
+#include <boost/random/normal_distribution.hpp>
+#include <boost/random/uniform_smallint.hpp>
 #include <illuminate.hpp>
 #include <iostream>
 
@@ -17,6 +21,49 @@ using namespace std;
 //@-<< Includes >>
 
 //@+others
+//@+node:gcross.20110129220506.1649: ** struct RNG
+struct RNG {
+    taus88 generator;
+
+    normal_distribution<double> normal;
+    variate_generator<taus88,normal_distribution<double> > randomDouble;
+
+    uniform_smallint<unsigned int> smallint;
+    variate_generator<taus88,uniform_smallint<unsigned int> > randomInteger;
+
+    template<typename T> struct Generator {
+        RNG& rng;
+        Generator(RNG& rng) : rng(rng) {}
+        T operator()() { return c(rng.randomDouble(),rng.randomDouble()); }
+    };
+
+    Generator<complex<double> > randomComplexDouble;
+
+    struct IndexGenerator {
+        uniform_smallint<unsigned int> smallint;
+        variate_generator<taus88,uniform_smallint<unsigned int> > randomInteger;
+        IndexGenerator(
+              RNG& rng
+            , unsigned int lo
+            , unsigned int hi
+        ) : smallint(lo,hi)
+          , randomInteger(rng.generator,smallint)
+        {}
+        uint32_t operator()() { return (uint32_t)randomInteger(); }
+    };
+
+    RNG()
+      : normal(0,1)
+      , randomDouble(generator,normal)
+      , smallint(1,10)
+      , randomInteger(generator,smallint)
+      , randomComplexDouble(*this)
+    {}
+
+    operator unsigned int() { return randomInteger(); }
+    operator complex<double>() { return randomComplexDouble(); }
+
+};
 //@+node:gcross.20110127123226.2506: ** Tests
 TEST_SUITE(Core) {
 
@@ -89,6 +136,90 @@ TEST_SUITE(computeExpectationValue) {
         TEST_CASE(_i_0) { runTest(complex<double>(0,1),0,1); }
         TEST_CASE(_0_1) { runTest(0,1,-1); }
         TEST_CASE(_0_i) { runTest(0,complex<double>(0,1),-1); }
+    }
+    //@-others
+
+}
+//@+node:gcross.20110129220506.1650: *3* consistency
+TEST_SUITE(consistency) {
+
+    //@+others
+    //@+node:gcross.20110129220506.1651: *4* expectation value contraction
+    TEST_CASE(expectation_value_contraction) {
+
+        RNG random;
+
+        REPEAT(10) {
+
+            unsigned int const
+                 left_state_dimension = random
+                ,operator_dimension = random
+                ,physical_dimension = random
+                ,right_state_dimension = random
+                ,number_of_matrices = random
+                ;
+            ExpectationBoundary<Left> const left_boundary
+                (OperatorDimension(operator_dimension)
+                ,StateDimension(left_state_dimension)
+                ,fillWithGenerator(random.randomComplexDouble)
+                );
+            StateSite<Middle> const state_site
+                (PhysicalDimension(physical_dimension)
+                ,LeftDimension(left_state_dimension)
+                ,RightDimension(right_state_dimension)
+                ,fillWithGenerator(random.randomComplexDouble)
+                );
+            StateSite<Left> const left_state_site(copyFrom(state_site));
+            StateSite<Right> const right_state_site(copyFrom(state_site));
+            RNG::IndexGenerator randomIndex(random,1,operator_dimension);
+            OperatorSite const operator_site
+                (number_of_matrices
+                ,PhysicalDimension(physical_dimension)
+                ,LeftDimension(operator_dimension)
+                ,RightDimension(operator_dimension)
+                ,fillWithGenerator(randomIndex)
+                ,fillWithGenerator(random.randomComplexDouble)
+                );
+            ExpectationBoundary<Right> const right_boundary
+                (OperatorDimension(operator_dimension)
+                ,StateDimension(right_state_dimension)
+                ,fillWithGenerator(random.randomComplexDouble)
+                );
+            auto_ptr<ExpectationBoundary<Left> const> const new_left_boundary =
+                contractSOSLeft(
+                     left_boundary
+                    ,left_state_site
+                    ,operator_site
+                );
+            auto_ptr<ExpectationBoundary<Right> const> const new_right_boundary =
+                contractSOSRight(
+                     right_boundary
+                    ,right_state_site
+                    ,operator_site
+                );
+
+            complex<double> const
+                 result_from_computeExpectationValue =
+                    computeExpectationValue(
+                         left_boundary
+                        ,state_site
+                        ,operator_site
+                        ,right_boundary
+                    )
+                ,result_from_contractSOSLeft =
+                    contractExpectationBoundaries(
+                         *new_left_boundary
+                        ,right_boundary
+                    )
+                ,result_from_contractSOSRight =
+                    contractExpectationBoundaries(
+                         left_boundary
+                        ,*new_right_boundary
+                    )
+                ;
+            ASSERT_NEAR_QUOTED(result_from_computeExpectationValue,result_from_contractSOSLeft,1e-10);
+            ASSERT_NEAR_QUOTED(result_from_computeExpectationValue,result_from_contractSOSRight,1e-10);
+        }
     }
     //@-others
 

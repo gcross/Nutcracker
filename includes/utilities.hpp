@@ -28,6 +28,8 @@ struct Exception : public std::exception {
 };
 //@+node:gcross.20110127123226.2857: ** function c
 inline complex<double> c(double x, double y) { return complex<double>(x,y); }
+//@+node:gcross.20110129220506.1652: ** Macros
+#define REPEAT(n) for(unsigned int _##n##counter##__LINE__ = 0; _##n##counter##__LINE__ < n; ++_##n##counter##__LINE__)
 //@-others
 
 }
