@@ -22,7 +22,11 @@ using namespace std;
 //@-<< Includes >>
 
 //@+others
-//@+node:gcross.20110129220506.1649: ** struct RNG
+//@+node:gcross.20110127123226.2506: ** Tests
+TEST_SUITE(Core) {
+
+//@+others
+//@+node:gcross.20110129220506.1649: *3* struct RNG
 struct RNG {
     taus88 generator;
 
@@ -65,10 +69,6 @@ struct RNG {
     operator complex<double>() { return randomComplexDouble(); }
 
 };
-//@+node:gcross.20110127123226.2506: ** Tests
-TEST_SUITE(Core) {
-
-//@+others
 //@+node:gcross.20110129220506.1650: *3* Consistency
 TEST_SUITE(Consistency) {
 

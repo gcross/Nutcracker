@@ -3,6 +3,7 @@
 include_directories(".")
 
 set(test-SOURCES
+    chain
     core
 )
 
