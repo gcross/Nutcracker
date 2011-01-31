@@ -43,9 +43,11 @@ enum Side { Left, Right, Middle };
         Parameter(T& data) : data(data) {} \
         T& operator*() const { return data; } \
         T* operator->() const { return &data; } \
+        operator Parameter<T const>() const { return Parameter(data); } \
     }; \
     template<typename T> Parameter<T> parameter(T& data) { return Parameter<T>(data); } \
-    template<typename T> Parameter<T const> parameter(T const& data) { return Parameter<T const>(data); }
+    template<typename T> Parameter<T const> parameter(T const& data) { return Parameter<T const>(data); } \
+    template<typename T> Parameter<T const> parameter##Const(T& data) { return Parameter<T const>(data); }
 
 DEFINE_TEMPLATIZED_PARAMETER(CopyFrom,copyFrom)
 DEFINE_TEMPLATIZED_PARAMETER(DimensionsOf,dimensionsOf)
