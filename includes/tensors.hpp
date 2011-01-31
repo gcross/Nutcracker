@@ -162,6 +162,13 @@ template<Side side> struct ExpectationBoundary : public BaseTensor {
       , state_dimension(state_dimension)
     { }
 
+    template<Side other_side> ExpectationBoundary(
+          CopyFrom<ExpectationBoundary<other_side> const> const other
+    ) : BaseTensor(other)
+      , operator_dimension(other->operator_dimension)
+      , state_dimension(other->state_dimension)
+    { }
+
     template<typename G> ExpectationBoundary(
           OperatorDimension const operator_dimension
         , StateDimension const state_dimension
@@ -201,6 +208,13 @@ template<Side side> struct OverlapBoundary : public BaseTensor {
     ) : BaseTensor(overlap_dimension()*state_dimension())
       , overlap_dimension(overlap_dimension)
       , state_dimension(state_dimension)
+    { }
+
+    template<Side other_side> OverlapBoundary(
+          CopyFrom<OverlapBoundary<other_side> const> const other
+    ) : BaseTensor(other)
+      , overlap_dimension(other->overlap_dimension)
+      , state_dimension(other->state_dimension)
     { }
 
     template<typename G> OverlapBoundary(
@@ -458,6 +472,14 @@ template<Side side> struct OverlapSite : public BaseTensor {
       , right_dimension(right_dimension)
       , physical_dimension(size/(left_dimension()*right_dimension()))
       , left_dimension(left_dimension)
+    { }
+
+    template<Side other_side> OverlapSite(
+          CopyFrom<OverlapSite<other_side> const> const other
+    ) : BaseTensor(other)
+      , right_dimension(other->right_dimension)
+      , physical_dimension(other->physical_dimension)
+      , left_dimension(other->left_dimension)
     { }
 
     template<Side other_side> OverlapSite(
