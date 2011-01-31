@@ -708,8 +708,8 @@ TEST_SUITE(computeSSRight) {
 //@-others
 
 }
-//@+node:gcross.20110129220506.1654: *3* Optimizer
-TEST_SUITE(Optimizer) {
+//@+node:gcross.20110129220506.1654: *3* optimizeStateSite
+TEST_SUITE(optimizeStateSite) {
 
 //@+others
 //@+node:gcross.20110129220506.1655: *4* trivial, d = 4
@@ -758,6 +758,118 @@ TEST_CASE(trivial_with_physical_dimension_4) {
     ASSERT_NEAR(1,abs(new_state_site[3]),1e-7);
     ASSERT_NEAR(-1,optimizer_result.eigenvalue,1e-7);
     ASSERT_EQ(0,optimizer_result.number_of_iterations);
+}
+//@-others
+
+}
+//@+node:gcross.20110129220506.1659: *3* formProjectorMatrix
+TEST_SUITE(formProjectorMatrix) {
+
+//@+others
+//@+node:gcross.20110129220506.1660: *4* trivial
+TEST_CASE(trivial) {
+    auto_ptr<ProjectorMatrix const> projector_matrix(
+        formProjectorMatrix(
+            list_of(
+                OverlapVectorTrio(
+                     make_shared_ptr(new OverlapBoundary<Left>(make_trivial))
+                    ,make_shared_ptr(new OverlapBoundary<Right>(make_trivial))
+                    ,make_shared_ptr(new OverlapSite<Middle>(make_trivial))
+                )
+            )
+        )
+    );
+    ASSERT_EQ(1,projector_matrix->number_of_projectors);
+    ASSERT_EQ(1,projector_matrix->projector_length);
+    ASSERT_EQ(1,projector_matrix->number_of_reflectors);
+    ASSERT_EQ(0,projector_matrix->orthogonal_subspace_dimension);
+}
+//@+node:gcross.20110129220506.1663: *4* physical dimension 4, one projector
+TEST_CASE(physical_dimension_4_with_one_projector) {
+    auto_ptr<ProjectorMatrix const> projector_matrix(
+        formProjectorMatrix(list_of
+            (OverlapVectorTrio(
+                 make_shared_ptr(new OverlapBoundary<Left>(make_trivial))
+                ,make_shared_ptr(new OverlapBoundary<Right>(make_trivial))
+                ,make_shared_ptr(new OverlapSite<Middle>(
+                     RightDimension(1)
+                    ,LeftDimension(1)
+                    ,fillWithRange(list_of(1)(1)(1)(1))
+                 ))
+            ))
+        )
+    );
+    ASSERT_EQ(1,projector_matrix->number_of_projectors);
+    ASSERT_EQ(4,projector_matrix->projector_length);
+    ASSERT_EQ(1,projector_matrix->number_of_reflectors);
+    ASSERT_EQ(3,projector_matrix->orthogonal_subspace_dimension);
+}
+//@+node:gcross.20110129220506.1665: *4* physical dimension 4, two projectors
+TEST_CASE(physical_dimension_4_with_two_projectors) {
+    auto_ptr<ProjectorMatrix const> projector_matrix(
+        formProjectorMatrix(list_of
+            (OverlapVectorTrio(
+                 make_shared_ptr(new OverlapBoundary<Left>(make_trivial))
+                ,make_shared_ptr(new OverlapBoundary<Right>(make_trivial))
+                ,make_shared_ptr(new OverlapSite<Middle>(
+                     RightDimension(1)
+                    ,LeftDimension(1)
+                    ,fillWithRange(list_of(1)(1)(1)(1))
+                 ))
+            ))
+            (OverlapVectorTrio(
+                 make_shared_ptr(new OverlapBoundary<Left>(make_trivial))
+                ,make_shared_ptr(new OverlapBoundary<Right>(make_trivial))
+                ,make_shared_ptr(new OverlapSite<Middle>(
+                     RightDimension(1)
+                    ,LeftDimension(1)
+                    ,fillWithRange(list_of(1)(-1)(1)(1))
+                 ))
+            ))
+        )
+    );
+    ASSERT_EQ(2,projector_matrix->number_of_projectors);
+    ASSERT_EQ(4,projector_matrix->projector_length);
+    ASSERT_EQ(2,projector_matrix->number_of_reflectors);
+    ASSERT_EQ(2,projector_matrix->orthogonal_subspace_dimension);
+}
+//@+node:gcross.20110129220506.1667: *4* physical dimension 4, three projectors
+TEST_CASE(physical_dimension_4_with_three_projectors) {
+    auto_ptr<ProjectorMatrix const> projector_matrix(
+        formProjectorMatrix(list_of
+            (OverlapVectorTrio(
+                 make_shared_ptr(new OverlapBoundary<Left>(make_trivial))
+                ,make_shared_ptr(new OverlapBoundary<Right>(make_trivial))
+                ,make_shared_ptr(new OverlapSite<Middle>(
+                     RightDimension(1)
+                    ,LeftDimension(1)
+                    ,fillWithRange(list_of(1)(1)(1)(1))
+                 ))
+            ))
+            (OverlapVectorTrio(
+                 make_shared_ptr(new OverlapBoundary<Left>(make_trivial))
+                ,make_shared_ptr(new OverlapBoundary<Right>(make_trivial))
+                ,make_shared_ptr(new OverlapSite<Middle>(
+                     RightDimension(1)
+                    ,LeftDimension(1)
+                    ,fillWithRange(list_of(1)(-1)(1)(1))
+                 ))
+            ))
+            (OverlapVectorTrio(
+                 make_shared_ptr(new OverlapBoundary<Left>(make_trivial))
+                ,make_shared_ptr(new OverlapBoundary<Right>(make_trivial))
+                ,make_shared_ptr(new OverlapSite<Middle>(
+                     RightDimension(1)
+                    ,LeftDimension(1)
+                    ,fillWithRange(list_of(1)(-1)(-1)(1))
+                 ))
+            ))
+        )
+    );
+    ASSERT_EQ(3,projector_matrix->number_of_projectors);
+    ASSERT_EQ(4,projector_matrix->projector_length);
+    ASSERT_EQ(3,projector_matrix->number_of_reflectors);
+    ASSERT_EQ(1,projector_matrix->orthogonal_subspace_dimension);
 }
 //@-others
 

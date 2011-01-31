@@ -240,14 +240,14 @@ public:
           number_of_projectors
         , projector_length
         , number_of_reflectors
-        , subspace_dimension
+        , orthogonal_subspace_dimension
         ;
 
     ProjectorMatrix(
           unsigned int const number_of_projectors
         , unsigned int const projector_length
         , unsigned int const number_of_reflectors
-        , unsigned int const subspace_dimension
+        , unsigned int const orthogonal_subspace_dimension
         , complex<double>* reflector_data
         , complex<double>* coefficient_data
         , uint32_t* swap_data
@@ -257,7 +257,7 @@ public:
       , number_of_projectors(number_of_projectors)
       , projector_length(projector_length)
       , number_of_reflectors(number_of_reflectors)
-      , subspace_dimension(subspace_dimension)
+      , orthogonal_subspace_dimension(orthogonal_subspace_dimension)
     { }
 
     complex<double>* reflectorData() { return reflector_data.get(); }
@@ -489,6 +489,15 @@ struct OverlapVectorTrio {
     shared_ptr<OverlapBoundary<Left> const> left_boundary;
     shared_ptr<OverlapBoundary<Right> const> right_boundary;
     shared_ptr<OverlapSite<Middle> const> middle_site;
+
+    OverlapVectorTrio(
+          shared_ptr<OverlapBoundary<Left> const> left_boundary
+        , shared_ptr<OverlapBoundary<Right> const> right_boundary
+        , shared_ptr<OverlapSite<Middle> const> middle_site
+    ) : left_boundary(left_boundary)
+      , right_boundary(right_boundary)
+      , middle_site(middle_site)
+    {}
 };
 //@+node:gcross.20110125120748.2431: ** Connectors
 //@+node:gcross.20110125120748.2434: *3* exception DimensionMismatch

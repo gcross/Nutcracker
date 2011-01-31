@@ -1014,7 +1014,7 @@ OptimizerResult optimizeStateSite(
                 ,right_boundary
                 ,projector_matrix->number_of_projectors
                 ,projector_matrix->number_of_reflectors
-                ,projector_matrix->subspace_dimension
+                ,projector_matrix->orthogonal_subspace_dimension
                 ,projector_matrix->reflectorData()
                 ,projector_matrix->coefficientData()
                 ,projector_matrix->swapData()
@@ -1170,7 +1170,7 @@ auto_ptr<StateSite<Middle> const> applyProjectorMatrix(
          projector_matrix || old_state_site
         ,projector_matrix.number_of_projectors
         ,projector_matrix.number_of_reflectors
-        ,projector_matrix.subspace_dimension
+        ,projector_matrix.orthogonal_subspace_dimension
         ,projector_matrix.reflectorData()
         ,projector_matrix.coefficientData()
         ,projector_matrix.swapData()
