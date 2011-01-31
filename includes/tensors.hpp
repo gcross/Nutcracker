@@ -69,6 +69,11 @@ DEFINE_DIMENSION(Overlap);
 DEFINE_DIMENSION(Physical);
 DEFINE_DIMENSION(Right);
 DEFINE_DIMENSION(State);
+//@+node:gcross.20110129220506.1661: ** Dummy arguments
+#define DEFINE_DUMMY_PARAMETER(Parameter,parameter) \
+    static struct Parameter {} const parameter = Parameter();
+
+DEFINE_DUMMY_PARAMETER(MakeTrivial,make_trivial);
 //@+node:gcross.20110124161335.2012: ** Classes
 //@+node:gcross.20110126150230.1601: *3* BaseTensor
 struct BaseTensor : public noncopyable {
@@ -122,6 +127,15 @@ public:
         copy(*init,data.get());
     }
 
+    BaseTensor
+        ( MakeTrivial const make_trivial
+        )
+      : size(1)
+      , data(new complex<double>[1])
+    {
+        data[0] = c(1,0);
+    }
+
     operator complex<double>*() { return data.get(); }
     operator complex<double> const*() const { return data.get(); }
 
@@ -165,10 +179,17 @@ template<Side side> struct ExpectationBoundary : public BaseTensor {
       , state_dimension((unsigned int)sqrt(size/operator_dimension()))
     { }
 
+    ExpectationBoundary(
+          MakeTrivial const make_trivial
+    ) : BaseTensor(make_trivial)
+      , operator_dimension(1)
+      , state_dimension(1)
+    { }
+
     static ExpectationBoundary const trivial;
 };
 
-template<Side side> ExpectationBoundary<side> const ExpectationBoundary<side>::trivial(OperatorDimension(1),fillWithRange(list_of(1)));
+template<Side side> ExpectationBoundary<side> const ExpectationBoundary<side>::trivial(make_trivial);
 //@+node:gcross.20110124175241.1526: *4* OverlapBoundary
 template<Side side> struct OverlapBoundary : public BaseTensor {
     OverlapDimension const overlap_dimension;
@@ -199,10 +220,17 @@ template<Side side> struct OverlapBoundary : public BaseTensor {
       , state_dimension(size/overlap_dimension())
     { }
 
+    OverlapBoundary(
+          MakeTrivial const make_trivial
+    ) : BaseTensor(make_trivial)
+      , overlap_dimension(1)
+      , state_dimension(1)
+    { }
+
     static OverlapBoundary const trivial;
 };
 
-template<Side side> OverlapBoundary<side> const OverlapBoundary<side>::trivial(OverlapDimension(1),fillWithRange(list_of(1)));
+template<Side side> OverlapBoundary<side> const OverlapBoundary<side>::trivial(make_trivial);
 //@+node:gcross.20110124175241.1538: *3* ProjectorMatrix
 class ProjectorMatrix {
     scoped_array<complex<double> > reflector_data, coefficient_data;
@@ -309,6 +337,18 @@ public:
         copy(*index_init,index_data.get());
     }
 
+    OperatorSite(
+          MakeTrivial const make_trivial
+    ) : BaseTensor(make_trivial)
+      , number_of_matrices(1)
+      , physical_dimension(1)
+      , left_dimension(1)
+      , right_dimension(1)
+      , index_data(new uint32_t[2])
+    {
+        fill_n(index_data.get(),2,1);
+    }
+
     operator uint32_t*() { return index_data.get(); }
     operator uint32_t const*() const { return index_data.get(); }
 
@@ -371,14 +411,18 @@ template<Side side> struct StateSite : public BaseTensor {
       , right_dimension(right_dimension)
     { }
 
+    StateSite(
+          MakeTrivial const make_trivial
+    ) : BaseTensor(make_trivial)
+      , physical_dimension(1)
+      , left_dimension(1)
+      , right_dimension(1)
+    { }
+
     static StateSite const trivial;
 };
 
-template<Side side> StateSite<side> const StateSite<side>::trivial
-    (LeftDimension(1)
-    ,RightDimension(1)
-    ,fillWithRange(list_of(1))
-    );
+template<Side side> StateSite<side> const StateSite<side>::trivial(make_trivial);
 //@+node:gcross.20110124175241.1537: *4* OverlapSite
 template<Side side> struct OverlapSite : public BaseTensor {
     RightDimension const right_dimension;
@@ -428,14 +472,18 @@ template<Side side> struct OverlapSite : public BaseTensor {
       , left_dimension(other_site->left_dimension)
     { }
 
+    OverlapSite(
+          MakeTrivial const make_trivial
+    ) : BaseTensor(make_trivial)
+      , right_dimension(1)
+      , physical_dimension(1)
+      , left_dimension(1)
+    { }
+
     static OverlapSite const trivial;
 };
 
-template<Side side> OverlapSite<side> const OverlapSite<side>::trivial
-    (RightDimension(1)
-    ,LeftDimension(1)
-    ,fillWithRange(list_of(1))
-    );
+template<Side side> OverlapSite<side> const OverlapSite<side>::trivial(make_trivial);
 //@+node:gcross.20110126102637.2192: *3* OverlapVectorTrio
 struct OverlapVectorTrio {
     shared_ptr<OverlapBoundary<Left> const> left_boundary;
