@@ -273,6 +273,71 @@ auto_ptr<StateSite<Right> const> randomStateSiteRight(
     , const LeftDimension left_dimension
     , const RightDimension right_dimension
 );
+//@+node:gcross.20110131234725.1689: ** Side-agnostic interface
+//@+node:gcross.20110131234725.1690: *3* contract
+template<Side side> struct contract {};
+
+template<> struct contract<Left> {
+    static auto_ptr<ExpectationBoundary<Left> const> SOS(
+          ExpectationBoundary<Left> const& old_boundary
+        , StateSite<Left> const& state_site
+        , OperatorSite const& operator_site
+    ) { return contractSOSLeft(old_boundary,state_site,operator_site); }
+
+    static auto_ptr<OverlapBoundary<Left> const> SS(
+          OverlapBoundary<Left> const& old_boundary
+        , OverlapSite<Left> const& overlap_site
+        , StateSite<Left> const& state_site
+    ) { return contractSSLeft(old_boundary,overlap_site,state_site); }
+};
+
+template<> struct contract<Right> {
+    static auto_ptr<ExpectationBoundary<Right> const> SOS(
+          ExpectationBoundary<Right> const& old_boundary
+        , StateSite<Right> const& state_site
+        , OperatorSite const& operator_site
+    ) { return contractSOSRight(old_boundary,state_site,operator_site); }
+
+    static auto_ptr<OverlapBoundary<Right> const> SS(
+          OverlapBoundary<Right> const& old_boundary
+        , OverlapSite<Right> const& overlap_site
+        , StateSite<Right> const& state_site
+    ) { return contractSSRight(old_boundary,overlap_site,state_site); }
+};
+//@+node:gcross.20110131234725.1691: *3* moveSiteCursor
+template<Side side> struct moveSiteCursor { };
+
+template<> struct moveSiteCursor<Left> {
+    static void fromTo(
+          StateSite<Middle> const& old_middle_state_site
+	, StateSite<Left> const& old_left_state_site
+        , auto_ptr<StateSite<Middle> const>& new_middle_state_site
+        , auto_ptr<StateSite<Right> const>& new_right_state_site
+    ) { return
+            moveSiteCursorLeft(
+                 old_left_state_site
+                ,old_middle_state_site
+                ,new_middle_state_site
+                ,new_right_state_site
+            );
+    }
+};
+
+template<> struct moveSiteCursor<Right> {
+    static void fromTo(
+          StateSite<Middle> const& old_middle_state_site
+	, StateSite<Right> const& old_right_state_site
+        , auto_ptr<StateSite<Middle> const>& new_middle_state_site
+        , auto_ptr<StateSite<Left> const>& new_left_state_site
+    ) { return
+            moveSiteCursorRight(
+                 old_middle_state_site
+                ,old_right_state_site
+                ,new_left_state_site
+                ,new_middle_state_site
+            );
+    }
+};
 //@-others
 
 }

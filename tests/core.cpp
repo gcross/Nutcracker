@@ -115,13 +115,13 @@ TEST_SUITE(Consistency) {
                 ,fillWithGenerator(random.randomComplexDouble)
                 );
             auto_ptr<ExpectationBoundary<Left> const> const new_left_boundary =
-                contractSOSLeft(
+                contract<Left>::SOS(
                      left_boundary
                     ,left_state_site
                     ,operator_site
                 );
             auto_ptr<ExpectationBoundary<Right> const> const new_right_boundary =
-                contractSOSRight(
+                contract<Right>::SOS(
                      right_boundary
                     ,right_state_site
                     ,operator_site
