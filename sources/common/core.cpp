@@ -855,16 +855,16 @@ auto_ptr<OverlapBoundary<Right> const> contractSSRight(
 }
 //@+node:gcross.20110124175241.1652: *3* Cursor movement
 //@+node:gcross.20110124175241.1654: *4* moveSiteCursorLeft
-pair <shared_ptr<StateSite<Middle> const>
-     ,shared_ptr<StateSite<Right> const>
-> moveSiteCursorLeft(
+void moveSiteCursorLeft(
       StateSite<Left> const& old_state_site_1
     , StateSite<Middle> const& old_state_site_2
+    , auto_ptr<StateSite<Middle> const>& new_state_site_1
+    , auto_ptr<StateSite<Right> const>& new_state_site_2
 ) {
-    shared_ptr<StateSite<Middle> > new_state_site_1(
+    auto_ptr<StateSite<Middle> > new_state_site_1_writable(
         new StateSite<Middle>(dimensionsOf(old_state_site_1))
     );
-    shared_ptr<StateSite<Right> >  new_state_site_2(
+    auto_ptr<StateSite<Right> > new_state_site_2_writable(
         new StateSite<Right>(dimensionsOf(old_state_site_2))
     );
     unsigned int const info =
@@ -876,23 +876,24 @@ pair <shared_ptr<StateSite<Middle> const>
         ,old_state_site_2.physical_dimension()
         ,old_state_site_1
         ,old_state_site_2
-        ,*new_state_site_1
-        ,*new_state_site_2
+        ,*new_state_site_1_writable
+        ,*new_state_site_2_writable
     );
     if(info != 0) throw NormalizationError(info);
-    return make_pair(new_state_site_1,new_state_site_2);
+    new_state_site_1 = new_state_site_1_writable;
+    new_state_site_2 = new_state_site_2_writable;
 }
 //@+node:gcross.20110125120748.1518: *4* moveSiteCursorRight
-pair <shared_ptr<StateSite<Left> const>
-     ,shared_ptr<StateSite<Middle> const>
-> moveSiteCursorRight(
+void moveSiteCursorRight(
       StateSite<Middle> const& old_state_site_1
     , StateSite<Right> const& old_state_site_2
+    , auto_ptr<StateSite<Left> const>& new_state_site_1
+    , auto_ptr<StateSite<Middle> const>& new_state_site_2
 ) {
-    shared_ptr<StateSite<Left> > new_state_site_1(
+    auto_ptr<StateSite<Left> > new_state_site_1_writable(
         new StateSite<Left>(dimensionsOf(old_state_site_1))
     );
-    shared_ptr<StateSite<Middle> >  new_state_site_2(
+    auto_ptr<StateSite<Middle> > new_state_site_2_writable(
         new StateSite<Middle>(dimensionsOf(old_state_site_2))
     );
     unsigned int const info =
@@ -904,34 +905,35 @@ pair <shared_ptr<StateSite<Left> const>
         ,old_state_site_2.physical_dimension()
         ,old_state_site_1
         ,old_state_site_2
-        ,*new_state_site_1
-        ,*new_state_site_2
+        ,*new_state_site_1_writable
+        ,*new_state_site_2_writable
     );
     if(info != 0) throw NormalizationError(info);
-    return make_pair(new_state_site_1,new_state_site_2);
+    new_state_site_1 = new_state_site_1_writable;
+    new_state_site_2 = new_state_site_2_writable;
 }
 //@+node:gcross.20110125120748.2463: *3* Miscellaneous
 //@+node:gcross.20110124175241.1649: *4* increaseDimensionBetween
 template<Side side1,Side side2>
 static
-pair <shared_ptr<StateSite<side1> const>
-     ,shared_ptr<StateSite<side2> const>
-> implIncreaseDimensionBetween(
+void implIncreaseDimensionBetween(
       unsigned int const new_dimension
     , StateSite<side1> const& old_site_1
     , StateSite<side2> const& old_site_2
+    , auto_ptr<StateSite<side1> const>& new_site_1
+    , auto_ptr<StateSite<side2> const>& new_site_2
 ) {
     unsigned int const old_dimension = old_site_1 || old_site_2;
     assert(new_dimension >= old_dimension);
 
-    shared_ptr<StateSite<side1> > new_site_1(
+    auto_ptr<StateSite<side1> > new_site_1_writable(
         new StateSite<side1>(
              old_site_1.physical_dimension
             ,old_site_1.left_dimension
             ,RightDimension(new_dimension)
         )
     );
-    shared_ptr<StateSite<side2> > new_site_2(
+    auto_ptr<StateSite<side2> > new_site_2_writable(
         new StateSite<side2>(
              old_site_2.physical_dimension
             ,LeftDimension(new_dimension)
@@ -950,8 +952,8 @@ pair <shared_ptr<StateSite<side1> const>
                 ,new_dimension
                 ,old_site_1
                 ,old_site_2
-                ,*new_site_1
-                ,*new_site_2
+                ,*new_site_1_writable
+                ,*new_site_2_writable
               )
             : norm_denorm_going_left(
                  old_site_1.left_dimension()
@@ -961,29 +963,30 @@ pair <shared_ptr<StateSite<side1> const>
                 ,old_site_2.physical_dimension()
                 ,old_site_1
                 ,old_site_2
-                ,*new_site_1
-                ,*new_site_2
+                ,*new_site_1_writable
+                ,*new_site_2_writable
               )
     ;
     if(info != 0) throw NormalizationError(info);
-    return make_pair(new_site_1,new_site_2);
+    new_site_1 = new_site_1_writable;
+    new_site_2 = new_site_2_writable;    
 }
 
-pair <shared_ptr<StateSite<Right> const>
-     ,shared_ptr<StateSite<Right> const>
-> increaseDimensionBetween(
+void increaseDimensionBetweenRightRight(
       unsigned int new_dimension
-    , const StateSite<Right> old_site_1
-    , const StateSite<Right> old_site_2
-) { return implIncreaseDimensionBetween(new_dimension,old_site_1,old_site_2); }
+    , StateSite<Right> const& old_site_1
+    , StateSite<Right> const& old_site_2
+    , auto_ptr<StateSite<Right> const>& new_site_1
+    , auto_ptr<StateSite<Right> const>& new_site_2
+) { implIncreaseDimensionBetween(new_dimension,old_site_1,old_site_2,new_site_1,new_site_2); }
 
-pair <shared_ptr<StateSite<Middle> const>
-     ,shared_ptr<StateSite<Right> const>
-> increaseDimensionBetween(
+void increaseDimensionBetweenMiddleRight(
       unsigned int new_dimension
-    , const StateSite<Middle> old_site_1
-    , const StateSite<Right> old_site_2
-) { return implIncreaseDimensionBetween(new_dimension,old_site_1,old_site_2); }
+    , StateSite<Middle> const& old_site_1
+    , StateSite<Right> const& old_site_2
+    , auto_ptr<StateSite<Middle> const>& new_site_1
+    , auto_ptr<StateSite<Right> const>& new_site_2
+) { implIncreaseDimensionBetween(new_dimension,old_site_1,old_site_2,new_site_1,new_site_2); }
 //@+node:gcross.20110124175241.1587: *4* optimizeStateSite
 OptimizerResult optimizeStateSite(
       ExpectationBoundary<Left> const& left_boundary
@@ -997,7 +1000,7 @@ OptimizerResult optimizeStateSite(
 ) {
     uint32_t number_of_iterations = maximum_number_of_iterations;
     complex<double> eigenvalue;
-    shared_ptr<StateSite<Middle> > new_state_site(
+    auto_ptr<StateSite<Middle> > new_state_site(
         new StateSite<Middle>(dimensionsOf(current_state_site))
     );
     double normal;
@@ -1116,24 +1119,20 @@ computeOverlapSiteFromStateSite(StateSite<Middle> const& state_site) {
     return (auto_ptr<OverlapSite<Middle> const>) overlap_site;
 }
 //@+node:gcross.20110126102637.2189: *4* computeOverlapSitesFromStateSitesAndNormalize
-tuple<shared_ptr<OverlapSite<Left> const>
-     ,shared_ptr<OverlapSite<Middle> const>
-     ,shared_ptr<StateSite<Middle> const>
-     ,shared_ptr<OverlapSite<Right> const>
-> computeOverlapSitesFromStateSitesAndNormalize(
+OverlapSitesFromStateSitesAndNormalizeResult computeOverlapSitesFromStateSitesAndNormalize(
       StateSite<Middle> const& middle_state_site
      ,StateSite<Right> const& right_state_site
 ) {
-    shared_ptr<OverlapSite<Left> > left_overlap_site_from_middle_state_site(
+    auto_ptr<OverlapSite<Left> > left_overlap_site_from_middle_state_site(
         new OverlapSite<Left>(dimensionsOf(middle_state_site))
     );
-    shared_ptr<OverlapSite<Middle> > middle_overlap_site_from_middle_state_site(
+    auto_ptr<OverlapSite<Middle> > middle_overlap_site_from_middle_state_site(
         new OverlapSite<Middle>(dimensionsOf(middle_state_site))
     );
-    shared_ptr<StateSite<Middle> > middle_state_site_from_right_state_site(
+    auto_ptr<StateSite<Middle> > middle_state_site_from_right_state_site(
         new StateSite<Middle>(dimensionsOf(right_state_site))
     );
-    shared_ptr<OverlapSite<Right> > right_overlap_site_from_right_state_site(
+    auto_ptr<OverlapSite<Right> > right_overlap_site_from_right_state_site(
         new OverlapSite<Right>(dimensionsOf(right_state_site))
     );
     form_norm_overlap_tensors(
@@ -1150,7 +1149,7 @@ tuple<shared_ptr<OverlapSite<Left> const>
         ,*right_overlap_site_from_right_state_site
     );
     return
-        make_tuple(
+        OverlapSitesFromStateSitesAndNormalizeResult(
              left_overlap_site_from_middle_state_site
             ,middle_overlap_site_from_middle_state_site
             ,middle_state_site_from_right_state_site
@@ -1200,9 +1199,9 @@ auto_ptr<ProjectorMatrix const> formProjectorMatrix(
 ) {
     unsigned int const
          number_of_projectors = overlaps.size()
-        ,state_physical_dimension = overlaps[0].middle_site->physical_dimension()
-        ,state_left_dimension = overlaps[0].left_boundary->state_dimension()
-        ,state_right_dimension = overlaps[0].right_boundary->state_dimension()
+        ,state_physical_dimension = overlaps[0].middle_site.physical_dimension()
+        ,state_left_dimension = overlaps[0].left_boundary.state_dimension()
+        ,state_right_dimension = overlaps[0].right_boundary.state_dimension()
         ,overlap_vector_length = state_physical_dimension*state_left_dimension*state_right_dimension
         ,number_of_reflectors = min(overlap_vector_length,number_of_projectors)
         ;
@@ -1214,14 +1213,14 @@ auto_ptr<ProjectorMatrix const> formProjectorMatrix(
         ,overlaps
     ) {
         form_overlap_vector(
-             *overlap.left_boundary || *overlap.middle_site
-            ,*overlap.middle_site || *overlap.right_boundary
+             overlap.left_boundary || overlap.middle_site
+            ,overlap.middle_site || overlap.right_boundary
             ,state_left_dimension
             ,state_right_dimension
             ,state_physical_dimension
-            ,*overlap.left_boundary
-            ,*overlap.right_boundary
-            ,*overlap.middle_site
+            ,overlap.left_boundary
+            ,overlap.right_boundary
+            ,overlap.middle_site
             ,overlap_vector
         );
         overlap_vector += overlap_vector_length;

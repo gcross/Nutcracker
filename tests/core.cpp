@@ -766,15 +766,33 @@ TEST_CASE(trivial_with_physical_dimension_4) {
 TEST_SUITE(formProjectorMatrix) {
 
 //@+others
+//@+node:gcross.20110131180117.1690: *4* Test overlap sites
+static OverlapSite<Middle> const
+     test_overlap_site_1(
+         RightDimension(1)
+        ,LeftDimension(1)
+        ,fillWithRange(list_of(1)(1)(1)(1))
+     )
+    ,test_overlap_site_2(
+         RightDimension(1)
+        ,LeftDimension(1)
+        ,fillWithRange(list_of(1)(-1)(1)(1))
+     )
+    ,test_overlap_site_3(
+         RightDimension(1)
+        ,LeftDimension(1)
+        ,fillWithRange(list_of(1)(-1)(-1)(1))
+     )
+    ;
 //@+node:gcross.20110129220506.1660: *4* trivial
 TEST_CASE(trivial) {
     auto_ptr<ProjectorMatrix const> projector_matrix(
         formProjectorMatrix(
             list_of(
                 OverlapVectorTrio(
-                     make_shared_ptr(new OverlapBoundary<Left>(make_trivial))
-                    ,make_shared_ptr(new OverlapBoundary<Right>(make_trivial))
-                    ,make_shared_ptr(new OverlapSite<Middle>(make_trivial))
+                     OverlapBoundary<Left>::trivial
+                    ,OverlapBoundary<Right>::trivial
+                    ,OverlapSite<Middle>::trivial
                 )
             )
         )
@@ -789,13 +807,9 @@ TEST_CASE(physical_dimension_4_with_one_projector) {
     auto_ptr<ProjectorMatrix const> projector_matrix(
         formProjectorMatrix(list_of
             (OverlapVectorTrio(
-                 make_shared_ptr(new OverlapBoundary<Left>(make_trivial))
-                ,make_shared_ptr(new OverlapBoundary<Right>(make_trivial))
-                ,make_shared_ptr(new OverlapSite<Middle>(
-                     RightDimension(1)
-                    ,LeftDimension(1)
-                    ,fillWithRange(list_of(1)(1)(1)(1))
-                 ))
+                 OverlapBoundary<Left>::trivial
+                ,OverlapBoundary<Right>::trivial
+                ,test_overlap_site_1
             ))
         )
     );
@@ -809,22 +823,14 @@ TEST_CASE(physical_dimension_4_with_two_projectors) {
     auto_ptr<ProjectorMatrix const> projector_matrix(
         formProjectorMatrix(list_of
             (OverlapVectorTrio(
-                 make_shared_ptr(new OverlapBoundary<Left>(make_trivial))
-                ,make_shared_ptr(new OverlapBoundary<Right>(make_trivial))
-                ,make_shared_ptr(new OverlapSite<Middle>(
-                     RightDimension(1)
-                    ,LeftDimension(1)
-                    ,fillWithRange(list_of(1)(1)(1)(1))
-                 ))
+                 OverlapBoundary<Left>::trivial
+                ,OverlapBoundary<Right>::trivial
+                ,test_overlap_site_1
             ))
             (OverlapVectorTrio(
-                 make_shared_ptr(new OverlapBoundary<Left>(make_trivial))
-                ,make_shared_ptr(new OverlapBoundary<Right>(make_trivial))
-                ,make_shared_ptr(new OverlapSite<Middle>(
-                     RightDimension(1)
-                    ,LeftDimension(1)
-                    ,fillWithRange(list_of(1)(-1)(1)(1))
-                 ))
+                 OverlapBoundary<Left>::trivial
+                ,OverlapBoundary<Right>::trivial
+                ,test_overlap_site_2
             ))
         )
     );
@@ -838,31 +844,19 @@ TEST_CASE(physical_dimension_4_with_three_projectors) {
     auto_ptr<ProjectorMatrix const> projector_matrix(
         formProjectorMatrix(list_of
             (OverlapVectorTrio(
-                 make_shared_ptr(new OverlapBoundary<Left>(make_trivial))
-                ,make_shared_ptr(new OverlapBoundary<Right>(make_trivial))
-                ,make_shared_ptr(new OverlapSite<Middle>(
-                     RightDimension(1)
-                    ,LeftDimension(1)
-                    ,fillWithRange(list_of(1)(1)(1)(1))
-                 ))
+                 OverlapBoundary<Left>::trivial
+                ,OverlapBoundary<Right>::trivial
+                ,test_overlap_site_1
             ))
             (OverlapVectorTrio(
-                 make_shared_ptr(new OverlapBoundary<Left>(make_trivial))
-                ,make_shared_ptr(new OverlapBoundary<Right>(make_trivial))
-                ,make_shared_ptr(new OverlapSite<Middle>(
-                     RightDimension(1)
-                    ,LeftDimension(1)
-                    ,fillWithRange(list_of(1)(-1)(1)(1))
-                 ))
+                 OverlapBoundary<Left>::trivial
+                ,OverlapBoundary<Right>::trivial
+                ,test_overlap_site_2
             ))
             (OverlapVectorTrio(
-                 make_shared_ptr(new OverlapBoundary<Left>(make_trivial))
-                ,make_shared_ptr(new OverlapBoundary<Right>(make_trivial))
-                ,make_shared_ptr(new OverlapSite<Middle>(
-                     RightDimension(1)
-                    ,LeftDimension(1)
-                    ,fillWithRange(list_of(1)(-1)(-1)(1))
-                 ))
+                 OverlapBoundary<Left>::trivial
+                ,OverlapBoundary<Right>::trivial
+                ,test_overlap_site_3
             ))
         )
     );

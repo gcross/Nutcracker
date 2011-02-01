@@ -508,21 +508,6 @@ template<Side side> struct OverlapSite : public BaseTensor {
 };
 
 template<Side side> OverlapSite<side> const OverlapSite<side>::trivial(make_trivial);
-//@+node:gcross.20110126102637.2192: *3* OverlapVectorTrio
-struct OverlapVectorTrio {
-    shared_ptr<OverlapBoundary<Left> const> left_boundary;
-    shared_ptr<OverlapBoundary<Right> const> right_boundary;
-    shared_ptr<OverlapSite<Middle> const> middle_site;
-
-    OverlapVectorTrio(
-          shared_ptr<OverlapBoundary<Left> const> left_boundary
-        , shared_ptr<OverlapBoundary<Right> const> right_boundary
-        , shared_ptr<OverlapSite<Middle> const> middle_site
-    ) : left_boundary(left_boundary)
-      , right_boundary(right_boundary)
-      , middle_site(middle_site)
-    {}
-};
 //@+node:gcross.20110125120748.2431: ** Connectors
 //@+node:gcross.20110125120748.2434: *3* exception DimensionMismatch
 struct DimensionMismatch : public Exception {

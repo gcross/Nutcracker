@@ -28,17 +28,24 @@ using namespace std;
 //@+node:gcross.20110129220506.1656: ** Classes
 //@+node:gcross.20110129220506.1657: *3* OptimizerResult
 struct OptimizerResult {
-    unsigned int const number_of_iterations;
-    double const eigenvalue;
-    shared_ptr<StateSite<Middle> const> const state_site;
+    unsigned int number_of_iterations;
+    double eigenvalue;
+    mutable auto_ptr<StateSite<Middle> const> state_site;
 
     OptimizerResult(
           unsigned int const number_of_iterations
         , double const eigenvalue
-        , shared_ptr<StateSite<Middle> const> const state_site
+        , auto_ptr<StateSite<Middle> > state_site
     ) : number_of_iterations(number_of_iterations)
       , eigenvalue(eigenvalue)
       , state_site(state_site)
+    {}
+
+    OptimizerResult(
+          OptimizerResult const& other
+    ) : number_of_iterations(other.number_of_iterations)
+      , eigenvalue(other.eigenvalue)
+      , state_site(other.state_site)
     {}
 };
 //@+node:gcross.20110125120748.2469: *3* OptimizerSelectionStrategy
@@ -47,6 +54,47 @@ extern struct OptimizerSelectionStrategy {
     OptimizerSelectionStrategy(const string argument) : argument(argument) { }
     operator const char*() const { return argument.c_str(); }
 } const optimize_for_lowest_real_part, optimize_for_largest_magnitude;
+//@+node:gcross.20110131180117.1687: *3* OverlapSitesFromStateSitesAndNormalizeResult
+struct OverlapSitesFromStateSitesAndNormalizeResult {
+    mutable auto_ptr<OverlapSite<Left> const> left_overlap_site_from_middle_state_site;
+    mutable auto_ptr<OverlapSite<Middle> const> middle_overlap_site_from_middle_state_site;
+    mutable auto_ptr<StateSite<Middle> const> middle_state_site_from_right_state_site;
+    mutable auto_ptr<OverlapSite<Right> const> right_overlap_site_from_right_state_site;
+
+    OverlapSitesFromStateSitesAndNormalizeResult(
+          auto_ptr<OverlapSite<Left> > left_overlap_site_from_middle_state_site
+        , auto_ptr<OverlapSite<Middle> > middle_overlap_site_from_middle_state_site
+        , auto_ptr<StateSite<Middle> > middle_state_site_from_right_state_site
+        , auto_ptr<OverlapSite<Right> > right_overlap_site_from_right_state_site
+    ) : left_overlap_site_from_middle_state_site(left_overlap_site_from_middle_state_site)
+      , middle_overlap_site_from_middle_state_site(middle_overlap_site_from_middle_state_site)
+      , middle_state_site_from_right_state_site(middle_state_site_from_right_state_site)
+      , right_overlap_site_from_right_state_site(right_overlap_site_from_right_state_site)
+    {}
+
+    OverlapSitesFromStateSitesAndNormalizeResult(
+          OverlapSitesFromStateSitesAndNormalizeResult const& other
+    ) : left_overlap_site_from_middle_state_site(other.left_overlap_site_from_middle_state_site)
+      , middle_overlap_site_from_middle_state_site(other.middle_overlap_site_from_middle_state_site)
+      , middle_state_site_from_right_state_site(other.middle_state_site_from_right_state_site)
+      , right_overlap_site_from_right_state_site(other.right_overlap_site_from_right_state_site)
+    {}
+};
+//@+node:gcross.20110131180117.1689: *3* OverlapVectorTrio
+struct OverlapVectorTrio {
+    OverlapBoundary<Left> const& left_boundary;
+    OverlapBoundary<Right> const& right_boundary;
+    OverlapSite<Middle> const& middle_site;
+
+    OverlapVectorTrio(
+          OverlapBoundary<Left> const& left_boundary
+        , OverlapBoundary<Right> const& right_boundary
+        , OverlapSite<Middle> const& middle_site
+    ) : left_boundary(left_boundary)
+      , right_boundary(right_boundary)
+      , middle_site(middle_site)
+    {}
+};
 //@+node:gcross.20110125120748.2467: ** Exceptions
 //@+node:gcross.20110125120748.2468: *3* NormalizationError
 struct NormalizationError : public Exception {
@@ -147,34 +195,34 @@ auto_ptr<OverlapBoundary<Right> const> contractSSRight(
     , StateSite<Right> const& state_site
 );
 //@+node:gcross.20110125120748.2465: *3* Cursor movement
-pair <shared_ptr<StateSite<Middle> const>
-     ,shared_ptr<StateSite<Right> const>
-> moveSiteCursorLeft(
+void moveSiteCursorLeft(
       StateSite<Left> const& old_state_site_1
     , StateSite<Middle> const& old_state_site_2
+    , auto_ptr<StateSite<Middle> const>& new_state_site_1
+    , auto_ptr<StateSite<Right> const>& new_state_site_2
 );
 
-pair <shared_ptr<StateSite<Left> const>
-     ,shared_ptr<StateSite<Middle> const>
-> moveSiteCursorRight(
+void moveSiteCursorRight(
       StateSite<Middle> const& old_state_site_1
     , StateSite<Right> const& old_state_site_2
+    , auto_ptr<StateSite<Left> const>& new_state_site_1
+    , auto_ptr<StateSite<Middle> const>& new_state_site_2
 );
 //@+node:gcross.20110125120748.2466: *3* Miscellaneous
-pair <shared_ptr<StateSite<Right> const>
-     ,shared_ptr<StateSite<Right> const>
-> increaseDimensionBetween(
+void increaseDimensionBetweenRightRight(
       unsigned int new_dimension
-    , const StateSite<Right> old_site_1
-    , const StateSite<Right> old_site_2
+    , StateSite<Right> const& old_site_1
+    , StateSite<Right> const& old_site_2
+    , auto_ptr<StateSite<Right> const>& new_site_1
+    , auto_ptr<StateSite<Right> const>& new_site_2
 );
 
-pair <shared_ptr<StateSite<Middle> const>
-     ,shared_ptr<StateSite<Right> const>
-> increaseDimensionBetween(
+void increaseDimensionBetweenMiddleRight(
       unsigned int new_dimension
-    , const StateSite<Middle> old_site_1
-    , const StateSite<Right> old_site_2
+    , StateSite<Middle> const& old_site_1
+    , StateSite<Right> const& old_site_2
+    , auto_ptr<StateSite<Middle> const>& new_site_1
+    , auto_ptr<StateSite<Right> const>& new_site_2
 );
 
 OptimizerResult optimizeStateSite(
@@ -190,11 +238,7 @@ OptimizerResult optimizeStateSite(
 //@+node:gcross.20110126102637.2193: *3* Overlap tensor formation
 auto_ptr<OverlapSite<Middle> const> computeOverlapSiteFromStateSite(StateSite<Middle> const& state_site);
 
-tuple<shared_ptr<OverlapSite<Left> const>
-     ,shared_ptr<OverlapSite<Middle> const>
-     ,shared_ptr<StateSite<Middle> const>
-     ,shared_ptr<OverlapSite<Right> const>
-> computeOverlapSitesFromStateSitesAndNormalize(
+OverlapSitesFromStateSitesAndNormalizeResult computeOverlapSitesFromStateSitesAndNormalize(
       StateSite<Middle> const& middle_state_site
      ,StateSite<Right> const& right_state_site
 );
