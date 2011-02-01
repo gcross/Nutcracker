@@ -35,7 +35,10 @@ using namespace std;
 
 //@+others
 //@+node:gcross.20110124175241.1520: ** enum Side
-enum Side { Left, Right, Middle };
+enum Side { Left, Middle, Right };
+
+template<Side other_side> struct Other { static Side const side; };
+template<Side other_side> Side const Other<other_side>::side = 2u-other_side;
 //@+node:gcross.20110127123226.2852: ** Parameters wrappers
 #define DEFINE_TEMPLATIZED_PARAMETER(Parameter,parameter) \
     template<typename T> struct Parameter { \
