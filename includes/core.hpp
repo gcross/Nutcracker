@@ -219,15 +219,15 @@ auto_ptr<ProjectorMatrix const> randomProjectorMatrix(
 );
 //@+node:gcross.20110125120748.2464: *3* Randomizers
 auto_ptr<StateSite<Middle> const> randomStateSiteMiddle(
-      unsigned int const physical_dimension
-    , unsigned int const left_dimension
-    , unsigned int const right_dimension
+      const PhysicalDimension physical_dimension
+    , const LeftDimension left_dimension
+    , const RightDimension right_dimension
 );
 
 auto_ptr<StateSite<Right> const> randomStateSiteRight(
-      unsigned int const physical_dimension
-    , unsigned int const left_dimension
-    , unsigned int const right_dimension
+      const PhysicalDimension physical_dimension
+    , const LeftDimension left_dimension
+    , const RightDimension right_dimension
 );
 //@-others
 

@@ -1283,9 +1283,9 @@ auto_ptr<ProjectorMatrix const> randomProjectorMatrix(
 //@+node:gcross.20110124175241.1601: *3* Randomizers
 //@+node:gcross.20110124175241.1645: *4* randomStateSiteMiddle
 auto_ptr<StateSite<Middle> const> randomStateSiteMiddle(
-      unsigned int const physical_dimension
-    , unsigned int const left_dimension
-    , unsigned int const right_dimension
+      const PhysicalDimension physical_dimension
+    , const LeftDimension left_dimension
+    , const RightDimension right_dimension
 ) {
     auto_ptr<StateSite<Middle> > state_site(
         new StateSite<Middle>
@@ -1295,18 +1295,18 @@ auto_ptr<StateSite<Middle> const> randomStateSiteMiddle(
             )
     );
     rand_unnorm_state_site_tensor(
-         right_dimension
-        ,left_dimension
-        ,physical_dimension
+         right_dimension()
+        ,left_dimension()
+        ,physical_dimension()
         ,*state_site
     );  
     return (auto_ptr<StateSite<Middle> const>) state_site;
 }
 //@+node:gcross.20110124175241.1647: *4* randomStateSiteRight
 auto_ptr<StateSite<Right> const> randomStateSiteRight(
-      unsigned int const physical_dimension
-    , unsigned int const left_dimension
-    , unsigned int const right_dimension
+      const PhysicalDimension physical_dimension
+    , const LeftDimension left_dimension
+    , const RightDimension right_dimension
 ) {
     auto_ptr<StateSite<Right> > state_site(
         new StateSite<Right>
@@ -1316,9 +1316,9 @@ auto_ptr<StateSite<Right> const> randomStateSiteRight(
             )
     );
     rand_norm_state_site_tensor(
-         right_dimension
-        ,left_dimension
-        ,physical_dimension
+         right_dimension()
+        ,left_dimension()
+        ,physical_dimension()
         ,*state_site
     );
     return (auto_ptr<StateSite<Right> const>) state_site;
