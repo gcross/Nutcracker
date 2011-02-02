@@ -631,10 +631,10 @@ OptimizerGivenTooManyProjectors::OptimizerGivenTooManyProjectors(
 ) : OptimizerFailure(
         (format("Optimizer was given too many projectors (%1% >= %2%*%3%*%4% = %5%)") 
             % number_of_projectors
-            % physical_dimension()
-            % left_dimension()
-            % right_dimension()
-            % (physical_dimension()*left_dimension()*right_dimension())
+            % *physical_dimension
+            % *left_dimension
+            % *right_dimension
+            % ((*physical_dimension)*(*left_dimension)*(*right_dimension))
         ).str()
     )
   , number_of_projectors(number_of_projectors)
@@ -1169,7 +1169,7 @@ ProjectorMatrix formProjectorMatrix(
 ) {
     unsigned int const
          number_of_projectors = overlaps.size()
-        ,state_physical_dimension = overlaps[0].middle_site.physicalDimension()()
+        ,state_physical_dimension = overlaps[0].middle_site.physicalDimension(as_unsigned_integer)
         ,state_left_dimension = overlaps[0].left_boundary.stateDimension(as_unsigned_integer)
         ,state_right_dimension = overlaps[0].right_boundary.stateDimension(as_unsigned_integer)
         ,overlap_vector_length = state_physical_dimension*state_left_dimension*state_right_dimension
@@ -1258,9 +1258,9 @@ StateSite<Middle> randomStateSiteMiddle(
         ,right_dimension
         );
     rand_unnorm_state_site_tensor(
-         right_dimension()
-        ,left_dimension()
-        ,physical_dimension()
+         *right_dimension
+        ,*left_dimension
+        ,*physical_dimension
         ,state_site
     );  
     return boost::move(state_site);
@@ -1277,9 +1277,9 @@ StateSite<Right> randomStateSiteRight(
         ,right_dimension
         );
     rand_norm_state_site_tensor(
-         right_dimension()
-        ,left_dimension()
-        ,physical_dimension()
+         *right_dimension
+        ,*left_dimension
+        ,*physical_dimension
         ,state_site
     );
     return boost::move(state_site);

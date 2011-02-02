@@ -65,10 +65,9 @@ DEFINE_TEMPLATIZED_PARAMETER(FillWithRange,fillWithRange)
     public: \
         explicit CapsName##Dimension(unsigned int const dimension) : dimension(dimension) { } \
         unsigned int operator *() const { return dimension; } \
-        unsigned int operator ()() const { return dimension; } \
         bool operator==(CapsName##Dimension const other) const { return dimension == other.dimension; } \
     }; \
-    inline ostream& operator<<(ostream& out, CapsName##Dimension const d) { return (out << d()); }
+    inline ostream& operator<<(ostream& out, CapsName##Dimension const d) { return (out << *d); }
 
 DEFINE_DIMENSION(Left);
 DEFINE_DIMENSION(Operator);
@@ -170,7 +169,7 @@ public:
     ExpectationBoundary(
           OperatorDimension const operator_dimension
         , StateDimension const state_dimension
-    ) : BaseTensor(operator_dimension()*state_dimension()*state_dimension())
+    ) : BaseTensor((*operator_dimension)*(*state_dimension)*(*state_dimension))
       , operator_dimension(operator_dimension)
       , state_dimension(state_dimension)
     { }
@@ -186,7 +185,7 @@ public:
           OperatorDimension const operator_dimension
         , StateDimension const state_dimension
         , FillWithGenerator<G> const generator
-    ) : BaseTensor(operator_dimension()*state_dimension()*state_dimension(),generator)
+    ) : BaseTensor((*operator_dimension)*(*state_dimension)*(*state_dimension),generator)
       , operator_dimension(operator_dimension)
       , state_dimension(state_dimension)
     { }
@@ -196,7 +195,7 @@ public:
         , FillWithRange<Range> const init
     ) : BaseTensor(init)
       , operator_dimension(operator_dimension)
-      , state_dimension((unsigned int)sqrt(size()/operator_dimension()))
+      , state_dimension((unsigned int)sqrt(size()/(*operator_dimension)))
     { }
 
     ExpectationBoundary(
@@ -232,7 +231,7 @@ public:
     OverlapBoundary(
           OverlapDimension const overlap_dimension
         , StateDimension const state_dimension
-    ) : BaseTensor(overlap_dimension()*state_dimension())
+    ) : BaseTensor((*overlap_dimension)*(*state_dimension))
       , overlap_dimension(overlap_dimension)
       , state_dimension(state_dimension)
     { }
@@ -248,7 +247,7 @@ public:
           OverlapDimension const overlap_dimension
         , StateDimension const state_dimension
         , FillWithGenerator<G> const generator
-    ) : BaseTensor(overlap_dimension()*state_dimension(),generator)
+    ) : BaseTensor((*overlap_dimension)*(*state_dimension),generator)
       , overlap_dimension(overlap_dimension)
       , state_dimension(state_dimension)
     { }
@@ -258,7 +257,7 @@ public:
         , FillWithRange<Range> const init
     ) : BaseTensor(init)
       , overlap_dimension(overlap_dimension)
-      , state_dimension(size()/overlap_dimension())
+      , state_dimension(size()/(*overlap_dimension))
     { }
 
     OverlapBoundary(
@@ -441,7 +440,7 @@ public:
              physical_dimension
             ,left_dimension
             ,right_dimension
-            ,number_of_matrices*physical_dimension()*physical_dimension()
+            ,number_of_matrices*(*physical_dimension)*(*physical_dimension)
         )
       , number_of_matrices(number_of_matrices)
       , index_data(new uint32_t[number_of_matrices*2])
@@ -458,7 +457,7 @@ public:
              physical_dimension
             ,left_dimension
             ,right_dimension
-            ,number_of_matrices*physical_dimension()*physical_dimension()
+            ,number_of_matrices*(*physical_dimension)*(*physical_dimension)
             ,matrix_generator
         )
       , number_of_matrices(number_of_matrices)
@@ -470,8 +469,8 @@ public:
             uint32_t left_index = (*index_generator)()
                    , right_index = (*index_generator)()
                    ;
-            assert(left_index >= 1 && left_index <= left_dimension());
-            assert(right_index >= 1 && right_index <= right_dimension());
+            assert(left_index >= 1 && left_index <= *leftDimension());
+            assert(right_index >= 1 && right_index <= *rightDimension());
             *index++ = left_index;
             *index++ = right_index;
         }
@@ -528,7 +527,7 @@ public:
              physical_dimension
             ,left_dimension
             ,right_dimension
-            ,physical_dimension()*left_dimension()*right_dimension()
+            ,(*physical_dimension)*(*left_dimension)*(*right_dimension)
         )
     { }
 
@@ -551,7 +550,7 @@ public:
              physical_dimension
             ,left_dimension
             ,right_dimension
-            ,physical_dimension()*left_dimension()*right_dimension()
+            ,(*physical_dimension)*(*left_dimension)*(*right_dimension)
             ,generator
         )
     { }
@@ -561,7 +560,7 @@ public:
         , RightDimension const right_dimension
         , FillWithRange<Range> const init
     ) : SiteBaseTensor(
-             PhysicalDimension(init->size()/(left_dimension()*right_dimension()))
+             PhysicalDimension(init->size()/((*left_dimension)*(*right_dimension)))
             ,left_dimension
             ,right_dimension
             ,init
@@ -591,7 +590,7 @@ public:
              physical_dimension
             ,left_dimension
             ,right_dimension
-            ,physical_dimension()*left_dimension()*right_dimension()
+            ,(*physical_dimension)*(*left_dimension)*(*right_dimension)
         )
     { }
 
@@ -614,7 +613,7 @@ public:
              physical_dimension
             ,left_dimension
             ,right_dimension
-            ,physical_dimension()*left_dimension()*right_dimension()
+            ,(*physical_dimension)*(*left_dimension)*(*right_dimension)
             ,generator
         )
     { }
@@ -624,7 +623,7 @@ public:
         , LeftDimension const left_dimension
         , FillWithRange<Range> const init
     ) : SiteBaseTensor(
-             PhysicalDimension(init->size()/(left_dimension()*right_dimension()))
+             PhysicalDimension(init->size()/((*left_dimension)*(*right_dimension)))
             ,left_dimension
             ,right_dimension
             ,init
