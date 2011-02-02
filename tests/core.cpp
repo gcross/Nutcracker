@@ -200,15 +200,15 @@ TEST_SUITE(Consistency) {
 
             ASSERT_EQ_QUOTED(
                  physical_dimension
-                ,projected_state_site.physical_dimension()
+                ,projected_state_site.physicalDimension(as_unsigned_integer)
             );
             ASSERT_EQ_QUOTED(
                  left_dimension
-                ,projected_state_site.left_dimension()
+                ,projected_state_site.leftDimension(as_unsigned_integer)
             );
             ASSERT_EQ_QUOTED(
                  right_dimension
-                ,projected_state_site.right_dimension()
+                ,projected_state_site.rightDimension(as_unsigned_integer)
             );
 
             ASSERT_NEAR(0,overlap,1e-12);
@@ -360,8 +360,8 @@ TEST_SUITE(computeSOSLeft) {
                 ,OperatorSite::trivial
             )
         );
-        ASSERT_EQ(OperatorDimension(1),new_boundary.operator_dimension);
-        ASSERT_EQ(StateDimension(1),new_boundary.state_dimension);
+        ASSERT_EQ(OperatorDimension(1),new_boundary.operatorDimension());
+        ASSERT_EQ(StateDimension(1),new_boundary.stateDimension());
         ASSERT_TRUE(equal(list_of(complex<double>(1)),new_boundary));
     }
     //@+node:gcross.20110127123226.2827: *5* trivial, c = 2
@@ -379,8 +379,8 @@ TEST_SUITE(computeSOSLeft) {
                 ,operator_site
             )
         );
-        ASSERT_EQ(OperatorDimension(2),new_boundary.operator_dimension);
-        ASSERT_EQ(StateDimension(1),new_boundary.state_dimension);
+        ASSERT_EQ(OperatorDimension(2),new_boundary.operatorDimension());
+        ASSERT_EQ(StateDimension(1),new_boundary.stateDimension());
         ASSERT_TRUE(equal(list_of(complex<double>(0))(complex<double>(0,1)),new_boundary));
     }
     //@+node:gcross.20110127123226.2875: *5* non-trivial
@@ -417,8 +417,8 @@ TEST_SUITE(computeSOSLeft) {
                 ,operator_site
             )
         );
-        ASSERT_EQ(OperatorDimension(2),actual_boundary.operator_dimension);
-        ASSERT_EQ(StateDimension(4),actual_boundary.state_dimension);
+        ASSERT_EQ(OperatorDimension(2),actual_boundary.operatorDimension());
+        ASSERT_EQ(StateDimension(4),actual_boundary.stateDimension());
         complex<double> const expected_boundary[] =
             {c(-8.0,1.0),c(4.0,5.0),c(-10.0,-7.0),c(6.0,0.0)
             ,c(-4.0,5.0),c(8.0,1.0),c(-14.0,1.0),c(6.0,0.0)
@@ -452,8 +452,8 @@ TEST_SUITE(computeSOSRight) {
                 ,OperatorSite::trivial
             )
         );
-        ASSERT_EQ(OperatorDimension(1),new_boundary.operator_dimension);
-        ASSERT_EQ(StateDimension(1),new_boundary.state_dimension);
+        ASSERT_EQ(OperatorDimension(1),new_boundary.operatorDimension());
+        ASSERT_EQ(StateDimension(1),new_boundary.stateDimension());
         ASSERT_TRUE(equal(list_of(complex<double>(1)),new_boundary));
     }
     //@+node:gcross.20110127123226.2833: *5* trivial, c = 2
@@ -471,8 +471,8 @@ TEST_SUITE(computeSOSRight) {
                 ,operator_site
             )
         );
-        ASSERT_EQ(OperatorDimension(2),new_boundary.operator_dimension);
-        ASSERT_EQ(StateDimension(1),new_boundary.state_dimension);
+        ASSERT_EQ(OperatorDimension(2),new_boundary.operatorDimension());
+        ASSERT_EQ(StateDimension(1),new_boundary.stateDimension());
         ASSERT_TRUE(equal(list_of(complex<double>(0))(complex<double>(0,1)),new_boundary));
     }
     //@+node:gcross.20110127123226.2873: *5* non-trivial
@@ -511,8 +511,8 @@ TEST_SUITE(computeSOSRight) {
                 ,operator_site
             )
         );
-        ASSERT_EQ(OperatorDimension(2),actual_boundary.operator_dimension);
-        ASSERT_EQ(StateDimension(4),actual_boundary.state_dimension);
+        ASSERT_EQ(OperatorDimension(2),actual_boundary.operatorDimension());
+        ASSERT_EQ(StateDimension(4),actual_boundary.stateDimension());
         complex<double> const expected_boundary[] =
             {c(-8.0,1.0),c(4.0,5.0),c(-10.0,-7.0),c(18.0,8.0)
             ,c(-4.0,5.0),c(8.0,1.0),c(-14.0,1.0),c(18.0,-8.0)
@@ -546,8 +546,8 @@ TEST_SUITE(computeSSLeft) {
                 ,StateSite<Left>::trivial
             )
         );
-        ASSERT_EQ(OverlapDimension(1),new_boundary.overlap_dimension);
-        ASSERT_EQ(StateDimension(1),new_boundary.state_dimension);
+        ASSERT_EQ(OverlapDimension(1),new_boundary.overlapDimension());
+        ASSERT_EQ(StateDimension(1),new_boundary.stateDimension());
         ASSERT_TRUE(equal(list_of(complex<double>(1)),new_boundary));
     }
     //@+node:gcross.20110127123226.2849: *5* trivial, physical dimension 2
@@ -569,8 +569,8 @@ TEST_SUITE(computeSSLeft) {
                 ,state_site
             )
         );
-        ASSERT_EQ(OverlapDimension(1),new_boundary.overlap_dimension);
-        ASSERT_EQ(StateDimension(1),new_boundary.state_dimension);
+        ASSERT_EQ(OverlapDimension(1),new_boundary.overlapDimension());
+        ASSERT_EQ(StateDimension(1),new_boundary.stateDimension());
         ASSERT_TRUE(equal(list_of(complex<double>(4)),new_boundary));
     }
     //@+node:gcross.20110127123226.2851: *5* non-trivial
@@ -603,8 +603,8 @@ TEST_SUITE(computeSSLeft) {
                 ,state_site
             )
         );
-        ASSERT_EQ(OverlapDimension(2),actual_boundary.overlap_dimension);
-        ASSERT_EQ(StateDimension(5),actual_boundary.state_dimension);
+        ASSERT_EQ(OverlapDimension(2),actual_boundary.overlapDimension());
+        ASSERT_EQ(StateDimension(5),actual_boundary.stateDimension());
         complex<double> const expected_boundary[] =
             {c(0,10),c(-6,0),c(4,-6),c(5,4),c(-4,6)
             ,c(15,15),c(-15,9),c(-9,-21),c(21,0),c(9,21)
@@ -632,8 +632,8 @@ TEST_SUITE(computeSSRight) {
                 ,StateSite<Right>::trivial
             )
         );
-        ASSERT_EQ(OverlapDimension(1),new_boundary.overlap_dimension);
-        ASSERT_EQ(StateDimension(1),new_boundary.state_dimension);
+        ASSERT_EQ(OverlapDimension(1),new_boundary.overlapDimension());
+        ASSERT_EQ(StateDimension(1),new_boundary.stateDimension());
         ASSERT_TRUE(equal(list_of(complex<double>(1)),new_boundary));
     }
     //@+node:gcross.20110127123226.2864: *5* trivial, physical dimension 2
@@ -655,8 +655,8 @@ TEST_SUITE(computeSSRight) {
                 ,state_site
             )
         );
-        ASSERT_EQ(OverlapDimension(1),new_boundary.overlap_dimension);
-        ASSERT_EQ(StateDimension(1),new_boundary.state_dimension);
+        ASSERT_EQ(OverlapDimension(1),new_boundary.overlapDimension());
+        ASSERT_EQ(StateDimension(1),new_boundary.stateDimension());
         ASSERT_TRUE(equal(list_of(complex<double>(4)),new_boundary));
     }
     //@+node:gcross.20110127123226.2865: *5* non-trivial
@@ -691,8 +691,8 @@ TEST_SUITE(computeSSRight) {
                 ,state_site
             )
         );
-        ASSERT_EQ(OverlapDimension(3),actual_boundary.overlap_dimension);
-        ASSERT_EQ(StateDimension(2),actual_boundary.state_dimension);
+        ASSERT_EQ(OverlapDimension(3),actual_boundary.overlapDimension());
+        ASSERT_EQ(StateDimension(2),actual_boundary.stateDimension());
         complex<double> const expected_boundary[] =
             {c(5,-2),c(-3,-4),c(4,5)
             ,c(26,5),c(22,-15),c(-11,-2)
@@ -752,9 +752,9 @@ TEST_CASE(trivial_with_physical_dimension_4) {
 
     StateSite<Middle> const& new_state_site = optimizer_result.state_site;
 
-    ASSERT_EQ(4,new_state_site.physical_dimension());
-    ASSERT_EQ(1,new_state_site.left_dimension());
-    ASSERT_EQ(1,new_state_site.right_dimension());
+    ASSERT_EQ(4,new_state_site.physicalDimension(as_unsigned_integer));
+    ASSERT_EQ(1,new_state_site.leftDimension(as_unsigned_integer));
+    ASSERT_EQ(1,new_state_site.rightDimension(as_unsigned_integer));
     ASSERT_NEAR(c(0,0),new_state_site[0],1e-7);
     ASSERT_NEAR(c(0,0),new_state_site[1],1e-7);
     ASSERT_NEAR(c(0,0),new_state_site[2],1e-7);
@@ -800,10 +800,10 @@ TEST_CASE(trivial) {
             )
         )
     );
-    ASSERT_EQ(1,projector_matrix.number_of_projectors);
-    ASSERT_EQ(1,projector_matrix.projector_length);
-    ASSERT_EQ(1,projector_matrix.number_of_reflectors);
-    ASSERT_EQ(0,projector_matrix.orthogonal_subspace_dimension);
+    ASSERT_EQ(1,projector_matrix.numberOfProjectors());
+    ASSERT_EQ(1,projector_matrix.projectorLength());
+    ASSERT_EQ(1,projector_matrix.numberOfReflectors());
+    ASSERT_EQ(0,projector_matrix.orthogonalSubspaceDimension());
 }
 //@+node:gcross.20110129220506.1663: *4* physical dimension 4, one projector
 TEST_CASE(physical_dimension_4_with_one_projector) {
@@ -816,10 +816,10 @@ TEST_CASE(physical_dimension_4_with_one_projector) {
             ))
         )
     );
-    ASSERT_EQ(1,projector_matrix.number_of_projectors);
-    ASSERT_EQ(4,projector_matrix.projector_length);
-    ASSERT_EQ(1,projector_matrix.number_of_reflectors);
-    ASSERT_EQ(3,projector_matrix.orthogonal_subspace_dimension);
+    ASSERT_EQ(1,projector_matrix.numberOfProjectors());
+    ASSERT_EQ(4,projector_matrix.projectorLength());
+    ASSERT_EQ(1,projector_matrix.numberOfReflectors());
+    ASSERT_EQ(3,projector_matrix.orthogonalSubspaceDimension());
 }
 //@+node:gcross.20110129220506.1665: *4* physical dimension 4, two projectors
 TEST_CASE(physical_dimension_4_with_two_projectors) {
@@ -837,10 +837,10 @@ TEST_CASE(physical_dimension_4_with_two_projectors) {
             ))
         )
     );
-    ASSERT_EQ(2,projector_matrix.number_of_projectors);
-    ASSERT_EQ(4,projector_matrix.projector_length);
-    ASSERT_EQ(2,projector_matrix.number_of_reflectors);
-    ASSERT_EQ(2,projector_matrix.orthogonal_subspace_dimension);
+    ASSERT_EQ(2,projector_matrix.numberOfProjectors());
+    ASSERT_EQ(4,projector_matrix.projectorLength());
+    ASSERT_EQ(2,projector_matrix.numberOfReflectors());
+    ASSERT_EQ(2,projector_matrix.orthogonalSubspaceDimension());
 }
 //@+node:gcross.20110129220506.1667: *4* physical dimension 4, three projectors
 TEST_CASE(physical_dimension_4_with_three_projectors) {
@@ -863,10 +863,10 @@ TEST_CASE(physical_dimension_4_with_three_projectors) {
             ))
         )
     );
-    ASSERT_EQ(3,projector_matrix.number_of_projectors);
-    ASSERT_EQ(4,projector_matrix.projector_length);
-    ASSERT_EQ(3,projector_matrix.number_of_reflectors);
-    ASSERT_EQ(1,projector_matrix.orthogonal_subspace_dimension);
+    ASSERT_EQ(3,projector_matrix.numberOfProjectors());
+    ASSERT_EQ(4,projector_matrix.projectorLength());
+    ASSERT_EQ(3,projector_matrix.numberOfReflectors());
+    ASSERT_EQ(1,projector_matrix.orthogonalSubspaceDimension());
 }
 //@-others
 

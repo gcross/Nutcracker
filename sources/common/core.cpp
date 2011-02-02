@@ -727,7 +727,7 @@ complex<double> computeExpectationValue(
         ,operator_site || state_site
         ,left_boundary
         ,state_site
-        ,operator_site.number_of_matrices,operator_site,operator_site
+        ,operator_site.numberOfMatrices(),operator_site,operator_site
         ,right_boundary
     );
 }
@@ -739,15 +739,15 @@ complex<double> contractExpectationBoundaries(
     return contract_expectation_boundaries(
          connectDimensions(
              "left boundary state"
-            ,left_boundary.state_dimension()
+            ,left_boundary.stateDimension(as_unsigned_integer)
             ,"right boundary state"
-            ,right_boundary.state_dimension()
+            ,right_boundary.stateDimension(as_unsigned_integer)
          )
         ,connectDimensions(
              "left boundary operator"
-            ,left_boundary.operator_dimension()
+            ,left_boundary.operatorDimension(as_unsigned_integer)
             ,"right boundary operator"
-            ,right_boundary.operator_dimension()
+            ,right_boundary.operatorDimension(as_unsigned_integer)
          )
         ,left_boundary
         ,right_boundary
@@ -760,17 +760,17 @@ ExpectationBoundary<Left> contractSOSLeft(
     , OperatorSite const& operator_site
 ) {
     ExpectationBoundary<Left> new_boundary
-        (OperatorDimension(operator_site.right_dimension())
-        ,StateDimension(state_site.right_dimension())
+        (OperatorDimension(operator_site.rightDimension(as_unsigned_integer))
+        ,StateDimension(state_site.rightDimension(as_unsigned_integer))
         );
     contract_sos_left(
          old_boundary || state_site
-        ,state_site.right_dimension()
+        ,state_site.rightDimension(as_unsigned_integer)
         ,old_boundary || operator_site
-        ,operator_site.right_dimension()
+        ,operator_site.rightDimension(as_unsigned_integer)
         ,operator_site || state_site
         ,old_boundary
-        ,operator_site.number_of_matrices,operator_site,operator_site
+        ,operator_site.numberOfMatrices(),operator_site,operator_site
         ,state_site
         ,new_boundary
     );
@@ -783,17 +783,17 @@ ExpectationBoundary<Right> contractSOSRight(
     , OperatorSite const& operator_site
 ) {
     ExpectationBoundary<Right> new_boundary
-        (OperatorDimension(operator_site.left_dimension())
-        ,StateDimension(state_site.left_dimension())
+        (OperatorDimension(operator_site.leftDimension(as_unsigned_integer))
+        ,StateDimension(state_site.leftDimension(as_unsigned_integer))
         );
     contract_sos_right(
-         state_site.left_dimension()
+         state_site.leftDimension(as_unsigned_integer)
         ,state_site || old_boundary
-        ,operator_site.left_dimension()
+        ,operator_site.leftDimension(as_unsigned_integer)
         ,operator_site || old_boundary
         ,operator_site || state_site
         ,old_boundary
-        ,operator_site.number_of_matrices,operator_site,operator_site
+        ,operator_site.numberOfMatrices(),operator_site,operator_site
         ,state_site
         ,new_boundary
     );
@@ -806,14 +806,14 @@ OverlapBoundary<Left> contractSSLeft(
     , StateSite<Left> const& state_site
 ) {
     OverlapBoundary<Left> new_boundary
-        (OverlapDimension(overlap_site.right_dimension())
-        ,StateDimension(state_site.right_dimension())
+        (OverlapDimension(overlap_site.rightDimension(as_unsigned_integer))
+        ,StateDimension(state_site.rightDimension(as_unsigned_integer))
         );
     contract_ss_left(
          old_boundary || overlap_site
-        ,overlap_site.right_dimension()
+        ,overlap_site.rightDimension(as_unsigned_integer)
         ,old_boundary || state_site
-        ,state_site.right_dimension()
+        ,state_site.rightDimension(as_unsigned_integer)
         ,overlap_site || state_site
         ,old_boundary
         ,overlap_site
@@ -829,13 +829,13 @@ OverlapBoundary<Right> contractSSRight(
     , StateSite<Right> const& state_site
 ) {
     OverlapBoundary<Right> new_boundary
-        (OverlapDimension(overlap_site.left_dimension())
-        ,StateDimension(state_site.left_dimension())
+        (OverlapDimension(overlap_site.leftDimension(as_unsigned_integer))
+        ,StateDimension(state_site.leftDimension(as_unsigned_integer))
         );
     contract_ss_right(
-         overlap_site.left_dimension()
+         overlap_site.leftDimension(as_unsigned_integer)
         ,overlap_site || old_boundary
-        ,state_site.left_dimension()
+        ,state_site.leftDimension(as_unsigned_integer)
         ,state_site || old_boundary
         ,overlap_site || state_site
         ,old_boundary
@@ -855,11 +855,11 @@ MoveSiteCursorResult<Left> moveSiteCursorLeft(
     StateSite<Right> new_state_site_2(dimensionsOf(old_state_site_2));
     unsigned int const info =
     norm_denorm_going_left(
-         old_state_site_1.left_dimension()
+         old_state_site_1.leftDimension(as_unsigned_integer)
         ,old_state_site_1 || old_state_site_2
-        ,old_state_site_2.right_dimension()
-        ,old_state_site_1.physical_dimension()
-        ,old_state_site_2.physical_dimension()
+        ,old_state_site_2.rightDimension(as_unsigned_integer)
+        ,old_state_site_1.physicalDimension(as_unsigned_integer)
+        ,old_state_site_2.physicalDimension(as_unsigned_integer)
         ,old_state_site_1
         ,old_state_site_2
         ,new_state_site_1
@@ -880,11 +880,11 @@ MoveSiteCursorResult<Right> moveSiteCursorRight(
     StateSite<Middle> new_state_site_2(dimensionsOf(old_state_site_2));
     unsigned int const info =
     norm_denorm_going_right(
-         old_state_site_1.left_dimension()
+         old_state_site_1.leftDimension(as_unsigned_integer)
         ,old_state_site_1 || old_state_site_2
-        ,old_state_site_2.right_dimension()
-        ,old_state_site_1.physical_dimension()
-        ,old_state_site_2.physical_dimension()
+        ,old_state_site_2.rightDimension(as_unsigned_integer)
+        ,old_state_site_1.physicalDimension(as_unsigned_integer)
+        ,old_state_site_2.physicalDimension(as_unsigned_integer)
         ,old_state_site_1
         ,old_state_site_2
         ,new_state_site_1
@@ -912,27 +912,27 @@ void implIncreaseDimensionBetween(
 
     auto_ptr<StateSite<side1> > new_site_1_writable(
         new StateSite<side1>(
-             old_site_1.physical_dimension
-            ,old_site_1.left_dimension
+             old_site_1.physicalDimension()
+            ,old_site_1.leftDimension()
             ,RightDimension(new_dimension)
         )
     );
     auto_ptr<StateSite<side2> > new_site_2_writable(
         new StateSite<side2>(
-             old_site_2.physical_dimension
+             old_site_2.physicalDimension()
             ,LeftDimension(new_dimension)
-            ,old_site_2.right_dimension
+            ,old_site_2.rightDimension()
         )
     );
 
     int const info =
         new_dimension > old_dimension
             ? increase_bandwidth_between(
-                 old_site_1.left_dimension()
+                 old_site_1.leftDimension(as_unsigned_integer)
                 ,old_dimension
-                ,old_site_2.right_dimension()
-                ,old_site_1.physical_dimension()
-                ,old_site_2.physical_dimension()
+                ,old_site_2.rightDimension(as_unsigned_integer)
+                ,old_site_1.physicalDimension(as_unsigned_integer)
+                ,old_site_2.physicalDimension(as_unsigned_integer)
                 ,new_dimension
                 ,old_site_1
                 ,old_site_2
@@ -940,11 +940,11 @@ void implIncreaseDimensionBetween(
                 ,*new_site_2_writable
               )
             : norm_denorm_going_left(
-                 old_site_1.left_dimension()
+                 old_site_1.leftDimension(as_unsigned_integer)
                 ,old_dimension
-                ,old_site_2.right_dimension()
-                ,old_site_1.physical_dimension()
-                ,old_site_2.physical_dimension()
+                ,old_site_2.rightDimension(as_unsigned_integer)
+                ,old_site_1.physicalDimension(as_unsigned_integer)
+                ,old_site_2.physicalDimension(as_unsigned_integer)
                 ,old_site_1
                 ,old_site_2
                 ,*new_site_1_writable
@@ -996,11 +996,11 @@ OptimizerResult optimizeStateSite(
                 ,operator_site || right_boundary
                 ,operator_site || current_state_site
                 ,left_boundary
-                ,operator_site.number_of_matrices,operator_site,operator_site
+                ,operator_site.numberOfMatrices(),operator_site,operator_site
                 ,right_boundary
-                ,maybe_projector_matrix->number_of_projectors
-                ,maybe_projector_matrix->number_of_reflectors
-                ,maybe_projector_matrix->orthogonal_subspace_dimension
+                ,maybe_projector_matrix->numberOfProjectors()
+                ,maybe_projector_matrix->numberOfReflectors()
+                ,maybe_projector_matrix->orthogonalSubspaceDimension()
                 ,maybe_projector_matrix->reflectorData()
                 ,maybe_projector_matrix->coefficientData()
                 ,maybe_projector_matrix->swapData()
@@ -1019,11 +1019,11 @@ OptimizerResult optimizeStateSite(
                 ,operator_site || right_boundary
                 ,operator_site || current_state_site
                 ,left_boundary
-                ,operator_site.number_of_matrices,operator_site,operator_site
+                ,operator_site.numberOfMatrices(),operator_site,operator_site
                 ,right_boundary
                 ,0
                 ,0
-                ,current_state_site.size
+                ,current_state_site.size()
                 ,NULL
                 ,NULL
                 ,NULL
@@ -1056,10 +1056,10 @@ OptimizerResult optimizeStateSite(
             throw OptimizerUnableToConverge(number_of_iterations);
         case  10:
             throw OptimizerGivenTooManyProjectors(
-                 maybe_projector_matrix->number_of_projectors
-                ,current_state_site.physical_dimension
-                ,current_state_site.left_dimension
-                ,current_state_site.right_dimension
+                 maybe_projector_matrix->numberOfProjectors()
+                ,current_state_site.physicalDimension()
+                ,current_state_site.leftDimension()
+                ,current_state_site.rightDimension()
             );
         case 11:
             throw OptimizerGivenGuessInProjectorSpace();
@@ -1090,9 +1090,9 @@ OptimizerResult optimizeStateSite(
 OverlapSite<Middle> computeOverlapSiteFromStateSite(StateSite<Middle> const& state_site) {
     OverlapSite<Middle> overlap_site(dimensionsOf(state_site));
     form_overlap_site_tensor(
-         state_site.right_dimension()
-        ,state_site.left_dimension()
-        ,state_site.physical_dimension()
+         state_site.rightDimension(as_unsigned_integer)
+        ,state_site.leftDimension(as_unsigned_integer)
+        ,state_site.physicalDimension(as_unsigned_integer)
         ,state_site
         ,overlap_site
     );
@@ -1108,11 +1108,11 @@ OverlapSitesFromStateSitesAndNormalizeResult computeOverlapSitesFromStateSitesAn
     StateSite<Middle> middle_state_site_from_right_state_site(dimensionsOf(right_state_site));
     OverlapSite<Right> right_overlap_site_from_right_state_site(dimensionsOf(right_state_site));
     form_norm_overlap_tensors(
-         middle_state_site.left_dimension()
+         middle_state_site.leftDimension(as_unsigned_integer)
         ,middle_state_site || right_state_site
-        ,right_state_site.right_dimension()
-        ,middle_state_site.physical_dimension()
-        ,right_state_site.physical_dimension()
+        ,right_state_site.rightDimension(as_unsigned_integer)
+        ,middle_state_site.physicalDimension(as_unsigned_integer)
+        ,right_state_site.physicalDimension(as_unsigned_integer)
         ,middle_state_site
         ,right_state_site
         ,left_overlap_site_from_middle_state_site
@@ -1137,9 +1137,9 @@ StateSite<Middle> applyProjectorMatrix(
     StateSite<Middle> new_state_site(dimensionsOf(old_state_site));
     filter_components_outside_orthog(
          projector_matrix || old_state_site
-        ,projector_matrix.number_of_projectors
-        ,projector_matrix.number_of_reflectors
-        ,projector_matrix.orthogonal_subspace_dimension
+        ,projector_matrix.numberOfProjectors()
+        ,projector_matrix.numberOfReflectors()
+        ,projector_matrix.orthogonalSubspaceDimension()
         ,projector_matrix.reflectorData()
         ,projector_matrix.coefficientData()
         ,projector_matrix.swapData()
@@ -1154,8 +1154,8 @@ double computeOverlapWithProjectors(
     ,StateSite<Middle> const& state_site
 ) {
     return abs(compute_overlap_with_projectors(
-         projector_matrix.number_of_projectors
-        ,projector_matrix.number_of_reflectors
+         projector_matrix.numberOfProjectors()
+        ,projector_matrix.numberOfReflectors()
         ,projector_matrix.reflectorData()
         ,projector_matrix.coefficientData()
         ,projector_matrix.swapData()
@@ -1169,9 +1169,9 @@ ProjectorMatrix formProjectorMatrix(
 ) {
     unsigned int const
          number_of_projectors = overlaps.size()
-        ,state_physical_dimension = overlaps[0].middle_site.physical_dimension()
-        ,state_left_dimension = overlaps[0].left_boundary.state_dimension()
-        ,state_right_dimension = overlaps[0].right_boundary.state_dimension()
+        ,state_physical_dimension = overlaps[0].middle_site.physicalDimension()()
+        ,state_left_dimension = overlaps[0].left_boundary.stateDimension(as_unsigned_integer)
+        ,state_right_dimension = overlaps[0].right_boundary.stateDimension(as_unsigned_integer)
         ,overlap_vector_length = state_physical_dimension*state_left_dimension*state_right_dimension
         ,number_of_reflectors = min(overlap_vector_length,number_of_projectors)
         ;
