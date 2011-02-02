@@ -335,23 +335,99 @@ public:
     uint32_t const* swapData() const { return swap_data.get(); }
 };
 //@+node:gcross.20110124175241.1531: *3* Site
+//@+node:gcross.20110202142407.1690: *4* SiteBaseTensor
+class SiteBaseTensor : public BaseTensor {
+private:
+    BOOST_MOVABLE_BUT_NOT_COPYABLE(SiteBaseTensor)
+
+    PhysicalDimension const physical_dimension;
+    LeftDimension const left_dimension;
+    RightDimension const right_dimension;
+
+protected:
+    SiteBaseTensor(BOOST_RV_REF(SiteBaseTensor) other)
+      : BaseTensor(boost::move(static_cast<BaseTensor&>(other)))
+      , physical_dimension(other.physical_dimension)
+      , left_dimension(other.left_dimension)
+      , right_dimension(other.right_dimension)
+    { }
+
+    SiteBaseTensor(
+          PhysicalDimension const physical_dimension
+        , LeftDimension const left_dimension
+        , RightDimension const right_dimension
+        , unsigned int const size
+    ) : BaseTensor(size)
+      , physical_dimension(physical_dimension)
+      , left_dimension(left_dimension)
+      , right_dimension(right_dimension)
+    { }
+
+    template<typename Tensor> SiteBaseTensor(CopyFrom<Tensor const> const other)
+      : BaseTensor(other)
+      , physical_dimension(other->physicalDimension())
+      , left_dimension(other->leftDimension())
+      , right_dimension(other->rightDimension())
+    { }
+
+    template<typename Tensor> SiteBaseTensor(DimensionsOf<Tensor const> const other)
+      : BaseTensor(other->size())
+      , physical_dimension(other->physicalDimension())
+      , left_dimension(other->leftDimension())
+      , right_dimension(other->rightDimension())
+    { }
+
+    template<typename G> SiteBaseTensor(
+          PhysicalDimension const physical_dimension
+        , LeftDimension const left_dimension
+        , RightDimension const right_dimension
+        , unsigned int const size
+        , FillWithGenerator<G> const generator
+    ) : BaseTensor(size,generator)
+      , physical_dimension(physical_dimension)
+      , left_dimension(left_dimension)
+      , right_dimension(right_dimension)
+    { }
+
+    template<typename Range> SiteBaseTensor(
+          PhysicalDimension const physical_dimension
+        , LeftDimension const left_dimension
+        , RightDimension const right_dimension
+        , FillWithRange<Range> const init
+    ) : BaseTensor(init)
+      , physical_dimension(physical_dimension)
+      , left_dimension(left_dimension)
+      , right_dimension(right_dimension)
+    { }
+
+    SiteBaseTensor(MakeTrivial const make_trivial)
+      : BaseTensor(make_trivial)
+      , physical_dimension(1)
+      , left_dimension(1)
+      , right_dimension(1)
+    { }
+
+public:
+    PhysicalDimension physicalDimension() const { return physical_dimension; }
+    unsigned int physicalDimension(AsUnsignedInteger _) const { return *physical_dimension; }
+
+    LeftDimension leftDimension() const { return left_dimension; }
+    unsigned int leftDimension(AsUnsignedInteger _) const { return *left_dimension; }
+
+    RightDimension rightDimension() const { return right_dimension; }
+    unsigned int rightDimension(AsUnsignedInteger _) const { return *right_dimension; }
+};
 //@+node:gcross.20110124175241.1533: *4* OperatorSite
-class OperatorSite : public BaseTensor {
+class OperatorSite : public SiteBaseTensor {
 private:
     BOOST_MOVABLE_BUT_NOT_COPYABLE(OperatorSite)
 
     unsigned int const number_of_matrices;
-    PhysicalDimension const physical_dimension;
-    LeftDimension const left_dimension;
-    RightDimension const right_dimension;
     scoped_array<uint32_t> index_data;
 public:
     OperatorSite(BOOST_RV_REF(OperatorSite) other)
-      : BaseTensor(boost::move(static_cast<BaseTensor&>(other)))
+      : SiteBaseTensor(boost::move(static_cast<SiteBaseTensor&>(other)))
       , number_of_matrices(other.numberOfMatrices())
-      , physical_dimension(other.physical_dimension)
-      , left_dimension(other.left_dimension)
-      , right_dimension(other.right_dimension)
     {
         index_data.swap(other.index_data);
     }
@@ -361,11 +437,13 @@ public:
         , PhysicalDimension const physical_dimension
         , LeftDimension const left_dimension
         , RightDimension const right_dimension
-    ) : BaseTensor(number_of_matrices*physical_dimension()*physical_dimension())
+    ) : SiteBaseTensor(
+             physical_dimension
+            ,left_dimension
+            ,right_dimension
+            ,number_of_matrices*physical_dimension()*physical_dimension()
+        )
       , number_of_matrices(number_of_matrices)
-      , physical_dimension(physical_dimension)
-      , left_dimension(left_dimension)
-      , right_dimension(right_dimension)
       , index_data(new uint32_t[number_of_matrices*2])
     { }
 
@@ -376,11 +454,14 @@ public:
         , RightDimension const right_dimension
         , FillWithGenerator<G1> const index_generator
         , FillWithGenerator<G2> const matrix_generator
-    ) : BaseTensor(number_of_matrices*physical_dimension()*physical_dimension(),matrix_generator)
+    ) : SiteBaseTensor(
+             physical_dimension
+            ,left_dimension
+            ,right_dimension
+            ,number_of_matrices*physical_dimension()*physical_dimension()
+            ,matrix_generator
+        )
       , number_of_matrices(number_of_matrices)
-      , physical_dimension(physical_dimension)
-      , left_dimension(left_dimension)
-      , right_dimension(right_dimension)
       , index_data(new uint32_t[number_of_matrices*2])
     {
         BOOST_CONCEPT_ASSERT(( Generator<G1,uint32_t> ));
@@ -402,24 +483,22 @@ public:
         , RightDimension const right_dimension
         , FillWithRange<Range1> const index_init
         , FillWithRange<Range2> const matrix_init
-    ) : BaseTensor(matrix_init)
+    ) : SiteBaseTensor(
+             PhysicalDimension((unsigned int)sqrt(matrix_init->size()/(index_init->size()/2)))
+            ,left_dimension
+            ,right_dimension
+            ,matrix_init
+        )
       , number_of_matrices(index_init->size()/2)
-      , physical_dimension((unsigned int)sqrt(size()/number_of_matrices))
-      , left_dimension(left_dimension)
-      , right_dimension(right_dimension)
       , index_data(new uint32_t[index_init->size()])
     {
         BOOST_CONCEPT_ASSERT(( RandomAccessRangeConcept<Range1> ));
         copy(*index_init,index_data.get());
     }
 
-    OperatorSite(
-          MakeTrivial const make_trivial
-    ) : BaseTensor(make_trivial)
+    OperatorSite(MakeTrivial const make_trivial)
+      : SiteBaseTensor(make_trivial)
       , number_of_matrices(1)
-      , physical_dimension(1)
-      , left_dimension(1)
-      , right_dimension(1)
       , index_data(new uint32_t[2])
     {
         fill_n(index_data.get(),2,1);
@@ -427,64 +506,40 @@ public:
 
     unsigned int numberOfMatrices() const { return number_of_matrices; }
 
-    PhysicalDimension physicalDimension() const { return physical_dimension; }
-    unsigned int physicalDimension(AsUnsignedInteger _) const { return *physical_dimension; }
-
-    LeftDimension leftDimension() const { return left_dimension; }
-    unsigned int leftDimension(AsUnsignedInteger _) const { return *left_dimension; }
-
-    RightDimension rightDimension() const { return right_dimension; }
-    unsigned int rightDimension(AsUnsignedInteger _) const { return *right_dimension; }
-
     operator uint32_t*() { return index_data.get(); }
     operator uint32_t const*() const { return index_data.get(); }
 
     static OperatorSite const trivial;
 };
 //@+node:gcross.20110124175241.1535: *4* StateSite
-template<Side side> class StateSite : public BaseTensor {
+template<Side side> class StateSite : public SiteBaseTensor {
 private:
     BOOST_MOVABLE_BUT_NOT_COPYABLE(StateSite)
-
-    PhysicalDimension const physical_dimension;
-    LeftDimension const left_dimension;
-    RightDimension const right_dimension;
 public:
     StateSite(BOOST_RV_REF(StateSite) other)
-      : BaseTensor(boost::move(static_cast<BaseTensor&>(other)))
-      , physical_dimension(other.physical_dimension)
-      , left_dimension(other.left_dimension)
-      , right_dimension(other.right_dimension)
+      : SiteBaseTensor(boost::move(static_cast<SiteBaseTensor&>(other)))
     { }
 
     StateSite(
           PhysicalDimension const physical_dimension
         , LeftDimension const left_dimension
         , RightDimension const right_dimension
-    ) : BaseTensor(physical_dimension()*left_dimension()*right_dimension())
-      , physical_dimension(physical_dimension)
-      , left_dimension(left_dimension)
-      , right_dimension(right_dimension)
+    ) : SiteBaseTensor(
+             physical_dimension
+            ,left_dimension
+            ,right_dimension
+            ,physical_dimension()*left_dimension()*right_dimension()
+        )
     { }
 
     template<Side other_side> StateSite(
           CopyFrom<StateSite<other_side> const> const other_site
-    ) : BaseTensor(other_site)
-      , physical_dimension(other_site->physicalDimension())
-      , left_dimension(other_site->leftDimension())
-      , right_dimension(other_site->rightDimension())
+    ) : SiteBaseTensor(other_site)
     { }
 
     template<Side other_side> StateSite(
           DimensionsOf<StateSite<other_side> const> const other_site
-    ) : BaseTensor(
-             other_site->rightDimension(as_unsigned_integer)
-            *other_site->physicalDimension(as_unsigned_integer)
-            *other_site->leftDimension(as_unsigned_integer)
-        )
-      , physical_dimension(other_site->physicalDimension())
-      , left_dimension(other_site->leftDimension())
-      , right_dimension(other_site->rightDimension())
+    ) : SiteBaseTensor(other_site)
     { }
 
     template<typename G> StateSite(
@@ -492,67 +547,62 @@ public:
         , LeftDimension const left_dimension
         , RightDimension const right_dimension
         , FillWithGenerator<G> const generator
-    ) : BaseTensor(physical_dimension()*left_dimension()*right_dimension(),generator)
-      , physical_dimension(physical_dimension)
-      , left_dimension(left_dimension)
-      , right_dimension(right_dimension)
+    ) : SiteBaseTensor(
+             physical_dimension
+            ,left_dimension
+            ,right_dimension
+            ,physical_dimension()*left_dimension()*right_dimension()
+            ,generator
+        )
     { }
 
     template<typename Range> StateSite(
           LeftDimension const left_dimension
         , RightDimension const right_dimension
         , FillWithRange<Range> const init
-    ) : BaseTensor(init)
-      , physical_dimension(size()/(left_dimension()*right_dimension()))
-      , left_dimension(left_dimension)
-      , right_dimension(right_dimension)
+    ) : SiteBaseTensor(
+             PhysicalDimension(init->size()/(left_dimension()*right_dimension()))
+            ,left_dimension
+            ,right_dimension
+            ,init
+        )
     { }
 
-    StateSite(
-          MakeTrivial const make_trivial
-    ) : BaseTensor(make_trivial)
-      , physical_dimension(1)
-      , left_dimension(1)
-      , right_dimension(1)
-    { }
-
-    PhysicalDimension physicalDimension() const { return physical_dimension; }
-    unsigned int physicalDimension(AsUnsignedInteger _) const { return *physical_dimension; }
-
-    LeftDimension leftDimension() const { return left_dimension; }
-    unsigned int leftDimension(AsUnsignedInteger _) const { return *left_dimension; }
-
-    RightDimension rightDimension() const { return right_dimension; }
-    unsigned int rightDimension(AsUnsignedInteger _) const { return *right_dimension; }
+    StateSite(MakeTrivial const make_trivial) : SiteBaseTensor(make_trivial) {}
 
     static StateSite const trivial;
 };
 
 template<Side side> StateSite<side> const StateSite<side>::trivial(make_trivial);
 //@+node:gcross.20110124175241.1537: *4* OverlapSite
-template<Side side> class OverlapSite : public BaseTensor {
+template<Side side> class OverlapSite : public SiteBaseTensor {
 private:
     BOOST_MOVABLE_BUT_NOT_COPYABLE(OverlapSite)
-
-    RightDimension const right_dimension;
-    PhysicalDimension const physical_dimension;
-    LeftDimension const left_dimension;
 public:
     OverlapSite(BOOST_RV_REF(OverlapSite) other)
-      : BaseTensor(boost::move(static_cast<BaseTensor&>(other)))
-      , right_dimension(other.right_dimension)
-      , physical_dimension(other.physical_dimension)
-      , left_dimension(other.left_dimension)
+      : SiteBaseTensor(boost::move(static_cast<SiteBaseTensor&>(other)))
     { }
 
     OverlapSite(
           RightDimension const right_dimension
         , PhysicalDimension const physical_dimension
         , LeftDimension const left_dimension
-    ) : BaseTensor(right_dimension()*physical_dimension()*left_dimension())
-      , right_dimension(right_dimension)
-      , physical_dimension(physical_dimension)
-      , left_dimension(left_dimension)
+    ) : SiteBaseTensor(
+             physical_dimension
+            ,left_dimension
+            ,right_dimension
+            ,physical_dimension()*left_dimension()*right_dimension()
+        )
+    { }
+
+    template<Side other_side> OverlapSite(
+          CopyFrom<OverlapSite<other_side> const> const other_site
+    ) : SiteBaseTensor(other_site)
+    { }
+
+    template<Side other_side> OverlapSite(
+          DimensionsOf<StateSite<other_side> const> const other_site
+    ) : SiteBaseTensor(other_site)
     { }
 
     template<typename G> OverlapSite(
@@ -560,58 +610,28 @@ public:
         , PhysicalDimension const physical_dimension
         , LeftDimension const left_dimension
         , FillWithGenerator<G> const generator
-    ) : BaseTensor(right_dimension()*physical_dimension()*left_dimension(),generator)
-      , right_dimension(right_dimension)
-      , physical_dimension(physical_dimension)
-      , left_dimension(left_dimension)
+    ) : SiteBaseTensor(
+             physical_dimension
+            ,left_dimension
+            ,right_dimension
+            ,physical_dimension()*left_dimension()*right_dimension()
+            ,generator
+        )
     { }
 
     template<typename Range> OverlapSite(
           RightDimension const right_dimension
         , LeftDimension const left_dimension
         , FillWithRange<Range> const init
-    ) : BaseTensor(init)
-      , right_dimension(right_dimension)
-      , physical_dimension(size()/(left_dimension()*right_dimension()))
-      , left_dimension(left_dimension)
-    { }
-
-    template<Side other_side> OverlapSite(
-          CopyFrom<OverlapSite<other_side> const> const other
-    ) : BaseTensor(other)
-      , right_dimension(other->right_dimension)
-      , physical_dimension(other->physical_dimension)
-      , left_dimension(other->left_dimension)
-    { }
-
-    template<Side other_side> OverlapSite(
-          DimensionsOf<StateSite<other_side> const> const other_site
-    ) : BaseTensor(
-             other_site->rightDimension(as_unsigned_integer)
-            *other_site->physicalDimension(as_unsigned_integer)
-            *other_site->leftDimension(as_unsigned_integer)
+    ) : SiteBaseTensor(
+             PhysicalDimension(init->size()/(left_dimension()*right_dimension()))
+            ,left_dimension
+            ,right_dimension
+            ,init
         )
-      , right_dimension(other_site->rightDimension())
-      , physical_dimension(other_site->physicalDimension())
-      , left_dimension(other_site->leftDimension())
     { }
 
-    OverlapSite(
-          MakeTrivial const make_trivial
-    ) : BaseTensor(make_trivial)
-      , right_dimension(1)
-      , physical_dimension(1)
-      , left_dimension(1)
-    { }
-
-    PhysicalDimension physicalDimension() const { return physical_dimension; }
-    unsigned int physicalDimension(AsUnsignedInteger _) const { return *physical_dimension; }
-
-    LeftDimension leftDimension() const { return left_dimension; }
-    unsigned int leftDimension(AsUnsignedInteger _) const { return *left_dimension; }
-
-    RightDimension rightDimension() const { return right_dimension; }
-    unsigned int rightDimension(AsUnsignedInteger _) const { return *right_dimension; }
+    OverlapSite(MakeTrivial const make_trivial) : SiteBaseTensor(make_trivial) {}
 
     static OverlapSite const trivial;
 };
