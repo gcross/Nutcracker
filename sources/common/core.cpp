@@ -754,17 +754,15 @@ complex<double> contractExpectationBoundaries(
     );
 }
 //@+node:gcross.20110124175241.1589: *4* contractSOSLeft
-auto_ptr<ExpectationBoundary<Left> const> contractSOSLeft(
+ExpectationBoundary<Left> contractSOSLeft(
       ExpectationBoundary<Left> const& old_boundary
     , StateSite<Left> const& state_site
     , OperatorSite const& operator_site
 ) {
-    auto_ptr<ExpectationBoundary<Left> > new_boundary(
-        new ExpectationBoundary<Left>
-            (OperatorDimension(operator_site.right_dimension())
-            ,StateDimension(state_site.right_dimension())
-            )
-    );
+    ExpectationBoundary<Left> new_boundary
+        (OperatorDimension(operator_site.right_dimension())
+        ,StateDimension(state_site.right_dimension())
+        );
     contract_sos_left(
          old_boundary || state_site
         ,state_site.right_dimension()
@@ -774,22 +772,20 @@ auto_ptr<ExpectationBoundary<Left> const> contractSOSLeft(
         ,old_boundary
         ,operator_site.number_of_matrices,operator_site,operator_site
         ,state_site
-        ,*new_boundary
+        ,new_boundary
     );
-    return (auto_ptr<ExpectationBoundary<Left> const>) new_boundary;
+    return boost::move(new_boundary);
 }
 //@+node:gcross.20110124175241.1593: *4* contractSOSRight
-auto_ptr<ExpectationBoundary<Right> const> contractSOSRight(
+ExpectationBoundary<Right> contractSOSRight(
       ExpectationBoundary<Right> const& old_boundary
     , StateSite<Right> const& state_site
     , OperatorSite const& operator_site
 ) {
-    auto_ptr<ExpectationBoundary<Right> > new_boundary(
-        new ExpectationBoundary<Right>
-            (OperatorDimension(operator_site.left_dimension())
-            ,StateDimension(state_site.left_dimension())
-            )
-    );
+    ExpectationBoundary<Right> new_boundary
+        (OperatorDimension(operator_site.left_dimension())
+        ,StateDimension(state_site.left_dimension())
+        );
     contract_sos_right(
          state_site.left_dimension()
         ,state_site || old_boundary
@@ -799,22 +795,20 @@ auto_ptr<ExpectationBoundary<Right> const> contractSOSRight(
         ,old_boundary
         ,operator_site.number_of_matrices,operator_site,operator_site
         ,state_site
-        ,*new_boundary
+        ,new_boundary
     );
-    return (auto_ptr<ExpectationBoundary<Right> const>) new_boundary;
+    return boost::move(new_boundary);
 }
 //@+node:gcross.20110124175241.1595: *4* contractSSLeft
-auto_ptr<OverlapBoundary<Left> const> contractSSLeft(
+OverlapBoundary<Left> contractSSLeft(
       OverlapBoundary<Left> const& old_boundary
     , OverlapSite<Left> const& overlap_site
     , StateSite<Left> const& state_site
 ) {
-    auto_ptr<OverlapBoundary<Left> > new_boundary(
-        new OverlapBoundary<Left>
-            (OverlapDimension(overlap_site.right_dimension())
-            ,StateDimension(state_site.right_dimension())
-            )
-    );
+    OverlapBoundary<Left> new_boundary
+        (OverlapDimension(overlap_site.right_dimension())
+        ,StateDimension(state_site.right_dimension())
+        );
     contract_ss_left(
          old_boundary || overlap_site
         ,overlap_site.right_dimension()
@@ -824,22 +818,20 @@ auto_ptr<OverlapBoundary<Left> const> contractSSLeft(
         ,old_boundary
         ,overlap_site
         ,state_site
-        ,*new_boundary
+        ,new_boundary
     );
-    return (auto_ptr<OverlapBoundary<Left> const>) new_boundary;
+    return boost::move(new_boundary);
 }
 //@+node:gcross.20110124175241.1597: *4* contractSSRight
-auto_ptr<OverlapBoundary<Right> const> contractSSRight(
+OverlapBoundary<Right> contractSSRight(
       OverlapBoundary<Right> const& old_boundary
     , OverlapSite<Right> const& overlap_site
     , StateSite<Right> const& state_site
 ) {
-    auto_ptr<OverlapBoundary<Right> > new_boundary(
-        new OverlapBoundary<Right>
-            (OverlapDimension(overlap_site.left_dimension())
-            ,StateDimension(state_site.left_dimension())
-            )
-    );
+    OverlapBoundary<Right> new_boundary
+        (OverlapDimension(overlap_site.left_dimension())
+        ,StateDimension(state_site.left_dimension())
+        );
     contract_ss_right(
          overlap_site.left_dimension()
         ,overlap_site || old_boundary
@@ -849,24 +841,18 @@ auto_ptr<OverlapBoundary<Right> const> contractSSRight(
         ,old_boundary
         ,overlap_site
         ,state_site
-        ,*new_boundary
+        ,new_boundary
     );
-    return (auto_ptr<OverlapBoundary<Right> const>) (new_boundary);
+    return boost::move(new_boundary);
 }
 //@+node:gcross.20110124175241.1652: *3* Cursor movement
 //@+node:gcross.20110124175241.1654: *4* moveSiteCursorLeft
-void moveSiteCursorLeft(
-      StateSite<Left> const& old_state_site_1
-    , StateSite<Middle> const& old_state_site_2
-    , auto_ptr<StateSite<Middle> const>& new_state_site_1
-    , auto_ptr<StateSite<Right> const>& new_state_site_2
+MoveSiteCursorResult<Left> moveSiteCursorLeft(
+      StateSite<Middle> const& old_state_site_2
+    , StateSite<Left> const& old_state_site_1
 ) {
-    auto_ptr<StateSite<Middle> > new_state_site_1_writable(
-        new StateSite<Middle>(dimensionsOf(old_state_site_1))
-    );
-    auto_ptr<StateSite<Right> > new_state_site_2_writable(
-        new StateSite<Right>(dimensionsOf(old_state_site_2))
-    );
+    StateSite<Middle> new_state_site_1(dimensionsOf(old_state_site_1));
+    StateSite<Right> new_state_site_2(dimensionsOf(old_state_site_2));
     unsigned int const info =
     norm_denorm_going_left(
          old_state_site_1.left_dimension()
@@ -876,26 +862,22 @@ void moveSiteCursorLeft(
         ,old_state_site_2.physical_dimension()
         ,old_state_site_1
         ,old_state_site_2
-        ,*new_state_site_1_writable
-        ,*new_state_site_2_writable
+        ,new_state_site_1
+        ,new_state_site_2
     );
     if(info != 0) throw NormalizationError(info);
-    new_state_site_1 = new_state_site_1_writable;
-    new_state_site_2 = new_state_site_2_writable;
+    return MoveSiteCursorResult<Left>
+            (boost::move(new_state_site_1)
+            ,boost::move(new_state_site_2)
+            );
 }
 //@+node:gcross.20110125120748.1518: *4* moveSiteCursorRight
-void moveSiteCursorRight(
+MoveSiteCursorResult<Right> moveSiteCursorRight(
       StateSite<Middle> const& old_state_site_1
     , StateSite<Right> const& old_state_site_2
-    , auto_ptr<StateSite<Left> const>& new_state_site_1
-    , auto_ptr<StateSite<Middle> const>& new_state_site_2
 ) {
-    auto_ptr<StateSite<Left> > new_state_site_1_writable(
-        new StateSite<Left>(dimensionsOf(old_state_site_1))
-    );
-    auto_ptr<StateSite<Middle> > new_state_site_2_writable(
-        new StateSite<Middle>(dimensionsOf(old_state_site_2))
-    );
+    StateSite<Left> new_state_site_1(dimensionsOf(old_state_site_1));
+    StateSite<Middle> new_state_site_2(dimensionsOf(old_state_site_2));
     unsigned int const info =
     norm_denorm_going_right(
          old_state_site_1.left_dimension()
@@ -905,12 +887,14 @@ void moveSiteCursorRight(
         ,old_state_site_2.physical_dimension()
         ,old_state_site_1
         ,old_state_site_2
-        ,*new_state_site_1_writable
-        ,*new_state_site_2_writable
+        ,new_state_site_1
+        ,new_state_site_2
     );
     if(info != 0) throw NormalizationError(info);
-    new_state_site_1 = new_state_site_1_writable;
-    new_state_site_2 = new_state_site_2_writable;
+    return MoveSiteCursorResult<Right>
+            (boost::move(new_state_site_2)
+            ,boost::move(new_state_site_1)
+            );
 }
 //@+node:gcross.20110125120748.2463: *3* Miscellaneous
 //@+node:gcross.20110124175241.1649: *4* increaseDimensionBetween
@@ -993,19 +977,18 @@ OptimizerResult optimizeStateSite(
     , StateSite<Middle> const& current_state_site
     , OperatorSite const& operator_site
     , ExpectationBoundary<Right> const& right_boundary
-    , optional<ProjectorMatrix const&> projector_matrix
+    , optional<ProjectorMatrix const&> maybe_projector_matrix
     , OptimizerSelectionStrategy const& strategy
     , double const tolerance
     , unsigned int const maximum_number_of_iterations
 ) {
     uint32_t number_of_iterations = maximum_number_of_iterations;
     complex<double> eigenvalue;
-    auto_ptr<StateSite<Middle> > new_state_site(
-        new StateSite<Middle>(dimensionsOf(current_state_site))
-    );
+    StateSite<Middle> new_state_site(dimensionsOf(current_state_site));
+
     double normal;
     int const status =
-        projector_matrix
+        maybe_projector_matrix
             ? optimize(
                  left_boundary || current_state_site
                 ,current_state_site || right_boundary
@@ -1015,17 +998,17 @@ OptimizerResult optimizeStateSite(
                 ,left_boundary
                 ,operator_site.number_of_matrices,operator_site,operator_site
                 ,right_boundary
-                ,projector_matrix->number_of_projectors
-                ,projector_matrix->number_of_reflectors
-                ,projector_matrix->orthogonal_subspace_dimension
-                ,projector_matrix->reflectorData()
-                ,projector_matrix->coefficientData()
-                ,projector_matrix->swapData()
+                ,maybe_projector_matrix->number_of_projectors
+                ,maybe_projector_matrix->number_of_reflectors
+                ,maybe_projector_matrix->orthogonal_subspace_dimension
+                ,maybe_projector_matrix->reflectorData()
+                ,maybe_projector_matrix->coefficientData()
+                ,maybe_projector_matrix->swapData()
                 ,strategy
                 ,tolerance
                 ,number_of_iterations
                 ,current_state_site
-                ,*new_state_site
+                ,new_state_site
                 ,eigenvalue
                 ,normal
               )
@@ -1048,7 +1031,7 @@ OptimizerResult optimizeStateSite(
                 ,tolerance
                 ,number_of_iterations
                 ,current_state_site
-                ,*new_state_site
+                ,new_state_site
                 ,eigenvalue
                 ,normal
               )
@@ -1056,15 +1039,15 @@ OptimizerResult optimizeStateSite(
     complex<double> const expectation_value =
         computeExpectationValue(
              left_boundary
-            ,*new_state_site
+            ,new_state_site
             ,operator_site
             ,right_boundary
         );
     double const overlap =
-        projector_matrix
+        maybe_projector_matrix
             ? computeOverlapWithProjectors(
-                 *projector_matrix
-                ,*new_state_site
+                 *maybe_projector_matrix
+                ,new_state_site
               )
             : 0
             ;
@@ -1073,7 +1056,7 @@ OptimizerResult optimizeStateSite(
             throw OptimizerUnableToConverge(number_of_iterations);
         case  10:
             throw OptimizerGivenTooManyProjectors(
-                 projector_matrix->number_of_projectors
+                 maybe_projector_matrix->number_of_projectors
                 ,current_state_site.physical_dimension
                 ,current_state_site.left_dimension
                 ,current_state_site.right_dimension
@@ -1099,42 +1082,31 @@ OptimizerResult optimizeStateSite(
     return OptimizerResult(
          number_of_iterations
         ,eigenvalue.real()
-        ,new_state_site
+        ,boost::move(new_state_site)
     );
 }
 //@+node:gcross.20110126102637.2187: *3* Overlap tensor formation
 //@+node:gcross.20110126102637.2188: *4* computeMiddleOverlapSiteFromStateSite
-auto_ptr<OverlapSite<Middle> const>
-computeOverlapSiteFromStateSite(StateSite<Middle> const& state_site) {
-    auto_ptr<OverlapSite<Middle> > overlap_site(
-        new OverlapSite<Middle>(dimensionsOf(state_site))
-    );
+OverlapSite<Middle> computeOverlapSiteFromStateSite(StateSite<Middle> const& state_site) {
+    OverlapSite<Middle> overlap_site(dimensionsOf(state_site));
     form_overlap_site_tensor(
          state_site.right_dimension()
         ,state_site.left_dimension()
         ,state_site.physical_dimension()
         ,state_site
-        ,*overlap_site
+        ,overlap_site
     );
-    return (auto_ptr<OverlapSite<Middle> const>) overlap_site;
+    return boost::move(overlap_site);
 }
 //@+node:gcross.20110126102637.2189: *4* computeOverlapSitesFromStateSitesAndNormalize
 OverlapSitesFromStateSitesAndNormalizeResult computeOverlapSitesFromStateSitesAndNormalize(
       StateSite<Middle> const& middle_state_site
      ,StateSite<Right> const& right_state_site
 ) {
-    auto_ptr<OverlapSite<Left> > left_overlap_site_from_middle_state_site(
-        new OverlapSite<Left>(dimensionsOf(middle_state_site))
-    );
-    auto_ptr<OverlapSite<Middle> > middle_overlap_site_from_middle_state_site(
-        new OverlapSite<Middle>(dimensionsOf(middle_state_site))
-    );
-    auto_ptr<StateSite<Middle> > middle_state_site_from_right_state_site(
-        new StateSite<Middle>(dimensionsOf(right_state_site))
-    );
-    auto_ptr<OverlapSite<Right> > right_overlap_site_from_right_state_site(
-        new OverlapSite<Right>(dimensionsOf(right_state_site))
-    );
+    OverlapSite<Left> left_overlap_site_from_middle_state_site(dimensionsOf(middle_state_site));
+    OverlapSite<Middle> middle_overlap_site_from_middle_state_site(dimensionsOf(middle_state_site));
+    StateSite<Middle> middle_state_site_from_right_state_site(dimensionsOf(right_state_site));
+    OverlapSite<Right> right_overlap_site_from_right_state_site(dimensionsOf(right_state_site));
     form_norm_overlap_tensors(
          middle_state_site.left_dimension()
         ,middle_state_site || right_state_site
@@ -1143,28 +1115,26 @@ OverlapSitesFromStateSitesAndNormalizeResult computeOverlapSitesFromStateSitesAn
         ,right_state_site.physical_dimension()
         ,middle_state_site
         ,right_state_site
-        ,*left_overlap_site_from_middle_state_site
-        ,*middle_overlap_site_from_middle_state_site
-        ,*middle_state_site_from_right_state_site
-        ,*right_overlap_site_from_right_state_site
+        ,left_overlap_site_from_middle_state_site
+        ,middle_overlap_site_from_middle_state_site
+        ,middle_state_site_from_right_state_site
+        ,right_overlap_site_from_right_state_site
     );
     return
         OverlapSitesFromStateSitesAndNormalizeResult(
-             left_overlap_site_from_middle_state_site
-            ,middle_overlap_site_from_middle_state_site
-            ,middle_state_site_from_right_state_site
-            ,right_overlap_site_from_right_state_site
+             boost::move(left_overlap_site_from_middle_state_site)
+            ,boost::move(middle_overlap_site_from_middle_state_site)
+            ,boost::move(middle_state_site_from_right_state_site)
+            ,boost::move(right_overlap_site_from_right_state_site)
         );
 }
 //@+node:gcross.20110126102637.2190: *3* Projectors
 //@+node:gcross.20110126102637.2196: *4* applyProjectorMatrix
-auto_ptr<StateSite<Middle> const> applyProjectorMatrix(
+StateSite<Middle> applyProjectorMatrix(
       ProjectorMatrix const& projector_matrix
     , StateSite<Middle> const& old_state_site
 ) {
-    auto_ptr<StateSite<Middle> > new_state_site(
-        new StateSite<Middle>(dimensionsOf(old_state_site))
-    );
+    StateSite<Middle> new_state_site(dimensionsOf(old_state_site));
     filter_components_outside_orthog(
          projector_matrix || old_state_site
         ,projector_matrix.number_of_projectors
@@ -1174,9 +1144,9 @@ auto_ptr<StateSite<Middle> const> applyProjectorMatrix(
         ,projector_matrix.coefficientData()
         ,projector_matrix.swapData()
         ,old_state_site
-        ,*new_state_site
+        ,new_state_site
     );
-    return (auto_ptr<StateSite<Middle> const>) new_state_site;
+    return boost::move(new_state_site);
 }
 //@+node:gcross.20110126102637.2194: *4* computeOverlapWithProjectors
 double computeOverlapWithProjectors(
@@ -1194,7 +1164,7 @@ double computeOverlapWithProjectors(
     ));
 }
 //@+node:gcross.20110126102637.2191: *4* formProjectorMatrix
-auto_ptr<ProjectorMatrix const> formProjectorMatrix(
+ProjectorMatrix formProjectorMatrix(
     vector<OverlapVectorTrio> const& overlaps
 ) {
     unsigned int const
@@ -1235,8 +1205,7 @@ auto_ptr<ProjectorMatrix const> formProjectorMatrix(
         ,coefficients
         ,swaps
     );
-    return auto_ptr<ProjectorMatrix const>(
-        new ProjectorMatrix(
+    return ProjectorMatrix(
              number_of_projectors
             ,overlap_vector_length
             ,number_of_reflectors
@@ -1244,11 +1213,10 @@ auto_ptr<ProjectorMatrix const> formProjectorMatrix(
             ,overlap_vectors
             ,coefficients
             ,swaps
-        )
     );
 }
 //@+node:gcross.20110126102637.2201: *4* randomProjectorMatrix
-auto_ptr<ProjectorMatrix const> randomProjectorMatrix(
+ProjectorMatrix randomProjectorMatrix(
      unsigned int const vector_length
     ,unsigned int const number_of_projectors
 ) {
@@ -1267,8 +1235,7 @@ auto_ptr<ProjectorMatrix const> randomProjectorMatrix(
         ,coefficients
         ,swaps
     );
-    return auto_ptr<ProjectorMatrix const>(
-        new ProjectorMatrix(
+    return ProjectorMatrix(
              number_of_projectors
             ,vector_length
             ,number_of_reflectors
@@ -1276,51 +1243,46 @@ auto_ptr<ProjectorMatrix const> randomProjectorMatrix(
             ,reflectors
             ,coefficients
             ,swaps
-        )
     );
 }
 //@+node:gcross.20110124175241.1601: *3* Randomizers
 //@+node:gcross.20110124175241.1645: *4* randomStateSiteMiddle
-auto_ptr<StateSite<Middle> const> randomStateSiteMiddle(
+StateSite<Middle> randomStateSiteMiddle(
       const PhysicalDimension physical_dimension
     , const LeftDimension left_dimension
     , const RightDimension right_dimension
 ) {
-    auto_ptr<StateSite<Middle> > state_site(
-        new StateSite<Middle>
-            (PhysicalDimension(physical_dimension)
-            ,LeftDimension(left_dimension)
-            ,RightDimension(right_dimension)
-            )
-    );
+    StateSite<Middle> state_site
+        (physical_dimension
+        ,left_dimension
+        ,right_dimension
+        );
     rand_unnorm_state_site_tensor(
          right_dimension()
         ,left_dimension()
         ,physical_dimension()
-        ,*state_site
+        ,state_site
     );  
-    return (auto_ptr<StateSite<Middle> const>) state_site;
+    return boost::move(state_site);
 }
 //@+node:gcross.20110124175241.1647: *4* randomStateSiteRight
-auto_ptr<StateSite<Right> const> randomStateSiteRight(
+StateSite<Right> randomStateSiteRight(
       const PhysicalDimension physical_dimension
     , const LeftDimension left_dimension
     , const RightDimension right_dimension
 ) {
-    auto_ptr<StateSite<Right> > state_site(
-        new StateSite<Right>
-            (PhysicalDimension(physical_dimension)
-            ,LeftDimension(left_dimension)
-            ,RightDimension(right_dimension)
-            )
-    );
+    StateSite<Right> state_site
+        (physical_dimension
+        ,left_dimension
+        ,right_dimension
+        );
     rand_norm_state_site_tensor(
          right_dimension()
         ,left_dimension()
         ,physical_dimension()
-        ,*state_site
+        ,state_site
     );
-    return (auto_ptr<StateSite<Right> const>) state_site;
+    return boost::move(state_site);
 }
 //@-others
 

@@ -11,6 +11,7 @@
 #include <boost/concept_check.hpp>
 #include <boost/foreach.hpp>
 #include <boost/format.hpp>
+#include <boost/move/move.hpp>
 #include <boost/range/algorithm/copy.hpp>
 #include <boost/range/concepts.hpp>
 #include <boost/range/irange.hpp>
@@ -38,7 +39,7 @@ using namespace std;
 enum Side { Left, Middle, Right };
 
 template<Side other_side> struct Other { static Side const side; };
-template<Side other_side> Side const Other<other_side>::side = 2u-other_side;
+template<Side other_side> Side const Other<other_side>::side = (Side)(2u-other_side);
 //@+node:gcross.20110127123226.2852: ** Parameters wrappers
 #define DEFINE_TEMPLATIZED_PARAMETER(Parameter,parameter) \
     template<typename T> struct Parameter { \
@@ -81,9 +82,12 @@ DEFINE_DIMENSION(State);
 DEFINE_DUMMY_PARAMETER(MakeTrivial,make_trivial);
 //@+node:gcross.20110124161335.2012: ** Classes
 //@+node:gcross.20110126150230.1601: *3* BaseTensor
-struct BaseTensor : public noncopyable {
+class BaseTensor {
+private:
+    BOOST_MOVABLE_BUT_NOT_COPYABLE(BaseTensor)
+public:
     unsigned int const size;
-protected:
+private:
     scoped_array<complex<double> > data;
 public:
 
@@ -93,18 +97,16 @@ public:
     typedef value_type& reference;
     typedef value_type const& const_reference;
 
-    BaseTensor() : size(0), data(0) { };
+    BaseTensor(BOOST_RV_REF(BaseTensor) other)
+      : size(other.size)
+    { data.swap(other.data); }
 
-    BaseTensor
-        ( unsigned int const size
-        )
+    BaseTensor(unsigned int const size)
       : size(size)
       , data(new complex<double>[size])
     { }
 
-    template<typename Tensor> BaseTensor
-        ( CopyFrom<Tensor> const other
-        )
+    template<typename Tensor> BaseTensor(CopyFrom<Tensor> const other)
       : size(other->size)
       , data(new complex<double>[size])
     {
@@ -122,9 +124,7 @@ public:
         generate_n(data.get(),size,*generator);
     }
 
-    template<typename Range> BaseTensor
-        ( FillWithRange<Range> const init
-        )
+    template<typename Range> BaseTensor(FillWithRange<Range> const init)
       : size(init->size())
       , data(new complex<double>[size])
     {
@@ -132,9 +132,7 @@ public:
         copy(*init,data.get());
     }
 
-    BaseTensor
-        ( MakeTrivial const make_trivial
-        )
+    BaseTensor(MakeTrivial const make_trivial)
       : size(1)
       , data(new complex<double>[1])
     {
@@ -155,9 +153,18 @@ public:
 };
 //@+node:gcross.20110124175241.1530: *3* Boundary
 //@+node:gcross.20110124161335.2013: *4* ExpectationBoundary
-template<Side side> struct ExpectationBoundary : public BaseTensor {
+template<Side side> class ExpectationBoundary : public BaseTensor {
+private:
+    BOOST_MOVABLE_BUT_NOT_COPYABLE(ExpectationBoundary)
+public:
     OperatorDimension const operator_dimension;
     StateDimension const state_dimension;
+
+    ExpectationBoundary(BOOST_RV_REF(ExpectationBoundary) other)
+      : BaseTensor(boost::move(static_cast<BaseTensor&>(other)))
+      , operator_dimension(other.operator_dimension)
+      , state_dimension(other.state_dimension)
+    { }
 
     ExpectationBoundary(
           OperatorDimension const operator_dimension
@@ -203,9 +210,18 @@ template<Side side> struct ExpectationBoundary : public BaseTensor {
 
 template<Side side> ExpectationBoundary<side> const ExpectationBoundary<side>::trivial(make_trivial);
 //@+node:gcross.20110124175241.1526: *4* OverlapBoundary
-template<Side side> struct OverlapBoundary : public BaseTensor {
+template<Side side> class OverlapBoundary : public BaseTensor {
+private:
+    BOOST_MOVABLE_BUT_NOT_COPYABLE(OverlapBoundary)
+public:
     OverlapDimension const overlap_dimension;
     StateDimension const state_dimension;
+
+    OverlapBoundary(BOOST_RV_REF(OverlapBoundary) other)
+      : BaseTensor(boost::move(static_cast<BaseTensor&>(other)))
+      , overlap_dimension(other.overlap_dimension)
+      , state_dimension(other.state_dimension)
+    { }
 
     OverlapBoundary(
           OverlapDimension const overlap_dimension
@@ -252,6 +268,8 @@ template<Side side> struct OverlapBoundary : public BaseTensor {
 template<Side side> OverlapBoundary<side> const OverlapBoundary<side>::trivial(make_trivial);
 //@+node:gcross.20110124175241.1538: *3* ProjectorMatrix
 class ProjectorMatrix {
+private:
+    BOOST_MOVABLE_BUT_NOT_COPYABLE(ProjectorMatrix)
     scoped_array<complex<double> > reflector_data, coefficient_data;
     scoped_array<uint32_t> swap_data;
 public:
@@ -261,6 +279,17 @@ public:
         , number_of_reflectors
         , orthogonal_subspace_dimension
         ;
+
+    ProjectorMatrix(BOOST_RV_REF(ProjectorMatrix) other)
+      : number_of_projectors(other.number_of_projectors)
+      , projector_length(other.projector_length)
+      , number_of_reflectors(other.number_of_reflectors)
+      , orthogonal_subspace_dimension(other.orthogonal_subspace_dimension)
+    {
+        reflector_data.swap(other.reflector_data);
+        coefficient_data.swap(other.coefficient_data);
+        swap_data.swap(other.swap_data);
+    }
 
     ProjectorMatrix(
           unsigned int const number_of_projectors
@@ -290,7 +319,10 @@ public:
 };
 //@+node:gcross.20110124175241.1531: *3* Site
 //@+node:gcross.20110124175241.1533: *4* OperatorSite
-struct OperatorSite : public BaseTensor {
+class OperatorSite : public BaseTensor {
+private:
+    BOOST_MOVABLE_BUT_NOT_COPYABLE(OperatorSite)
+public:
     unsigned int const number_of_matrices;
     PhysicalDimension const physical_dimension;
     LeftDimension const left_dimension;
@@ -298,6 +330,15 @@ struct OperatorSite : public BaseTensor {
 protected:
     scoped_array<uint32_t> index_data;
 public:
+    OperatorSite(BOOST_RV_REF(OperatorSite) other)
+      : BaseTensor(boost::move(static_cast<BaseTensor&>(other)))
+      , number_of_matrices(other.number_of_matrices)
+      , physical_dimension(other.physical_dimension)
+      , left_dimension(other.left_dimension)
+      , right_dimension(other.right_dimension)
+    {
+        index_data.swap(other.index_data);
+    }
 
     OperatorSite(
           unsigned int const number_of_matrices
@@ -374,10 +415,20 @@ public:
     static OperatorSite const trivial;
 };
 //@+node:gcross.20110124175241.1535: *4* StateSite
-template<Side side> struct StateSite : public BaseTensor {
+template<Side side> class StateSite : public BaseTensor {
+private:
+    BOOST_MOVABLE_BUT_NOT_COPYABLE(StateSite)
+public:
     PhysicalDimension const physical_dimension;
     LeftDimension const left_dimension;
     RightDimension const right_dimension;
+
+    StateSite(BOOST_RV_REF(StateSite) other)
+      : BaseTensor(boost::move(static_cast<BaseTensor&>(other)))
+      , physical_dimension(other.physical_dimension)
+      , left_dimension(other.left_dimension)
+      , right_dimension(other.right_dimension)
+    { }
 
     StateSite(
           PhysicalDimension const physical_dimension
@@ -443,10 +494,20 @@ template<Side side> struct StateSite : public BaseTensor {
 
 template<Side side> StateSite<side> const StateSite<side>::trivial(make_trivial);
 //@+node:gcross.20110124175241.1537: *4* OverlapSite
-template<Side side> struct OverlapSite : public BaseTensor {
+template<Side side> class OverlapSite : public BaseTensor {
+private:
+    BOOST_MOVABLE_BUT_NOT_COPYABLE(OverlapSite)
+public:
     RightDimension const right_dimension;
     PhysicalDimension const physical_dimension;
     LeftDimension const left_dimension;
+
+    OverlapSite(BOOST_RV_REF(OverlapSite) other)
+      : BaseTensor(boost::move(static_cast<BaseTensor&>(other)))
+      , right_dimension(other.right_dimension)
+      , physical_dimension(other.physical_dimension)
+      , left_dimension(other.left_dimension)
+    { }
 
     OverlapSite(
           RightDimension const right_dimension

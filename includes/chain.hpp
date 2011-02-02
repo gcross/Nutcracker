@@ -7,8 +7,6 @@
 
 //@+<< Includes >>
 //@+node:gcross.20110130170743.1666: ** << Includes >>
-#include <boost/ptr_container/ptr_vector.hpp>
-#include <memory>
 #include <vector>
 
 #include "tensors.hpp"

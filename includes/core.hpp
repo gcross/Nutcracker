@@ -26,26 +26,50 @@ using namespace std;
 
 //@+others
 //@+node:gcross.20110129220506.1656: ** Classes
+//@+node:gcross.20110201193729.1694: *3* MoveSiteCursorResult
+template<Side side> class MoveSiteCursorResult {
+private:
+    BOOST_MOVABLE_BUT_NOT_COPYABLE(MoveSiteCursorResult)
+public:
+    typedef Other<side> other;
+
+    StateSite<Middle> middle_state_site;
+    StateSite<other::side> other_side_state_site;
+
+    MoveSiteCursorResult(BOOST_RV_REF(MoveSiteCursorResult) other)
+      : middle_state_site(boost::move(other.middle_state_site))
+      , other_side_state_site(boost::move(other.other_side_state_site))
+    {}
+
+    MoveSiteCursorResult(
+          BOOST_RV_REF(StateSite<Middle>) middle_state_site
+        , BOOST_RV_REF(StateSite<other::side>) other_side_state_site
+    ) : middle_state_site(middle_state_site)
+      , other_side_state_site(other_side_state_site)
+    {}
+};
 //@+node:gcross.20110129220506.1657: *3* OptimizerResult
 struct OptimizerResult {
+private:
+    BOOST_MOVABLE_BUT_NOT_COPYABLE(OptimizerResult)
+public:
     unsigned int number_of_iterations;
     double eigenvalue;
-    mutable auto_ptr<StateSite<Middle> const> state_site;
+    StateSite<Middle> state_site;
+
+    OptimizerResult(BOOST_RV_REF(OptimizerResult) other)
+      : number_of_iterations(other.number_of_iterations)
+      , eigenvalue(other.eigenvalue)
+      , state_site(boost::move(other.state_site))
+    {}
 
     OptimizerResult(
           unsigned int const number_of_iterations
         , double const eigenvalue
-        , auto_ptr<StateSite<Middle> > state_site
+        , BOOST_RV_REF(StateSite<Middle>) state_site
     ) : number_of_iterations(number_of_iterations)
       , eigenvalue(eigenvalue)
       , state_site(state_site)
-    {}
-
-    OptimizerResult(
-          OptimizerResult const& other
-    ) : number_of_iterations(other.number_of_iterations)
-      , eigenvalue(other.eigenvalue)
-      , state_site(other.state_site)
     {}
 };
 //@+node:gcross.20110125120748.2469: *3* OptimizerSelectionStrategy
@@ -55,29 +79,32 @@ extern struct OptimizerSelectionStrategy {
     operator const char*() const { return argument.c_str(); }
 } const optimize_for_lowest_real_part, optimize_for_largest_magnitude;
 //@+node:gcross.20110131180117.1687: *3* OverlapSitesFromStateSitesAndNormalizeResult
-struct OverlapSitesFromStateSitesAndNormalizeResult {
-    mutable auto_ptr<OverlapSite<Left> const> left_overlap_site_from_middle_state_site;
-    mutable auto_ptr<OverlapSite<Middle> const> middle_overlap_site_from_middle_state_site;
-    mutable auto_ptr<StateSite<Middle> const> middle_state_site_from_right_state_site;
-    mutable auto_ptr<OverlapSite<Right> const> right_overlap_site_from_right_state_site;
+class OverlapSitesFromStateSitesAndNormalizeResult {
+private:
+    BOOST_MOVABLE_BUT_NOT_COPYABLE(OverlapSitesFromStateSitesAndNormalizeResult)
+public:
+    OverlapSite<Left> left_overlap_site_from_middle_state_site;
+    OverlapSite<Middle> middle_overlap_site_from_middle_state_site;
+    StateSite<Middle> middle_state_site_from_right_state_site;
+    OverlapSite<Right> right_overlap_site_from_right_state_site;
 
     OverlapSitesFromStateSitesAndNormalizeResult(
-          auto_ptr<OverlapSite<Left> > left_overlap_site_from_middle_state_site
-        , auto_ptr<OverlapSite<Middle> > middle_overlap_site_from_middle_state_site
-        , auto_ptr<StateSite<Middle> > middle_state_site_from_right_state_site
-        , auto_ptr<OverlapSite<Right> > right_overlap_site_from_right_state_site
+          BOOST_RV_REF(OverlapSitesFromStateSitesAndNormalizeResult) other
+    ) : left_overlap_site_from_middle_state_site(boost::move(other.left_overlap_site_from_middle_state_site))
+      , middle_overlap_site_from_middle_state_site(boost::move(other.middle_overlap_site_from_middle_state_site))
+      , middle_state_site_from_right_state_site(boost::move(other.middle_state_site_from_right_state_site))
+      , right_overlap_site_from_right_state_site(boost::move(other.right_overlap_site_from_right_state_site))
+    {}
+
+    OverlapSitesFromStateSitesAndNormalizeResult(
+          BOOST_RV_REF(OverlapSite<Left>) left_overlap_site_from_middle_state_site
+        , BOOST_RV_REF(OverlapSite<Middle>) middle_overlap_site_from_middle_state_site
+        , BOOST_RV_REF(StateSite<Middle>) middle_state_site_from_right_state_site
+        , BOOST_RV_REF(OverlapSite<Right>) right_overlap_site_from_right_state_site
     ) : left_overlap_site_from_middle_state_site(left_overlap_site_from_middle_state_site)
       , middle_overlap_site_from_middle_state_site(middle_overlap_site_from_middle_state_site)
       , middle_state_site_from_right_state_site(middle_state_site_from_right_state_site)
       , right_overlap_site_from_right_state_site(right_overlap_site_from_right_state_site)
-    {}
-
-    OverlapSitesFromStateSitesAndNormalizeResult(
-          OverlapSitesFromStateSitesAndNormalizeResult const& other
-    ) : left_overlap_site_from_middle_state_site(other.left_overlap_site_from_middle_state_site)
-      , middle_overlap_site_from_middle_state_site(other.middle_overlap_site_from_middle_state_site)
-      , middle_state_site_from_right_state_site(other.middle_state_site_from_right_state_site)
-      , right_overlap_site_from_right_state_site(other.right_overlap_site_from_right_state_site)
     {}
 };
 //@+node:gcross.20110131180117.1689: *3* OverlapVectorTrio
@@ -171,42 +198,38 @@ complex<double> contractExpectationBoundaries(
     , ExpectationBoundary<Right> const& right_boundary
 );
 
-auto_ptr<ExpectationBoundary<Left> const> contractSOSLeft(
+ExpectationBoundary<Left> contractSOSLeft(
       ExpectationBoundary<Left> const& old_boundary
     , StateSite<Left> const& state_site
     , OperatorSite const& operator_site
 );
 
-auto_ptr<ExpectationBoundary<Right> const> contractSOSRight(
+ExpectationBoundary<Right> contractSOSRight(
       ExpectationBoundary<Right> const& old_boundary
     , StateSite<Right> const& state_site
     , OperatorSite const& operator_site
 );
 
-auto_ptr<OverlapBoundary<Left> const> contractSSLeft(
+OverlapBoundary<Left> contractSSLeft(
       OverlapBoundary<Left> const& old_boundary
     , OverlapSite<Left> const& overlap_site
     , StateSite<Left> const& state_site
 );
 
-auto_ptr<OverlapBoundary<Right> const> contractSSRight(
+OverlapBoundary<Right> contractSSRight(
       OverlapBoundary<Right> const& old_boundary
     , OverlapSite<Right> const& overlap_site
     , StateSite<Right> const& state_site
 );
 //@+node:gcross.20110125120748.2465: *3* Cursor movement
-void moveSiteCursorLeft(
-      StateSite<Left> const& old_state_site_1
-    , StateSite<Middle> const& old_state_site_2
-    , auto_ptr<StateSite<Middle> const>& new_state_site_1
-    , auto_ptr<StateSite<Right> const>& new_state_site_2
+MoveSiteCursorResult<Left> moveSiteCursorLeft(
+      StateSite<Middle> const& old_state_site_2
+    , StateSite<Left> const& old_state_site_1
 );
 
-void moveSiteCursorRight(
+MoveSiteCursorResult<Right> moveSiteCursorRight(
       StateSite<Middle> const& old_state_site_1
     , StateSite<Right> const& old_state_site_2
-    , auto_ptr<StateSite<Left> const>& new_state_site_1
-    , auto_ptr<StateSite<Middle> const>& new_state_site_2
 );
 //@+node:gcross.20110125120748.2466: *3* Miscellaneous
 void increaseDimensionBetweenRightRight(
@@ -236,14 +259,14 @@ OptimizerResult optimizeStateSite(
     , unsigned int const maximum_number_of_iterations
 );
 //@+node:gcross.20110126102637.2193: *3* Overlap tensor formation
-auto_ptr<OverlapSite<Middle> const> computeOverlapSiteFromStateSite(StateSite<Middle> const& state_site);
+OverlapSite<Middle> computeOverlapSiteFromStateSite(StateSite<Middle> const& state_site);
 
 OverlapSitesFromStateSitesAndNormalizeResult computeOverlapSitesFromStateSitesAndNormalize(
       StateSite<Middle> const& middle_state_site
      ,StateSite<Right> const& right_state_site
 );
 //@+node:gcross.20110126102637.2195: *3* Projectors
-auto_ptr<StateSite<Middle> const> applyProjectorMatrix(
+StateSite<Middle> applyProjectorMatrix(
       ProjectorMatrix const& projector_matrix
     , StateSite<Middle> const& old_state_site
 );
@@ -253,22 +276,22 @@ double computeOverlapWithProjectors(
     ,StateSite<Middle> const& state_site
 );
 
-auto_ptr<ProjectorMatrix const> formProjectorMatrix(
+ProjectorMatrix formProjectorMatrix(
     vector<OverlapVectorTrio> const& overlaps
 );
 
-auto_ptr<ProjectorMatrix const> randomProjectorMatrix(
+ProjectorMatrix randomProjectorMatrix(
      unsigned int const vector_length
     ,unsigned int const number_of_projectors
 );
 //@+node:gcross.20110125120748.2464: *3* Randomizers
-auto_ptr<StateSite<Middle> const> randomStateSiteMiddle(
+StateSite<Middle> randomStateSiteMiddle(
       const PhysicalDimension physical_dimension
     , const LeftDimension left_dimension
     , const RightDimension right_dimension
 );
 
-auto_ptr<StateSite<Right> const> randomStateSiteRight(
+StateSite<Right> randomStateSiteRight(
       const PhysicalDimension physical_dimension
     , const LeftDimension left_dimension
     , const RightDimension right_dimension
@@ -278,13 +301,13 @@ auto_ptr<StateSite<Right> const> randomStateSiteRight(
 template<Side side> struct contract {};
 
 template<> struct contract<Left> {
-    static auto_ptr<ExpectationBoundary<Left> const> SOS(
+    static ExpectationBoundary<Left> SOS(
           ExpectationBoundary<Left> const& old_boundary
         , StateSite<Left> const& state_site
         , OperatorSite const& operator_site
     ) { return contractSOSLeft(old_boundary,state_site,operator_site); }
 
-    static auto_ptr<OverlapBoundary<Left> const> SS(
+    static OverlapBoundary<Left> SS(
           OverlapBoundary<Left> const& old_boundary
         , OverlapSite<Left> const& overlap_site
         , StateSite<Left> const& state_site
@@ -292,13 +315,13 @@ template<> struct contract<Left> {
 };
 
 template<> struct contract<Right> {
-    static auto_ptr<ExpectationBoundary<Right> const> SOS(
+    static ExpectationBoundary<Right> SOS(
           ExpectationBoundary<Right> const& old_boundary
         , StateSite<Right> const& state_site
         , OperatorSite const& operator_site
     ) { return contractSOSRight(old_boundary,state_site,operator_site); }
 
-    static auto_ptr<OverlapBoundary<Right> const> SS(
+    static OverlapBoundary<Right> const SS(
           OverlapBoundary<Right> const& old_boundary
         , OverlapSite<Right> const& overlap_site
         , StateSite<Right> const& state_site
@@ -308,35 +331,17 @@ template<> struct contract<Right> {
 template<Side side> struct moveSiteCursor { };
 
 template<> struct moveSiteCursor<Left> {
-    static void fromTo(
+    static MoveSiteCursorResult<Left> from(
           StateSite<Middle> const& old_middle_state_site
-	, StateSite<Left> const& old_left_state_site
-        , auto_ptr<StateSite<Middle> const>& new_middle_state_site
-        , auto_ptr<StateSite<Right> const>& new_right_state_site
-    ) { return
-            moveSiteCursorLeft(
-                 old_left_state_site
-                ,old_middle_state_site
-                ,new_middle_state_site
-                ,new_right_state_site
-            );
-    }
+	   , StateSite<Left> const& old_left_state_site
+    ) { return moveSiteCursorLeft(old_middle_state_site,old_left_state_site); }
 };
 
 template<> struct moveSiteCursor<Right> {
-    static void fromTo(
+    static MoveSiteCursorResult<Right> from(
           StateSite<Middle> const& old_middle_state_site
-	, StateSite<Right> const& old_right_state_site
-        , auto_ptr<StateSite<Middle> const>& new_middle_state_site
-        , auto_ptr<StateSite<Left> const>& new_left_state_site
-    ) { return
-            moveSiteCursorRight(
-                 old_middle_state_site
-                ,old_right_state_site
-                ,new_left_state_site
-                ,new_middle_state_site
-            );
-    }
+	   , StateSite<Right> const& old_right_state_site
+    ) { return moveSiteCursorRight(old_middle_state_site,old_right_state_site); }
 };
 //@-others
 
