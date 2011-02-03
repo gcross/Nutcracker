@@ -1197,7 +1197,7 @@ ProjectorMatrix formProjectorMatrix(
     }
     complex<double>* coefficients = new complex<double>[number_of_reflectors];
     uint32_t* swaps = new uint32_t[number_of_reflectors];
-    unsigned int const subspace_dimension = 
+    unsigned int const subspace_dimension =
     convert_vectors_to_reflectors(
          overlap_vector_length
         ,number_of_projectors
