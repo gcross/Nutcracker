@@ -66,6 +66,7 @@ DEFINE_TEMPLATIZED_PARAMETER(FillWithRange,fillWithRange)
         BOOST_COPYABLE_AND_MOVABLE(CapsName##Dimension) \
         unsigned int dimension; \
     public: \
+        CapsName##Dimension() : dimension(0) { } \
         explicit CapsName##Dimension(unsigned int const dimension) : dimension(dimension) { } \
         CapsName##Dimension(BOOST_RV_REF(CapsName##Dimension) other) : dimension(copyAndReset(other.dimension)) { } \
         CapsName##Dimension(CapsName##Dimension const& other) : dimension(other.dimension) { } \
@@ -97,6 +98,8 @@ private:
     complex<double>* data;
 protected:
     ~BaseTensor() { if(valid()) delete[] data; }
+
+    BaseTensor() : data_size(0), data(NULL) {}
 
     BaseTensor(BOOST_RV_REF(BaseTensor) other)
       : data_size(copyAndReset(other.data_size))
@@ -151,6 +154,8 @@ protected:
         std::swap(data,other.data);
     }
 
+    double norm() const { return dznrm2(data_size,data); }
+
 public:
     typedef complex<double> value_type;
     typedef value_type* iterator;
@@ -185,6 +190,8 @@ private:
     OperatorDimension operator_dimension;
     StateDimension state_dimension;
 public:
+    ExpectationBoundary() {}
+
     ExpectationBoundary(BOOST_RV_REF(ExpectationBoundary) other)
       : BaseTensor(boost::move(static_cast<BaseTensor&>(other)))
       , operator_dimension(boost::move(other.operator_dimension))
@@ -262,6 +269,8 @@ private:
     OverlapDimension overlap_dimension;
     StateDimension state_dimension;
 public:
+    OverlapBoundary() {}
+
     OverlapBoundary(BOOST_RV_REF(OverlapBoundary) other)
       : BaseTensor(boost::move(static_cast<BaseTensor&>(other)))
       , overlap_dimension(boost::move(other.overlap_dimension))
@@ -346,6 +355,16 @@ private:
     uint32_t* swap_data;
 
 public:
+    ProjectorMatrix()
+      : number_of_projectors(0)
+      , projector_length(0)
+      , number_of_reflectors(0)
+      , orthogonal_subspace_dimension(0)
+      , reflector_data(NULL)
+      , coefficient_data(NULL)
+      , swap_data(NULL)
+    { }
+
     ~ProjectorMatrix() {
         if(valid()) {
             delete[] reflector_data;
@@ -434,6 +453,8 @@ private:
     RightDimension right_dimension;
 
 protected:
+    SiteBaseTensor() {}
+
     SiteBaseTensor(BOOST_RV_REF(SiteBaseTensor) other)
       : BaseTensor(boost::move(static_cast<BaseTensor&>(other)))
       , physical_dimension(boost::move(other.physical_dimension))
@@ -528,6 +549,11 @@ private:
     unsigned int number_of_matrices;
     uint32_t* index_data;
 public:
+    OperatorSite()
+      : number_of_matrices(0)
+      , index_data(NULL)
+    { }
+
     ~OperatorSite() { if(index_data) delete[] index_data; }
 
     OperatorSite(BOOST_RV_REF(OperatorSite) other)
@@ -635,6 +661,8 @@ template<Side side> class StateSite : public SiteBaseTensor {
 private:
     BOOST_MOVABLE_BUT_NOT_COPYABLE(StateSite)
 public:
+    StateSite() {}
+
     StateSite(BOOST_RV_REF(StateSite) other)
       : SiteBaseTensor(boost::move(static_cast<SiteBaseTensor&>(other)))
     { }
@@ -700,6 +728,8 @@ public:
         SiteBaseTensor::swap(other);
     }
 
+    double norm() const { return BaseTensor::norm(); }
+
     static StateSite const trivial;
 };
 
@@ -709,6 +739,8 @@ template<Side side> class OverlapSite : public SiteBaseTensor {
 private:
     BOOST_MOVABLE_BUT_NOT_COPYABLE(OverlapSite)
 public:
+    OverlapSite() {}
+
     OverlapSite(BOOST_RV_REF(OverlapSite) other)
       : SiteBaseTensor(boost::move(static_cast<SiteBaseTensor&>(other)))
     { }

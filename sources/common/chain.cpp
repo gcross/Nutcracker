@@ -24,6 +24,8 @@ namespace Nutcracker {
 using namespace boost;
 using namespace boost::assign;
 using namespace std;
+
+namespace moveable = boost::container;
 //@-<< Usings >>
 
 //@+others
@@ -94,6 +96,99 @@ vector<unsigned int> computeBandwidthDimensionSequence(
     );
 
     return forward_bandwidth_dimensions;
+}
+//@+node:gcross.20110202175920.1714: ** class Chain
+//@+node:gcross.20110202175920.1715: *3* (constructors)
+Chain::Chain(
+      moveable::vector<OperatorSite> operators
+    , unsigned int const requested_bandwidth_dimension
+) : number_of_sites(operators.size())
+  , current_site_number(0)
+  , left_expectation_boundary(make_trivial)
+  , right_expectation_boundary(make_trivial)
+  , energy(0)
+  , initial_bandwidth_dimensions(0,0)
+{
+    assert(number_of_sites > 1);
+
+    //@+<< Compute initial bandwidth dimension sequence >>
+    //@+node:gcross.20110202175920.1716: *4* << Compute initial bandwidth dimension sequence >>
+    {
+        vector<unsigned int> physical_dimensions;
+        BOOST_FOREACH(OperatorSite const& operator_site, operators) {
+            physical_dimensions.push_back(operator_site.physicalDimension(as_unsigned_integer));
+        }
+
+        initial_bandwidth_dimensions = computeBandwidthDimensionSequence(requested_bandwidth_dimension,physical_dimensions);
+    }
+    //@-<< Compute initial bandwidth dimension sequence >>
+
+    //@+<< Construct all but the first site >>
+    //@+node:gcross.20110202175920.1717: *4* << Construct all but the first site >>
+    {
+        vector<unsigned int>::const_reverse_iterator right_dimension = initial_bandwidth_dimensions.rbegin();
+        while(operators.size() > 1) {
+            OperatorSite operator_site(boost::move(operators.back())); operators.pop_back();
+            StateSite<Right> right_state_site(
+                randomStateSiteRight(
+                     operator_site.physicalDimension()
+                    ,LeftDimension(*(right_dimension-1))
+                    ,RightDimension(*right_dimension)
+                )
+            );
+            ExpectationBoundary<Right> old_right_expectation_boundary(boost::move(right_expectation_boundary));
+            right_expectation_boundary =
+                contractSOSRight(
+                     old_right_expectation_boundary
+                    ,right_state_site
+                    ,operator_site
+                );
+            right_neighbors.push_back(
+                Neighbor<Right>(
+                     boost::move(old_right_expectation_boundary)
+                    ,boost::move(right_state_site)
+                    ,boost::move(operator_site)
+                    ,moveable::vector<OverlapBoundary<Right> >()
+                    ,moveable::vector<OverlapSiteTrio>()
+                )
+            );
+        }
+    }
+    //@-<< Construct all but the first site >>
+
+    //@+<< Construct the first site >>
+    //@+node:gcross.20110202175920.1718: *4* << Construct the first site >>
+    operator_site = boost::move(operators.back());
+    state_site =
+        randomStateSiteMiddle(
+             operator_site.physicalDimension()
+            ,LeftDimension(initial_bandwidth_dimensions[0])
+            ,RightDimension(initial_bandwidth_dimensions[1])
+        );
+    //@-<< Construct the first site >>
+
+    //@+<< Compute the initial energy >>
+    //@+node:gcross.20110202175920.1719: *4* << Compute the initial energy >>
+    {
+        complex<double> const expectation_value = computeExpectationValue();
+        if(abs(expectation_value.imag()) > 1e-10) throw InitialChainEnergyNotRealError(expectation_value);
+        energy = expectation_value.real();
+    }
+    //@-<< Compute the initial energy >>
+}
+//@+node:gcross.20110202175920.1720: *3* computeExpectationValue
+complex<double> Chain::computeExpectationValue() const {
+    return 
+        Nutcracker::computeExpectationValue(
+             left_expectation_boundary
+            ,state_site
+            ,operator_site
+            ,right_expectation_boundary
+        );
+}
+//@+node:gcross.20110202175920.1721: *3* computeStateNorm
+double Chain::computeStateNorm() const {
+    return state_site.norm();
 }
 //@-others
 
