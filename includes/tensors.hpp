@@ -15,7 +15,6 @@
 #include <boost/range/algorithm/copy.hpp>
 #include <boost/range/concepts.hpp>
 #include <boost/range/irange.hpp>
-#include <boost/smart_ptr/scoped_array.hpp>
 #include <boost/utility.hpp>
 #include <complex>
 #include <exception>
@@ -61,9 +60,14 @@ DEFINE_TEMPLATIZED_PARAMETER(FillWithRange,fillWithRange)
 #define DEFINE_DIMENSION(CapsName) \
     class CapsName##Dimension { \
     private: \
-        unsigned int const dimension; \
+        BOOST_COPYABLE_AND_MOVABLE(CapsName##Dimension) \
+        unsigned int dimension; \
     public: \
         explicit CapsName##Dimension(unsigned int const dimension) : dimension(dimension) { } \
+        CapsName##Dimension(BOOST_RV_REF(CapsName##Dimension) other) : dimension(copyAndReset(other.dimension)) { } \
+        CapsName##Dimension(CapsName##Dimension const& other) : dimension(other.dimension) { } \
+        CapsName##Dimension& operator=(CapsName##Dimension const& other) { dimension = other.dimension; return *this; } \
+        CapsName##Dimension& operator=(BOOST_RV_REF(CapsName##Dimension) other) { dimension = copyAndReset(other.dimension); return *this; } \
         unsigned int operator *() const { return dimension; } \
         bool operator==(CapsName##Dimension const other) const { return dimension == other.dimension; } \
     }; \
@@ -87,8 +91,9 @@ class BaseTensor {
 private:
     BOOST_MOVABLE_BUT_NOT_COPYABLE(BaseTensor)
     unsigned int data_size;
-    scoped_array<complex<double> > data;
+    complex<double>* data;
 public:
+    ~BaseTensor() { if(data) delete[] data; }
 
     typedef complex<double> value_type;
     typedef value_type* iterator;
@@ -97,8 +102,9 @@ public:
     typedef value_type const& const_reference;
 
     BaseTensor(BOOST_RV_REF(BaseTensor) other)
-      : data_size(other.data_size)
-    { data.swap(other.data); }
+      : data_size(copyAndReset(other.data_size))
+      , data(copyAndReset(other.data))
+    { }
 
     BaseTensor(unsigned int const size)
       : data_size(size)
@@ -109,7 +115,7 @@ public:
       : data_size(other->data_size)
       , data(new complex<double>[data_size])
     {
-        copy(*other,data.get());
+        copy(*other,begin());
     }
 
     template<typename G> BaseTensor
@@ -120,7 +126,7 @@ public:
       , data(new complex<double>[data_size])
     {
         BOOST_CONCEPT_ASSERT(( Generator<G,complex<double> > ));
-        generate_n(data.get(),size,*generator);
+        generate_n(begin(),size,*generator);
     }
 
     template<typename Range> BaseTensor(FillWithRange<Range> const init)
@@ -128,7 +134,7 @@ public:
       , data(new complex<double>[data_size])
     {
         BOOST_CONCEPT_ASSERT(( RandomAccessRangeConcept<Range> ));
-        copy(*init,data.get());
+        copy(*init,begin());
     }
 
     BaseTensor(MakeTrivial const make_trivial)
@@ -140,17 +146,17 @@ public:
 
     unsigned int size() const { return data_size; }
 
-    operator complex<double>*() { return data.get(); }
-    operator complex<double> const*() const { return data.get(); }
+    operator complex<double>*() { return begin(); }
+    operator complex<double> const*() const { return begin(); }
 
-    complex<double>* begin() { return data.get(); }
-    complex<double> const* begin() const { return data.get(); }
+    complex<double>* begin() { return data; }
+    complex<double> const* begin() const { return data; }
 
-    complex<double>* end() { return data.get()+data_size; }
-    complex<double> const* end() const { return data.get()+data_size; }
+    complex<double>* end() { return begin()+data_size; }
+    complex<double> const* end() const { return begin()+data_size; }
 
-    complex<double>& operator[](unsigned int const index) { return *(data.get()+index); }
-    complex<double> operator[](unsigned int const index) const { return *(data.get()+index); }
+    complex<double>& operator[](unsigned int const index) { return *(begin()+index); }
+    complex<double> operator[](unsigned int const index) const { return *(begin()+index); }
 };
 //@+node:gcross.20110124175241.1530: *3* Boundary
 //@+node:gcross.20110124161335.2013: *4* ExpectationBoundary
@@ -162,8 +168,8 @@ private:
 public:
     ExpectationBoundary(BOOST_RV_REF(ExpectationBoundary) other)
       : BaseTensor(boost::move(static_cast<BaseTensor&>(other)))
-      , operator_dimension(other.operatorDimension())
-      , state_dimension(other.stateDimension())
+      , operator_dimension(boost::move(other.operator_dimension))
+      , state_dimension(boost::move(other.state_dimension))
     { }
 
     ExpectationBoundary(
@@ -224,8 +230,8 @@ private:
 public:
     OverlapBoundary(BOOST_RV_REF(OverlapBoundary) other)
       : BaseTensor(boost::move(static_cast<BaseTensor&>(other)))
-      , overlap_dimension(other.overlapDimension())
-      , state_dimension(other.stateDimension())
+      , overlap_dimension(boost::move(other.overlap_dimension))
+      , state_dimension(boost::move(other.state_dimension))
     { }
 
     OverlapBoundary(
@@ -287,20 +293,27 @@ private:
         , number_of_reflectors
         , orthogonal_subspace_dimension
         ;
-    scoped_array<complex<double> > reflector_data, coefficient_data;
-    scoped_array<uint32_t> swap_data;
+    complex<double> *reflector_data, *coefficient_data;
+    uint32_t* swap_data;
+
 public:
+    ~ProjectorMatrix() {
+        if(reflector_data && coefficient_data && swap_data) {
+            delete[] reflector_data;
+            delete[] coefficient_data;
+            delete[] swap_data;
+        }
+    }
 
     ProjectorMatrix(BOOST_RV_REF(ProjectorMatrix) other)
-      : number_of_projectors(other.number_of_projectors)
-      , projector_length(other.projector_length)
-      , number_of_reflectors(other.number_of_reflectors)
-      , orthogonal_subspace_dimension(other.orthogonal_subspace_dimension)
-    {
-        reflector_data.swap(other.reflector_data);
-        coefficient_data.swap(other.coefficient_data);
-        swap_data.swap(other.swap_data);
-    }
+      : number_of_projectors(copyAndReset(other.number_of_projectors))
+      , projector_length(copyAndReset(other.projector_length))
+      , number_of_reflectors(copyAndReset(other.number_of_reflectors))
+      , orthogonal_subspace_dimension(copyAndReset(other.orthogonal_subspace_dimension))
+      , reflector_data(copyAndReset(other.reflector_data))
+      , coefficient_data(copyAndReset(other.coefficient_data))
+      , swap_data(copyAndReset(other.swap_data))
+    { }
 
     ProjectorMatrix(
           unsigned int const number_of_projectors
@@ -324,14 +337,14 @@ public:
     unsigned int numberOfReflectors() const { return number_of_reflectors; }
     unsigned int orthogonalSubspaceDimension() const { return orthogonal_subspace_dimension; }
 
-    complex<double>* reflectorData() { return reflector_data.get(); }
-    complex<double> const* reflectorData() const { return reflector_data.get(); }
+    complex<double>* reflectorData() { return reflector_data; }
+    complex<double> const* reflectorData() const { return reflector_data; }
 
-    complex<double>* coefficientData() { return coefficient_data.get(); }
-    complex<double> const* coefficientData() const { return coefficient_data.get(); }
+    complex<double>* coefficientData() { return coefficient_data; }
+    complex<double> const* coefficientData() const { return coefficient_data; }
 
-    uint32_t* swapData() { return swap_data.get(); }
-    uint32_t const* swapData() const { return swap_data.get(); }
+    uint32_t* swapData() { return swap_data; }
+    uint32_t const* swapData() const { return swap_data; }
 };
 //@+node:gcross.20110124175241.1531: *3* Site
 //@+node:gcross.20110202142407.1690: *4* SiteBaseTensor
@@ -339,16 +352,16 @@ class SiteBaseTensor : public BaseTensor {
 private:
     BOOST_MOVABLE_BUT_NOT_COPYABLE(SiteBaseTensor)
 
-    PhysicalDimension const physical_dimension;
-    LeftDimension const left_dimension;
-    RightDimension const right_dimension;
+    PhysicalDimension physical_dimension;
+    LeftDimension left_dimension;
+    RightDimension right_dimension;
 
 protected:
     SiteBaseTensor(BOOST_RV_REF(SiteBaseTensor) other)
       : BaseTensor(boost::move(static_cast<BaseTensor&>(other)))
-      , physical_dimension(other.physical_dimension)
-      , left_dimension(other.left_dimension)
-      , right_dimension(other.right_dimension)
+      , physical_dimension(boost::move(other.physical_dimension))
+      , left_dimension(boost::move(other.left_dimension))
+      , right_dimension(boost::move(other.right_dimension))
     { }
 
     SiteBaseTensor(
@@ -421,15 +434,16 @@ class OperatorSite : public SiteBaseTensor {
 private:
     BOOST_MOVABLE_BUT_NOT_COPYABLE(OperatorSite)
 
-    unsigned int const number_of_matrices;
-    scoped_array<uint32_t> index_data;
+    unsigned int number_of_matrices;
+    uint32_t* index_data;
 public:
+    ~OperatorSite() { if(index_data) delete[] index_data; }
+
     OperatorSite(BOOST_RV_REF(OperatorSite) other)
       : SiteBaseTensor(boost::move(static_cast<SiteBaseTensor&>(other)))
-      , number_of_matrices(other.numberOfMatrices())
-    {
-        index_data.swap(other.index_data);
-    }
+      , number_of_matrices(copyAndReset(other.number_of_matrices))
+      , index_data(copyAndReset(other.index_data))
+    { }
 
     OperatorSite(
           unsigned int const number_of_matrices
@@ -464,7 +478,7 @@ public:
       , index_data(new uint32_t[number_of_matrices*2])
     {
         BOOST_CONCEPT_ASSERT(( Generator<G1,uint32_t> ));
-        uint32_t* index = index_data.get();
+        uint32_t* index = index_data;
         REPEAT(number_of_matrices) {
             uint32_t left_index = (*index_generator)()
                    , right_index = (*index_generator)()
@@ -492,7 +506,7 @@ public:
       , index_data(new uint32_t[index_init->size()])
     {
         BOOST_CONCEPT_ASSERT(( RandomAccessRangeConcept<Range1> ));
-        copy(*index_init,index_data.get());
+        copy(*index_init,index_data);
     }
 
     OperatorSite(MakeTrivial const make_trivial)
@@ -500,13 +514,13 @@ public:
       , number_of_matrices(1)
       , index_data(new uint32_t[2])
     {
-        fill_n(index_data.get(),2,1);
+        fill_n(index_data,2,1);
     }
 
     unsigned int numberOfMatrices() const { return number_of_matrices; }
 
-    operator uint32_t*() { return index_data.get(); }
-    operator uint32_t const*() const { return index_data.get(); }
+    operator uint32_t*() { return index_data; }
+    operator uint32_t const*() const { return index_data; }
 
     static OperatorSite const trivial;
 };

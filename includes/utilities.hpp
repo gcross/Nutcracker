@@ -7,14 +7,17 @@
 
 //@+<< Includes >>
 //@+node:gcross.20110125202132.2157: ** << Includes >>
+#include <boost/move/move.hpp>
 #include <complex>
 #include <exception>
+#include <string>
 //@-<< Includes >>
 
 namespace Nutcracker {
 
 //@+<< Usings >>
 //@+node:gcross.20110125202132.2158: ** << Usings >>
+using namespace boost;
 using namespace std;
 //@-<< Usings >>
 
@@ -28,6 +31,12 @@ struct Exception : public std::exception {
 };
 //@+node:gcross.20110127123226.2857: ** Functions
 inline complex<double> c(double x, double y) { return complex<double>(x,y); }
+
+template<typename T> inline T copyAndReset(T& x) {
+    T const old_x = x;
+    x = 0;
+    return old_x;
+}
 //@+node:gcross.20110129220506.1652: ** Macros
 #define REPEAT(n) for(unsigned int _##n##counter##__LINE__ = 0; _##n##counter##__LINE__ < n; ++_##n##counter##__LINE__)
 //@-others
