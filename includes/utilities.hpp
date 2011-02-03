@@ -37,6 +37,11 @@ template<typename T> inline T copyAndReset(T& x) {
     x = 0;
     return old_x;
 }
+
+template<typename T> inline void moveArrayToFrom(T*& to, T*& from) {
+    if(to) delete[] to;
+    to = copyAndReset(from);
+}
 //@+node:gcross.20110129220506.1652: ** Macros
 #define REPEAT(n) for(unsigned int _##n##counter##__LINE__ = 0; _##n##counter##__LINE__ < n; ++_##n##counter##__LINE__)
 //@-others

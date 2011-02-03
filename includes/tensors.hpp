@@ -39,6 +39,10 @@ enum Side { Left, Middle, Right };
 
 template<Side other_side> struct Other { static Side const side; };
 template<Side other_side> Side const Other<other_side>::side = (Side)(2u-other_side);
+//@+node:gcross.20110202172517.1694: ** exception InvalidTensorException
+struct InvalidTensorException : public Exception {
+    InvalidTensorException() : Exception("Attempt to dereference an invalid tensor") {}
+};
 //@+node:gcross.20110127123226.2852: ** Parameters wrappers
 #define DEFINE_TEMPLATIZED_PARAMETER(Parameter,parameter) \
     template<typename T> struct Parameter { \
@@ -46,7 +50,6 @@ template<Side other_side> Side const Other<other_side>::side = (Side)(2u-other_s
         Parameter(T& data) : data(data) {} \
         T& operator*() const { return data; } \
         T* operator->() const { return &data; } \
-        operator Parameter<T const>() const { return Parameter(data); } \
     }; \
     template<typename T> Parameter<T> parameter(T& data) { return Parameter<T>(data); } \
     template<typename T> Parameter<T const> parameter(T const& data) { return Parameter<T const>(data); } \
@@ -92,14 +95,8 @@ private:
     BOOST_MOVABLE_BUT_NOT_COPYABLE(BaseTensor)
     unsigned int data_size;
     complex<double>* data;
-public:
-    ~BaseTensor() { if(data) delete[] data; }
-
-    typedef complex<double> value_type;
-    typedef value_type* iterator;
-    typedef value_type const* const_iterator;
-    typedef value_type& reference;
-    typedef value_type const& const_reference;
+protected:
+    ~BaseTensor() { if(valid()) delete[] data; }
 
     BaseTensor(BOOST_RV_REF(BaseTensor) other)
       : data_size(copyAndReset(other.data_size))
@@ -144,19 +141,41 @@ public:
         data[0] = c(1,0);
     }
 
+    void operator=(BOOST_RV_REF(BaseTensor) other) {
+        data_size = copyAndReset(other.data_size);
+        moveArrayToFrom(data,other.data);
+    }
+
+    void swap(BaseTensor& other) {
+        std::swap(data_size,other.data_size);
+        std::swap(data,other.data);
+    }
+
+public:
+    typedef complex<double> value_type;
+    typedef value_type* iterator;
+    typedef value_type const* const_iterator;
+    typedef value_type& reference;
+    typedef value_type const& const_reference;
+
     unsigned int size() const { return data_size; }
 
     operator complex<double>*() { return begin(); }
     operator complex<double> const*() const { return begin(); }
 
-    complex<double>* begin() { return data; }
-    complex<double> const* begin() const { return data; }
+    complex<double>* begin() { if(invalid()) throw InvalidTensorException(); return data; }
+    complex<double> const* begin() const { if(invalid()) throw InvalidTensorException(); return data; }
 
-    complex<double>* end() { return begin()+data_size; }
-    complex<double> const* end() const { return begin()+data_size; }
+    complex<double>* end() { return begin()+size(); }
+    complex<double> const* end() const { return begin()+size(); }
 
     complex<double>& operator[](unsigned int const index) { return *(begin()+index); }
     complex<double> operator[](unsigned int const index) const { return *(begin()+index); }
+
+    bool valid() const { return data; }
+    bool invalid() const { return !valid(); }
+
+    operator bool() const { return valid(); }
 };
 //@+node:gcross.20110124175241.1530: *3* Boundary
 //@+node:gcross.20110124161335.2013: *4* ExpectationBoundary
@@ -210,6 +229,21 @@ public:
       , operator_dimension(1)
       , state_dimension(1)
     { }
+
+    ExpectationBoundary& operator=(BOOST_RV_REF(ExpectationBoundary) other) {
+        if(this == &other) return *this;
+        BaseTensor::operator=(boost::move(static_cast<BaseTensor&>(other)));
+        operator_dimension = boost::move(other.operator_dimension);
+        state_dimension = boost::move(other.state_dimension);
+        return *this;
+    }
+
+    void swap(ExpectationBoundary& other) {
+        if(this == &other) return;
+        BaseTensor::swap(other);
+        std::swap(operator_dimension,other.operator_dimension);
+        std::swap(state_dimension,other.state_dimension);
+    }
 
     OperatorDimension operatorDimension() const { return operator_dimension; }
     unsigned int operatorDimension(AsUnsignedInteger _) const { return *operator_dimension; }
@@ -273,6 +307,21 @@ public:
       , state_dimension(1)
     { }
 
+    OverlapBoundary& operator=(BOOST_RV_REF(OverlapBoundary) other) {
+        if(this == &other) return *this;
+        BaseTensor::operator=(boost::move(static_cast<BaseTensor&>(other)));
+        overlap_dimension = boost::move(other.overlap_dimension);
+        state_dimension = boost::move(other.state_dimension);
+        return *this;
+    }
+
+    void swap(OverlapBoundary& other) {
+        if(this == &other) return;
+        BaseTensor::swap(other);
+        std::swap(overlap_dimension,other.overlap_dimension);
+        std::swap(state_dimension,other.state_dimension);
+    }
+
     OverlapDimension overlapDimension() const { return overlap_dimension; }
     unsigned int overlapDimension(AsUnsignedInteger _) const { return *overlap_dimension; }
 
@@ -298,7 +347,7 @@ private:
 
 public:
     ~ProjectorMatrix() {
-        if(reflector_data && coefficient_data && swap_data) {
+        if(valid()) {
             delete[] reflector_data;
             delete[] coefficient_data;
             delete[] swap_data;
@@ -332,19 +381,47 @@ public:
       , swap_data(swap_data)
     { }
 
+    ProjectorMatrix& operator=(BOOST_RV_REF(ProjectorMatrix) other) {
+        if(this == &other) return *this;
+        number_of_projectors = copyAndReset(other.number_of_projectors);
+        projector_length = copyAndReset(other.projector_length);
+        number_of_reflectors = copyAndReset(other.number_of_reflectors);
+        orthogonal_subspace_dimension = copyAndReset(other.orthogonal_subspace_dimension);
+        moveArrayToFrom(reflector_data,other.reflector_data);
+        moveArrayToFrom(coefficient_data,other.coefficient_data);
+        moveArrayToFrom(swap_data,other.swap_data);
+        return *this;
+    }
+
+    void swap(ProjectorMatrix& other) {
+        if(this == &other) return;
+        std::swap(number_of_projectors,other.number_of_projectors);
+        std::swap(projector_length,other.projector_length);
+        std::swap(number_of_reflectors,other.number_of_reflectors);
+        std::swap(orthogonal_subspace_dimension,other.orthogonal_subspace_dimension);
+        std::swap(reflector_data,other.reflector_data);
+        std::swap(coefficient_data,other.coefficient_data);
+        std::swap(swap_data,other.swap_data);
+    }
+
     unsigned int numberOfProjectors() const { return number_of_projectors; }
     unsigned int projectorLength() const { return projector_length; }
     unsigned int numberOfReflectors() const { return number_of_reflectors; }
     unsigned int orthogonalSubspaceDimension() const { return orthogonal_subspace_dimension; }
 
-    complex<double>* reflectorData() { return reflector_data; }
-    complex<double> const* reflectorData() const { return reflector_data; }
+    complex<double>* reflectorData() { if(invalid()) throw InvalidTensorException(); return reflector_data; }
+    complex<double> const* reflectorData() const { if(invalid()) throw InvalidTensorException(); return reflector_data; }
 
-    complex<double>* coefficientData() { return coefficient_data; }
-    complex<double> const* coefficientData() const { return coefficient_data; }
+    complex<double>* coefficientData() { if(!*this) throw InvalidTensorException(); return coefficient_data; }
+    complex<double> const* coefficientData() const { if(invalid()) throw InvalidTensorException(); return coefficient_data; }
 
-    uint32_t* swapData() { return swap_data; }
-    uint32_t const* swapData() const { return swap_data; }
+    uint32_t* swapData() { if(invalid()) throw InvalidTensorException(); return swap_data; }
+    uint32_t const* swapData() const { if(invalid()) throw InvalidTensorException(); return swap_data; }
+
+    bool valid() const { return reflector_data && coefficient_data && swap_data; }
+    bool invalid() const { return !valid(); }
+
+    operator bool() const { return valid(); }
 };
 //@+node:gcross.20110124175241.1531: *3* Site
 //@+node:gcross.20110202142407.1690: *4* SiteBaseTensor
@@ -418,6 +495,20 @@ protected:
       , left_dimension(1)
       , right_dimension(1)
     { }
+
+    void operator=(BOOST_RV_REF(SiteBaseTensor) other) {
+        BaseTensor::operator=(boost::move(static_cast<BaseTensor&>(other)));
+        physical_dimension = boost::move(other.physical_dimension);
+        left_dimension = boost::move(other.left_dimension);
+        right_dimension = boost::move(other.right_dimension);
+    }
+
+    void swap(SiteBaseTensor& other) {
+        BaseTensor::swap(other);
+        std::swap(physical_dimension,other.physical_dimension);
+        std::swap(left_dimension,other.left_dimension);
+        std::swap(right_dimension,other.right_dimension);
+    }
 
 public:
     PhysicalDimension physicalDimension() const { return physical_dimension; }
@@ -517,6 +608,21 @@ public:
         fill_n(index_data,2,1);
     }
 
+    OperatorSite& operator=(BOOST_RV_REF(OperatorSite) other) {
+        if(this == &other) return *this;
+        SiteBaseTensor::operator=(boost::move(static_cast<SiteBaseTensor&>(other)));
+        number_of_matrices = copyAndReset(number_of_matrices);
+        moveArrayToFrom(index_data,other.index_data); 
+        return *this;
+    }
+
+    void swap(OperatorSite& other) {
+        if(this == &other) return;
+        SiteBaseTensor::swap(other);
+        std::swap(number_of_matrices,other.number_of_matrices);
+        std::swap(index_data,other.index_data);
+    }
+
     unsigned int numberOfMatrices() const { return number_of_matrices; }
 
     operator uint32_t*() { return index_data; }
@@ -583,6 +689,17 @@ public:
 
     StateSite(MakeTrivial const make_trivial) : SiteBaseTensor(make_trivial) {}
 
+    StateSite& operator=(BOOST_RV_REF(StateSite) other) {
+        if(this == &other) return *this;
+        SiteBaseTensor::operator=(boost::move(static_cast<SiteBaseTensor&>(other)));
+        return *this;
+    }
+
+    void swap(StateSite& other) {
+        if(this == &other) return;
+        SiteBaseTensor::swap(other);
+    }
+
     static StateSite const trivial;
 };
 
@@ -645,6 +762,17 @@ public:
     { }
 
     OverlapSite(MakeTrivial const make_trivial) : SiteBaseTensor(make_trivial) {}
+
+    OverlapSite& operator=(BOOST_RV_REF(OverlapSite) other) {
+        if(this == &other) return *this;
+        SiteBaseTensor::operator=(boost::move(static_cast<SiteBaseTensor&>(other)));
+        return *this;
+    }
+
+    void swap(OverlapSite& other) {
+        if(this == &other) return;
+        SiteBaseTensor::swap(other);
+    }
 
     static OverlapSite const trivial;
 };
