@@ -122,15 +122,21 @@ TEST_CASE(walkable) {
         unsigned int const number_of_operators = random+2;
         Chain chain(randomOperators(random,number_of_operators));
 
-        ASSERT_NEAR(1,chain.computeStateNorm(),1e-15);
+        #define VALIDATE_CHAIN_PROPERTIES \
+            { \
+                ASSERT_NEAR(1,chain.computeStateNorm(),1e-15); \
+                complex<double> const expectation_value = chain.computeExpectationValue(); \
+                ASSERT_NEAR(0,expectation_value.imag(),1e-15); \
+                ASSERT_NEAR_QUOTED(chain.getEnergy(),expectation_value.real(),1e-15); \
+            }
 
         REPEAT(number_of_operators-1) {
             chain.move<Right>();
-            ASSERT_NEAR(1,chain.computeStateNorm(),1e-15);
+            VALIDATE_CHAIN_PROPERTIES
         }
         REPEAT(number_of_operators-1) {
             chain.move<Left>();
-            ASSERT_NEAR(1,chain.computeStateNorm(),1e-15);
+            VALIDATE_CHAIN_PROPERTIES
         }
     }
 }
