@@ -121,8 +121,17 @@ TEST_CASE(walkable) {
     REPEAT(10) {
         unsigned int const number_of_operators = random+2;
         Chain chain(randomOperators(random,number_of_operators));
-        REPEAT(number_of_operators-1) { chain.move<Right>(); }
-        REPEAT(number_of_operators-1) { chain.move<Left>(); }
+
+        ASSERT_NEAR(1,chain.computeStateNorm(),1e-15);
+
+        REPEAT(number_of_operators-1) {
+            chain.move<Right>();
+            ASSERT_NEAR(1,chain.computeStateNorm(),1e-15);
+        }
+        REPEAT(number_of_operators-1) {
+            chain.move<Left>();
+            ASSERT_NEAR(1,chain.computeStateNorm(),1e-15);
+        }
     }
 }
 //@-others
