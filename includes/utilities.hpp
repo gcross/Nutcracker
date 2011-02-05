@@ -52,7 +52,7 @@ template<typename T> inline void moveArrayToFrom(T*& to, T*& from) {
 extern "C" double dznrm2_(uint32_t const* n, complex<double>* const x, uint32_t const* incx);
 inline double dznrm2(uint32_t const n, complex<double>* const x, uint32_t const incx=1) { return dznrm2_(&n,x,&incx); }
 //@+node:gcross.20110129220506.1652: ** Macros
-#define REPEAT(n) for(unsigned int _##n##counter##__LINE__ = 0; _##n##counter##__LINE__ < n; ++_##n##counter##__LINE__)
+#define REPEAT(n) for(unsigned int _counter##__LINE__ = 0; _##counter##__LINE__ < n; ++_##counter##__LINE__)
 //@-others
 
 }
