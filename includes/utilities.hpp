@@ -10,6 +10,7 @@
 #include <boost/move/move.hpp>
 #include <complex>
 #include <exception>
+#include <stdint.h>
 #include <string>
 //@-<< Includes >>
 
