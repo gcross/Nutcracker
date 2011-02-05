@@ -119,7 +119,10 @@ TEST_CASE(walkable) {
     RNG random;
 
     REPEAT(10) {
-        Chain chain(randomOperators(random,2));
+        unsigned int const number_of_operators = random+2, number_of_operators_minus_one = number_of_operators-1;
+        Chain chain(randomOperators(random,number_of_operators));
+        REPEAT(number_of_operators_minus_one) { chain.move<Right>(); }
+        REPEAT(number_of_operators_minus_one) { chain.move<Left>(); }
     }
 }
 //@-others

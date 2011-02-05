@@ -98,11 +98,11 @@ public:
         right.swap(other.right);
     }
 
-    template<Side side> OverlapSite<side> const& get() {}
+    template<Side side> OverlapSite<side> const& get() const {}
 };
-template<> inline OverlapSite<Left> const& OverlapSiteTrio::get<Left>() { return left; }
-template<> inline OverlapSite<Middle> const& OverlapSiteTrio::get<Middle>() { return middle; }
-template<> inline OverlapSite<Right> const& OverlapSiteTrio::get<Right>() { return right; }
+template<> inline OverlapSite<Left> const& OverlapSiteTrio::get<Left>() const { return left; }
+template<> inline OverlapSite<Middle> const& OverlapSiteTrio::get<Middle>() const { return middle; }
+template<> inline OverlapSite<Right> const& OverlapSiteTrio::get<Right>() const { return right; }
 //@+node:gcross.20110202175920.1703: *3* Neighbor
 template<Side side> struct Neighbor {
 private:
@@ -194,7 +194,7 @@ template<Side side> void Chain::move() {
     if(side == Left) {
         assert(--current_site_number >= 0);
     } else if(side == Right) {
-        assert(++current_site_number >= 0);
+        assert(++current_site_number < number_of_sites);
     } else {
         throw BadProgrammerException("the chain can only be moved left or right, not 'middle'");
     }
@@ -206,8 +206,8 @@ template<Side side> void Chain::move() {
     Neighbor<side>& neighbor = side_neighbors.back();
 
     MoveSiteCursorResult<side> cursor(moveSiteCursor<side>::from(
-         *neighbor.state_site
-        ,*state_site
+         state_site
+        ,neighbor.state_site
     ));
 
     ExpectationBoundary<other::side>& expectation_boundary = expectationBoundary<other::side>();
@@ -245,11 +245,15 @@ template<Side side> void Chain::move() {
         ,boost::move(overlap_site_trios)
     );
 
+    expectationBoundary<other::side>() = boost::move(new_expectation_boundary);
+    overlapBoundaries<other::side>() = boost::move(new_overlap_boundaries);
+
     expectationBoundary<side>() = boost::move(neighbor.expectation_boundary);
+    overlapBoundaries<side>() = boost::move(neighbor.overlap_boundaries);
+
+    overlap_site_trios = boost::move(neighbor.overlap_site_trios);
     state_site = boost::move(cursor.middle_state_site);
     operator_site = boost::move(neighbor.operator_site);
-    overlapBoundaries<side>() = boost::move(neighbor.overlap_boundaries);
-    overlap_site_trios = boost::move(neighbor.overlap_site_trios);
 
     side_neighbors.pop_back();
 }

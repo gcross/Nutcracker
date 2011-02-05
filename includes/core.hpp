@@ -350,7 +350,7 @@ template<> struct contract<Right> {
         , OperatorSite const& operator_site
     ) { return contractSOSRight(old_boundary,state_site,operator_site); }
 
-    static OverlapBoundary<Right> const SS(
+    static OverlapBoundary<Right> SS(
           OverlapBoundary<Right> const& old_boundary
         , OverlapSite<Right> const& overlap_site
         , StateSite<Right> const& state_site
