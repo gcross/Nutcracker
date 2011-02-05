@@ -4,9 +4,10 @@
 
 //@+<< Includes >>
 //@+node:gcross.20110130170743.1680: ** << Includes >>
-#include <boost/random.hpp>
-#include <boost/random/uniform_smallint.hpp>
+#include <boost/container/vector.hpp>
+#include <boost/foreach.hpp>
 #include <boost/range/algorithm/max_element.hpp>
+#include <boost/range/irange.hpp>
 #include <boost/range/numeric.hpp>
 #include <illuminate.hpp>
 #include <functional>
@@ -14,7 +15,8 @@
 #include "chain.hpp"
 #include "utilities.hpp"
 
-using namespace boost;
+#include "test_utils.hpp"
+
 using namespace boost;
 using namespace Nutcracker;
 using namespace std;
@@ -29,28 +31,6 @@ TEST_SUITE(Chain) {
 TEST_SUITE(computeBandwidthDimensionSequence) {
 
 //@+others
-//@+node:gcross.20110130193548.1692: *4* struct RNG
-struct RNG {
-    taus88 generator;
-
-    struct IndexGenerator {
-        uniform_smallint<unsigned int> smallint;
-        variate_generator<taus88,uniform_smallint<unsigned int> > randomInteger;
-        IndexGenerator(
-              RNG& rng
-            , unsigned int lo
-            , unsigned int hi
-        ) : smallint(lo,hi)
-          , randomInteger(rng.generator,smallint)
-        {}
-        uint32_t operator()() { return (uint32_t)randomInteger(); }
-    };
-
-    IndexGenerator operator()(unsigned int lo, unsigned int hi) {
-        return IndexGenerator(*this,lo,hi);
-    }
-
-};
 //@+node:gcross.20110130193548.1690: *4* correct properties
 TEST_CASE(correct_properties) {
     RNG random;
