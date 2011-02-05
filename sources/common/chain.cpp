@@ -126,14 +126,14 @@ Chain::Chain(
     //@+<< Construct all but the first site >>
     //@+node:gcross.20110202175920.1717: *4* << Construct all but the first site >>
     {
-        vector<unsigned int>::const_reverse_iterator right_dimension = initial_bandwidth_dimensions.rbegin();
+        vector<unsigned int>::const_reverse_iterator right_dimension = initial_bandwidth_dimensions.rbegin()+1;
         while(operators.size() > 1) {
             OperatorSite operator_site(boost::move(operators.back())); operators.pop_back();
             StateSite<Right> right_state_site(
                 randomStateSiteRight(
                      operator_site.physicalDimension()
-                    ,LeftDimension(*(right_dimension-1))
-                    ,RightDimension(*right_dimension)
+                    ,LeftDimension(*right_dimension)
+                    ,RightDimension(*(right_dimension-1))
                 )
             );
             ExpectationBoundary<Right> old_right_expectation_boundary(boost::move(right_expectation_boundary));
