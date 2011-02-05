@@ -8,13 +8,12 @@
 #include <boost/foreach.hpp>
 #include <boost/range/algorithm/equal.hpp>
 #include <boost/range/algorithm/generate.hpp>
-#include <boost/random.hpp>
-#include <boost/random/normal_distribution.hpp>
-#include <boost/random/uniform_smallint.hpp>
 #include <illuminate.hpp>
 #include <iostream>
 
 #include "core.hpp"
+
+#include "test_utils.hpp"
 
 using namespace boost;
 using namespace Nutcracker;
@@ -26,49 +25,6 @@ using namespace std;
 TEST_SUITE(Core) {
 
 //@+others
-//@+node:gcross.20110129220506.1649: *3* struct RNG
-struct RNG {
-    taus88 generator;
-
-    normal_distribution<double> normal;
-    variate_generator<taus88,normal_distribution<double> > randomDouble;
-
-    uniform_smallint<unsigned int> smallint;
-    variate_generator<taus88,uniform_smallint<unsigned int> > randomInteger;
-
-    template<typename T> struct Generator {
-        RNG& rng;
-        Generator(RNG& rng) : rng(rng) {}
-        T operator()() { return c(rng.randomDouble(),rng.randomDouble()); }
-    };
-
-    Generator<complex<double> > randomComplexDouble;
-
-    struct IndexGenerator {
-        uniform_smallint<unsigned int> smallint;
-        variate_generator<taus88,uniform_smallint<unsigned int> > randomInteger;
-        IndexGenerator(
-              RNG& rng
-            , unsigned int lo
-            , unsigned int hi
-        ) : smallint(lo,hi)
-          , randomInteger(rng.generator,smallint)
-        {}
-        uint32_t operator()() { return (uint32_t)randomInteger(); }
-    };
-
-    RNG()
-      : normal(0,1)
-      , randomDouble(generator,normal)
-      , smallint(1,10)
-      , randomInteger(generator,smallint)
-      , randomComplexDouble(*this)
-    {}
-
-    operator unsigned int() { return randomInteger(); }
-    operator complex<double>() { return randomComplexDouble(); }
-
-};
 //@+node:gcross.20110129220506.1650: *3* Consistency
 TEST_SUITE(Consistency) {
 
@@ -81,14 +37,15 @@ TEST_SUITE(Consistency) {
         REPEAT(10) {
 
             unsigned int const
-                 left_state_dimension = random
-                ,operator_dimension = random
+                 left_operator_dimension = random
+                ,left_state_dimension = random
                 ,physical_dimension = random
+                ,right_operator_dimension = random
                 ,right_state_dimension = random
                 ,number_of_matrices = random
                 ;
             ExpectationBoundary<Left> const left_boundary
-                (OperatorDimension(operator_dimension)
+                (OperatorDimension(left_operator_dimension)
                 ,StateDimension(left_state_dimension)
                 ,fillWithGenerator(random.randomComplexDouble)
                 );
@@ -100,17 +57,17 @@ TEST_SUITE(Consistency) {
                 );
             StateSite<Left> const left_state_site(copyFrom(state_site));
             StateSite<Right> const right_state_site(copyFrom(state_site));
-            RNG::IndexGenerator randomIndex(random,1,operator_dimension);
+            RNG::IndexGenerator randomIndex(random,left_operator_dimension,right_operator_dimension);
             OperatorSite const operator_site
                 (number_of_matrices
                 ,PhysicalDimension(physical_dimension)
-                ,LeftDimension(operator_dimension)
-                ,RightDimension(operator_dimension)
+                ,LeftDimension(left_operator_dimension)
+                ,RightDimension(right_operator_dimension)
                 ,fillWithGenerator(randomIndex)
                 ,fillWithGenerator(random.randomComplexDouble)
                 );
             ExpectationBoundary<Right> const right_boundary
-                (OperatorDimension(operator_dimension)
+                (OperatorDimension(right_operator_dimension)
                 ,StateDimension(right_state_dimension)
                 ,fillWithGenerator(random.randomComplexDouble)
                 );
@@ -167,8 +124,7 @@ TEST_SUITE(Consistency) {
                      physical_dimension
                     *left_dimension
                     *right_dimension
-                , number_of_projectors =
-                    RNG::IndexGenerator(random,1,projector_length-1)()
+                , number_of_projectors = random(1,projector_length-1)()
                 ;
 
             StateSite<Middle> const state_site(

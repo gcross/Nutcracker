@@ -31,6 +31,7 @@
 <v t="gcross.20110125120748.2426"><vh>@thin CMakeLists.txt</vh></v>
 <v t="gcross.20110130170743.1679"><vh>@thin chain.cpp</vh></v>
 <v t="gcross.20110127123226.2504"><vh>@thin core.cpp</vh></v>
+<v t="gcross.20110202223558.1713"><vh>@thin test_utils.hpp</vh></v>
 <v t="gcross.20091111171052.1604"><vh>@path python</vh>
 <v t="gcross.20091110205054.1950"><vh>@thin Makefile</vh></v>
 <v t="gcross.20091106154604.1979"><vh>@thin test.py</vh></v>
