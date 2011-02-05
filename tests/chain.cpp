@@ -27,6 +27,28 @@ using namespace std;
 TEST_SUITE(Chain) {
 
 //@+others
+//@+node:gcross.20110202223558.1711: *3* randomOperators
+moveable::vector<OperatorSite> randomOperators(RNG& random,optional<unsigned int> maybe_number_of_operators=none) {
+    unsigned int const number_of_operators = maybe_number_of_operators ? *maybe_number_of_operators : random+1;
+    moveable::vector<OperatorSite> operators;
+    unsigned int left_dimension = 1;
+    BOOST_FOREACH(unsigned int const operator_number, irange(0u,number_of_operators)) {
+        unsigned int const right_dimension
+            = operator_number == number_of_operators-1
+                ? 1
+                : random
+                ;
+        operators.push_back(
+            random.randomOperator(
+                 PhysicalDimension(random+1)
+                ,LeftDimension(left_dimension)
+                ,RightDimension(right_dimension)
+            )
+        );
+        left_dimension = right_dimension;
+    }
+    return boost::move(operators);
+}
 //@+node:gcross.20110130193548.1694: *3* computeBandwidthDimensionSequence
 TEST_SUITE(computeBandwidthDimensionSequence) {
 
@@ -91,6 +113,14 @@ TEST_CASE(complains_if_too_large) {
 }
 //@-others
 
+}
+//@+node:gcross.20110202223558.1712: *3* walkable
+TEST_CASE(walkable) {
+    RNG random;
+
+    REPEAT(10) {
+        Chain chain(randomOperators(random,2));
+    }
 }
 //@-others
 
