@@ -115,11 +115,11 @@ public:
     moveable::vector<OverlapSiteTrio> overlap_site_trios;
 
     Neighbor(BOOST_RV_REF(Neighbor) other)
-      : expectation_boundary(boost::move(expectation_boundary))
-      , state_site(boost::move(state_site))
-      , operator_site(boost::move(operator_site))
-      , overlap_boundaries(boost::move(overlap_boundaries))
-      , overlap_site_trios(boost::move(overlap_site_trios))
+      : expectation_boundary(boost::move(other.expectation_boundary))
+      , state_site(boost::move(other.state_site))
+      , operator_site(boost::move(other.operator_site))
+      , overlap_boundaries(boost::move(other.overlap_boundaries))
+      , overlap_site_trios(boost::move(other.overlap_site_trios))
     { }
 
     Neighbor(
