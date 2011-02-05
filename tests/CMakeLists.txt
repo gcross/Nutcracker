@@ -5,6 +5,7 @@ include_directories(".")
 set(test-SOURCES
     chain
     core
+    tensors
 )
 
 add_executable(test EXCLUDE_FROM_ALL ${test-SOURCES})
