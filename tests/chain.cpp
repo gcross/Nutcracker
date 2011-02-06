@@ -59,15 +59,15 @@ TEST_CASE(correct_properties) {
 
     REPEAT(10) {
         unsigned int const
-             requested_bandwidth_dimension = random(1,100000)()
-            ,number_of_sites = random(20,1000)()
+             requested_bandwidth_dimension = random(1,100000)
+            ,number_of_sites = random(20,1000)
             ;
         vector<unsigned int> physical_dimensions;
         physical_dimensions.reserve(number_of_sites);
         generate_n(
              back_inserter(physical_dimensions)
             ,number_of_sites
-            ,random(2,10)
+            ,random.generateRandomIntegers(2,10)
         );
 
         vector<unsigned int> const bandwidth_dimensions =
@@ -90,13 +90,13 @@ TEST_CASE(complains_if_too_large) {
     RNG random;
 
     REPEAT(10) {
-        unsigned int const number_of_sites = random(10,20)();
+        unsigned int const number_of_sites = random(10,20);
         vector<unsigned int> physical_dimensions;
         physical_dimensions.reserve(number_of_sites);
         generate_n(
              back_inserter(physical_dimensions)
             ,number_of_sites
-            ,random(2,10)
+            ,random.generateRandomIntegers(2,10)
         );
         unsigned int const requested_bandwidth_dimension = 2*accumulate(physical_dimensions,1u,multiplies<unsigned int>());
         try {

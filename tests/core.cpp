@@ -57,17 +57,15 @@ TEST_SUITE(Consistency) {
                 );
             StateSite<Left> const left_state_site(copyFrom(state_site));
             StateSite<Right> const right_state_site(copyFrom(state_site));
-            RNG::IndexGenerator randomIndex
-                (random
-                ,LeftDimension(left_operator_dimension)
-                ,RightDimension(right_operator_dimension)
-                );
             OperatorSite const operator_site
                 (number_of_matrices
                 ,PhysicalDimension(physical_dimension)
                 ,LeftDimension(left_operator_dimension)
                 ,RightDimension(right_operator_dimension)
-                ,fillWithGenerator(randomIndex)
+                ,fillWithGenerator(random.generateRandomIndices(
+                     LeftDimension(left_operator_dimension)
+                    ,RightDimension(right_operator_dimension)
+                 ))
                 ,fillWithGenerator(random.randomComplexDouble)
                 );
             ExpectationBoundary<Right> const right_boundary
@@ -128,7 +126,7 @@ TEST_SUITE(Consistency) {
                      physical_dimension
                     *left_dimension
                     *right_dimension
-                , number_of_projectors = random(1,projector_length-1)()
+                , number_of_projectors = random(1,projector_length-1)
                 ;
 
             StateSite<Middle> const state_site(

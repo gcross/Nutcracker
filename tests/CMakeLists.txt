@@ -6,6 +6,7 @@ set(test-SOURCES
     chain
     core
     tensors
+    test_utils
 )
 
 add_executable(test EXCLUDE_FROM_ALL ${test-SOURCES})

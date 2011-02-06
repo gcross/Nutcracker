@@ -187,13 +187,12 @@ TEST_CASE(move_assignable) {
         LeftDimension const left_dimension(random);
         RightDimension const right_dimension(random);
 
-        RNG::IndexGenerator randomIndex(random,left_dimension,right_dimension);
         OperatorSite old_site
             (number_of_matrices
             ,physical_dimension
             ,left_dimension
             ,right_dimension
-            ,fillWithGenerator(randomIndex)
+            ,fillWithGenerator(random.generateRandomIndices(left_dimension,right_dimension))
             ,fillWithGenerator(random.randomComplexDouble)
             );
 
@@ -236,13 +235,12 @@ TEST_CASE(move_constructable) {
         LeftDimension const left_dimension(random);
         RightDimension const right_dimension(random);
 
-        RNG::IndexGenerator randomIndex(random,left_dimension,right_dimension);
         OperatorSite old_site
             (number_of_matrices
             ,physical_dimension
             ,left_dimension
             ,right_dimension
-            ,fillWithGenerator(randomIndex)
+            ,fillWithGenerator(random.generateRandomIndices(left_dimension,right_dimension))
             ,fillWithGenerator(random.randomComplexDouble)
             );
 

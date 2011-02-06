@@ -33,6 +33,7 @@
 <v t="gcross.20110127123226.2504"><vh>@thin core.cpp</vh></v>
 <v t="gcross.20110204201608.1725"><vh>@thin tensors.cpp</vh></v>
 <v t="gcross.20110202223558.1713"><vh>@thin test_utils.hpp</vh></v>
+<v t="gcross.20110206092738.1736"><vh>@thin test_utils.cpp</vh></v>
 <v t="gcross.20091111171052.1604"><vh>@path python</vh>
 <v t="gcross.20091110205054.1950"><vh>@thin Makefile</vh></v>
 <v t="gcross.20091106154604.1979"><vh>@thin test.py</vh></v>
