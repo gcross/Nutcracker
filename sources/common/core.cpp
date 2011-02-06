@@ -1058,16 +1058,16 @@ OptimizerResult optimizeStateSite(
         case 11:
             throw OptimizerGivenGuessInProjectorSpace();
         case 0:
-            if(abs(eigenvalue-expectation_value) > 1e-7)
+            if(abs(eigenvalue-expectation_value)/(abs(eigenvalue)+abs(expectation_value)) > tolerance)
                 throw OptimizerObtainedEigenvalueDifferentFromExpectationValue(
                      eigenvalue
                     ,expectation_value
                 );
-            if(eigenvalue.imag() > 1e-10)
+            if(eigenvalue.imag()/abs(eigenvalue) > tolerance)
                 throw OptimizerObtainedComplexEigenvalue(eigenvalue);
-            if(normal < 1-1e-7)
+            if(normal < 1-tolerance)
                 throw OptimizerObtainedVanishingEigenvector(normal);
-            if(overlap > 1e-10)
+            if(overlap > tolerance)
                 throw OptimizerObtainedEigenvectorInProjectorSpace(overlap);
             break;
         default:
