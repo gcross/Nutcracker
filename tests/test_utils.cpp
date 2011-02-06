@@ -4,19 +4,58 @@
 
 //@+<< Includes >>
 //@+node:gcross.20110206092738.1737: ** << Includes >>
+#include <boost/range/algorithm/generate.hpp>
+#include <boost/range/irange.hpp>
+#include <boost/numeric/ublas/hermitian.hpp>
+
 #include "test_utils.hpp"
+
+using namespace boost;
+using namespace boost::numeric::ublas;
 //@-<< Includes >>
 
 //@+others
-//@+node:gcross.20110206092738.1738: ** struct RNG
-//@+node:gcross.20110206092738.1740: *3* (generators)
-//@+node:gcross.20110206092738.1741: *4* ComplexDoubleGenerator
+//@+node:gcross.20110206092738.1750: ** Typedefs
+typedef hermitian_matrix<std::complex<double> > HermitianMatrix;
+//@+node:gcross.20110206092738.1740: ** Generators
+//@+node:gcross.20110206092738.1741: *3* ComplexDoubleGenerator
 struct ComplexDoubleGenerator {
     RNG& rng;
     ComplexDoubleGenerator(RNG& rng) : rng(rng) {}
     complex<double> operator()() { return c(rng.randomDouble(),rng.randomDouble()); }
 };
-//@+node:gcross.20110206092738.1742: *4* IntegerGenerator
+//@+node:gcross.20110206092738.1749: *3* HermitianMatrixGenerator
+struct HermitianMatrixGenerator {
+    RNG& rng;
+    HermitianMatrix m;
+    unsigned int i, j;
+    HermitianMatrixGenerator(RNG& rng,unsigned int const size)
+      : rng(rng)
+      , m(size,size)
+      , i(0)
+      , j(0)
+    {
+        resetMatrix();
+    }
+    void resetMatrix() {
+        generate(m.data(),rng.randomComplexDouble);
+        BOOST_FOREACH(size_t const k, irange((size_t)0,m.size1())) {
+            m(k,k) = static_cast<complex<double> >(m(k,k)).real();
+        }
+    }
+
+    complex<double> operator()() {
+        if(j == m.size2()) {
+            if(++i == m.size1()) {
+                resetMatrix();
+                i = 0;
+            }
+            j = 0;
+        }
+        return m(i,j++);
+    }
+};
+//@+node:gcross.20110206092738.1742: *3* IntegerGenerator
 struct IntegerGenerator {
     uniform_smallint<unsigned int> smallint;
     variate_generator<taus88,uniform_smallint<unsigned int> > randomInteger;
@@ -29,7 +68,7 @@ struct IntegerGenerator {
     {}
     uint32_t operator()() { return (uint32_t)randomInteger(); }
 };
-//@+node:gcross.20110206092738.1744: *4* IndexGeneraor
+//@+node:gcross.20110206092738.1744: *3* IndexGeneraor
 struct IndexGenerator {
     bool left;
     IntegerGenerator left_index_generator, right_index_generator;
@@ -46,6 +85,7 @@ struct IndexGenerator {
         return left ? left_index_generator() : right_index_generator();
     }
 };
+//@+node:gcross.20110206092738.1738: ** struct RNG
 //@+node:gcross.20110206092738.1739: *3* (constructors)
 RNG::RNG()
   : normal(0,1)
@@ -81,8 +121,12 @@ OperatorSite RNG::randomOperator(
             ,left_dimension
             ,right_dimension
             ,fillWithGenerator(generateRandomIndices(left_dimension,right_dimension))
-            ,fillWithGenerator(randomComplexDouble)
+            ,fillWithGenerator(generateRandomHermitianMatrices(*physical_dimension))
     );
+}
+//@+node:gcross.20110206092738.1751: *3* generateRandomHermitianMatrices
+function<complex<double>()> RNG::generateRandomHermitianMatrices(unsigned int const size) {
+    return HermitianMatrixGenerator(*this,size);
 }
 //@-others
 //@-leo

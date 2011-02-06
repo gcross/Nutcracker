@@ -41,6 +41,7 @@ public:
         , RightDimension const right_dimension
     );
 
+    function<complex<double>()> generateRandomHermitianMatrices(unsigned int const size);
     function<unsigned int()> generateRandomIntegers(unsigned int lo, unsigned int hi);
     function<uint32_t()> generateRandomIndices(
           LeftDimension const left_index_bound
