@@ -675,6 +675,19 @@ OptimizerObtainedEigenvectorInProjectorSpace::OptimizerObtainedEigenvectorInProj
     )
   , overlap(overlap)
 { }
+//@+node:gcross.20110206130502.1753: *4* OptimizerObtainedGreaterEigenvalue
+OptimizerObtainedGreaterEigenvalue::OptimizerObtainedGreaterEigenvalue(
+      double const old_eigenvalue
+    , double const new_eigenvalue
+) : OptimizerFailure(
+        (format("Optimizer obtained an eigenvalue that greater than the old eigenvalue (%2% > %1%)")
+            % new_eigenvalue
+            % old_eigenvalue
+        ).str()
+    )
+  , old_eigenvalue(old_eigenvalue)
+  , new_eigenvalue(new_eigenvalue)
+{ }
 //@+node:gcross.20110125202132.2168: *4* OptimizerObtainedVanishingEigenvector
 OptimizerObtainedVanishingEigenvector::OptimizerObtainedVanishingEigenvector(
        double const norm

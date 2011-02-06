@@ -191,6 +191,26 @@ complex<double> Chain::computeExpectationValue() const {
 double Chain::computeStateNorm() const {
     return state_site.norm();
 }
+//@+node:gcross.20110206130502.1754: *3* optimizeStateSite
+unsigned int Chain::optimizeSite(double tolerance, unsigned int maximum_number_of_iterations) {
+    OptimizerResult result(
+        optimizeStateSite(
+             left_expectation_boundary
+            ,state_site
+            ,operator_site
+            ,right_expectation_boundary
+            ,none
+            ,tolerance
+            ,maximum_number_of_iterations
+        )
+    );
+    if((result.eigenvalue - energy)/abs(energy) > tolerance) {
+        throw OptimizerObtainedGreaterEigenvalue(energy,result.eigenvalue);
+    }
+    energy = result.eigenvalue;
+    state_site = boost::move(result.state_site);
+    return result.number_of_iterations;
+}
 //@-others
 
 }

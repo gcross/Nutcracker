@@ -174,6 +174,14 @@ struct OptimizerObtainedComplexEigenvalue : public OptimizerFailure {
     complex<double> const eigenvalue;
     OptimizerObtainedComplexEigenvalue(complex<double> eigenvalue);
 };
+//@+node:gcross.20110206130502.1756: *4* OptimizerObtainedGreaterEigenvalue
+struct OptimizerObtainedGreaterEigenvalue : public OptimizerFailure {
+    double const old_eigenvalue, new_eigenvalue;
+    OptimizerObtainedGreaterEigenvalue(
+          double const old_eigenvalue
+        , double const new_eigenvalue
+    );
+};
 //@+node:gcross.20110125202132.2172: *4* OptimizerObtainedVanishingEigenvector
 struct OptimizerObtainedVanishingEigenvector : public OptimizerFailure {
     double const norm;

@@ -142,6 +142,33 @@ TEST_CASE(walkable) {
         #undef VALIDATE_CHAIN_PROPERTIES
     }
 }
+//@+node:gcross.20110206130502.1758: *3* optimizable
+TEST_CASE(optimizable) {
+    RNG random;
+
+    REPEAT(10) {
+        unsigned int const number_of_operators = random+2;
+        Chain chain(randomOperators(random,number_of_operators));
+
+        double energy = chain.getEnergy();
+
+        #define TEST_OPTIMIZER \
+            chain.optimizeSite(1e-7,1000); \
+            ASSERT_TRUE((chain.getEnergy() - energy) / (abs(chain.getEnergy())+abs(energy)) < 1e-7); \
+            energy = chain.getEnergy();
+
+        TEST_OPTIMIZER
+
+        REPEAT(number_of_operators-1) {
+            chain.move<Right>();
+            TEST_OPTIMIZER
+        }
+        REPEAT(number_of_operators-1) {
+            chain.move<Left>();
+            TEST_OPTIMIZER
+        }
+
+        #undef TEST_OPTIMIZER
     }
 }
 //@-others

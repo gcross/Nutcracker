@@ -177,6 +177,8 @@ public:
     double computeStateNorm() const;
 
     template<Side side> void move();
+
+    unsigned int optimizeSite(double tolerance, unsigned int maximum_number_of_iterations);
 };
 
 template<> inline ExpectationBoundary<Left>& Chain::expectationBoundary<Left>() { return left_expectation_boundary; }
