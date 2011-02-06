@@ -168,7 +168,7 @@ protected:
 
 public:
     Chain(
-      moveable::vector<OperatorSite> operators
+      BOOST_RV_REF(moveable::vector<OperatorSite>) operators
     , unsigned int const initial_bandwidth = 1
     );
 

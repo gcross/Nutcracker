@@ -100,7 +100,7 @@ vector<unsigned int> computeBandwidthDimensionSequence(
 //@+node:gcross.20110202175920.1714: ** class Chain
 //@+node:gcross.20110202175920.1715: *3* (constructors)
 Chain::Chain(
-      moveable::vector<OperatorSite> operators
+      BOOST_RV_REF(moveable::vector<OperatorSite>) operators
     , unsigned int const requested_bandwidth_dimension
 ) : number_of_sites(operators.size())
   , current_site_number(0)
