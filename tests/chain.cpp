@@ -138,6 +138,10 @@ TEST_CASE(walkable) {
             chain.move<Left>();
             VALIDATE_CHAIN_PROPERTIES
         }
+
+        #undef VALIDATE_CHAIN_PROPERTIES
+    }
+}
     }
 }
 //@-others
