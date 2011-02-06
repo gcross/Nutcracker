@@ -637,7 +637,7 @@ public:
     OperatorSite& operator=(BOOST_RV_REF(OperatorSite) other) {
         if(this == &other) return *this;
         SiteBaseTensor::operator=(boost::move(static_cast<SiteBaseTensor&>(other)));
-        number_of_matrices = copyAndReset(number_of_matrices);
+        number_of_matrices = copyAndReset(other.number_of_matrices);
         moveArrayToFrom(index_data,other.index_data); 
         return *this;
     }

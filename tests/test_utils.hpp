@@ -57,11 +57,11 @@ struct RNG {
         IntegerGenerator left_index_generator, right_index_generator;
         IndexGenerator(
               RNG& rng
-            , unsigned int const left_index_bound
-            , unsigned int const right_index_bound
+            , LeftDimension const left_index_bound
+            , RightDimension const right_index_bound
         ) : left(false)
-          , left_index_generator(rng,1,left_index_bound)
-          , right_index_generator(rng,1,right_index_bound)
+          , left_index_generator(rng,1,*left_index_bound)
+          , right_index_generator(rng,1,*right_index_bound)
         {}
         uint32_t operator()() {
             left = !left;
@@ -85,7 +85,7 @@ struct RNG {
         , LeftDimension const left_dimension
         , RightDimension const right_dimension
     ) {
-        IndexGenerator index_generator(*this,(*left_dimension),(*right_dimension));
+        IndexGenerator index_generator(*this,left_dimension,right_dimension);
         return OperatorSite(
                  (*this)(1,2*(*left_dimension)*(*right_dimension))()
                 ,physical_dimension

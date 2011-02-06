@@ -57,7 +57,11 @@ TEST_SUITE(Consistency) {
                 );
             StateSite<Left> const left_state_site(copyFrom(state_site));
             StateSite<Right> const right_state_site(copyFrom(state_site));
-            RNG::IndexGenerator randomIndex(random,left_operator_dimension,right_operator_dimension);
+            RNG::IndexGenerator randomIndex
+                (random
+                ,LeftDimension(left_operator_dimension)
+                ,RightDimension(right_operator_dimension)
+                );
             OperatorSite const operator_site
                 (number_of_matrices
                 ,PhysicalDimension(physical_dimension)
