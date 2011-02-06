@@ -72,12 +72,6 @@ public:
       , state_site(state_site)
     {}
 };
-//@+node:gcross.20110125120748.2469: *3* OptimizerSelectionStrategy
-extern struct OptimizerSelectionStrategy {
-    const string argument;
-    OptimizerSelectionStrategy(const string argument) : argument(argument) { }
-    operator const char*() const { return argument.c_str(); }
-} const optimize_for_lowest_real_part, optimize_for_largest_magnitude;
 //@+node:gcross.20110131180117.1687: *3* OverlapSitesFromStateSitesAndNormalizeResult
 class OverlapSitesFromStateSitesAndNormalizeResult {
 private:
@@ -283,7 +277,6 @@ OptimizerResult optimizeStateSite(
     , OperatorSite const& operator_site
     , ExpectationBoundary<Right> const& right_boundary
     , optional<ProjectorMatrix const&> projector_matrix
-    , OptimizerSelectionStrategy const& strategy
     , double const tolerance
     , unsigned int const maximum_number_of_iterations
 );

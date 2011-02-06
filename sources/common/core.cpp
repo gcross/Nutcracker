@@ -705,11 +705,6 @@ OptimizerUnknownFailure::OptimizerUnknownFailure(
     )
   , error_code(error_code)
 { }
-//@+node:gcross.20110127123226.2816: ** Values
-OptimizerSelectionStrategy const
-     optimize_for_lowest_real_part("SR")
-    ,optimize_for_largest_magnitude("LM")
-    ;
 //@+node:gcross.20110124175241.1583: ** Functions
 //@+node:gcross.20110124175241.1600: *3* Contractors
 //@+node:gcross.20110124175241.1585: *4* computeExpectationValue
@@ -978,7 +973,6 @@ OptimizerResult optimizeStateSite(
     , OperatorSite const& operator_site
     , ExpectationBoundary<Right> const& right_boundary
     , optional<ProjectorMatrix const&> maybe_projector_matrix
-    , OptimizerSelectionStrategy const& strategy
     , double const tolerance
     , unsigned int const maximum_number_of_iterations
 ) {
@@ -1004,7 +998,7 @@ OptimizerResult optimizeStateSite(
                 ,maybe_projector_matrix->reflectorData()
                 ,maybe_projector_matrix->coefficientData()
                 ,maybe_projector_matrix->swapData()
-                ,strategy
+                ,"SR"
                 ,tolerance
                 ,number_of_iterations
                 ,current_state_site
@@ -1027,7 +1021,7 @@ OptimizerResult optimizeStateSite(
                 ,NULL
                 ,NULL
                 ,NULL
-                ,strategy
+                ,"SR"
                 ,tolerance
                 ,number_of_iterations
                 ,current_state_site

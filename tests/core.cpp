@@ -702,7 +702,6 @@ TEST_CASE(trivial_with_physical_dimension_4) {
             ,operator_site
             ,ExpectationBoundary<Right>::trivial
             ,none
-            ,optimize_for_lowest_real_part
             ,0
             ,10000
         )
