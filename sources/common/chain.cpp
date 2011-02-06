@@ -128,7 +128,7 @@ Chain::Chain(
     {
         vector<unsigned int>::const_reverse_iterator right_dimension = initial_bandwidth_dimensions.rbegin()+1;
         while(operators.size() > 1) {
-            OperatorSite operator_site(boost::move(operators.back())); operators.pop_back();
+            OperatorSite& operator_site = operators.back();
             StateSite<Right> right_state_site(
                 randomStateSiteRight(
                      operator_site.physicalDimension()
@@ -152,6 +152,7 @@ Chain::Chain(
                     ,moveable::vector<OverlapSiteTrio>()
                 )
             );
+            operators.pop_back();
         }
     }
     //@-<< Construct all but the first site >>
