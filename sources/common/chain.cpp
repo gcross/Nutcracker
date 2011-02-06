@@ -109,7 +109,7 @@ Chain::Chain(
   , energy(0)
   , initial_bandwidth_dimensions(0,0)
 {
-    assert(number_of_sites > 1);
+    assert(number_of_sites > 0);
 
     //@+<< Compute initial bandwidth dimension sequence >>
     //@+node:gcross.20110202175920.1716: *4* << Compute initial bandwidth dimension sequence >>
