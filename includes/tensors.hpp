@@ -44,16 +44,20 @@ struct InvalidTensorException : public Exception {
     InvalidTensorException() : Exception("Attempt to dereference an invalid tensor") {}
 };
 //@+node:gcross.20110127123226.2852: ** Parameters wrappers
-#define DEFINE_TEMPLATIZED_PARAMETER(Parameter,parameter) \
-    template<typename T> struct Parameter { \
-        T& data; \
-        Parameter(T& data) : data(data) {} \
-        T& operator*() const { return data; } \
-        T* operator->() const { return &data; } \
-    }; \
-    template<typename T> Parameter<T> parameter(T& data) { return Parameter<T>(data); } \
-    template<typename T> Parameter<T const> parameter(T const& data) { return Parameter<T const>(data); } \
-    template<typename T> Parameter<T const> parameter##Const(T& data) { return Parameter<T const>(data); }
+template<typename T> class Parameter {
+private:
+    T& data;
+protected:
+    Parameter(T& data) : data(data) {}
+public:
+    T& operator*() const { return data; }
+    T* operator->() const { return &data; }
+};
+
+#define DEFINE_TEMPLATIZED_PARAMETER(ParameterName,parameter_name) \
+    template<typename T> struct ParameterName : public Parameter<T> { ParameterName(T& data) : Parameter<T>(data) {} };\
+    template<typename T> ParameterName<T> parameter_name(T& data) { return ParameterName<T>(data); } \
+    template<typename T> ParameterName<T const> parameter_name(T const& data) { return ParameterName<T const>(data); }
 
 DEFINE_TEMPLATIZED_PARAMETER(CopyFrom,copyFrom)
 DEFINE_TEMPLATIZED_PARAMETER(DimensionsOf,dimensionsOf)
