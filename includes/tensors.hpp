@@ -51,14 +51,14 @@ template<typename T> class Parameter {
 private:
     T& data;
 protected:
-    Parameter(T& data) : data(data) {}
+    explicit Parameter(T& data) : data(data) {}
 public:
     T& operator*() const { return data; }
     T* operator->() const { return &data; }
 };
 
 #define DEFINE_TEMPLATIZED_PARAMETER(ParameterName,parameter_name) \
-    template<typename T> struct ParameterName : public Parameter<T> { ParameterName(T& data) : Parameter<T>(data) {} };\
+    template<typename T> struct ParameterName : public Parameter<T> { explicit ParameterName(T& data) : Parameter<T>(data) {} };\
     template<typename T> ParameterName<T> parameter_name(T& data) { return ParameterName<T>(data); } \
     template<typename T> ParameterName<T const> parameter_name(T const& data) { return ParameterName<T const>(data); }
 
@@ -585,6 +585,15 @@ public:
       , number_of_matrices(number_of_matrices)
       , index_data(new uint32_t[number_of_matrices*2])
     { }
+
+    OperatorSite(
+          CopyFrom<OperatorSite const> const other
+    ) : SiteBaseTensor(other)
+      , number_of_matrices(other->number_of_matrices)
+      , index_data(new uint32_t[number_of_matrices*2])
+    {
+        copy(other->index_data,other->index_data+2*number_of_matrices,index_data);
+    }
 
     template<typename G1, typename G2> OperatorSite(
           unsigned int const number_of_matrices

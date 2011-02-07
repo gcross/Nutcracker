@@ -155,6 +155,7 @@ Chain::Chain(
                 ,boost::move(moveable::vector<OverlapSiteTrio>())
             );
             operators.pop_back();
+            ++right_dimension;
         }
     }
     //@-<< Construct all but the first site >>

@@ -133,7 +133,7 @@ struct NotEnoughDegreesOfFreedomToNormalizeError : public Exception {
         ,string const& n3
         ,unsigned int const d3
     ) : Exception((
-            format("Not enough degrees of freedom to normalize (%1% (%2%) >= %3% (%4%) * %5% (%6%))")
+            format("Not enough degrees of freedom to normalize (%1% (%2%) > %3% (%4%) * %5% (%6%))")
                 % n1
                 % d1
                 % n2

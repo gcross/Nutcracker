@@ -1278,7 +1278,7 @@ StateSite<Right> randomStateSiteRight(
     , const LeftDimension left_dimension
     , const RightDimension right_dimension
 ) {
-    if((*right_dimension) >= (*physical_dimension)*(*left_dimension)) {
+    if((*right_dimension) > (*physical_dimension)*(*left_dimension)) {
         throw NotEnoughDegreesOfFreedomToNormalizeError(
                  "right"
                 ,*right_dimension
@@ -1288,7 +1288,7 @@ StateSite<Right> randomStateSiteRight(
                 ,*left_dimension
         );
     }
-    if((*left_dimension) >= (*physical_dimension)*(*right_dimension)) {
+    if((*left_dimension) > (*physical_dimension)*(*right_dimension)) {
         throw NotEnoughDegreesOfFreedomToNormalizeError(
                  "left"
                 ,*left_dimension

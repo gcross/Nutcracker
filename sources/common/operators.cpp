@@ -19,6 +19,64 @@ using namespace boost;
 
 //@+others
 //@+node:gcross.20110206185121.1783: ** Functions
+//@+node:gcross.20110207115918.1781: *3* constructExternalFieldOperators
+moveable::vector<OperatorSite> constructExternalFieldOperators(
+      unsigned int const number_of_operators
+    , Matrix const& matrix
+) {
+    assert(number_of_operators > 0);
+    PhysicalDimension const physical_dimension(matrix.size1());
+    assert(*physical_dimension == matrix.size2());
+    moveable::vector<OperatorSite> operators;
+    operators.reserve(number_of_operators);
+    if(number_of_operators == 1) {
+        operators.push_back(
+            constructOperatorSite(
+                 physical_dimension
+                ,LeftDimension(1)
+                ,RightDimension(1)
+                ,list_of(OperatorLink(1,1,matrix))
+            )
+        );
+    } else {
+        Matrix I = identityMatrix(*physical_dimension);
+        operators.push_back(
+            constructOperatorSite(
+                 physical_dimension
+                ,LeftDimension(1)
+                ,RightDimension(2)
+                ,list_of
+                    (OperatorLink(1,1,I))
+                    (OperatorLink(1,2,matrix))
+            )
+        );
+        OperatorSite const middle(
+            constructOperatorSite(
+                 physical_dimension
+                ,LeftDimension(2)
+                ,RightDimension(2)
+                ,list_of
+                    (OperatorLink(1,1,I))
+                    (OperatorLink(1,2,matrix))
+                    (OperatorLink(2,2,I))
+            )
+        );
+        REPEAT(number_of_operators-2) {
+            operators.emplace_back(copyFrom(middle));
+        }
+        operators.push_back(
+            constructOperatorSite(
+                 physical_dimension
+                ,LeftDimension(2)
+                ,RightDimension(1)
+                ,list_of
+                    (OperatorLink(1,1,matrix))
+                    (OperatorLink(2,1,I))
+            )
+        );
+    }
+    return boost::move(operators);
+}
 //@+node:gcross.20110206185121.1784: *3* constructOperatorSite
 OperatorSite constructOperatorSite(
       PhysicalDimension const physical_dimension
@@ -49,6 +107,15 @@ OperatorSite constructOperatorSite(
     }
 
     return boost::move(operator_site);
+}
+//@+node:gcross.20110207120702.1780: *3* identityMatrix
+Matrix identityMatrix(unsigned int const n) {
+    Matrix I(n,n);
+    I.clear();
+    BOOST_FOREACH(unsigned int const i, irange(0u,n)) {
+        I(i,i) = 1;
+    }
+    return I;
 }
 //@-others
 

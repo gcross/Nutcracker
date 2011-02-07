@@ -4,6 +4,7 @@
 
 //@+<< Includes >>
 //@+node:gcross.20110130170743.1680: ** << Includes >>
+#include <boost/assign.hpp>
 #include <boost/container/vector.hpp>
 #include <boost/foreach.hpp>
 #include <boost/range/algorithm/max_element.hpp>
@@ -13,11 +14,13 @@
 #include <functional>
 
 #include "chain.hpp"
+#include "operators.hpp"
 #include "utilities.hpp"
 
 #include "test_utils.hpp"
 
 using namespace boost;
+using namespace boost::assign;
 using namespace Nutcracker;
 using namespace std;
 //@-<< Includes >>
@@ -170,6 +173,54 @@ TEST_CASE(optimizeSite) {
 
         #undef TEST_OPTIMIZER
     }
+}
+//@+node:gcross.20110207120702.1783: *3* performOptimizationSweep
+TEST_SUITE(performOptimizationSweep) {
+
+    vector<pair<unsigned int,vector<unsigned int> > > system_parameters =
+        list_of<pair<unsigned int,vector<unsigned int> > >
+            (2,list_of(2))
+            (3,list_of(2))
+            (4,list_of(2)(4))
+            (5,list_of(2)(4))
+            (10,list_of(2)(4)(8)(17))
+    ;
+
+    void runTests(
+          unsigned int const physical_dimension
+    ) {
+        Matrix matrix;
+        {
+            vector<complex<double> > diagonal;  diagonal += -1, repeat(physical_dimension-1,1);
+            matrix = diagonalMatrix(diagonal);
+        }
+        typedef pair<unsigned int,vector<unsigned int> > Parameters;
+        BOOST_FOREACH(
+             Parameters const& parameters
+            ,system_parameters
+        ) {
+            unsigned int const number_of_sites = parameters.first;
+            vector<unsigned int> const& initial_bandwidth_dimensions = parameters.second;
+            BOOST_FOREACH(
+                 unsigned int const initial_bandwidth_dimension
+                ,initial_bandwidth_dimensions
+            ) {
+                Chain chain(
+                     constructExternalFieldOperators(
+                          number_of_sites
+                        , matrix
+                     )
+                    ,initial_bandwidth_dimension
+                );
+                chain.performOptimizationSweep();
+                ASSERT_NEAR_QUOTED(number_of_sites,-chain.getEnergy(),1e-7);
+            }
+        }
+    }
+
+    TEST_CASE(physical_dimension_2) { runTests(2); }
+    TEST_CASE(physical_dimension_3) { runTests(3); }
+    TEST_CASE(physical_dimension_4) { runTests(4); }
 }
 //@-others
 
