@@ -167,9 +167,14 @@ protected:
     template<Side side> moveable::vector<Neighbor<side> >& neighbors() { throw BadProgrammerException("no middle neighbors"); }
 
 public:
+    double tolerance;
+    unsigned int maximum_number_of_iterations;
+
     Chain(
       BOOST_RV_REF(moveable::vector<OperatorSite>) operators
     , unsigned int const initial_bandwidth = 1
+    , double tolerance = 1e-10
+    , unsigned int maximum_number_of_iterations = 10000
     );
 
     double getEnergy() const { return energy; }
@@ -178,7 +183,7 @@ public:
 
     template<Side side> void move();
 
-    unsigned int optimizeSite(double tolerance, unsigned int maximum_number_of_iterations);
+    unsigned int optimizeSite();
 };
 
 template<> inline ExpectationBoundary<Left>& Chain::expectationBoundary<Left>() { return left_expectation_boundary; }

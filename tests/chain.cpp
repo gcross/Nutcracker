@@ -114,8 +114,8 @@ TEST_CASE(complains_if_too_large) {
 //@-others
 
 }
-//@+node:gcross.20110202223558.1712: *3* walkable
-TEST_CASE(walkable) {
+//@+node:gcross.20110202223558.1712: *3* moveLeftAndRight
+TEST_CASE(moveLeftAndRight) {
     RNG random;
 
     REPEAT(10) {
@@ -142,8 +142,8 @@ TEST_CASE(walkable) {
         #undef VALIDATE_CHAIN_PROPERTIES
     }
 }
-//@+node:gcross.20110206130502.1758: *3* optimizable
-TEST_CASE(optimizable) {
+//@+node:gcross.20110206130502.1758: *3* optimizeSite
+TEST_CASE(optimizeSite) {
     RNG random;
 
     REPEAT(10) {
@@ -153,7 +153,7 @@ TEST_CASE(optimizable) {
         double energy = chain.getEnergy();
 
         #define TEST_OPTIMIZER \
-            chain.optimizeSite(1e-7,1000); \
+            chain.optimizeSite(); \
             ASSERT_TRUE((chain.getEnergy() - energy) / (abs(chain.getEnergy())+abs(energy)) < 1e-7); \
             energy = chain.getEnergy();
 

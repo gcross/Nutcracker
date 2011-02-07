@@ -102,12 +102,16 @@ vector<unsigned int> computeBandwidthDimensionSequence(
 Chain::Chain(
       BOOST_RV_REF(moveable::vector<OperatorSite>) operators
     , unsigned int const requested_bandwidth_dimension
+    , double const tolerance
+    , unsigned int const maximum_number_of_iterations
 ) : number_of_sites(operators.size())
   , current_site_number(0)
   , left_expectation_boundary(make_trivial)
   , right_expectation_boundary(make_trivial)
   , energy(0)
   , initial_bandwidth_dimensions(0,0)
+  , tolerance(tolerance)
+  , maximum_number_of_iterations(maximum_number_of_iterations)
 {
     assert(number_of_sites > 0);
 
@@ -191,8 +195,8 @@ complex<double> Chain::computeExpectationValue() const {
 double Chain::computeStateNorm() const {
     return state_site.norm();
 }
-//@+node:gcross.20110206130502.1754: *3* optimizeStateSite
-unsigned int Chain::optimizeSite(double tolerance, unsigned int maximum_number_of_iterations) {
+//@+node:gcross.20110206130502.1754: *3* optimizeSite
+unsigned int Chain::optimizeSite() {
     OptimizerResult result(
         optimizeStateSite(
              left_expectation_boundary
