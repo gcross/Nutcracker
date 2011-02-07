@@ -147,14 +147,12 @@ Chain::Chain(
                     ,right_state_site
                     ,operator_site
                 );
-            right_neighbors.push_back(
-                Neighbor<Right>(
-                     boost::move(old_right_expectation_boundary)
-                    ,boost::move(right_state_site)
-                    ,boost::move(operator_site)
-                    ,moveable::vector<OverlapBoundary<Right> >()
-                    ,moveable::vector<OverlapSiteTrio>()
-                )
+            right_neighbors.emplace_back(
+                 boost::move(old_right_expectation_boundary)
+                ,boost::move(right_state_site)
+                ,boost::move(operator_site)
+                ,boost::move(moveable::vector<OverlapBoundary<Right> >())
+                ,boost::move(moveable::vector<OverlapSiteTrio>())
             );
             operators.pop_back();
         }
