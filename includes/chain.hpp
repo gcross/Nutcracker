@@ -165,7 +165,7 @@ protected:
     moveable::vector<Neighbor<Right> > right_neighbors;
     ProjectorMatrix projector_matrix;
     double energy;
-    vector<unsigned int> initial_bandwidth_dimensions;
+    unsigned int bandwidth_dimension;
 
     template<typename side> ExpectationBoundary<side>& expectationBoundary() {
         throw BadLabelException("Chain::expectationBoundary()",typeid(side));

@@ -101,7 +101,7 @@ vector<unsigned int> computeBandwidthDimensionSequence(
 //@+node:gcross.20110202175920.1715: *3* (constructors)
 Chain::Chain(
       BOOST_RV_REF(moveable::vector<OperatorSite>) operators
-    , unsigned int const requested_bandwidth_dimension
+    , unsigned int const bandwidth_dimension
     , double const tolerance
     , unsigned int const maximum_number_of_iterations
 ) : number_of_sites(operators.size())
@@ -109,7 +109,7 @@ Chain::Chain(
   , left_expectation_boundary(make_trivial)
   , right_expectation_boundary(make_trivial)
   , energy(0)
-  , initial_bandwidth_dimensions(0,0)
+  , bandwidth_dimension(bandwidth_dimension)
   , tolerance(tolerance)
   , maximum_number_of_iterations(maximum_number_of_iterations)
 {
@@ -117,13 +117,13 @@ Chain::Chain(
 
     //@+<< Compute initial bandwidth dimension sequence >>
     //@+node:gcross.20110202175920.1716: *4* << Compute initial bandwidth dimension sequence >>
+    vector<unsigned int> initial_bandwidth_dimensions;
     {
         vector<unsigned int> physical_dimensions;
         BOOST_FOREACH(OperatorSite const& operator_site, operators) {
             physical_dimensions.push_back(operator_site.physicalDimension(as_unsigned_integer));
         }
-
-        initial_bandwidth_dimensions = computeBandwidthDimensionSequence(requested_bandwidth_dimension,physical_dimensions);
+        initial_bandwidth_dimensions = computeBandwidthDimensionSequence(bandwidth_dimension,physical_dimensions);
     }
     //@-<< Compute initial bandwidth dimension sequence >>
 
