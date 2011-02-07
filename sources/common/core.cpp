@@ -906,7 +906,7 @@ MoveSiteCursorResult<Right> moveSiteCursorRight(
 }
 //@+node:gcross.20110125120748.2463: *3* Miscellaneous
 //@+node:gcross.20110124175241.1649: *4* increaseDimensionBetween
-template<Side side1,Side side2>
+template<typename side1,typename side2>
 static
 void implIncreaseDimensionBetween(
       unsigned int const new_dimension

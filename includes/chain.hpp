@@ -101,13 +101,15 @@ public:
         right.swap(other.right);
     }
 
-    template<Side side> OverlapSite<side> const& get() const {}
+    template<typename side> OverlapSite<side> const& get() const {
+        throw BadLabelException("OverlapSite::get",typeid(side));
+    }
 };
 template<> inline OverlapSite<Left> const& OverlapSiteTrio::get<Left>() const { return left; }
 template<> inline OverlapSite<Middle> const& OverlapSiteTrio::get<Middle>() const { return middle; }
 template<> inline OverlapSite<Right> const& OverlapSiteTrio::get<Right>() const { return right; }
 //@+node:gcross.20110202175920.1703: *3* Neighbor
-template<Side side> struct Neighbor {
+template<typename side> struct Neighbor {
 private:
     BOOST_MOVABLE_BUT_NOT_COPYABLE(Neighbor)
 public:
@@ -165,9 +167,18 @@ protected:
     double energy;
     vector<unsigned int> initial_bandwidth_dimensions;
 
-    template<Side side> ExpectationBoundary<side>& expectationBoundary() { throw BadProgrammerException("no middle expectation boundary"); }
-    template<Side side> moveable::vector<OverlapBoundary<side> >& overlapBoundaries() { throw BadProgrammerException("no middle overlap boundary"); }
-    template<Side side> moveable::vector<Neighbor<side> >& neighbors() { throw BadProgrammerException("no middle neighbors"); }
+    template<typename side> ExpectationBoundary<side>& expectationBoundary() {
+        throw BadLabelException("Chain::expectationBoundary()",typeid(side));
+    }
+    template<typename side> moveable::vector<OverlapBoundary<side> >& overlapBoundaries() {
+        throw BadLabelException("Chain::overlapBoundaries()",typeid(side));
+    }
+    template<typename side> moveable::vector<Neighbor<side> >& neighbors() {
+        throw BadLabelException("Chain::neighbors()",typeid(side));
+    }
+    template<typename side> void moveSiteNumber() {
+        throw BadLabelException("Chain::moveSiteNumber()",typeid(side));
+    }
 
 public:
     double tolerance;
@@ -187,7 +198,7 @@ public:
     complex<double> computeExpectationValue() const;
     double computeStateNorm() const;
 
-    template<Side side> void move();
+    template<typename side> void move();
 
     unsigned int optimizeSite();
     void optimizeSiteAndSignal();
@@ -203,18 +214,15 @@ template<> inline moveable::vector<OverlapBoundary<Right> >& Chain::overlapBound
 template<> inline moveable::vector<Neighbor<Left> >& Chain::neighbors<Left>() { return left_neighbors; }
 template<> inline moveable::vector<Neighbor<Right> >& Chain::neighbors<Right>() { return right_neighbors; }
 
+template<> inline void Chain::moveSiteNumber<Left>() { assert(current_site_number > 0); --current_site_number; }
+template<> inline void Chain::moveSiteNumber<Right>() { assert(current_site_number < number_of_sites-1); ++current_site_number; }
+
 //@+others
 //@+node:gcross.20110202175920.1705: *4* move
-template<Side side> void Chain::move() {
-    if(side == Left) {
-        assert(--current_site_number >= 0);
-    } else if(side == Right) {
-        assert(++current_site_number < number_of_sites);
-    } else {
-        throw BadProgrammerException("the chain can only be moved left or right, not 'middle'");
-    }
+template<typename side> void Chain::move() {
+    moveSiteNumber<side>();
 
-    typedef Other<side> other;
+    typedef typename Other<side>::value other_side;
 
     moveable::vector<Neighbor<side> >& side_neighbors = neighbors<side>();
 
@@ -225,34 +233,34 @@ template<Side side> void Chain::move() {
         ,neighbor.state_site
     ));
 
-    ExpectationBoundary<other::side>& expectation_boundary = expectationBoundary<other::side>();
-    ExpectationBoundary<other::side> new_expectation_boundary(
-        contract<other::side>::SOS(
+    ExpectationBoundary<other_side>& expectation_boundary = expectationBoundary<other_side>();
+    ExpectationBoundary<other_side> new_expectation_boundary(
+        contract<other_side>::SOS(
              expectation_boundary
             ,cursor.other_side_state_site
             ,operator_site
         )
     );
 
-    moveable::vector<OverlapBoundary<other::side> >& overlap_boundaries = overlapBoundaries<other::side>();
-    moveable::vector<OverlapBoundary<other::side> > new_overlap_boundaries;
+    moveable::vector<OverlapBoundary<other_side> >& overlap_boundaries = overlapBoundaries<other_side>();
+    moveable::vector<OverlapBoundary<other_side> > new_overlap_boundaries;
     new_overlap_boundaries.reserve(overlap_boundaries.size());
-    typename moveable::vector<OverlapBoundary<other::side> >::const_iterator overlap_boundary = overlap_boundaries.begin();
+    typename moveable::vector<OverlapBoundary<other_side> >::const_iterator overlap_boundary = overlap_boundaries.begin();
     BOOST_FOREACH(
          OverlapSiteTrio const& overlap_site_trio
         ,overlap_site_trios
     ) {
         new_overlap_boundaries.push_back(
-            contract<other::side>::SS(
+            contract<other_side>::SS(
                  *overlap_boundary
-                ,overlap_site_trio.get<other::side>()
+                ,overlap_site_trio.get<other_side>()
                 ,cursor.other_side_state_site
             )
         );
         ++overlap_boundary;
     }
 
-    neighbors<other::side>().emplace_back(
+    neighbors<other_side>().emplace_back(
          boost::move(expectation_boundary)
         ,boost::move(cursor.other_side_state_site)
         ,boost::move(operator_site)
@@ -260,8 +268,8 @@ template<Side side> void Chain::move() {
         ,boost::move(overlap_site_trios)
     );
 
-    expectationBoundary<other::side>() = boost::move(new_expectation_boundary);
-    overlapBoundaries<other::side>() = boost::move(new_overlap_boundaries);
+    expectationBoundary<other_side>() = boost::move(new_expectation_boundary);
+    overlapBoundaries<other_side>() = boost::move(new_overlap_boundaries);
 
     expectationBoundary<side>() = boost::move(neighbor.expectation_boundary);
     overlapBoundaries<side>() = boost::move(neighbor.overlap_boundaries);

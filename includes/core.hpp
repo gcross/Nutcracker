@@ -27,14 +27,13 @@ using namespace std;
 //@+others
 //@+node:gcross.20110129220506.1656: ** Classes
 //@+node:gcross.20110201193729.1694: *3* MoveSiteCursorResult
-template<Side side> class MoveSiteCursorResult {
+template<typename side> class MoveSiteCursorResult {
 private:
     BOOST_MOVABLE_BUT_NOT_COPYABLE(MoveSiteCursorResult)
+    typedef typename Other<side>::value other_side;
 public:
-    typedef Other<side> other;
-
     StateSite<Middle> middle_state_site;
-    StateSite<other::side> other_side_state_site;
+    StateSite<other_side> other_side_state_site;
 
     MoveSiteCursorResult(BOOST_RV_REF(MoveSiteCursorResult) other)
       : middle_state_site(boost::move(other.middle_state_site))
@@ -43,7 +42,7 @@ public:
 
     MoveSiteCursorResult(
           BOOST_RV_REF(StateSite<Middle>) middle_state_site
-        , BOOST_RV_REF(StateSite<other::side>) other_side_state_site
+        , BOOST_RV_REF(StateSite<other_side>) other_side_state_site
     ) : middle_state_site(middle_state_site)
       , other_side_state_site(other_side_state_site)
     {}
@@ -328,7 +327,7 @@ StateSite<Right> randomStateSiteRight(
 );
 //@+node:gcross.20110131234725.1689: ** Side-agnostic interface
 //@+node:gcross.20110131234725.1690: *3* contract
-template<Side side> struct contract {};
+template<typename side> struct contract {};
 
 template<> struct contract<Left> {
     static ExpectationBoundary<Left> SOS(
@@ -358,7 +357,7 @@ template<> struct contract<Right> {
     ) { return contractSSRight(old_boundary,overlap_site,state_site); }
 };
 //@+node:gcross.20110131234725.1691: *3* moveSiteCursor
-template<Side side> struct moveSiteCursor { };
+template<typename side> struct moveSiteCursor { };
 
 template<> struct moveSiteCursor<Left> {
     static MoveSiteCursorResult<Left> from(

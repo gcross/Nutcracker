@@ -34,11 +34,14 @@ using namespace std;
 //@-<< Usings >>
 
 //@+others
-//@+node:gcross.20110124175241.1520: ** enum Side
-enum Side { Left, Middle, Right };
+//@+node:gcross.20110124175241.1520: ** type function Other
+struct Left;
+struct Middle;
+struct Right;
 
-template<Side other_side> struct Other { static Side const side; };
-template<Side other_side> Side const Other<other_side>::side = (Side)(2u-other_side);
+template<typename other_side> struct Other { };
+template<> struct Other<Left> { typedef Right value; };
+template<> struct Other<Right> { typedef Left value; };
 //@+node:gcross.20110202172517.1694: ** exception InvalidTensorException
 struct InvalidTensorException : public Exception {
     InvalidTensorException() : Exception("Attempt to dereference an invalid tensor") {}
@@ -188,7 +191,7 @@ public:
 };
 //@+node:gcross.20110124175241.1530: *3* Boundary
 //@+node:gcross.20110124161335.2013: *4* ExpectationBoundary
-template<Side side> class ExpectationBoundary : public BaseTensor {
+template<typename side> class ExpectationBoundary : public BaseTensor {
 private:
     BOOST_MOVABLE_BUT_NOT_COPYABLE(ExpectationBoundary)
     OperatorDimension operator_dimension;
@@ -210,7 +213,7 @@ public:
       , state_dimension(state_dimension)
     { }
 
-    template<Side other_side> ExpectationBoundary(
+    template<typename other_side> ExpectationBoundary(
           CopyFrom<ExpectationBoundary<other_side> const> const other
     ) : BaseTensor(other)
       , operator_dimension(other->operator_dimension)
@@ -265,9 +268,9 @@ public:
     static ExpectationBoundary const trivial;
 };
 
-template<Side side> ExpectationBoundary<side> const ExpectationBoundary<side>::trivial(make_trivial);
+template<typename side> ExpectationBoundary<side> const ExpectationBoundary<side>::trivial(make_trivial);
 //@+node:gcross.20110124175241.1526: *4* OverlapBoundary
-template<Side side> class OverlapBoundary : public BaseTensor {
+template<typename side> class OverlapBoundary : public BaseTensor {
 private:
     BOOST_MOVABLE_BUT_NOT_COPYABLE(OverlapBoundary)
     OverlapDimension overlap_dimension;
@@ -289,7 +292,7 @@ public:
       , state_dimension(state_dimension)
     { }
 
-    template<Side other_side> OverlapBoundary(
+    template<typename other_side> OverlapBoundary(
           CopyFrom<OverlapBoundary<other_side> const> const other
     ) : BaseTensor(other)
       , overlap_dimension(other->overlap_dimension)
@@ -344,7 +347,7 @@ public:
     static OverlapBoundary const trivial;
 };
 
-template<Side side> OverlapBoundary<side> const OverlapBoundary<side>::trivial(make_trivial);
+template<typename side> OverlapBoundary<side> const OverlapBoundary<side>::trivial(make_trivial);
 //@+node:gcross.20110124175241.1538: *3* ProjectorMatrix
 class ProjectorMatrix {
 private:
@@ -661,7 +664,7 @@ public:
     static OperatorSite const trivial;
 };
 //@+node:gcross.20110124175241.1535: *4* StateSite
-template<Side side> class StateSite : public SiteBaseTensor {
+template<typename side> class StateSite : public SiteBaseTensor {
 private:
     BOOST_MOVABLE_BUT_NOT_COPYABLE(StateSite)
 public:
@@ -683,12 +686,12 @@ public:
         )
     { }
 
-    template<Side other_side> StateSite(
+    template<typename other_side> StateSite(
           CopyFrom<StateSite<other_side> const> const other_site
     ) : SiteBaseTensor(other_site)
     { }
 
-    template<Side other_side> StateSite(
+    template<typename other_side> StateSite(
           DimensionsOf<StateSite<other_side> const> const other_site
     ) : SiteBaseTensor(other_site)
     { }
@@ -737,9 +740,9 @@ public:
     static StateSite const trivial;
 };
 
-template<Side side> StateSite<side> const StateSite<side>::trivial(make_trivial);
+template<typename side> StateSite<side> const StateSite<side>::trivial(make_trivial);
 //@+node:gcross.20110124175241.1537: *4* OverlapSite
-template<Side side> class OverlapSite : public SiteBaseTensor {
+template<typename side> class OverlapSite : public SiteBaseTensor {
 private:
     BOOST_MOVABLE_BUT_NOT_COPYABLE(OverlapSite)
 public:
@@ -761,12 +764,12 @@ public:
         )
     { }
 
-    template<Side other_side> OverlapSite(
+    template<typename other_side> OverlapSite(
           CopyFrom<OverlapSite<other_side> const> const other_site
     ) : SiteBaseTensor(other_site)
     { }
 
-    template<Side other_side> OverlapSite(
+    template<typename other_side> OverlapSite(
           DimensionsOf<StateSite<other_side> const> const other_site
     ) : SiteBaseTensor(other_site)
     { }
@@ -813,7 +816,7 @@ public:
     static OverlapSite const trivial;
 };
 
-template<Side side> OverlapSite<side> const OverlapSite<side>::trivial(make_trivial);
+template<typename side> OverlapSite<side> const OverlapSite<side>::trivial(make_trivial);
 //@+node:gcross.20110125120748.2431: ** Connectors
 //@+node:gcross.20110125120748.2434: *3* exception DimensionMismatch
 struct DimensionMismatch : public Exception {
@@ -885,7 +888,7 @@ inline unsigned int operator||(
     );
 }
 //@+node:gcross.20110125120748.2457: *4* OperatorSite || StateSite<Middle>
-template<Side side> inline unsigned int operator||(
+template<typename side> inline unsigned int operator||(
       OperatorSite const& operator_site
     , StateSite<side> const& state_site
 ) {
@@ -933,7 +936,7 @@ inline unsigned int operator||(
     );
 }
 //@+node:gcross.20110125120748.2453: *4* OverlapSite<*> || StateSite<*>
-template<Side side> inline unsigned int operator||(
+template<typename side> inline unsigned int operator||(
       OverlapSite<side> const& overlap_site
     , StateSite<side> const& state_site
 ) {

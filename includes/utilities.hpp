@@ -7,11 +7,13 @@
 
 //@+<< Includes >>
 //@+node:gcross.20110125202132.2157: ** << Includes >>
+#include <boost/format.hpp>
 #include <boost/move/move.hpp>
 #include <complex>
 #include <exception>
 #include <stdint.h>
 #include <string>
+#include <typeinfo>
 //@-<< Includes >>
 
 namespace Nutcracker {
@@ -34,6 +36,16 @@ struct Exception : public std::exception {
 //@+node:gcross.20110202200838.1709: *3* BadProgrammerException
 struct BadProgrammerException : public Exception {
     BadProgrammerException(string const& message) : Exception("BAD PROGRAMMER!!! --- " + message) {}
+};
+//@+node:gcross.20110206185121.1786: *3* BadLabelException
+struct BadLabelException : public BadProgrammerException {
+    BadLabelException(string const& symbol, type_info const& type)
+      : BadProgrammerException((
+          format("Attempted to access templated symbol %1% with invalid type label %2%.")
+            % symbol
+            % type.name()
+        ).str())
+    {}
 };
 //@+node:gcross.20110127123226.2857: ** Functions
 inline complex<double> c(double x, double y) { return complex<double>(x,y); }
