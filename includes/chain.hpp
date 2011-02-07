@@ -184,8 +184,9 @@ public:
     double tolerance;
     unsigned int maximum_number_of_iterations;
 
-    signal<void (Chain&,unsigned int)> signalOptimizeSiteSuccess;
-    signal<void (Chain&,OptimizerFailure&)> signalOptimizeSiteFailure;
+    signal<void (unsigned int)> signalOptimizeSiteSuccess;
+    signal<void (OptimizerFailure&)> signalOptimizeSiteFailure;
+    signal<void ()> signalPerformedSweep;
 
     Chain(
       BOOST_RV_REF(moveable::vector<OperatorSite>) operators
@@ -200,8 +201,7 @@ public:
 
     template<typename side> void move();
 
-    unsigned int optimizeSite();
-    void optimizeSiteAndSignal();
+    void optimizeSite();
     void performOptimizationSweep();
 };
 

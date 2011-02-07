@@ -195,48 +195,45 @@ double Chain::computeStateNorm() const {
     return state_site.norm();
 }
 //@+node:gcross.20110206130502.1754: *3* optimizeSite
-unsigned int Chain::optimizeSite() {
-    OptimizerResult result(
-        optimizeStateSite(
-             left_expectation_boundary
-            ,state_site
-            ,operator_site
-            ,right_expectation_boundary
-            ,none
-            ,tolerance
-            ,maximum_number_of_iterations
-        )
-    );
-    if((result.eigenvalue - energy)/abs(energy) > tolerance) {
-        throw OptimizerObtainedGreaterEigenvalue(energy,result.eigenvalue);
-    }
-    energy = result.eigenvalue;
-    state_site = boost::move(result.state_site);
-    return result.number_of_iterations;
-}
-//@+node:gcross.20110206130502.1761: *3* optimizeSiteAndSignal
-void Chain::optimizeSiteAndSignal() {
+void Chain::optimizeSite() {
     try {
-        signalOptimizeSiteSuccess(*this,optimizeSite());
+        OptimizerResult result(
+            optimizeStateSite(
+                 left_expectation_boundary
+                ,state_site
+                ,operator_site
+                ,right_expectation_boundary
+                ,none
+                ,tolerance
+                ,maximum_number_of_iterations
+            )
+        );
+        if((result.eigenvalue - energy)/abs(energy) > tolerance) {
+            throw OptimizerObtainedGreaterEigenvalue(energy,result.eigenvalue);
+        }
+        energy = result.eigenvalue;
+        state_site = boost::move(result.state_site);
+        signalOptimizeSiteSuccess(result.number_of_iterations);
     } catch(OptimizerFailure& failure) {
-        signalOptimizeSiteFailure(*this,failure);
+        signalOptimizeSiteFailure(failure);
     }
 }
 //@+node:gcross.20110206130502.1759: *3* performOptimizationSweep
 void Chain::performOptimizationSweep() {
     unsigned int const starting_site = current_site_number;
     while(current_site_number+1 < number_of_sites) {
-        optimizeSiteAndSignal();
+        optimizeSite();
         move<Right>();
     }
     while(current_site_number > 0) {
-        optimizeSiteAndSignal();
+        optimizeSite();
         move<Left>();
     }
     while(current_site_number < starting_site) {
-        optimizeSiteAndSignal();
+        optimizeSite();
         move<Right>();
     }
+    signalPerformedSweep();
 }
 //@-others
 
