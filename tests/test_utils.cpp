@@ -8,15 +8,16 @@
 #include <boost/range/irange.hpp>
 #include <boost/numeric/ublas/hermitian.hpp>
 
+#include "utilities.hpp"
+
 #include "test_utils.hpp"
 
 using namespace boost;
-using namespace boost::numeric::ublas;
 //@-<< Includes >>
 
 //@+others
-//@+node:gcross.20110206092738.1750: ** Typedefs
-typedef hermitian_matrix<std::complex<double> > HermitianMatrix;
+//@+node:gcross.20110206185121.1769: ** Typedefs
+typedef boost::numeric::ublas::hermitian_matrix<std::complex<double> > HermitianMatrix;
 //@+node:gcross.20110206092738.1740: ** Generators
 //@+node:gcross.20110206092738.1741: *3* ComplexDoubleGenerator
 struct ComplexDoubleGenerator {

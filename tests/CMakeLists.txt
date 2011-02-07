@@ -5,7 +5,9 @@ include_directories(".")
 set(test-SOURCES
     chain
     core
+    operators
     tensors
+
     test_utils
 )
 

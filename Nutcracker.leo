@@ -13,6 +13,7 @@
 <v t="gcross.20110124161335.1866"><vh>@path includes</vh>
 <v t="gcross.20110130170743.1665"><vh>@thin chain.hpp</vh></v>
 <v t="gcross.20110125120748.2458"><vh>@thin core.hpp</vh></v>
+<v t="gcross.20110206185121.1758"><vh>@thin operators.hpp</vh></v>
 <v t="gcross.20110124161335.2009"><vh>@thin tensors.hpp</vh></v>
 <v t="gcross.20110125202132.2156"><vh>@thin utilities.hpp</vh></v>
 </v>
@@ -23,6 +24,7 @@
 <v t="gcross.20110130170743.1674"><vh>@thin chain.cpp</vh></v>
 <v t="gcross.20091110205054.1939"><vh>@thin core.f95</vh></v>
 <v t="gcross.20091112145455.1619"><vh>@thin core.cpp</vh></v>
+<v t="gcross.20110206185121.1777"><vh>@thin operators.cpp</vh></v>
 <v t="gcross.20110127123226.2514"><vh>@thin tensors.cpp</vh></v>
 <v t="gcross.20110125202132.2160"><vh>@thin utilities.cpp</vh></v>
 </v>
@@ -31,6 +33,7 @@
 <v t="gcross.20110125120748.2426"><vh>@thin CMakeLists.txt</vh></v>
 <v t="gcross.20110130170743.1679"><vh>@thin chain.cpp</vh></v>
 <v t="gcross.20110127123226.2504"><vh>@thin core.cpp</vh></v>
+<v t="gcross.20110207005827.1776"><vh>@thin operators.cpp</vh></v>
 <v t="gcross.20110204201608.1725"><vh>@thin tensors.cpp</vh></v>
 <v t="gcross.20110202223558.1713"><vh>@thin test_utils.hpp</vh></v>
 <v t="gcross.20110206092738.1736"><vh>@thin test_utils.cpp</vh></v>

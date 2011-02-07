@@ -4,6 +4,7 @@ add_library(Nutcracker
     chain
     core.f95
     core.cpp
+    operators
     tensors
     utilities
 )
