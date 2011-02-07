@@ -67,22 +67,24 @@ DEFINE_TEMPLATIZED_PARAMETER(DimensionsOf,dimensionsOf)
 DEFINE_TEMPLATIZED_PARAMETER(FillWithGenerator,fillWithGenerator)
 DEFINE_TEMPLATIZED_PARAMETER(FillWithRange,fillWithRange)
 //@+node:gcross.20110127123226.2856: ** Dimension wrappers
-#define DEFINE_DIMENSION(CapsName) \
-    class CapsName##Dimension { \
-    private: \
-        BOOST_COPYABLE_AND_MOVABLE(CapsName##Dimension) \
-        unsigned int dimension; \
-    public: \
-        CapsName##Dimension() : dimension(0) { } \
-        explicit CapsName##Dimension(unsigned int const dimension) : dimension(dimension) { } \
-        CapsName##Dimension(BOOST_RV_REF(CapsName##Dimension) other) : dimension(copyAndReset(other.dimension)) { } \
-        CapsName##Dimension(CapsName##Dimension const& other) : dimension(other.dimension) { } \
-        CapsName##Dimension& operator=(CapsName##Dimension const& other) { dimension = other.dimension; return *this; } \
-        CapsName##Dimension& operator=(BOOST_RV_REF(CapsName##Dimension) other) { dimension = copyAndReset(other.dimension); return *this; } \
-        unsigned int operator *() const { return dimension; } \
-        bool operator==(CapsName##Dimension const other) const { return dimension == other.dimension; } \
-    }; \
-    inline ostream& operator<<(ostream& out, CapsName##Dimension const d) { return (out << *d); }
+template<typename label> class Dimension {
+private:
+    BOOST_COPYABLE_AND_MOVABLE(Dimension)
+    unsigned int dimension;
+public:
+    Dimension() : dimension(0) { }
+    explicit Dimension(unsigned int const dimension) : dimension(dimension) { }
+    Dimension(BOOST_RV_REF(Dimension) other) : dimension(copyAndReset(other.dimension)) { }
+    Dimension(Dimension const& other) : dimension(other.dimension) { } \
+    Dimension& operator=(Dimension const& other) { dimension = other.dimension; return *this; }
+    Dimension& operator=(BOOST_RV_REF(Dimension) other) { dimension = copyAndReset(other.dimension); return *this; }
+    unsigned int operator *() const { return dimension; }
+    bool operator==(Dimension const other) const { return dimension == other.dimension; }
+};
+template<typename label> inline ostream& operator<<(ostream& out, Dimension<label> const d) { return (out << *d); }
+
+#define DEFINE_DIMENSION(Name) \
+    struct Name; typedef Dimension<Name> Name##Dimension;
 
 DEFINE_DIMENSION(Left);
 DEFINE_DIMENSION(Operator);
