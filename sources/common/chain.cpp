@@ -215,6 +215,30 @@ unsigned int Chain::optimizeSite() {
     state_site = boost::move(result.state_site);
     return result.number_of_iterations;
 }
+//@+node:gcross.20110206130502.1761: *3* optimizeSiteAndSignal
+void Chain::optimizeSiteAndSignal() {
+    try {
+        signalOptimizeSiteSuccess(*this,optimizeSite());
+    } catch(OptimizerFailure& failure) {
+        signalOptimizeSiteFailure(*this,failure);
+    }
+}
+//@+node:gcross.20110206130502.1759: *3* performOptimizationSweep
+void Chain::performOptimizationSweep() {
+    unsigned int const starting_site = current_site_number;
+    while(current_site_number+1 < number_of_sites) {
+        optimizeSiteAndSignal();
+        move<Right>();
+    }
+    while(current_site_number > 0) {
+        optimizeSiteAndSignal();
+        move<Left>();
+    }
+    while(current_site_number < starting_site) {
+        optimizeSiteAndSignal();
+        move<Right>();
+    }
+}
 //@-others
 
 }

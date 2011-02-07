@@ -9,6 +9,7 @@
 //@+node:gcross.20110130170743.1666: ** << Includes >>
 #include <boost/container/vector.hpp>
 #include <boost/move/move.hpp>
+#include <boost/signals2/signal.hpp>
 
 #include "core.hpp"
 #include "tensors.hpp"
@@ -22,6 +23,8 @@ using namespace boost;
 using namespace std;
 
 namespace moveable = boost::container;
+
+using boost::signals2::signal;
 //@-<< Usings >>
 
 //@+others
@@ -170,6 +173,9 @@ public:
     double tolerance;
     unsigned int maximum_number_of_iterations;
 
+    signal<void (Chain&,unsigned int)> signalOptimizeSiteSuccess;
+    signal<void (Chain&,OptimizerFailure&)> signalOptimizeSiteFailure;
+
     Chain(
       BOOST_RV_REF(moveable::vector<OperatorSite>) operators
     , unsigned int const initial_bandwidth = 1
@@ -184,6 +190,8 @@ public:
     template<Side side> void move();
 
     unsigned int optimizeSite();
+    void optimizeSiteAndSignal();
+    void performOptimizationSweep();
 };
 
 template<> inline ExpectationBoundary<Left>& Chain::expectationBoundary<Left>() { return left_expectation_boundary; }
