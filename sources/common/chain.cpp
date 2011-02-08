@@ -117,45 +117,29 @@ Chain::Chain(
 
     //@+<< Compute initial bandwidth dimension sequence >>
     //@+node:gcross.20110202175920.1716: *4* << Compute initial bandwidth dimension sequence >>
-    vector<unsigned int> initial_bandwidth_dimensions;
-    {
-        vector<unsigned int> physical_dimensions;
-        BOOST_FOREACH(OperatorSite const& operator_site, operators) {
-            physical_dimensions.push_back(operator_site.physicalDimension(as_unsigned_integer));
-        }
-        initial_bandwidth_dimensions = computeBandwidthDimensionSequence(bandwidth_dimension,physical_dimensions);
+    physical_dimensions.reserve(number_of_sites+1);
+    BOOST_FOREACH(OperatorSite const& operator_site, operators) {
+        physical_dimensions.push_back(operator_site.physicalDimension(as_unsigned_integer));
     }
+    vector<unsigned int> initial_bandwidth_dimensions = computeBandwidthDimensionSequence(bandwidth_dimension,physical_dimensions);
     //@-<< Compute initial bandwidth dimension sequence >>
 
     //@+<< Construct all but the first site >>
     //@+node:gcross.20110202175920.1717: *4* << Construct all but the first site >>
     {
-        vector<unsigned int>::const_reverse_iterator right_dimension = initial_bandwidth_dimensions.rbegin()+1;
+        right_neighbors.reserve(number_of_sites-1);
+        vector<unsigned int>::const_reverse_iterator
+              right_dimension = initial_bandwidth_dimensions.rbegin()
+            , left_dimension = right_dimension+1;
         while(operators.size() > 1) {
-            OperatorSite& operator_site = operators.back();
-            StateSite<Right> right_state_site(
+            operator_site = boost::move(operators.back()); operators.pop_back();
+            absorb<Right>(
                 randomStateSiteRight(
                      operator_site.physicalDimension()
-                    ,LeftDimension(*right_dimension)
-                    ,RightDimension(*(right_dimension-1))
+                    ,LeftDimension(*(left_dimension++))
+                    ,RightDimension(*(right_dimension++))
                 )
             );
-            ExpectationBoundary<Right> old_right_expectation_boundary(boost::move(right_expectation_boundary));
-            right_expectation_boundary =
-                contractSOSRight(
-                     old_right_expectation_boundary
-                    ,right_state_site
-                    ,operator_site
-                );
-            right_neighbors.emplace_back(
-                 boost::move(old_right_expectation_boundary)
-                ,boost::move(right_state_site)
-                ,boost::move(operator_site)
-                ,boost::move(moveable::vector<OverlapBoundary<Right> >())
-                ,boost::move(moveable::vector<OverlapSiteTrio>())
-            );
-            operators.pop_back();
-            ++right_dimension;
         }
     }
     //@-<< Construct all but the first site >>
@@ -194,6 +178,29 @@ complex<double> Chain::computeExpectationValue() const {
 double Chain::computeStateNorm() const {
     return state_site.norm();
 }
+//@+node:gcross.20110207120702.1784: *3* increaseBandwidthDimension
+//@+at
+// void Chain::increaseBandwidthDimension(unsigned int const new_bandwidth_dimension) {
+//     if(bandwidth_dimension == new_bandwidth_dimension) return;
+//     assert(bandwidth_dimension < new_bandwidth_dimension);
+//     assert(current_site_number == 0);
+//     vector<unsigned int> initial_bandwidth_dimensions = computeBandwidthDimensionSequence(new_bandwidth_dimension,physical_dimensions);
+//     vector<unsigned int>::const_iterator
+//          right_dimension_iterator = initial_bandwidth_dimensions.rbegin()
+//         ,left_dimension_iterator = right_dimension_iterator+1
+//         ;
+// 
+//     moveable::deque<Neighbor<Right> > old_right_neighbors(boost::move(right_neighbors));
+// 
+//     while(old_right_neighbors.size() > 1) {
+//         Neighbor<Right> old_right_neighbor(boost::move(old_right_neighbors.front()));  old_right_neighbors.pop_front();
+//         StateSite<
+//         IncreaseDimensionBetweenResult<Right,Right> result(
+//             increaseBandwidthDimensionBetween(
+//                 old_right_neighbors.back()
+//     }
+// 
+// }
 //@+node:gcross.20110206130502.1754: *3* optimizeSite
 void Chain::optimizeSite() {
     try {
