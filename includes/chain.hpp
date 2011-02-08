@@ -12,6 +12,7 @@
 #include <boost/signals2/signal.hpp>
 
 #include "core.hpp"
+#include "operators.hpp"
 #include "tensors.hpp"
 //@-<< Includes >>
 
@@ -65,7 +66,7 @@ vector<unsigned int> computeBandwidthDimensionSequence(
 );
 
 moveable::vector<unsigned int> extractPhysicalDimensions(
-    moveable::vector<OperatorSite> const& operators
+    Operators const& operators
 );
 
 unsigned int maximumBandwidthDimension(
@@ -200,7 +201,7 @@ public:
     signal<void ()> signalPerformedSweep;
 
     Chain(
-      BOOST_RV_REF(moveable::vector<OperatorSite>) operators
+      BOOST_RV_REF(Operators) operators
     , unsigned int const initial_bandwidth = 1
     , double tolerance = 1e-10
     , unsigned int maximum_number_of_iterations = 10000

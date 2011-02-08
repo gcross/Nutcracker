@@ -31,9 +31,9 @@ TEST_SUITE(Chain) {
 
 //@+others
 //@+node:gcross.20110202223558.1711: *3* randomOperators
-moveable::vector<OperatorSite> randomOperators(RNG& random,optional<unsigned int> maybe_number_of_operators=none) {
+Operators randomOperators(RNG& random,optional<unsigned int> maybe_number_of_operators=none) {
     unsigned int const number_of_operators = maybe_number_of_operators ? *maybe_number_of_operators : random+1;
-    moveable::vector<OperatorSite> operators;
+    Operators operators;
     unsigned int left_dimension = 1;
     BOOST_FOREACH(unsigned int const operator_number, irange(0u,number_of_operators)) {
         unsigned int const right_dimension

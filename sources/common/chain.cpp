@@ -98,7 +98,7 @@ vector<unsigned int> computeBandwidthDimensionSequence(
     return forward_bandwidth_dimensions;
 }
 //@+node:gcross.20110207215504.1786: *3* extractPhysicalDimensions
-moveable::vector<unsigned int> extractPhysicalDimensions(moveable::vector<OperatorSite> const& operators) {
+moveable::vector<unsigned int> extractPhysicalDimensions(Operators const& operators) {
     moveable::vector<unsigned int> physical_dimensions;
     physical_dimensions.reserve(operators.size()+1);
     BOOST_FOREACH(OperatorSite const& operator_site, operators) {
@@ -139,7 +139,7 @@ unsigned int maximumBandwidthDimension(
 //@+node:gcross.20110202175920.1714: ** class Chain
 //@+node:gcross.20110202175920.1715: *3* (constructors)
 Chain::Chain(
-      BOOST_RV_REF(moveable::vector<OperatorSite>) operators
+      BOOST_RV_REF(Operators) operators
     , unsigned int const bandwidth_dimension
     , double const tolerance
     , unsigned int const maximum_number_of_iterations

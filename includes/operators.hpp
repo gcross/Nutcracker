@@ -32,6 +32,7 @@ namespace moveable = boost::container;
 //@+others
 //@+node:gcross.20110207005827.1775: ** Typedefs
 typedef matrix<complex<double> > Matrix;
+typedef moveable::vector<OperatorSite> Operators;
 //@+node:gcross.20110206185121.1761: ** struct OperatorLink
 struct OperatorLink {
     unsigned int from, to;
@@ -81,7 +82,7 @@ OperatorSite constructOperatorSite(
     , vector<OperatorLink> const& links
 );
 
-moveable::vector<OperatorSite> constructExternalFieldOperators(
+Operators constructExternalFieldOperators(
       unsigned int const number_of_operators
     , Matrix const& matrix
 );

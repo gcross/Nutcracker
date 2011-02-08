@@ -20,14 +20,14 @@ using namespace boost;
 //@+others
 //@+node:gcross.20110206185121.1783: ** Functions
 //@+node:gcross.20110207115918.1781: *3* constructExternalFieldOperators
-moveable::vector<OperatorSite> constructExternalFieldOperators(
+Operators constructExternalFieldOperators(
       unsigned int const number_of_operators
     , Matrix const& matrix
 ) {
     assert(number_of_operators > 0);
     PhysicalDimension const physical_dimension(matrix.size1());
     assert(*physical_dimension == matrix.size2());
-    moveable::vector<OperatorSite> operators;
+    Operators operators;
     operators.reserve(number_of_operators);
     if(number_of_operators == 1) {
         operators.push_back(
