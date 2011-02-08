@@ -117,6 +117,29 @@ TEST_CASE(complains_if_too_large) {
 //@-others
 
 }
+//@+node:gcross.20110207120702.1791: *3* maximumBandwidthDimension
+TEST_CASE(maximumBandwidthDimension) {
+    RNG random;
+
+    REPEAT(10) {
+        unsigned int const number_of_sites = random+1;
+        vector<unsigned int> physical_dimensions;
+        physical_dimensions.reserve(number_of_sites);
+        generate_n(
+             back_inserter(physical_dimensions)
+            ,number_of_sites
+            ,random.generateRandomIntegers(2,10)
+        );
+        unsigned int maximum_bandwidth_dimension = maximumBandwidthDimension(physical_dimensions);
+        computeBandwidthDimensionSequence(maximum_bandwidth_dimension,physical_dimensions);
+        try {
+            computeBandwidthDimensionSequence(maximum_bandwidth_dimension+1,physical_dimensions);
+        } catch(RequestedBandwidthDimensionTooLargeError const& e) {
+            continue;
+        }
+        FATALLY_FAIL("Exception was not thrown!");
+    }
+}
 //@+node:gcross.20110202223558.1712: *3* moveLeftAndRight
 TEST_CASE(moveLeftAndRight) {
     RNG random;

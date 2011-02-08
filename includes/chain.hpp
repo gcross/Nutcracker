@@ -59,10 +59,13 @@ struct RequestedBandwidthDimensionTooLargeError : public Exception {
     {}
 };
 //@+node:gcross.20110130170743.1683: ** Functions
-//@+node:gcross.20110130170743.1684: *3* computeBandwidthDimensionSequence
 vector<unsigned int> computeBandwidthDimensionSequence(
     unsigned int const requested_bandwidth_dimension
    ,vector<unsigned int> const& physical_dimensions
+);
+
+unsigned int maximumBandwidthDimension(
+    vector<unsigned int> const& physical_dimensions
 );
 //@+node:gcross.20110202175920.1701: ** Classes
 //@+node:gcross.20110202175920.1702: *3* OverlapSiteTrio
@@ -202,6 +205,7 @@ public:
 
     template<typename side> void absorb(BOOST_RV_REF(StateSite<side>) state_site);
     template<typename side> void move();
+    void increaseBandwidthDimension(unsigned int const new_bandwidth_dimension);
 
     void optimizeSite();
     void performOptimizationSweep();

@@ -97,6 +97,36 @@ vector<unsigned int> computeBandwidthDimensionSequence(
 
     return forward_bandwidth_dimensions;
 }
+//@+node:gcross.20110207120702.1790: *3* maximumBandwidthDimension
+unsigned int maximumBandwidthDimension(
+    vector<unsigned int> const& physical_dimensions
+) {
+    size_t middle_index = (physical_dimensions.size()+1)/2;
+
+    unsigned int forward_maximum_bandwidth_dimension = 1;
+    BOOST_FOREACH(
+         unsigned int const physical_dimension
+        ,make_pair(
+             physical_dimensions.begin()
+            ,physical_dimensions.begin()+middle_index
+        )
+    ) {
+        forward_maximum_bandwidth_dimension *= physical_dimension;
+    }
+
+    unsigned int reverse_maximum_bandwidth_dimension = 1;
+    BOOST_FOREACH(
+         unsigned int const physical_dimension
+        ,make_pair(
+             physical_dimensions.rbegin()
+            ,physical_dimensions.rbegin()+middle_index
+        )
+    ) {
+        reverse_maximum_bandwidth_dimension *= physical_dimension;
+    }
+
+    return min(forward_maximum_bandwidth_dimension,reverse_maximum_bandwidth_dimension);
+}
 //@+node:gcross.20110202175920.1714: ** class Chain
 //@+node:gcross.20110202175920.1715: *3* (constructors)
 Chain::Chain(
