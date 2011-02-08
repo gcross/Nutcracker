@@ -61,11 +61,15 @@ struct RequestedBandwidthDimensionTooLargeError : public Exception {
 //@+node:gcross.20110130170743.1683: ** Functions
 vector<unsigned int> computeBandwidthDimensionSequence(
     unsigned int const requested_bandwidth_dimension
-   ,vector<unsigned int> const& physical_dimensions
+   ,moveable::vector<unsigned int> const& physical_dimensions
+);
+
+moveable::vector<unsigned int> extractPhysicalDimensions(
+    moveable::vector<OperatorSite> const& operators
 );
 
 unsigned int maximumBandwidthDimension(
-    vector<unsigned int> const& physical_dimensions
+    moveable::vector<unsigned int> const& physical_dimensions
 );
 //@+node:gcross.20110202175920.1701: ** Classes
 //@+node:gcross.20110202175920.1702: *3* OverlapSiteTrio
@@ -168,7 +172,7 @@ protected:
     moveable::vector<Neighbor<Right> > right_neighbors;
     ProjectorMatrix projector_matrix;
     double energy;
-    vector<unsigned int> physical_dimensions;
+    moveable::vector<unsigned int> physical_dimensions;
     unsigned int bandwidth_dimension;
 
     template<typename side> ExpectationBoundary<side>& expectationBoundary() {

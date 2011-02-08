@@ -65,7 +65,7 @@ TEST_CASE(correct_properties) {
              requested_bandwidth_dimension = random(1,100000)
             ,number_of_sites = random(20,1000)
             ;
-        vector<unsigned int> physical_dimensions;
+        moveable::vector<unsigned int> physical_dimensions;
         physical_dimensions.reserve(number_of_sites);
         generate_n(
              back_inserter(physical_dimensions)
@@ -94,7 +94,7 @@ TEST_CASE(complains_if_too_large) {
 
     REPEAT(10) {
         unsigned int const number_of_sites = random(10,20);
-        vector<unsigned int> physical_dimensions;
+        moveable::vector<unsigned int> physical_dimensions;
         physical_dimensions.reserve(number_of_sites);
         generate_n(
              back_inserter(physical_dimensions)
@@ -123,7 +123,7 @@ TEST_CASE(maximumBandwidthDimension) {
 
     REPEAT(10) {
         unsigned int const number_of_sites = random+1;
-        vector<unsigned int> physical_dimensions;
+        moveable::vector<unsigned int> physical_dimensions;
         physical_dimensions.reserve(number_of_sites);
         generate_n(
              back_inserter(physical_dimensions)
@@ -244,6 +244,39 @@ TEST_SUITE(performOptimizationSweep) {
     TEST_CASE(physical_dimension_2) { runTests(2); }
     TEST_CASE(physical_dimension_3) { runTests(3); }
     TEST_CASE(physical_dimension_4) { runTests(4); }
+}
+//@+node:gcross.20110207215504.1785: *3* increaseBandwidthDimension
+TEST_CASE(increaseBandwidthDimension) {
+    RNG random;
+
+    REPEAT(10) {
+        unsigned int const number_of_operators = random+2;
+        moveable::vector<OperatorSite> operators(randomOperators(random,number_of_operators));
+        unsigned int const maximum_bandwidth_dimension = min(10u,maximumBandwidthDimension(extractPhysicalDimensions(operators)));
+        Chain chain(operators);
+
+        #define VALIDATE_CHAIN_PROPERTIES \
+            { \
+                ASSERT_NEAR(1,chain.computeStateNorm(),1e-10); \
+                complex<double> const expectation_value = chain.computeExpectationValue(); \
+                ASSERT_NEAR(0,expectation_value.imag(),1e-10); \
+                ASSERT_NEAR_QUOTED(chain.getEnergy(),expectation_value.real(),1e-7); \
+            }
+
+        BOOST_FOREACH(unsigned int const bandwidth_dimension, irange(1u,maximum_bandwidth_dimension)) {
+            chain.increaseBandwidthDimension(bandwidth_dimension);
+            REPEAT(number_of_operators-1) {
+                chain.move<Right>();
+                VALIDATE_CHAIN_PROPERTIES
+            }
+            REPEAT(number_of_operators-1) {
+                chain.move<Left>();
+                VALIDATE_CHAIN_PROPERTIES
+            }
+        }
+
+        #undef VALIDATE_CHAIN_PROPERTIES
+    }
 }
 //@-others
 

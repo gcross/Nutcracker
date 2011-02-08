@@ -33,7 +33,7 @@ namespace moveable = boost::container;
 //@+node:gcross.20110130193548.1688: *3* computeBandwidthDimensionSequence
 vector<unsigned int> computeBandwidthDimensionSequence(
     unsigned int const requested_bandwidth_dimension
-   ,vector<unsigned int> const& physical_dimensions
+   ,moveable::vector<unsigned int> const& physical_dimensions
 ) {
     size_t middle_index = (physical_dimensions.size()+1)/2;
 
@@ -97,9 +97,18 @@ vector<unsigned int> computeBandwidthDimensionSequence(
 
     return forward_bandwidth_dimensions;
 }
+//@+node:gcross.20110207215504.1786: *3* extractPhysicalDimensions
+moveable::vector<unsigned int> extractPhysicalDimensions(moveable::vector<OperatorSite> const& operators) {
+    moveable::vector<unsigned int> physical_dimensions;
+    physical_dimensions.reserve(operators.size()+1);
+    BOOST_FOREACH(OperatorSite const& operator_site, operators) {
+        physical_dimensions.push_back(operator_site.physicalDimension(as_unsigned_integer));
+    }
+    return boost::move(physical_dimensions);
+}
 //@+node:gcross.20110207120702.1790: *3* maximumBandwidthDimension
 unsigned int maximumBandwidthDimension(
-    vector<unsigned int> const& physical_dimensions
+    moveable::vector<unsigned int> const& physical_dimensions
 ) {
     size_t middle_index = (physical_dimensions.size()+1)/2;
 
@@ -147,10 +156,7 @@ Chain::Chain(
 
     //@+<< Compute initial bandwidth dimension sequence >>
     //@+node:gcross.20110202175920.1716: *4* << Compute initial bandwidth dimension sequence >>
-    physical_dimensions.reserve(number_of_sites+1);
-    BOOST_FOREACH(OperatorSite const& operator_site, operators) {
-        physical_dimensions.push_back(operator_site.physicalDimension(as_unsigned_integer));
-    }
+    physical_dimensions = extractPhysicalDimensions(operators);
     vector<unsigned int> initial_bandwidth_dimensions = computeBandwidthDimensionSequence(bandwidth_dimension,physical_dimensions);
     //@-<< Compute initial bandwidth dimension sequence >>
 
@@ -209,28 +215,55 @@ double Chain::computeStateNorm() const {
     return state_site.norm();
 }
 //@+node:gcross.20110207120702.1784: *3* increaseBandwidthDimension
-//@+at
-// void Chain::increaseBandwidthDimension(unsigned int const new_bandwidth_dimension) {
-//     if(bandwidth_dimension == new_bandwidth_dimension) return;
-//     assert(bandwidth_dimension < new_bandwidth_dimension);
-//     assert(current_site_number == 0);
-//     vector<unsigned int> initial_bandwidth_dimensions = computeBandwidthDimensionSequence(new_bandwidth_dimension,physical_dimensions);
-//     vector<unsigned int>::const_iterator
-//          right_dimension_iterator = initial_bandwidth_dimensions.rbegin()
-//         ,left_dimension_iterator = right_dimension_iterator+1
-//         ;
-// 
-//     moveable::deque<Neighbor<Right> > old_right_neighbors(boost::move(right_neighbors));
-// 
-//     while(old_right_neighbors.size() > 1) {
-//         Neighbor<Right> old_right_neighbor(boost::move(old_right_neighbors.front()));  old_right_neighbors.pop_front();
-//         StateSite<
-//         IncreaseDimensionBetweenResult<Right,Right> result(
-//             increaseBandwidthDimensionBetween(
-//                 old_right_neighbors.back()
-//     }
-// 
-// }
+void Chain::increaseBandwidthDimension(unsigned int const new_bandwidth_dimension) {
+    if(bandwidth_dimension == new_bandwidth_dimension) return;
+    assert(bandwidth_dimension < new_bandwidth_dimension);
+    assert(current_site_number == 0);
+    vector<unsigned int> initial_bandwidth_dimensions = computeBandwidthDimensionSequence(new_bandwidth_dimension,physical_dimensions);
+    vector<unsigned int>::const_reverse_iterator dimension_iterator = initial_bandwidth_dimensions.rbegin()+1;
+
+    moveable::vector<Neighbor<Right> > old_right_neighbors(boost::move(right_neighbors));
+
+    StateSite<Middle> first_state_site(boost::move(state_site));
+    moveable::vector<OverlapSiteTrio> first_overlap_site_trios(boost::move(overlap_site_trios));
+    OperatorSite first_operator_site(boost::move(operator_site));
+
+    right_expectation_boundary = boost::move(ExpectationBoundary<Right>(make_trivial));
+
+    for(moveable::vector<Neighbor<Right> >::iterator neighbor_iterator = old_right_neighbors.begin()
+       ;neighbor_iterator != old_right_neighbors.end()
+       ;++neighbor_iterator
+    ) {
+        overlap_site_trios = boost::move(neighbor_iterator->overlap_site_trios);
+        operator_site = boost::move(neighbor_iterator->operator_site);
+
+        if(neighbor_iterator+1 != old_right_neighbors.end()) {
+            StateSite<Right>& next_right_state_site = (neighbor_iterator+1)->state_site;
+            IncreaseDimensionBetweenResult<Right,Right> result(
+                increaseDimensionBetweenRightRight(
+                     *(dimension_iterator++)
+                    ,next_right_state_site
+                    ,neighbor_iterator->state_site
+                )
+            );
+            next_right_state_site = boost::move(result.state_site_1);
+            absorb<Right>(boost::move(result.state_site_2));
+        } else {
+            IncreaseDimensionBetweenResult<Middle,Right> result(
+                increaseDimensionBetweenMiddleRight(
+                     *(dimension_iterator++)
+                    ,first_state_site
+                    ,neighbor_iterator->state_site
+                )
+            );
+            state_site = boost::move(result.state_site_1);
+            absorb<Right>(boost::move(result.state_site_2));
+
+            overlap_site_trios = boost::move(first_overlap_site_trios);
+            operator_site = boost::move(first_operator_site);
+        }
+    }
+}
 //@+node:gcross.20110206130502.1754: *3* optimizeSite
 void Chain::optimizeSite() {
     try {
