@@ -26,6 +26,26 @@ using namespace std;
 
 //@+others
 //@+node:gcross.20110129220506.1656: ** Classes
+//@+node:gcross.20110207120702.1785: *3* IncreaseDimensionBetweenResult
+template<typename side1,typename side2> class IncreaseDimensionBetweenResult {
+private:
+    BOOST_MOVABLE_BUT_NOT_COPYABLE(IncreaseDimensionBetweenResult)
+public:
+    StateSite<side1> state_site_1;
+    StateSite<side2> state_site_2;
+
+    IncreaseDimensionBetweenResult(BOOST_RV_REF(IncreaseDimensionBetweenResult) other)
+      : state_site_1(boost::move(other.state_site_1))
+      , state_site_2(boost::move(other.state_site_2))
+    {}
+
+    IncreaseDimensionBetweenResult(
+          BOOST_RV_REF(StateSite<side1>) state_site_1
+        , BOOST_RV_REF(StateSite<side2>) state_site_2
+    ) : state_site_1(state_site_1)
+      , state_site_2(state_site_2)
+    {}
+};
 //@+node:gcross.20110201193729.1694: *3* MoveSiteCursorResult
 template<typename side> class MoveSiteCursorResult {
 private:
@@ -262,20 +282,16 @@ MoveSiteCursorResult<Right> moveSiteCursorRight(
     , StateSite<Right> const& old_state_site_2
 );
 //@+node:gcross.20110125120748.2466: *3* Miscellaneous
-void increaseDimensionBetweenRightRight(
+IncreaseDimensionBetweenResult<Right,Right> increaseDimensionBetweenRightRight(
       unsigned int new_dimension
     , StateSite<Right> const& old_site_1
     , StateSite<Right> const& old_site_2
-    , auto_ptr<StateSite<Right> const>& new_site_1
-    , auto_ptr<StateSite<Right> const>& new_site_2
 );
 
-void increaseDimensionBetweenMiddleRight(
+IncreaseDimensionBetweenResult<Middle,Right> increaseDimensionBetweenMiddleRight(
       unsigned int new_dimension
     , StateSite<Middle> const& old_site_1
     , StateSite<Right> const& old_site_2
-    , auto_ptr<StateSite<Middle> const>& new_site_1
-    , auto_ptr<StateSite<Right> const>& new_site_2
 );
 
 OptimizerResult optimizeStateSite(

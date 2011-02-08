@@ -907,30 +907,23 @@ MoveSiteCursorResult<Right> moveSiteCursorRight(
 //@+node:gcross.20110125120748.2463: *3* Miscellaneous
 //@+node:gcross.20110124175241.1649: *4* increaseDimensionBetween
 template<typename side1,typename side2>
-static
-void implIncreaseDimensionBetween(
+static IncreaseDimensionBetweenResult<side1,side2> implIncreaseDimensionBetween(
       unsigned int const new_dimension
     , StateSite<side1> const& old_site_1
     , StateSite<side2> const& old_site_2
-    , auto_ptr<StateSite<side1> const>& new_site_1
-    , auto_ptr<StateSite<side2> const>& new_site_2
 ) {
     unsigned int const old_dimension = old_site_1 || old_site_2;
     assert(new_dimension >= old_dimension);
 
-    auto_ptr<StateSite<side1> > new_site_1_writable(
-        new StateSite<side1>(
-             old_site_1.physicalDimension()
-            ,old_site_1.leftDimension()
-            ,RightDimension(new_dimension)
-        )
+    StateSite<side1> new_site_1(
+         old_site_1.physicalDimension()
+        ,old_site_1.leftDimension()
+        ,RightDimension(new_dimension)
     );
-    auto_ptr<StateSite<side2> > new_site_2_writable(
-        new StateSite<side2>(
-             old_site_2.physicalDimension()
-            ,LeftDimension(new_dimension)
-            ,old_site_2.rightDimension()
-        )
+    StateSite<side2> new_site_2(
+         old_site_2.physicalDimension()
+        ,LeftDimension(new_dimension)
+        ,old_site_2.rightDimension()
     );
 
     int const info =
@@ -944,8 +937,8 @@ void implIncreaseDimensionBetween(
                 ,new_dimension
                 ,old_site_1
                 ,old_site_2
-                ,*new_site_1_writable
-                ,*new_site_2_writable
+                ,new_site_1
+                ,new_site_2
               )
             : norm_denorm_going_left(
                  old_site_1.leftDimension(as_unsigned_integer)
@@ -955,30 +948,28 @@ void implIncreaseDimensionBetween(
                 ,old_site_2.physicalDimension(as_unsigned_integer)
                 ,old_site_1
                 ,old_site_2
-                ,*new_site_1_writable
-                ,*new_site_2_writable
+                ,new_site_1
+                ,new_site_2
               )
     ;
     if(info != 0) throw NormalizationError(info);
-    new_site_1 = new_site_1_writable;
-    new_site_2 = new_site_2_writable;    
+    return IncreaseDimensionBetweenResult<side1,side2>
+        (boost::move(new_site_1)
+        ,boost::move(new_site_2)
+        );
 }
 
-void increaseDimensionBetweenRightRight(
+IncreaseDimensionBetweenResult<Right,Right> increaseDimensionBetweenRightRight(
       unsigned int new_dimension
     , StateSite<Right> const& old_site_1
     , StateSite<Right> const& old_site_2
-    , auto_ptr<StateSite<Right> const>& new_site_1
-    , auto_ptr<StateSite<Right> const>& new_site_2
-) { implIncreaseDimensionBetween(new_dimension,old_site_1,old_site_2,new_site_1,new_site_2); }
+) { return implIncreaseDimensionBetween(new_dimension,old_site_1,old_site_2); }
 
-void increaseDimensionBetweenMiddleRight(
+IncreaseDimensionBetweenResult<Middle,Right>increaseDimensionBetweenMiddleRight(
       unsigned int new_dimension
     , StateSite<Middle> const& old_site_1
     , StateSite<Right> const& old_site_2
-    , auto_ptr<StateSite<Middle> const>& new_site_1
-    , auto_ptr<StateSite<Right> const>& new_site_2
-) { implIncreaseDimensionBetween(new_dimension,old_site_1,old_site_2,new_site_1,new_site_2); }
+) { return implIncreaseDimensionBetween(new_dimension,old_site_1,old_site_2); }
 //@+node:gcross.20110124175241.1587: *4* optimizeStateSite
 OptimizerResult optimizeStateSite(
       ExpectationBoundary<Left> const& left_boundary
