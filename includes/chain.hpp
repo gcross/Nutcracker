@@ -173,6 +173,9 @@ protected:
     ProjectorMatrix projector_matrix;
     double energy;
     moveable::vector<unsigned int> physical_dimensions;
+public:
+    unsigned int const maximum_bandwidth_dimension;
+protected:
     unsigned int bandwidth_dimension;
 
     template<typename side> ExpectationBoundary<side>& expectationBoundary() {
@@ -204,6 +207,7 @@ public:
     );
 
     double getEnergy() const { return energy; }
+
     complex<double> computeExpectationValue() const;
     double computeStateNorm() const;
 

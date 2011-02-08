@@ -148,6 +148,8 @@ Chain::Chain(
   , left_expectation_boundary(make_trivial)
   , right_expectation_boundary(make_trivial)
   , energy(0)
+  , physical_dimensions(extractPhysicalDimensions(operators))
+  , maximum_bandwidth_dimension(maximumBandwidthDimension(physical_dimensions))
   , bandwidth_dimension(bandwidth_dimension)
   , tolerance(tolerance)
   , maximum_number_of_iterations(maximum_number_of_iterations)
@@ -156,7 +158,6 @@ Chain::Chain(
 
     //@+<< Compute initial bandwidth dimension sequence >>
     //@+node:gcross.20110202175920.1716: *4* << Compute initial bandwidth dimension sequence >>
-    physical_dimensions = extractPhysicalDimensions(operators);
     vector<unsigned int> initial_bandwidth_dimensions = computeBandwidthDimensionSequence(bandwidth_dimension,physical_dimensions);
     //@-<< Compute initial bandwidth dimension sequence >>
 
@@ -218,6 +219,7 @@ double Chain::computeStateNorm() const {
 void Chain::increaseBandwidthDimension(unsigned int const new_bandwidth_dimension) {
     if(bandwidth_dimension == new_bandwidth_dimension) return;
     assert(bandwidth_dimension < new_bandwidth_dimension);
+    assert(new_bandwidth_dimension <= maximum_bandwidth_dimension);
     assert(current_site_number == 0);
     vector<unsigned int> initial_bandwidth_dimensions = computeBandwidthDimensionSequence(new_bandwidth_dimension,physical_dimensions);
     vector<unsigned int>::const_reverse_iterator dimension_iterator = initial_bandwidth_dimensions.rbegin()+1;

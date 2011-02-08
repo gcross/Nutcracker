@@ -251,9 +251,8 @@ TEST_CASE(increaseBandwidthDimension) {
 
     REPEAT(10) {
         unsigned int const number_of_operators = random+2;
-        moveable::vector<OperatorSite> operators(randomOperators(random,number_of_operators));
-        unsigned int const maximum_bandwidth_dimension = min(10u,maximumBandwidthDimension(extractPhysicalDimensions(operators)));
-        Chain chain(operators);
+        Chain chain(randomOperators(random,number_of_operators));
+        unsigned int const maximum_bandwidth_dimension = min(10u,chain.maximum_bandwidth_dimension);
 
         #define VALIDATE_CHAIN_PROPERTIES \
             { \
