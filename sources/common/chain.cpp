@@ -230,7 +230,10 @@ void Chain::increaseBandwidthDimension(unsigned int const new_bandwidth_dimensio
     moveable::vector<OverlapSiteTrio> first_overlap_site_trios(boost::move(overlap_site_trios));
     OperatorSite first_operator_site(boost::move(operator_site));
 
-    right_expectation_boundary = boost::move(ExpectationBoundary<Right>(make_trivial));
+    {
+        ExpectationBoundary<Right> trivial(make_trivial);
+        right_expectation_boundary = boost::move(trivial);
+    }
 
     for(moveable::vector<Neighbor<Right> >::iterator neighbor_iterator = old_right_neighbors.begin()
        ;neighbor_iterator != old_right_neighbors.end()
