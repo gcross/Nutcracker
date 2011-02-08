@@ -109,7 +109,7 @@ TEST_CASE(complains_if_too_large) {
             );
         } catch(RequestedBandwidthDimensionTooLargeError const& e) {
             ASSERT_EQ_QUOTED(requested_bandwidth_dimension,e.requested_bandwidth_dimension);
-            return;
+            continue;
         }
         FATALLY_FAIL("Exception was not thrown!");
     }
