@@ -138,52 +138,43 @@ Chain::Chain(
 {
     assert(number_of_sites > 0);
 
-    //@+<< Compute initial bandwidth dimension sequence >>
-    //@+node:gcross.20110202175920.1716: *4* << Compute initial bandwidth dimension sequence >>
+    reset(bandwidth_dimension);
+}
+//@+node:gcross.20110208233325.1798: *3* reset
+void Chain::reset(unsigned int bandwidth_dimension) {
+    current_site_number = 0;
+
+    right_neighbors.clear();
+    right_neighbors.reserve(number_of_sites-1);
+
     vector<unsigned int> initial_bandwidth_dimensions = computeBandwidthDimensionSequence(bandwidth_dimension,physical_dimensions);
-    //@-<< Compute initial bandwidth dimension sequence >>
-
-    //@+<< Construct all but the first site >>
-    //@+node:gcross.20110202175920.1717: *4* << Construct all but the first site >>
-    {
-        right_neighbors.reserve(number_of_sites-1);
-        vector<unsigned int>::const_reverse_iterator
-              right_dimension = initial_bandwidth_dimensions.rbegin()
-            , left_dimension = right_dimension+1;
-        BOOST_FOREACH(
-             unsigned int const operator_number
-            ,irange(1u,number_of_sites) | reversed
-        ) {
-            absorb<Right>(
-                 randomStateSiteRight(
-                     operators[operator_number]->physicalDimension()
-                    ,LeftDimension(*(left_dimension++))
-                    ,RightDimension(*(right_dimension++))
-                 )
-                ,operator_number
-            );
-        }
+    vector<unsigned int>::const_reverse_iterator
+          right_dimension = initial_bandwidth_dimensions.rbegin()
+        , left_dimension = right_dimension+1;
+    BOOST_FOREACH(
+         unsigned int const operator_number
+        ,irange(1u,number_of_sites) | reversed
+    ) {
+        absorb<Right>(
+             randomStateSiteRight(
+                 operators[operator_number]->physicalDimension()
+                ,LeftDimension(*(left_dimension++))
+                ,RightDimension(*(right_dimension++))
+             )
+            ,operator_number
+        );
     }
-    //@-<< Construct all but the first site >>
 
-    //@+<< Construct the first site >>
-    //@+node:gcross.20110202175920.1718: *4* << Construct the first site >>
     state_site =
         randomStateSiteMiddle(
              operators[0]->physicalDimension()
             ,LeftDimension(initial_bandwidth_dimensions[0])
             ,RightDimension(initial_bandwidth_dimensions[1])
         );
-    //@-<< Construct the first site >>
 
-    //@+<< Compute the initial energy >>
-    //@+node:gcross.20110202175920.1719: *4* << Compute the initial energy >>
-    {
-        complex<double> const expectation_value = computeExpectationValue();
-        if(abs(expectation_value.imag()) > 1e-10) throw InitialChainEnergyNotRealError(expectation_value);
-        energy = expectation_value.real();
-    }
-    //@-<< Compute the initial energy >>
+    complex<double> const expectation_value = computeExpectationValue();
+    if(abs(expectation_value.imag()) > 1e-10) throw InitialChainEnergyNotRealError(expectation_value);
+    energy = expectation_value.real();
 }
 //@+node:gcross.20110202175920.1720: *3* computeExpectationValue
 complex<double> Chain::computeExpectationValue() const {

@@ -229,6 +229,7 @@ public:
     , unsigned int const initial_bandwidth = 1
     , Options const& options = defaults
     );
+    void reset(unsigned int initial_bandwidth = 1);
 
     double getEnergy() const { return energy; }
     unsigned int bandwidthDimension() const { return bandwidth_dimension; }
