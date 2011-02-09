@@ -124,8 +124,9 @@ Chain::Chain(
       Operators const& operators
     , unsigned int const bandwidth_dimension
     , Options const& options
-) : operators(operators)
-  , number_of_sites(operators.size())
+) : number_of_sites(operators.size())
+  , operators(operators)
+  , overlap_trios(number_of_sites)
   , current_site_number(0)
   , left_expectation_boundary(make_trivial)
   , right_expectation_boundary(make_trivial)
@@ -210,7 +211,6 @@ void Chain::increaseBandwidthDimension(unsigned int const new_bandwidth_dimensio
     moveable::vector<Neighbor<Right> > old_right_neighbors(boost::move(right_neighbors));
 
     StateSite<Middle> first_state_site(boost::move(state_site));
-    moveable::vector<OverlapSiteTrio> first_overlap_site_trios(boost::move(overlap_site_trios));
 
     {
         ExpectationBoundary<Right> trivial(make_trivial);
@@ -222,8 +222,6 @@ void Chain::increaseBandwidthDimension(unsigned int const new_bandwidth_dimensio
        ;neighbor_iterator != old_right_neighbors.end()
        ;++neighbor_iterator,--operator_number
     ) {
-        overlap_site_trios = boost::move(neighbor_iterator->overlap_site_trios);
-
         if(operator_number > 1) {
             StateSite<Right>& next_right_state_site = (neighbor_iterator+1)->state_site;
             IncreaseDimensionBetweenResult<Right,Right> result(
@@ -245,8 +243,6 @@ void Chain::increaseBandwidthDimension(unsigned int const new_bandwidth_dimensio
             );
             state_site = boost::move(result.state_site_1);
             absorb<Right>(boost::move(result.state_site_2),operator_number);
-
-            overlap_site_trios = boost::move(first_overlap_site_trios);
         }
     }
     bandwidth_dimension = new_bandwidth_dimension;

@@ -150,47 +150,41 @@ public:
     ExpectationBoundary<side> expectation_boundary;
     StateSite<side> state_site;
     moveable::vector<OverlapBoundary<side> > overlap_boundaries;
-    moveable::vector<OverlapSiteTrio> overlap_site_trios;
 
     Neighbor(BOOST_RV_REF(Neighbor) other)
       : expectation_boundary(boost::move(other.expectation_boundary))
       , state_site(boost::move(other.state_site))
       , overlap_boundaries(boost::move(other.overlap_boundaries))
-      , overlap_site_trios(boost::move(other.overlap_site_trios))
     { }
 
     Neighbor(
           BOOST_RV_REF(ExpectationBoundary<side>) expectation_boundary
         , BOOST_RV_REF(StateSite<side>) state_site
         , BOOST_RV_REF(moveable::vector<OverlapBoundary<side> >) overlap_boundaries
-        , BOOST_RV_REF(moveable::vector<OverlapSiteTrio>) overlap_site_trios
     ) : expectation_boundary(expectation_boundary)
       , state_site(state_site)
       , overlap_boundaries(overlap_boundaries)
-      , overlap_site_trios(overlap_site_trios)
     { }
 
     void operator=(BOOST_RV_REF(Neighbor) other) {
         expectation_boundary = boost::move(other.expectation_boundary);
         state_site = boost::move(other.state_site);
         overlap_boundaries = boost::move(other.overlap_boundaries);
-        overlap_site_trios = boost::move(other.overlap_site_trios);
     }
 };
 //@+node:gcross.20110202175920.1704: *3* Chain
 class Chain {
-protected:
-    Operators const operators;
 public:
     unsigned int const number_of_sites;
 protected:
+    Operators const operators;
+    moveable::vector<moveable::vector<OverlapSiteTrio> > overlap_trios;
     unsigned int current_site_number;
     ExpectationBoundary<Left> left_expectation_boundary;
     moveable::vector<OverlapBoundary<Left> > left_overlap_boundaries;
     ExpectationBoundary<Right> right_expectation_boundary;
     moveable::vector<OverlapBoundary<Right> > right_overlap_boundaries;
     StateSite<Middle> state_site;
-    moveable::vector<OverlapSiteTrio> overlap_site_trios;
     moveable::vector<Neighbor<Left> > left_neighbors;
     moveable::vector<Neighbor<Right> > right_neighbors;
     ProjectorMatrix projector_matrix;
@@ -268,14 +262,14 @@ template<> inline void Chain::moveSiteNumber<Right>() { assert(current_site_numb
 //@+node:gcross.20110207120702.1786: *4* absorb
 template<typename side> void Chain::absorb(
       BOOST_RV_REF(StateSite<side>) state_site
-    , unsigned int const operator_number
+    , unsigned int const site_number
 ) {
     ExpectationBoundary<side>& expectation_boundary = expectationBoundary<side>();
     ExpectationBoundary<side> new_expectation_boundary(
         contract<side>::SOS(
              expectation_boundary
             ,state_site
-            ,*operators[operator_number]
+            ,*operators[site_number]
         )
     );
 
@@ -285,7 +279,7 @@ template<typename side> void Chain::absorb(
     typename moveable::vector<OverlapBoundary<side> >::const_iterator overlap_boundary = overlap_boundaries.begin();
     BOOST_FOREACH(
          OverlapSiteTrio const& overlap_site_trio
-        ,overlap_site_trios
+        ,overlap_trios[site_number]
     ) {
         new_overlap_boundaries.push_back(
             contract<side>::SS(
@@ -301,7 +295,6 @@ template<typename side> void Chain::absorb(
          boost::move(expectation_boundary)
         ,boost::move(state_site)
         ,boost::move(overlap_boundaries)
-        ,boost::move(overlap_site_trios)
     );
 
     expectationBoundary<side>() = boost::move(new_expectation_boundary);
@@ -329,7 +322,6 @@ template<typename side> void Chain::move() {
     expectationBoundary<side>() = boost::move(neighbor.expectation_boundary);
     overlapBoundaries<side>() = boost::move(neighbor.overlap_boundaries);
 
-    overlap_site_trios = boost::move(neighbor.overlap_site_trios);
     state_site = boost::move(cursor.middle_state_site);
 
     side_neighbors.pop_back();
