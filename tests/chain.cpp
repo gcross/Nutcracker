@@ -302,6 +302,22 @@ TEST_SUITE(sweepUntilConverged) {
     TEST_CASE(10_sites_1p0) { runTest(10,1.0,6,-12.38148999); }
 
 }
+//@+node:gcross.20110208230325.1792: *3* optimizeChain
+TEST_SUITE(optimizeChain) {
+
+    void runTest(
+          unsigned int const number_of_sites
+        , double const coupling_strength
+        , double const correct_energy
+    ) {
+        Chain chain(constructTransverseIsingModelOperators(number_of_sites,coupling_strength));
+        chain.optimizeChain();
+        ASSERT_NEAR(correct_energy,chain.getEnergy(),1e-10);
+    }
+    TEST_CASE(10_sites_0p1) { runTest(10,0.1,-10.0225109571); }
+    TEST_CASE(10_sites_1p0) { runTest(10,1.0,-12.3814899997); }
+
+}
 //@-others
 
 }

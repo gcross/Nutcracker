@@ -34,7 +34,13 @@ using std::numeric_limits;
 
 //@+others
 //@+node:gcross.20110208151104.1790: ** Values
-Chain::Options const Chain::defaults = { 1e-15, 10000, 1e-14, lambda::_1+1 };
+Chain::Options const Chain::defaults =
+    { 10000
+    , 1e-15
+    , 1e-14
+    , 1e-13
+    , lambda::_1+1
+    };
 //@+node:gcross.20110130193548.1686: ** Functions
 //@+node:gcross.20110130193548.1688: *3* computeBandwidthDimensionSequence
 vector<unsigned int> computeBandwidthDimensionSequence(
@@ -243,6 +249,7 @@ void Chain::increaseBandwidthDimension(unsigned int const new_bandwidth_dimensio
             overlap_site_trios = boost::move(first_overlap_site_trios);
         }
     }
+    bandwidth_dimension = new_bandwidth_dimension;
 }
 //@+node:gcross.20110206130502.1754: *3* optimizeSite
 void Chain::optimizeSite() {
@@ -293,6 +300,17 @@ void Chain::sweepUntilConverged() {
         performOptimizationSweep();
     }
     signalSweepsConverged();
+}
+//@+node:gcross.20110208230325.1790: *3* optimizeChain
+void Chain::optimizeChain() {
+    double previous_energy = energy;
+    sweepUntilConverged();
+    while(abs(previous_energy - energy)/(abs(previous_energy)+abs(energy)+options.chain_convergence_threshold) > options.chain_convergence_threshold) {
+        previous_energy = energy;
+        increaseBandwidthDimension(options.computeNewBandwidthDimension(bandwidth_dimension));
+        sweepUntilConverged();
+    }
+    signalChainOptimized();
 }
 //@-others
 
