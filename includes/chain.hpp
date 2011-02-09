@@ -215,8 +215,13 @@ protected:
     }
 
 public:
-    double tolerance;
-    unsigned int maximum_number_of_iterations;
+    struct Options {
+        double site_convergence_threshold;
+        unsigned int maximum_number_of_iterations;
+        double chain_convergence_threshold;
+        function<unsigned int (unsigned int)> computeNewBandwidth;
+    } options;
+    static Options const defaults;
 
     signal<void (unsigned int)> signalOptimizeSiteSuccess;
     signal<void (OptimizerFailure&)> signalOptimizeSiteFailure;
@@ -225,8 +230,7 @@ public:
     Chain(
       Operators const& operators
     , unsigned int const initial_bandwidth = 1
-    , double tolerance = 1e-10
-    , unsigned int maximum_number_of_iterations = 10000
+    , Options const& options = defaults
     );
 
     double getEnergy() const { return energy; }

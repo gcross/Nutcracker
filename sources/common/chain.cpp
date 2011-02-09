@@ -6,6 +6,7 @@
 //@+node:gcross.20110130170743.1675: ** << Includes >>
 #include <algorithm>
 #include <boost/assign.hpp>
+#include <boost/lambda/lambda.hpp>
 #include <boost/range/adaptor/reversed.hpp>
 #include <boost/range/algorithm/reverse_copy.hpp>
 #include <boost/range/irange.hpp>
@@ -30,6 +31,8 @@ using boost::adaptors::reversed;
 //@-<< Usings >>
 
 //@+others
+//@+node:gcross.20110208151104.1790: ** Values
+Chain::Options const Chain::defaults = { 1e-10, 10000, 1e-7, lambda::_1+1 };
 //@+node:gcross.20110130193548.1686: ** Functions
 //@+node:gcross.20110130193548.1688: *3* computeBandwidthDimensionSequence
 vector<unsigned int> computeBandwidthDimensionSequence(
@@ -112,8 +115,7 @@ moveable::vector<unsigned int> extractPhysicalDimensions(Operators const& operat
 Chain::Chain(
       Operators const& operators
     , unsigned int const bandwidth_dimension
-    , double const tolerance
-    , unsigned int const maximum_number_of_iterations
+    , Options const& options
 ) : operators(operators)
   , number_of_sites(operators.size())
   , current_site_number(0)
@@ -123,8 +125,7 @@ Chain::Chain(
   , physical_dimensions(extractPhysicalDimensions(operators))
   , maximum_bandwidth_dimension(maximumBandwidthDimension(physical_dimensions))
   , bandwidth_dimension(bandwidth_dimension)
-  , tolerance(tolerance)
-  , maximum_number_of_iterations(maximum_number_of_iterations)
+  , options(options)
 {
     assert(number_of_sites > 0);
 
@@ -251,11 +252,11 @@ void Chain::optimizeSite() {
                 ,*operators[current_site_number]
                 ,right_expectation_boundary
                 ,none
-                ,tolerance
-                ,maximum_number_of_iterations
+                ,options.site_convergence_threshold
+                ,options.maximum_number_of_iterations
             )
         );
-        if((result.eigenvalue - energy)/abs(energy) > tolerance) {
+        if((result.eigenvalue - energy)/abs(energy) > options.site_convergence_threshold) {
             throw OptimizerObtainedGreaterEigenvalue(energy,result.eigenvalue);
         }
         energy = result.eigenvalue;
