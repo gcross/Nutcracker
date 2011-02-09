@@ -30,17 +30,17 @@ Operators constructExternalFieldOperators(
     Operators operators;
     operators.reserve(number_of_operators);
     if(number_of_operators == 1) {
-        operators.push_back(
+        operators.push_back(shared_ptr<OperatorSite const>(new OperatorSite(
             constructOperatorSite(
                  physical_dimension
                 ,LeftDimension(1)
                 ,RightDimension(1)
                 ,list_of(OperatorLink(1,1,matrix))
             )
-        );
+        )));
     } else {
         Matrix I = identityMatrix(*physical_dimension);
-        operators.push_back(
+        operators.push_back(shared_ptr<OperatorSite const>(new OperatorSite(
             constructOperatorSite(
                  physical_dimension
                 ,LeftDimension(1)
@@ -49,8 +49,8 @@ Operators constructExternalFieldOperators(
                     (OperatorLink(1,1,I))
                     (OperatorLink(1,2,matrix))
             )
-        );
-        OperatorSite const middle(
+        )));
+        shared_ptr<OperatorSite const> const middle(new OperatorSite(
             constructOperatorSite(
                  physical_dimension
                 ,LeftDimension(2)
@@ -60,11 +60,11 @@ Operators constructExternalFieldOperators(
                     (OperatorLink(1,2,matrix))
                     (OperatorLink(2,2,I))
             )
-        );
+        ));
         REPEAT(number_of_operators-2) {
-            operators.emplace_back(copyFrom(middle));
+            operators.push_back(middle);
         }
-        operators.push_back(
+        operators.push_back(shared_ptr<OperatorSite const>(new OperatorSite(
             constructOperatorSite(
                  physical_dimension
                 ,LeftDimension(2)
@@ -73,7 +73,7 @@ Operators constructExternalFieldOperators(
                     (OperatorLink(1,1,matrix))
                     (OperatorLink(2,1,I))
             )
-        );
+        )));
     }
     return boost::move(operators);
 }

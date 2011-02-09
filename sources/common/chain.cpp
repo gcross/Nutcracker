@@ -6,15 +6,14 @@
 //@+node:gcross.20110130170743.1675: ** << Includes >>
 #include <algorithm>
 #include <boost/assign.hpp>
+#include <boost/range/adaptor/reversed.hpp>
 #include <boost/range/algorithm/reverse_copy.hpp>
+#include <boost/range/irange.hpp>
 #include <iterator>
 #include <utility>
 
 #include "chain.hpp"
 #include "core.hpp"
-
-
-#include <iostream>
 //@-<< Includes >>
 
 namespace Nutcracker {
@@ -26,6 +25,8 @@ using namespace boost::assign;
 using namespace std;
 
 namespace moveable = boost::container;
+
+using boost::adaptors::reversed;
 //@-<< Usings >>
 
 //@+others
@@ -101,49 +102,20 @@ vector<unsigned int> computeBandwidthDimensionSequence(
 moveable::vector<unsigned int> extractPhysicalDimensions(Operators const& operators) {
     moveable::vector<unsigned int> physical_dimensions;
     physical_dimensions.reserve(operators.size()+1);
-    BOOST_FOREACH(OperatorSite const& operator_site, operators) {
-        physical_dimensions.push_back(operator_site.physicalDimension(as_unsigned_integer));
+    BOOST_FOREACH(shared_ptr<OperatorSite const> const& operator_site, operators) {
+        physical_dimensions.push_back(operator_site->physicalDimension(as_unsigned_integer));
     }
     return boost::move(physical_dimensions);
-}
-//@+node:gcross.20110207120702.1790: *3* maximumBandwidthDimension
-unsigned int maximumBandwidthDimension(
-    moveable::vector<unsigned int> const& physical_dimensions
-) {
-    size_t middle_index = (physical_dimensions.size()+1)/2;
-
-    unsigned int forward_maximum_bandwidth_dimension = 1;
-    BOOST_FOREACH(
-         unsigned int const physical_dimension
-        ,make_pair(
-             physical_dimensions.begin()
-            ,physical_dimensions.begin()+middle_index
-        )
-    ) {
-        forward_maximum_bandwidth_dimension *= physical_dimension;
-    }
-
-    unsigned int reverse_maximum_bandwidth_dimension = 1;
-    BOOST_FOREACH(
-         unsigned int const physical_dimension
-        ,make_pair(
-             physical_dimensions.rbegin()
-            ,physical_dimensions.rbegin()+middle_index
-        )
-    ) {
-        reverse_maximum_bandwidth_dimension *= physical_dimension;
-    }
-
-    return min(forward_maximum_bandwidth_dimension,reverse_maximum_bandwidth_dimension);
 }
 //@+node:gcross.20110202175920.1714: ** class Chain
 //@+node:gcross.20110202175920.1715: *3* (constructors)
 Chain::Chain(
-      BOOST_RV_REF(Operators) operators
+      Operators const& operators
     , unsigned int const bandwidth_dimension
     , double const tolerance
     , unsigned int const maximum_number_of_iterations
-) : number_of_sites(operators.size())
+) : operators(operators)
+  , number_of_sites(operators.size())
   , current_site_number(0)
   , left_expectation_boundary(make_trivial)
   , right_expectation_boundary(make_trivial)
@@ -168,14 +140,17 @@ Chain::Chain(
         vector<unsigned int>::const_reverse_iterator
               right_dimension = initial_bandwidth_dimensions.rbegin()
             , left_dimension = right_dimension+1;
-        while(operators.size() > 1) {
-            operator_site = boost::move(operators.back()); operators.pop_back();
+        BOOST_FOREACH(
+             unsigned int const operator_number
+            ,irange(1u,number_of_sites) | reversed
+        ) {
             absorb<Right>(
-                randomStateSiteRight(
-                     operator_site.physicalDimension()
+                 randomStateSiteRight(
+                     operators[operator_number]->physicalDimension()
                     ,LeftDimension(*(left_dimension++))
                     ,RightDimension(*(right_dimension++))
-                )
+                 )
+                ,operator_number
             );
         }
     }
@@ -183,10 +158,9 @@ Chain::Chain(
 
     //@+<< Construct the first site >>
     //@+node:gcross.20110202175920.1718: *4* << Construct the first site >>
-    operator_site = boost::move(operators.back());
     state_site =
         randomStateSiteMiddle(
-             operator_site.physicalDimension()
+             operators[0]->physicalDimension()
             ,LeftDimension(initial_bandwidth_dimensions[0])
             ,RightDimension(initial_bandwidth_dimensions[1])
         );
@@ -207,7 +181,7 @@ complex<double> Chain::computeExpectationValue() const {
         Nutcracker::computeExpectationValue(
              left_expectation_boundary
             ,state_site
-            ,operator_site
+            ,*operators[current_site_number]
             ,right_expectation_boundary
         );
 }
@@ -228,21 +202,20 @@ void Chain::increaseBandwidthDimension(unsigned int const new_bandwidth_dimensio
 
     StateSite<Middle> first_state_site(boost::move(state_site));
     moveable::vector<OverlapSiteTrio> first_overlap_site_trios(boost::move(overlap_site_trios));
-    OperatorSite first_operator_site(boost::move(operator_site));
 
     {
         ExpectationBoundary<Right> trivial(make_trivial);
         right_expectation_boundary = boost::move(trivial);
     }
 
+    unsigned int operator_number = number_of_sites-1;
     for(moveable::vector<Neighbor<Right> >::iterator neighbor_iterator = old_right_neighbors.begin()
        ;neighbor_iterator != old_right_neighbors.end()
-       ;++neighbor_iterator
+       ;++neighbor_iterator,--operator_number
     ) {
         overlap_site_trios = boost::move(neighbor_iterator->overlap_site_trios);
-        operator_site = boost::move(neighbor_iterator->operator_site);
 
-        if(neighbor_iterator+1 != old_right_neighbors.end()) {
+        if(operator_number > 1) {
             StateSite<Right>& next_right_state_site = (neighbor_iterator+1)->state_site;
             IncreaseDimensionBetweenResult<Right,Right> result(
                 increaseDimensionBetweenRightRight(
@@ -252,7 +225,7 @@ void Chain::increaseBandwidthDimension(unsigned int const new_bandwidth_dimensio
                 )
             );
             next_right_state_site = boost::move(result.state_site_1);
-            absorb<Right>(boost::move(result.state_site_2));
+            absorb<Right>(boost::move(result.state_site_2),operator_number);
         } else {
             IncreaseDimensionBetweenResult<Middle,Right> result(
                 increaseDimensionBetweenMiddleRight(
@@ -262,10 +235,9 @@ void Chain::increaseBandwidthDimension(unsigned int const new_bandwidth_dimensio
                 )
             );
             state_site = boost::move(result.state_site_1);
-            absorb<Right>(boost::move(result.state_site_2));
+            absorb<Right>(boost::move(result.state_site_2),operator_number);
 
             overlap_site_trios = boost::move(first_overlap_site_trios);
-            operator_site = boost::move(first_operator_site);
         }
     }
 }
@@ -276,7 +248,7 @@ void Chain::optimizeSite() {
             optimizeStateSite(
                  left_expectation_boundary
                 ,state_site
-                ,operator_site
+                ,*operators[current_site_number]
                 ,right_expectation_boundary
                 ,none
                 ,tolerance

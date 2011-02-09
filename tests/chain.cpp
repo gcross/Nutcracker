@@ -10,6 +10,7 @@
 #include <boost/range/algorithm/max_element.hpp>
 #include <boost/range/irange.hpp>
 #include <boost/range/numeric.hpp>
+#include <boost/smart_ptr/shared_ptr.hpp>
 #include <illuminate.hpp>
 #include <functional>
 
@@ -23,6 +24,8 @@ using namespace boost;
 using namespace boost::assign;
 using namespace Nutcracker;
 using namespace std;
+
+using boost::shared_ptr;
 //@-<< Includes >>
 
 //@+others
@@ -41,13 +44,13 @@ Operators randomOperators(RNG& random,optional<unsigned int> maybe_number_of_ope
                 ? 1
                 : random
                 ;
-        operators.push_back(
+        operators.push_back(boost::shared_ptr<OperatorSite const>(new OperatorSite(
             random.randomOperator(
                  PhysicalDimension(random+1)
                 ,LeftDimension(left_dimension)
                 ,RightDimension(right_dimension)
             )
-        );
+        )));
         left_dimension = right_dimension;
     }
     return boost::move(operators);
