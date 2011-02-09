@@ -108,6 +108,59 @@ OperatorSite constructOperatorSite(
 
     return boost::move(operator_site);
 }
+//@+node:gcross.20110208195213.1789: *3* constructTransverseIsingModelOperators
+Operators constructTransverseIsingModelOperators(
+      unsigned int const number_of_operators
+    , double spin_coupling_strength
+) {
+    using namespace Pauli;
+    assert(number_of_operators > 1);
+    Matrix const
+          &X1 = X
+        ,  X2 = spin_coupling_strength*X
+        ;
+    Operators operators;
+    operators.reserve(number_of_operators);
+    operators.push_back(shared_ptr<OperatorSite const>(new OperatorSite(
+        constructOperatorSite(
+             PhysicalDimension(2)
+            ,LeftDimension(1)
+            ,RightDimension(3)
+            ,list_of
+                (OperatorLink(1,1,I ))
+                (OperatorLink(1,2,X1))
+                (OperatorLink(1,3,Z ))
+        )
+    )));
+    shared_ptr<OperatorSite const> const middle(new OperatorSite(
+        constructOperatorSite(
+             PhysicalDimension(2)
+            ,LeftDimension(3)
+            ,RightDimension(3)
+            ,list_of
+                (OperatorLink(1,1,I ))
+                (OperatorLink(1,2,X1))
+                (OperatorLink(2,3,X2))
+                (OperatorLink(1,3,Z ))
+                (OperatorLink(3,3,I ))
+        )
+    ));
+    REPEAT(number_of_operators-2) {
+        operators.push_back(middle);
+    }
+    operators.push_back(shared_ptr<OperatorSite const>(new OperatorSite(
+        constructOperatorSite(
+             PhysicalDimension(2)
+            ,LeftDimension(3)
+            ,RightDimension(1)
+            ,list_of
+                (OperatorLink(1,1,Z ))
+                (OperatorLink(2,1,X2))
+                (OperatorLink(3,1,I ))
+        )
+    )));
+    return boost::move(operators);
+}
 //@+node:gcross.20110207120702.1780: *3* identityMatrix
 Matrix identityMatrix(unsigned int const n) {
     Matrix I(n,n);

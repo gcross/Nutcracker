@@ -90,6 +90,11 @@ Operators constructExternalFieldOperators(
     , Matrix const& matrix
 );
 
+Operators constructTransverseIsingModelOperators(
+      unsigned int const number_of_operators
+    , double spin_coupling_strength
+);
+
 Matrix identityMatrix(unsigned int const n);
 
 //@+others
@@ -114,7 +119,7 @@ template<typename T> Matrix squareMatrix(T const& data) {
 //@-others
 //@+node:gcross.20110207005827.1772: ** Values
 namespace Pauli {
-    matrix<complex<double> > const
+    Matrix const
          I = identityMatrix(2)
         ,X = squareMatrix(list_of
                 (0)(1)

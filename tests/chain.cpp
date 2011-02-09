@@ -153,7 +153,7 @@ TEST_CASE(moveLeftAndRight) {
 
         #define VALIDATE_CHAIN_PROPERTIES \
             { \
-                ASSERT_NEAR(1,chain.computeStateNorm(),1e-15); \
+                ASSERT_NEAR(1,chain.computeStateNorm(),1e-14); \
                 complex<double> const expectation_value = chain.computeExpectationValue(); \
                 ASSERT_NEAR(0,expectation_value.imag(),1e-10); \
                 ASSERT_NEAR_QUOTED(chain.getEnergy(),expectation_value.real(),1e-10); \
@@ -279,6 +279,28 @@ TEST_CASE(increaseBandwidthDimension) {
 
         #undef VALIDATE_CHAIN_PROPERTIES
     }
+}
+//@+node:gcross.20110208195213.1791: *3* sweepUntilConverged
+TEST_SUITE(sweepUntilConverged) {
+
+    void runTest(
+          unsigned int const number_of_sites
+        , double const coupling_strength
+        , unsigned int const bandwidth_dimension
+        , double const correct_energy
+    ) {
+        Chain chain(constructTransverseIsingModelOperators(number_of_sites,coupling_strength),bandwidth_dimension);
+        chain.sweepUntilConverged();
+        ASSERT_NEAR(correct_energy,chain.getEnergy(),1e-7);
+    }
+
+    TEST_CASE(2_sites_0p1)  { runTest( 2,0.1,2,- 2.00249843); }
+    TEST_CASE(2_sites_1p0)  { runTest( 2,1.0,2,- 2.23606797); }
+    TEST_CASE(4_sites_0p1)  { runTest( 4,0.1,2,- 4.00750155); }
+    TEST_CASE(4_sites_1p0)  { runTest( 4,1.0,4,- 4.75877048); }
+    TEST_CASE(10_sites_0p1) { runTest(10,0.1,2,-10.02251095); }
+    TEST_CASE(10_sites_1p0) { runTest(10,1.0,6,-12.38148999); }
+
 }
 //@-others
 

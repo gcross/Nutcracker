@@ -218,14 +218,15 @@ public:
     struct Options {
         double site_convergence_threshold;
         unsigned int maximum_number_of_iterations;
-        double chain_convergence_threshold;
-        function<unsigned int (unsigned int)> computeNewBandwidth;
+        double sweep_convergence_threshold;
+        function<unsigned int (unsigned int)> computeNewBandwidthDimension;
     } options;
     static Options const defaults;
 
     signal<void (unsigned int)> signalOptimizeSiteSuccess;
     signal<void (OptimizerFailure&)> signalOptimizeSiteFailure;
     signal<void ()> signalPerformedSweep;
+    signal<void ()> signalSweepsConverged;
 
     Chain(
       Operators const& operators
@@ -244,6 +245,7 @@ public:
 
     void optimizeSite();
     void performOptimizationSweep();
+    void sweepUntilConverged();
 };
 
 template<> inline ExpectationBoundary<Left>& Chain::expectationBoundary<Left>() { return left_expectation_boundary; }

@@ -11,6 +11,7 @@
 #include <boost/range/algorithm/reverse_copy.hpp>
 #include <boost/range/irange.hpp>
 #include <iterator>
+#include <limits>
 #include <utility>
 
 #include "chain.hpp"
@@ -28,11 +29,12 @@ using namespace std;
 namespace moveable = boost::container;
 
 using boost::adaptors::reversed;
+using std::numeric_limits;
 //@-<< Usings >>
 
 //@+others
 //@+node:gcross.20110208151104.1790: ** Values
-Chain::Options const Chain::defaults = { 1e-10, 10000, 1e-7, lambda::_1+1 };
+Chain::Options const Chain::defaults = { 1e-15, 10000, 1e-14, lambda::_1+1 };
 //@+node:gcross.20110130193548.1686: ** Functions
 //@+node:gcross.20110130193548.1688: *3* computeBandwidthDimensionSequence
 vector<unsigned int> computeBandwidthDimensionSequence(
@@ -282,6 +284,15 @@ void Chain::performOptimizationSweep() {
         move<Right>();
     }
     signalPerformedSweep();
+}
+//@+node:gcross.20110208151104.1791: *3* sweepUntilConverged
+void Chain::sweepUntilConverged() {
+    double previous_energy = numeric_limits<double>::max();
+    while(abs(previous_energy - energy)/(abs(previous_energy)+abs(energy)+options.sweep_convergence_threshold) > options.sweep_convergence_threshold) {
+        previous_energy = energy;
+        performOptimizationSweep();
+    }
+    signalSweepsConverged();
 }
 //@-others
 
