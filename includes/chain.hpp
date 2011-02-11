@@ -10,6 +10,8 @@
 #include <boost/container/vector.hpp>
 #include <boost/move/move.hpp>
 #include <boost/signals2/signal.hpp>
+#include <functional>
+#include <numeric>
 
 #include "core.hpp"
 #include "operators.hpp"
@@ -26,6 +28,9 @@ using namespace std;
 namespace moveable = boost::container;
 
 using boost::signals2::signal;
+
+using std::accumulate;
+using std::multiplies;
 //@-<< Usings >>
 
 //@+others
@@ -74,29 +79,20 @@ template<typename T> unsigned int maximumBandwidthDimension(
 ) {
     size_t middle_index = (physical_dimensions.size()+1)/2;
 
-    unsigned int forward_maximum_bandwidth_dimension = 1;
-    BOOST_FOREACH(
-         unsigned int const physical_dimension
-        ,make_pair(
+    return min(
+        accumulate(
              physical_dimensions.begin()
             ,physical_dimensions.begin()+middle_index
+            ,1
+            ,multiplies<unsigned int>()
         )
-    ) {
-        forward_maximum_bandwidth_dimension *= physical_dimension;
-    }
-
-    unsigned int reverse_maximum_bandwidth_dimension = 1;
-    BOOST_FOREACH(
-         unsigned int const physical_dimension
-        ,make_pair(
+       ,accumulate(
              physical_dimensions.rbegin()
             ,physical_dimensions.rbegin()+middle_index
+            ,1
+            ,multiplies<unsigned int>()
         )
-    ) {
-        reverse_maximum_bandwidth_dimension *= physical_dimension;
-    }
-
-    return min(forward_maximum_bandwidth_dimension,reverse_maximum_bandwidth_dimension);
+    );
 }
 //@+node:gcross.20110202175920.1701: ** Classes
 //@+node:gcross.20110202175920.1702: *3* OverlapSiteTrio
