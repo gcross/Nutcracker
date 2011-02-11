@@ -79,8 +79,8 @@ vector<unsigned int> computeBandwidthDimensionSequence(
     ) {
         throw RequestedBandwidthDimensionTooLargeError(
                  requested_bandwidth_dimension
-                ,min(forward_bandwidth_dimensions.back()
-                    ,reverse_bandwidth_dimensions.back()
+                ,min(forward_bandwidth_dimensions.size() == middle_index+1 ? forward_bandwidth_dimensions.back() : numeric_limits<unsigned int>::max()
+                    ,reverse_bandwidth_dimensions.size() == middle_index+1 ? reverse_bandwidth_dimensions.back() : numeric_limits<unsigned int>::max()
                     )
         );
     }
