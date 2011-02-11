@@ -134,13 +134,17 @@ TEST_CASE(maximumBandwidthDimension) {
             ,random.generateRandomIntegers(2,10)
         );
         unsigned int maximum_bandwidth_dimension = maximumBandwidthDimension(physical_dimensions);
-        computeBandwidthDimensionSequence(maximum_bandwidth_dimension,physical_dimensions);
+        try {
+            computeBandwidthDimensionSequence(maximum_bandwidth_dimension,physical_dimensions);
+        } catch(RequestedBandwidthDimensionTooLargeError const& e) {
+            FATALLY_FAIL("The maximum bandwidth was too large!");
+        }
         try {
             computeBandwidthDimensionSequence(maximum_bandwidth_dimension+1,physical_dimensions);
         } catch(RequestedBandwidthDimensionTooLargeError const& e) {
             continue;
         }
-        FATALLY_FAIL("Exception was not thrown!");
+        FATALLY_FAIL("The maximum bandwidth was too small!");
     }
 }
 //@+node:gcross.20110202223558.1712: *3* moveLeftAndRight

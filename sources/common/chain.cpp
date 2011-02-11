@@ -4,7 +4,6 @@
 
 //@+<< Includes >>
 //@+node:gcross.20110130170743.1675: ** << Includes >>
-#include <algorithm>
 #include <boost/assign.hpp>
 #include <boost/lambda/lambda.hpp>
 #include <boost/range/adaptor/reversed.hpp>
@@ -16,6 +15,7 @@
 
 #include "chain.hpp"
 #include "core.hpp"
+#include "utilities.hpp"
 //@-<< Includes >>
 
 namespace Nutcracker {
@@ -29,6 +29,7 @@ using namespace std;
 namespace moveable = boost::container;
 
 using boost::adaptors::reversed;
+
 using std::numeric_limits;
 //@-<< Usings >>
 
@@ -47,58 +48,48 @@ vector<unsigned int> computeBandwidthDimensionSequence(
     unsigned int const requested_bandwidth_dimension
    ,moveable::vector<unsigned int> const& physical_dimensions
 ) {
-    size_t middle_index = (physical_dimensions.size()+1)/2;
+    unsigned int const middle_index = (physical_dimensions.size()+1)/2;
 
-    vector<unsigned int> forward_bandwidth_dimensions;
-    forward_bandwidth_dimensions.reserve(physical_dimensions.size());
-    unsigned int forward_bandwidth_dimension = 1;
+    vector<unsigned int> forward_bandwidth_dimensions(1,1);
     BOOST_FOREACH(
-         unsigned int const physical_dimension
+         unsigned int const d
         ,make_pair(
-             physical_dimensions.begin()
-            ,physical_dimensions.begin()+middle_index
-        )
+             makeProductIterator(physical_dimensions.begin())
+            ,makeProductIterator(physical_dimensions.begin()+middle_index)
+         )
     ) {
-        forward_bandwidth_dimensions.push_back(forward_bandwidth_dimension);
-        forward_bandwidth_dimension *= physical_dimension;
-        if(forward_bandwidth_dimension >= requested_bandwidth_dimension) {
-            forward_bandwidth_dimension = requested_bandwidth_dimension;
-            break;
-        }
+        if(d >= requested_bandwidth_dimension) break;
+        forward_bandwidth_dimensions.push_back(d);
     }
 
-    vector<unsigned int> reverse_bandwidth_dimensions;
-    unsigned int reverse_bandwidth_dimension = 1;
+    vector<unsigned int> reverse_bandwidth_dimensions(1,1);
     BOOST_FOREACH(
-         unsigned int const physical_dimension
+         unsigned int const d
         ,make_pair(
-             physical_dimensions.rbegin()
-            ,physical_dimensions.rbegin()+middle_index
-        )
+             makeProductIterator(physical_dimensions.rbegin())
+            ,makeProductIterator(physical_dimensions.rbegin()+middle_index)
+         )
     ) {
-        reverse_bandwidth_dimensions.push_back(reverse_bandwidth_dimension);
-        reverse_bandwidth_dimension *= physical_dimension;
-        if(reverse_bandwidth_dimension >= requested_bandwidth_dimension) {
-            reverse_bandwidth_dimension = requested_bandwidth_dimension;
-            break;
-        }
+        if(d >= requested_bandwidth_dimension) break;
+        reverse_bandwidth_dimensions.push_back(d);
     }
 
-    if(forward_bandwidth_dimension < requested_bandwidth_dimension
-     ||reverse_bandwidth_dimension < requested_bandwidth_dimension
-      ) {
+    if(forward_bandwidth_dimensions.size() == middle_index+1
+    || reverse_bandwidth_dimensions.size() == middle_index+1
+    ) {
         throw RequestedBandwidthDimensionTooLargeError(
                  requested_bandwidth_dimension
-                ,min(forward_bandwidth_dimension,reverse_bandwidth_dimension)
+                ,min(forward_bandwidth_dimensions.back()
+                    ,reverse_bandwidth_dimensions.back()
+                    )
         );
     }
 
     fill_n(
          back_inserter(forward_bandwidth_dimensions)
-        ,physical_dimensions.size()
+        ,physical_dimensions.size()+1
             - forward_bandwidth_dimensions.size()
             - reverse_bandwidth_dimensions.size()
-            + 1
         ,requested_bandwidth_dimension
     );
 
