@@ -44,13 +44,13 @@ Chain::Options const Chain::defaults =
     };
 //@+node:gcross.20110130193548.1686: ** Functions
 //@+node:gcross.20110130193548.1688: *3* computeBandwidthDimensionSequence
-vector<unsigned int> computeBandwidthDimensionSequence(
+moveable::vector<unsigned int> computeBandwidthDimensionSequence(
     unsigned int const requested_bandwidth_dimension
    ,moveable::vector<unsigned int> const& physical_dimensions
 ) {
     unsigned int const middle_index = (physical_dimensions.size()+1)/2;
 
-    vector<unsigned int> forward_bandwidth_dimensions(1,1);
+    moveable::vector<unsigned int> forward_bandwidth_dimensions(1,1);
     BOOST_FOREACH(
          unsigned int const d
         ,make_pair(
@@ -62,7 +62,7 @@ vector<unsigned int> computeBandwidthDimensionSequence(
         forward_bandwidth_dimensions.push_back(d);
     }
 
-    vector<unsigned int> reverse_bandwidth_dimensions(1,1);
+    moveable::vector<unsigned int> reverse_bandwidth_dimensions(1,1);
     BOOST_FOREACH(
          unsigned int const d
         ,make_pair(
@@ -98,7 +98,7 @@ vector<unsigned int> computeBandwidthDimensionSequence(
         ,back_inserter(forward_bandwidth_dimensions)
     );
 
-    return forward_bandwidth_dimensions;
+    return boost::move(forward_bandwidth_dimensions);
 }
 //@+node:gcross.20110207215504.1786: *3* extractPhysicalDimensions
 moveable::vector<unsigned int> extractPhysicalDimensions(Operators const& operators) {
@@ -138,8 +138,8 @@ void Chain::reset(unsigned int bandwidth_dimension) {
     right_neighbors.clear();
     right_neighbors.reserve(number_of_sites-1);
 
-    vector<unsigned int> initial_bandwidth_dimensions = computeBandwidthDimensionSequence(bandwidth_dimension,physical_dimensions);
-    vector<unsigned int>::const_reverse_iterator
+    moveable::vector<unsigned int> initial_bandwidth_dimensions = computeBandwidthDimensionSequence(bandwidth_dimension,physical_dimensions);
+    moveable::vector<unsigned int>::const_reverse_iterator
           right_dimension = initial_bandwidth_dimensions.rbegin()
         , left_dimension = right_dimension+1;
     BOOST_FOREACH(
@@ -187,8 +187,8 @@ void Chain::increaseBandwidthDimension(unsigned int const new_bandwidth_dimensio
     assert(bandwidth_dimension < new_bandwidth_dimension);
     assert(new_bandwidth_dimension <= maximum_bandwidth_dimension);
     assert(current_site_number == 0);
-    vector<unsigned int> initial_bandwidth_dimensions = computeBandwidthDimensionSequence(new_bandwidth_dimension,physical_dimensions);
-    vector<unsigned int>::const_reverse_iterator dimension_iterator = initial_bandwidth_dimensions.rbegin()+1;
+    moveable::vector<unsigned int> initial_bandwidth_dimensions = computeBandwidthDimensionSequence(new_bandwidth_dimension,physical_dimensions);
+    moveable::vector<unsigned int>::const_reverse_iterator dimension_iterator = initial_bandwidth_dimensions.rbegin()+1;
 
     moveable::vector<Neighbor<Right> > old_right_neighbors(boost::move(right_neighbors));
 

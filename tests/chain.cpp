@@ -76,7 +76,7 @@ TEST_CASE(correct_properties) {
             ,random.generateRandomIntegers(2,10)
         );
 
-        vector<unsigned int> const bandwidth_dimensions =
+        moveable::vector<unsigned int> const bandwidth_dimensions =
             computeBandwidthDimensionSequence(
                  requested_bandwidth_dimension
                 ,physical_dimensions

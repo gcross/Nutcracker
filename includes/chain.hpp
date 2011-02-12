@@ -65,7 +65,7 @@ struct RequestedBandwidthDimensionTooLargeError : public Exception {
     {}
 };
 //@+node:gcross.20110130170743.1683: ** Functions
-vector<unsigned int> computeBandwidthDimensionSequence(
+moveable::vector<unsigned int> computeBandwidthDimensionSequence(
     unsigned int const requested_bandwidth_dimension
    ,moveable::vector<unsigned int> const& physical_dimensions
 );
