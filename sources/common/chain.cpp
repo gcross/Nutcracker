@@ -24,6 +24,7 @@ namespace Nutcracker {
 //@+node:gcross.20110130170743.1676: ** << Usings >>
 using boost::adaptors::reversed;
 
+using std::abs;
 using std::numeric_limits;
 //@-<< Usings >>
 

@@ -27,6 +27,7 @@ using boost::container::vector;
 using boost::max_element;
 using boost::shared_ptr;
 
+using std::abs;
 using std::pair;
 //@-<< Includes >>
 
