@@ -14,7 +14,6 @@
 #include <boost/range/algorithm/reverse_copy.hpp>
 #include <boost/smart_ptr/shared_ptr.hpp>
 #include <complex>
-#include <vector>
 
 #include "tensors.hpp"
 #include "utilities.hpp"

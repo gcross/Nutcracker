@@ -1161,13 +1161,13 @@ double computeOverlapWithProjectors(
 }
 //@+node:gcross.20110126102637.2191: *4* formProjectorMatrix
 ProjectorMatrix formProjectorMatrix(
-    std::vector<OverlapVectorTrio> const& overlaps
+    vector<OverlapVectorTrio> const& overlaps
 ) {
     unsigned int const
          number_of_projectors = overlaps.size()
-        ,state_physical_dimension = overlaps[0].middle_site.physicalDimension(as_unsigned_integer)
-        ,state_left_dimension = overlaps[0].left_boundary.stateDimension(as_unsigned_integer)
-        ,state_right_dimension = overlaps[0].right_boundary.stateDimension(as_unsigned_integer)
+        ,state_physical_dimension = overlaps[0].middle_site->physicalDimension(as_unsigned_integer)
+        ,state_left_dimension = overlaps[0].left_boundary->stateDimension(as_unsigned_integer)
+        ,state_right_dimension = overlaps[0].right_boundary->stateDimension(as_unsigned_integer)
         ,overlap_vector_length = state_physical_dimension*state_left_dimension*state_right_dimension
         ,number_of_reflectors = min(overlap_vector_length,number_of_projectors)
         ;
@@ -1179,14 +1179,14 @@ ProjectorMatrix formProjectorMatrix(
         ,overlaps
     ) {
         form_overlap_vector(
-             overlap.left_boundary || overlap.middle_site
-            ,overlap.middle_site || overlap.right_boundary
+             (*overlap.left_boundary) || (*overlap.middle_site)
+            ,(*overlap.middle_site) || (*overlap.right_boundary)
             ,state_left_dimension
             ,state_right_dimension
             ,state_physical_dimension
-            ,overlap.left_boundary
-            ,overlap.right_boundary
-            ,overlap.middle_site
+            ,*overlap.left_boundary
+            ,*overlap.right_boundary
+            ,*overlap.middle_site
             ,overlap_vector
         );
         overlap_vector += overlap_vector_length;

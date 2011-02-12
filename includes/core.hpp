@@ -126,17 +126,17 @@ public:
 };
 //@+node:gcross.20110131180117.1689: *3* OverlapVectorTrio
 struct OverlapVectorTrio {
-    OverlapBoundary<Left> const& left_boundary;
-    OverlapBoundary<Right> const& right_boundary;
-    OverlapSite<Middle> const& middle_site;
+    OverlapBoundary<Left> const* left_boundary;
+    OverlapBoundary<Right> const* right_boundary;
+    OverlapSite<Middle> const* middle_site;
 
     OverlapVectorTrio(
           OverlapBoundary<Left> const& left_boundary
         , OverlapBoundary<Right> const& right_boundary
         , OverlapSite<Middle> const& middle_site
-    ) : left_boundary(left_boundary)
-      , right_boundary(right_boundary)
-      , middle_site(middle_site)
+    ) : left_boundary(&left_boundary)
+      , right_boundary(&right_boundary)
+      , middle_site(&middle_site)
     {}
 };
 //@+node:gcross.20110125120748.2467: ** Exceptions
@@ -326,7 +326,7 @@ double computeOverlapWithProjectors(
 );
 
 ProjectorMatrix formProjectorMatrix(
-    std::vector<OverlapVectorTrio> const& overlaps
+    vector<OverlapVectorTrio> const& overlaps
 );
 
 ProjectorMatrix randomProjectorMatrix(
