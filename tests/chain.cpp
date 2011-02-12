@@ -20,12 +20,14 @@
 
 #include "test_utils.hpp"
 
-using namespace boost;
-using namespace boost::assign;
 using namespace Nutcracker;
-using namespace std;
 
+using boost::accumulate;
+using boost::container::vector;
+using boost::max_element;
 using boost::shared_ptr;
+
+using std::pair;
 //@-<< Includes >>
 
 //@+others
@@ -68,7 +70,7 @@ TEST_CASE(correct_properties) {
              requested_bandwidth_dimension = random(1,100000)
             ,number_of_sites = random(20,1000)
             ;
-        moveable::vector<unsigned int> physical_dimensions;
+        vector<unsigned int> physical_dimensions;
         physical_dimensions.reserve(number_of_sites);
         generate_n(
              back_inserter(physical_dimensions)
@@ -76,7 +78,7 @@ TEST_CASE(correct_properties) {
             ,random.generateRandomIntegers(2,10)
         );
 
-        moveable::vector<unsigned int> const bandwidth_dimensions =
+        vector<unsigned int> const bandwidth_dimensions =
             computeBandwidthDimensionSequence(
                  requested_bandwidth_dimension
                 ,physical_dimensions
@@ -97,7 +99,7 @@ TEST_CASE(complains_if_too_large) {
 
     REPEAT(10) {
         unsigned int const number_of_sites = random(10,20);
-        moveable::vector<unsigned int> physical_dimensions;
+        vector<unsigned int> physical_dimensions;
         physical_dimensions.reserve(number_of_sites);
         generate_n(
              back_inserter(physical_dimensions)
@@ -126,7 +128,7 @@ TEST_CASE(maximumBandwidthDimension) {
 
     REPEAT(10) {
         unsigned int const number_of_sites = random+1;
-        moveable::vector<unsigned int> physical_dimensions;
+        vector<unsigned int> physical_dimensions;
         physical_dimensions.reserve(number_of_sites);
         generate_n(
              back_inserter(physical_dimensions)
@@ -221,7 +223,7 @@ TEST_SUITE(performOptimizationSweep) {
     ) {
         Matrix matrix;
         {
-            vector<complex<double> > diagonal;  diagonal += -1, repeat(physical_dimension-1,1);
+            vector<complex<double> > diagonal(physical_dimension,1); diagonal[0] = -1;
             matrix = diagonalMatrix(diagonal);
         }
         typedef pair<unsigned int,vector<unsigned int> > Parameters;

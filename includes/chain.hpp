@@ -8,6 +8,7 @@
 //@+<< Includes >>
 //@+node:gcross.20110130170743.1666: ** << Includes >>
 #include <boost/container/vector.hpp>
+#include <boost/lambda/lambda.hpp>
 #include <boost/move/move.hpp>
 #include <boost/signals2/signal.hpp>
 #include <functional>
@@ -22,15 +23,17 @@ namespace Nutcracker {
 
 //@+<< Usings >>
 //@+node:gcross.20110130170743.1667: ** << Usings >>
-using namespace boost;
-using namespace std;
-
-namespace moveable = boost::container;
-
+using boost::function;
+using boost::irange;
+using boost::none;
+using boost::reverse_copy;
 using boost::signals2::signal;
 
 using std::accumulate;
+using std::min;
 using std::multiplies;
+
+namespace lambda = boost::lambda;
 //@-<< Usings >>
 
 //@+others
@@ -65,12 +68,12 @@ struct RequestedBandwidthDimensionTooLargeError : public Exception {
     {}
 };
 //@+node:gcross.20110130170743.1683: ** Functions
-moveable::vector<unsigned int> computeBandwidthDimensionSequence(
+vector<unsigned int> computeBandwidthDimensionSequence(
     unsigned int const requested_bandwidth_dimension
-   ,moveable::vector<unsigned int> const& physical_dimensions
+   ,vector<unsigned int> const& physical_dimensions
 );
 
-moveable::vector<unsigned int> extractPhysicalDimensions(
+vector<unsigned int> extractPhysicalDimensions(
     Operators const& operators
 );
 //@+node:gcross.20110208151104.1789: *3* maximumBandwidthDimension
@@ -145,7 +148,7 @@ private:
 public:
     ExpectationBoundary<side> expectation_boundary;
     StateSite<side> state_site;
-    moveable::vector<OverlapBoundary<side> > overlap_boundaries;
+    vector<OverlapBoundary<side> > overlap_boundaries;
 
     Neighbor(BOOST_RV_REF(Neighbor) other)
       : expectation_boundary(boost::move(other.expectation_boundary))
@@ -156,7 +159,7 @@ public:
     Neighbor(
           BOOST_RV_REF(ExpectationBoundary<side>) expectation_boundary
         , BOOST_RV_REF(StateSite<side>) state_site
-        , BOOST_RV_REF(moveable::vector<OverlapBoundary<side> >) overlap_boundaries
+        , BOOST_RV_REF(vector<OverlapBoundary<side> >) overlap_boundaries
     ) : expectation_boundary(expectation_boundary)
       , state_site(state_site)
       , overlap_boundaries(overlap_boundaries)
@@ -174,18 +177,18 @@ public:
     unsigned int const number_of_sites;
 protected:
     Operators const operators;
-    moveable::vector<moveable::vector<OverlapSiteTrio> > overlap_trios;
+    vector<vector<OverlapSiteTrio> > overlap_trios;
     unsigned int current_site_number;
     ExpectationBoundary<Left> left_expectation_boundary;
-    moveable::vector<OverlapBoundary<Left> > left_overlap_boundaries;
+    vector<OverlapBoundary<Left> > left_overlap_boundaries;
     ExpectationBoundary<Right> right_expectation_boundary;
-    moveable::vector<OverlapBoundary<Right> > right_overlap_boundaries;
+    vector<OverlapBoundary<Right> > right_overlap_boundaries;
     StateSite<Middle> state_site;
-    moveable::vector<Neighbor<Left> > left_neighbors;
-    moveable::vector<Neighbor<Right> > right_neighbors;
+    vector<Neighbor<Left> > left_neighbors;
+    vector<Neighbor<Right> > right_neighbors;
     ProjectorMatrix projector_matrix;
     double energy;
-    moveable::vector<unsigned int> physical_dimensions;
+    vector<unsigned int> physical_dimensions;
 public:
     unsigned int const maximum_bandwidth_dimension;
 protected:
@@ -194,10 +197,10 @@ protected:
     template<typename side> ExpectationBoundary<side>& expectationBoundary() {
         throw BadLabelException("Chain::expectationBoundary()",typeid(side));
     }
-    template<typename side> moveable::vector<OverlapBoundary<side> >& overlapBoundaries() {
+    template<typename side> vector<OverlapBoundary<side> >& overlapBoundaries() {
         throw BadLabelException("Chain::overlapBoundaries()",typeid(side));
     }
-    template<typename side> moveable::vector<Neighbor<side> >& neighbors() {
+    template<typename side> vector<Neighbor<side> >& neighbors() {
         throw BadLabelException("Chain::neighbors()",typeid(side));
     }
     template<typename side> void moveSiteNumber() {
@@ -246,11 +249,11 @@ public:
 template<> inline ExpectationBoundary<Left>& Chain::expectationBoundary<Left>() { return left_expectation_boundary; }
 template<> inline ExpectationBoundary<Right>& Chain::expectationBoundary<Right>() { return right_expectation_boundary; }
 
-template<> inline moveable::vector<OverlapBoundary<Left> >& Chain::overlapBoundaries<Left>() { return left_overlap_boundaries; }
-template<> inline moveable::vector<OverlapBoundary<Right> >& Chain::overlapBoundaries<Right>() { return right_overlap_boundaries; }
+template<> inline vector<OverlapBoundary<Left> >& Chain::overlapBoundaries<Left>() { return left_overlap_boundaries; }
+template<> inline vector<OverlapBoundary<Right> >& Chain::overlapBoundaries<Right>() { return right_overlap_boundaries; }
 
-template<> inline moveable::vector<Neighbor<Left> >& Chain::neighbors<Left>() { return left_neighbors; }
-template<> inline moveable::vector<Neighbor<Right> >& Chain::neighbors<Right>() { return right_neighbors; }
+template<> inline vector<Neighbor<Left> >& Chain::neighbors<Left>() { return left_neighbors; }
+template<> inline vector<Neighbor<Right> >& Chain::neighbors<Right>() { return right_neighbors; }
 
 template<> inline void Chain::moveSiteNumber<Left>() { assert(current_site_number > 0); --current_site_number; }
 template<> inline void Chain::moveSiteNumber<Right>() { assert(current_site_number < number_of_sites-1); ++current_site_number; }
@@ -270,10 +273,10 @@ template<typename side> void Chain::absorb(
         )
     );
 
-    moveable::vector<OverlapBoundary<side> >& overlap_boundaries = overlapBoundaries<side>();
-    moveable::vector<OverlapBoundary<side> > new_overlap_boundaries;
+    vector<OverlapBoundary<side> >& overlap_boundaries = overlapBoundaries<side>();
+    vector<OverlapBoundary<side> > new_overlap_boundaries;
     new_overlap_boundaries.reserve(overlap_boundaries.size());
-    typename moveable::vector<OverlapBoundary<side> >::const_iterator overlap_boundary = overlap_boundaries.begin();
+    typename vector<OverlapBoundary<side> >::const_iterator overlap_boundary = overlap_boundaries.begin();
     BOOST_FOREACH(
          OverlapSiteTrio const& overlap_site_trio
         ,overlap_trios[site_number]
@@ -305,7 +308,7 @@ template<typename side> void Chain::move() {
 
     typedef typename Other<side>::value other_side;
 
-    moveable::vector<Neighbor<side> >& side_neighbors = neighbors<side>();
+    vector<Neighbor<side> >& side_neighbors = neighbors<side>();
 
     Neighbor<side>& neighbor = side_neighbors.back();
 

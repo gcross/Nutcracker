@@ -14,8 +14,6 @@ namespace Nutcracker {
 
 //@+<< Usings >>
 //@+node:gcross.20110125120748.2430: ** << Usings >>
-using namespace boost;
-using namespace std;
 //@-<< Usings >>
 
 //@+others
@@ -1163,7 +1161,7 @@ double computeOverlapWithProjectors(
 }
 //@+node:gcross.20110126102637.2191: *4* formProjectorMatrix
 ProjectorMatrix formProjectorMatrix(
-    vector<OverlapVectorTrio> const& overlaps
+    std::vector<OverlapVectorTrio> const& overlaps
 ) {
     unsigned int const
          number_of_projectors = overlaps.size()

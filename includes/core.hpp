@@ -7,6 +7,7 @@
 
 //@+<< Includes >>
 //@+node:gcross.20110125120748.2459: ** << Includes >>
+#include <boost/container/vector.hpp>
 #include <boost/optional.hpp>
 #include <boost/tuple/tuple.hpp>
 #include <complex>
@@ -20,8 +21,11 @@ namespace Nutcracker {
 
 //@+<< Usings >>
 //@+node:gcross.20110125120748.2460: ** << Usings >>
-using namespace boost;
-using namespace std;
+using boost::container::vector;
+using boost::copy;
+using boost::optional;
+
+using std::min;
 //@-<< Usings >>
 
 //@+others
@@ -322,7 +326,7 @@ double computeOverlapWithProjectors(
 );
 
 ProjectorMatrix formProjectorMatrix(
-    vector<OverlapVectorTrio> const& overlaps
+    std::vector<OverlapVectorTrio> const& overlaps
 );
 
 ProjectorMatrix randomProjectorMatrix(

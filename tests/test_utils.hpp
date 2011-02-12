@@ -12,9 +12,12 @@
 
 #include "tensors.hpp"
 
-using namespace boost;
 using namespace Nutcracker;
-using namespace std;
+
+using boost::function;
+using boost::taus88;
+using boost::normal_distribution;
+using boost::uniform_smallint;
 //@-<< Includes >>
 
 //@+others

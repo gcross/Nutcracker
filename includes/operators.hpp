@@ -11,6 +11,7 @@
 #include <boost/container/vector.hpp>
 #include <boost/move/move.hpp>
 #include <boost/numeric/ublas/matrix.hpp>
+#include <boost/range/algorithm/reverse_copy.hpp>
 #include <boost/smart_ptr/shared_ptr.hpp>
 #include <complex>
 #include <vector>
@@ -23,19 +24,18 @@ namespace Nutcracker {
 
 //@+<< Usings >>
 //@+node:gcross.20110206185121.1760: ** << Usings >>
-using namespace std;
-
-namespace moveable = boost::container;
-
 using boost::assign::list_of;
+using boost::container::vector;
+using boost::copy;
 using boost::numeric::ublas::matrix;
+using boost::reverse_copy;
 using boost::shared_ptr;
 //@-<< Usings >>
 
 //@+others
 //@+node:gcross.20110207005827.1775: ** Typedefs
 typedef matrix<complex<double> > Matrix;
-typedef moveable::vector<shared_ptr<OperatorSite const> > Operators;
+typedef vector<shared_ptr<OperatorSite const> > Operators;
 //@+node:gcross.20110206185121.1761: ** struct OperatorLink
 struct OperatorLink {
     unsigned int from, to;

@@ -28,9 +28,13 @@ namespace Nutcracker {
 
 //@+<< Usings >>
 //@+node:gcross.20110124161335.2011: ** << Usings >>
-using namespace boost;
-using namespace boost::assign;
-using namespace std;
+using boost::copy;
+using boost::Generator;
+using boost::RandomAccessRangeConcept;
+
+using std::copy;
+using std::fill_n;
+using std::ostream;
 //@-<< Usings >>
 
 //@+others

@@ -14,7 +14,7 @@ namespace Nutcracker {
 
 //@+<< Usings >>
 //@+node:gcross.20110206185121.1779: ** << Usings >>
-using namespace boost;
+using boost::irange;
 //@-<< Usings >>
 
 //@+others

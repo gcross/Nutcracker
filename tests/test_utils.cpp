@@ -12,7 +12,8 @@
 
 #include "test_utils.hpp"
 
-using namespace boost;
+using boost::irange;
+using boost::variate_generator;
 //@-<< Includes >>
 
 //@+others

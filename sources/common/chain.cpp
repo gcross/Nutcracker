@@ -22,12 +22,6 @@ namespace Nutcracker {
 
 //@+<< Usings >>
 //@+node:gcross.20110130170743.1676: ** << Usings >>
-using namespace boost;
-using namespace boost::assign;
-using namespace std;
-
-namespace moveable = boost::container;
-
 using boost::adaptors::reversed;
 
 using std::numeric_limits;
@@ -44,13 +38,13 @@ Chain::Options const Chain::defaults =
     };
 //@+node:gcross.20110130193548.1686: ** Functions
 //@+node:gcross.20110130193548.1688: *3* computeBandwidthDimensionSequence
-moveable::vector<unsigned int> computeBandwidthDimensionSequence(
+vector<unsigned int> computeBandwidthDimensionSequence(
     unsigned int const requested_bandwidth_dimension
-   ,moveable::vector<unsigned int> const& physical_dimensions
+   ,vector<unsigned int> const& physical_dimensions
 ) {
     unsigned int const middle_index = (physical_dimensions.size()+1)/2;
 
-    moveable::vector<unsigned int> forward_bandwidth_dimensions(1,1);
+    vector<unsigned int> forward_bandwidth_dimensions(1,1);
     BOOST_FOREACH(
          unsigned int const d
         ,make_pair(
@@ -62,7 +56,7 @@ moveable::vector<unsigned int> computeBandwidthDimensionSequence(
         forward_bandwidth_dimensions.push_back(d);
     }
 
-    moveable::vector<unsigned int> reverse_bandwidth_dimensions(1,1);
+    vector<unsigned int> reverse_bandwidth_dimensions(1,1);
     BOOST_FOREACH(
          unsigned int const d
         ,make_pair(
@@ -101,8 +95,8 @@ moveable::vector<unsigned int> computeBandwidthDimensionSequence(
     return boost::move(forward_bandwidth_dimensions);
 }
 //@+node:gcross.20110207215504.1786: *3* extractPhysicalDimensions
-moveable::vector<unsigned int> extractPhysicalDimensions(Operators const& operators) {
-    moveable::vector<unsigned int> physical_dimensions;
+vector<unsigned int> extractPhysicalDimensions(Operators const& operators) {
+    vector<unsigned int> physical_dimensions;
     physical_dimensions.reserve(operators.size()+1);
     BOOST_FOREACH(shared_ptr<OperatorSite const> const& operator_site, operators) {
         physical_dimensions.push_back(operator_site->physicalDimension(as_unsigned_integer));
@@ -138,8 +132,8 @@ void Chain::reset(unsigned int bandwidth_dimension) {
     right_neighbors.clear();
     right_neighbors.reserve(number_of_sites-1);
 
-    moveable::vector<unsigned int> initial_bandwidth_dimensions = computeBandwidthDimensionSequence(bandwidth_dimension,physical_dimensions);
-    moveable::vector<unsigned int>::const_reverse_iterator
+    vector<unsigned int> initial_bandwidth_dimensions = computeBandwidthDimensionSequence(bandwidth_dimension,physical_dimensions);
+    vector<unsigned int>::const_reverse_iterator
           right_dimension = initial_bandwidth_dimensions.rbegin()
         , left_dimension = right_dimension+1;
     BOOST_FOREACH(
@@ -187,10 +181,10 @@ void Chain::increaseBandwidthDimension(unsigned int const new_bandwidth_dimensio
     assert(bandwidth_dimension < new_bandwidth_dimension);
     assert(new_bandwidth_dimension <= maximum_bandwidth_dimension);
     assert(current_site_number == 0);
-    moveable::vector<unsigned int> initial_bandwidth_dimensions = computeBandwidthDimensionSequence(new_bandwidth_dimension,physical_dimensions);
-    moveable::vector<unsigned int>::const_reverse_iterator dimension_iterator = initial_bandwidth_dimensions.rbegin()+1;
+    vector<unsigned int> initial_bandwidth_dimensions = computeBandwidthDimensionSequence(new_bandwidth_dimension,physical_dimensions);
+    vector<unsigned int>::const_reverse_iterator dimension_iterator = initial_bandwidth_dimensions.rbegin()+1;
 
-    moveable::vector<Neighbor<Right> > old_right_neighbors(boost::move(right_neighbors));
+    vector<Neighbor<Right> > old_right_neighbors(boost::move(right_neighbors));
 
     StateSite<Middle> first_state_site(boost::move(state_site));
 
@@ -200,7 +194,7 @@ void Chain::increaseBandwidthDimension(unsigned int const new_bandwidth_dimensio
     }
 
     unsigned int operator_number = number_of_sites-1;
-    for(moveable::vector<Neighbor<Right> >::iterator neighbor_iterator = old_right_neighbors.begin()
+    for(vector<Neighbor<Right> >::iterator neighbor_iterator = old_right_neighbors.begin()
        ;neighbor_iterator != old_right_neighbors.end()
        ;++neighbor_iterator,--operator_number
     ) {

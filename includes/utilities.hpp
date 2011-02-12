@@ -23,13 +23,16 @@ namespace Nutcracker {
 
 //@+<< Usings >>
 //@+node:gcross.20110125202132.2158: ** << Usings >>
-using namespace boost;
-using namespace std;
-
+using boost::format;
+using boost::forward_traversal_tag;
+using boost::iterator_facade;
 using boost::iterator_range;
 using boost::make_iterator_range;
 
+using std::complex;
 using std::iterator_traits;
+using std::string;
+using std::type_info;
 //@-<< Usings >>
 
 //@+others

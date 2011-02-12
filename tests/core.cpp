@@ -4,7 +4,8 @@
 
 //@+<< Includes >>
 //@+node:gcross.20110127123226.2505: ** << Includes >>
-#include <boost/assign.hpp>
+#include <boost/assign/list_of.hpp>
+#include <boost/container/vector.hpp>
 #include <boost/foreach.hpp>
 #include <boost/range/algorithm/equal.hpp>
 #include <boost/range/algorithm/generate.hpp>
@@ -15,9 +16,13 @@
 
 #include "test_utils.hpp"
 
-using namespace boost;
 using namespace Nutcracker;
-using namespace std;
+
+using boost::assign::list_of;
+using boost::container::vector;
+using boost::equal;
+using boost::function;
+using boost::none;
 //@-<< Includes >>
 
 //@+others

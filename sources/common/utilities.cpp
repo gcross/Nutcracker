@@ -13,7 +13,6 @@ namespace Nutcracker {
 
 //@+<< Usings >>
 //@+node:gcross.20110125202132.2162: ** << Usings >>
-using namespace std;
 //@-<< Usings >>
 
 //@+others

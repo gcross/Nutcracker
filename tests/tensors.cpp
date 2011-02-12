@@ -10,9 +10,7 @@
 
 #include "test_utils.hpp"
 
-using namespace boost;
 using namespace Nutcracker;
-using namespace std;
 //@-<< Includes >>
 
 //@+others
