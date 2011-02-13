@@ -682,18 +682,18 @@ public:
 
     static OperatorSite const trivial;
 };
-//@+node:gcross.20110124175241.1535: *4* StateSite
-template<typename side> class StateSite : public SiteBaseTensor {
+//@+node:gcross.20110213125549.1800: *4* StateSiteAny
+class StateSiteAny : public SiteBaseTensor {
 private:
-    BOOST_MOVABLE_BUT_NOT_COPYABLE(StateSite)
-public:
-    StateSite() {}
+    BOOST_MOVABLE_BUT_NOT_COPYABLE(StateSiteAny)
+protected:
+    StateSiteAny() {}
 
-    StateSite(BOOST_RV_REF(StateSite) other)
+    StateSiteAny(BOOST_RV_REF(StateSiteAny) other)
       : SiteBaseTensor(boost::move(static_cast<SiteBaseTensor&>(other)))
     { }
 
-    StateSite(
+    StateSiteAny(
           PhysicalDimension const physical_dimension
         , LeftDimension const left_dimension
         , RightDimension const right_dimension
@@ -705,17 +705,17 @@ public:
         )
     { }
 
-    template<typename other_side> StateSite(
-          CopyFrom<StateSite<other_side> const> const other_site
+    StateSiteAny(
+          CopyFrom<StateSiteAny const> const other_site
     ) : SiteBaseTensor(other_site)
     { }
 
-    template<typename other_side> StateSite(
-          DimensionsOf<StateSite<other_side> const> const other_site
+    StateSiteAny(
+          DimensionsOf<StateSiteAny const> const other_site
     ) : SiteBaseTensor(other_site)
     { }
 
-    template<typename G> StateSite(
+    template<typename G> StateSiteAny(
           PhysicalDimension const physical_dimension
         , LeftDimension const left_dimension
         , RightDimension const right_dimension
@@ -729,7 +729,7 @@ public:
         )
     { }
 
-    template<typename Range> StateSite(
+    template<typename Range> StateSiteAny(
           LeftDimension const left_dimension
         , RightDimension const right_dimension
         , FillWithRange<Range> const init
@@ -741,17 +741,83 @@ public:
         )
     { }
 
-    StateSite(MakeTrivial const make_trivial) : SiteBaseTensor(make_trivial) {}
+    StateSiteAny(MakeTrivial const make_trivial) : SiteBaseTensor(make_trivial) {}
+
+    void operator=(BOOST_RV_REF(StateSiteAny) other) {
+        SiteBaseTensor::operator=(boost::move(static_cast<SiteBaseTensor&>(other)));
+    }
+
+    void swap(StateSiteAny& other) {
+        SiteBaseTensor::swap(other);
+    }
+};
+//@+node:gcross.20110124175241.1535: *4* StateSite
+template<typename side> class StateSite : public StateSiteAny {
+private:
+    BOOST_MOVABLE_BUT_NOT_COPYABLE(StateSite)
+public:
+    StateSite() {}
+
+    StateSite(BOOST_RV_REF(StateSite) other)
+      : StateSiteAny(boost::move(static_cast<StateSiteAny&>(other)))
+    { }
+
+    StateSite(
+          PhysicalDimension const physical_dimension
+        , LeftDimension const left_dimension
+        , RightDimension const right_dimension
+    ) : StateSiteAny(
+             physical_dimension
+            ,left_dimension
+            ,right_dimension
+        )
+    { }
+
+    StateSite(
+          CopyFrom<StateSiteAny const> const other_site
+    ) : StateSiteAny(other_site)
+    { }
+
+    StateSite(
+          DimensionsOf<StateSiteAny const> const other_site
+    ) : StateSiteAny(other_site)
+    { }
+
+    template<typename G> StateSite(
+          PhysicalDimension const physical_dimension
+        , LeftDimension const left_dimension
+        , RightDimension const right_dimension
+        , FillWithGenerator<G> const generator
+    ) : StateSiteAny(
+             physical_dimension
+            ,left_dimension
+            ,right_dimension
+            ,generator
+        )
+    { }
+
+    template<typename Range> StateSite(
+          LeftDimension const left_dimension
+        , RightDimension const right_dimension
+        , FillWithRange<Range> const init
+    ) : StateSiteAny(
+             left_dimension
+            ,right_dimension
+            ,init
+        )
+    { }
+
+    StateSite(MakeTrivial const make_trivial) : StateSiteAny(make_trivial) {}
 
     StateSite& operator=(BOOST_RV_REF(StateSite) other) {
         if(this == &other) return *this;
-        SiteBaseTensor::operator=(boost::move(static_cast<SiteBaseTensor&>(other)));
+        StateSiteAny::operator=(boost::move(static_cast<StateSiteAny&>(other)));
         return *this;
     }
 
     void swap(StateSite& other) {
         if(this == &other) return;
-        SiteBaseTensor::swap(other);
+        StateSiteAny::swap(other);
     }
 
     double norm() const { return BaseTensor::norm(); }
