@@ -275,6 +275,11 @@ OverlapBoundary<Right> contractSSRight(
     , OverlapSite<Right> const& overlap_site
     , StateSite<Right> const& state_site
 );
+
+StateVectorFragment extendStateVectorFragment(
+      StateVectorFragment const& old_fragment
+    , StateSiteAny const& state_site
+);
 //@+node:gcross.20110125120748.2465: *3* Cursor movement
 MoveSiteCursorResult<Left> moveSiteCursorLeft(
       StateSite<Middle> const& old_state_site_2

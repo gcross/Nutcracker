@@ -17,6 +17,8 @@ namespace Nutcracker {
 //@-<< Usings >>
 
 //@+others
+//@+node:gcross.20110213161858.1804: ** Values
+StateVectorFragment const StateVectorFragment::trivial(make_trivial);
 //@+node:gcross.20110124175241.1623: ** Fortran wrappers
 //@+others
 //@+node:gcross.20110124175241.1638: *3* apply_single_site_operator
@@ -293,6 +295,36 @@ static unsigned int convert_vectors_to_reflectors(
         swaps
     );
     return rank;
+}
+//@+node:gcross.20110213161858.1800: *3* extend_state_vector_fragment
+extern "C" void extend_state_vector_fragment_(
+    uint32_t const* bm
+  , uint32_t const* br
+  , uint32_t const* dl
+  , uint32_t const* dr
+  , complex<double> const* old_state_vector_fragment
+  , complex<double> const* site_tensor
+  , complex<double>* new_state_vector_fragment
+);
+
+void extend_state_vector_fragment(
+    unsigned int const bm
+  , unsigned int const br
+  , unsigned int const dl
+  , unsigned int const dr
+  , complex<double> const* old_state_vector_fragment
+  , complex<double> const* site_tensor
+  , complex<double>* new_state_vector_fragment
+) {
+    extend_state_vector_fragment_(
+         &bm
+        ,&br
+        ,&dl
+        ,&dr
+        ,old_state_vector_fragment
+        ,site_tensor
+        ,new_state_vector_fragment
+    );
 }
 //@+node:gcross.20110124175241.1641: *3* filter_components_outside_orthog
 extern "C" void filter_components_outside_orthog_(
@@ -850,6 +882,29 @@ OverlapBoundary<Right> contractSSRight(
         ,new_boundary
     );
     return boost::move(new_boundary);
+}
+//@+node:gcross.20110213161858.1806: *4* extendStateVectorFragment
+StateVectorFragment extendStateVectorFragment(
+      StateVectorFragment const& old_fragment
+    , StateSiteAny const& state_site
+) {
+    StateVectorFragment new_fragment
+        (PhysicalDimension(
+            old_fragment.physicalDimension(as_unsigned_integer)
+           *state_site.physicalDimension(as_unsigned_integer)
+         )
+        ,state_site.rightDimension()
+        );
+    extend_state_vector_fragment(
+         old_fragment || state_site
+        ,state_site.rightDimension(as_unsigned_integer)
+        ,old_fragment.physicalDimension(as_unsigned_integer)
+        ,state_site.physicalDimension(as_unsigned_integer)
+        ,old_fragment
+        ,state_site
+        ,new_fragment
+    );
+    return boost::move(new_fragment);
 }
 //@+node:gcross.20110124175241.1652: *3* Cursor movement
 //@+node:gcross.20110124175241.1654: *4* moveSiteCursorLeft

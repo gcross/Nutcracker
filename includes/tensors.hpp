@@ -902,6 +902,69 @@ public:
 };
 
 template<typename side> OverlapSite<side> const OverlapSite<side>::trivial(make_trivial);
+//@+node:gcross.20110213161858.1808: *3* StateVectorFragment
+class StateVectorFragment : public BaseTensor {
+private:
+    BOOST_MOVABLE_BUT_NOT_COPYABLE(StateVectorFragment)
+    PhysicalDimension physical_dimension;
+    RightDimension right_dimension;
+public:
+    StateVectorFragment() {}
+
+    StateVectorFragment(BOOST_RV_REF(StateVectorFragment) other)
+      : BaseTensor(boost::move(static_cast<BaseTensor&>(other)))
+      , physical_dimension(boost::move(other.physical_dimension))
+      , right_dimension(boost::move(other.right_dimension))
+    { }
+
+    StateVectorFragment(
+          PhysicalDimension const physical_dimension
+        , RightDimension const right_dimension
+    ) : BaseTensor((*physical_dimension)*(*right_dimension))
+      , physical_dimension(physical_dimension)
+      , right_dimension(right_dimension)
+    { }
+
+    template<typename G> StateVectorFragment(
+          PhysicalDimension const physical_dimension
+        , RightDimension const right_dimension
+        , FillWithGenerator<G> const generator
+    ) : BaseTensor((*physical_dimension)*(*right_dimension),generator)
+      , physical_dimension(physical_dimension)
+      , right_dimension(right_dimension)
+    { }
+
+    template<typename Range> StateVectorFragment(
+          PhysicalDimension const physical_dimension
+        , FillWithRange<Range> const init
+    ) : BaseTensor(init)
+      , physical_dimension(physical_dimension)
+      , right_dimension(size()/(*physical_dimension))
+    { }
+
+    StateVectorFragment(
+          MakeTrivial const make_trivial
+    ) : BaseTensor(make_trivial)
+      , physical_dimension(1)
+      , right_dimension(1)
+    { }
+
+    StateVectorFragment& operator=(BOOST_RV_REF(StateVectorFragment) other) {
+        if(this == &other) return *this;
+        BaseTensor::operator=(boost::move(static_cast<BaseTensor&>(other)));
+        physical_dimension = boost::move(other.physical_dimension);
+        right_dimension = boost::move(other.right_dimension);
+        return *this;
+    }
+
+    PhysicalDimension physicalDimension() const { return physical_dimension; }
+    unsigned int physicalDimension(AsUnsignedInteger _) const { return *physical_dimension; }
+
+    RightDimension rightDimension() const { return right_dimension; }
+    unsigned int rightDimension(AsUnsignedInteger _) const { return *right_dimension; }
+
+    static StateVectorFragment const trivial;
+};
 //@+node:gcross.20110125120748.2431: ** Connectors
 //@+node:gcross.20110125120748.2434: *3* exception DimensionMismatch
 struct DimensionMismatch : public Exception {
@@ -1138,6 +1201,18 @@ inline unsigned int operator||(
         ,state_site_1.rightDimension(as_unsigned_integer)
         ,"right state site left"
         ,state_site_2.leftDimension(as_unsigned_integer)
+    );
+}
+//@+node:gcross.20110213161858.1809: *4* StateVectorFragment || BaseStateSite
+inline unsigned int operator||(
+      StateVectorFragment const& fragment
+    , StateSiteAny const& state_site
+) {
+    return connectDimensions(
+         "fragment right"
+        ,fragment.rightDimension(as_unsigned_integer)
+        ,"state site left"
+        ,state_site.leftDimension(as_unsigned_integer)
     );
 }
 //@-others
