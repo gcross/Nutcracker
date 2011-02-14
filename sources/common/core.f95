@@ -990,6 +990,36 @@ subroutine contract_expectation_boundaries( &
   expectation = zdotu(b*b*c,transposed_left_environment(1,1,1),1,right_environment(1,1,1),1)
 
 end subroutine
+!@+node:gcross.20110213125549.2327: *3* extend_state_vector_fragment
+subroutine extend_state_vector_fragment( &
+  bm,br, &
+  dl,dr, &
+  old_state_vector_fragment, &
+  site_tensor, &
+  new_state_vector_fragment &
+)
+  integer, intent(in) :: bm, br, dl, dr
+  double complex, intent(in) :: &
+    old_state_vector_fragment(bm,dl), &
+    site_tensor(br,bm,dr)
+  double complex, intent(out) :: &
+    new_state_vector_fragment(br,dr,dl)
+  double complex :: &
+    transposed_site_tensor(br,dr,bm)
+
+  transposed_site_tensor = reshape(site_tensor,shape(transposed_site_tensor),order=(/1,3,2/))
+
+  call zgemm( &
+    'N','N', &
+    br*dr,dl,bm, &
+    (1d0,0d0), &
+    transposed_site_tensor, br*dr, &
+    old_state_vector_fragment, bm, &
+    (0d0,0d0), &
+    new_state_vector_fragment, br*dr &
+  )
+
+end subroutine
 !@+node:gcross.20091211120042.1683: ** apply_single_site_operator
 subroutine apply_single_site_operator( &
   bl, & ! state left bandwidth dimension

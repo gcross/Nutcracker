@@ -762,6 +762,38 @@ class compute_optimization_matrix(TestCase):
             right_environment,
         )
         self.assertAllClose(actual_output_tensor,correct_output_tensor)
+#@+node:gcross.20110213125549.2329: *4* extend_state_vector_fragment
+class extend_state_vector_fragment(TestCase):
+
+    correct_contractor = staticmethod(form_contractor([
+        ("F2","N3"),
+        ("F1","S2"),
+        ("S3","N2"),
+        ("S1","N1"),
+    ], [
+        ("F",2),
+        ("S",3),
+    ], ("N",3)
+    ))
+
+    @with_checker(number_of_calls=10)
+    def test_agreement_with_contractor(self,
+        dl = irange(2,10),
+        dr = irange(2,10),
+        bm = irange(2,10),
+        br = irange(2,10),
+    ):
+        fragment = crand(bm,dl)
+        state_site_tensor = crand(br,bm,dr)
+        actual_output_tensor = vmps.extend_state_vector_fragment(
+            fragment,
+            state_site_tensor,
+        )
+        correct_output_tensor = self.correct_contractor(
+            fragment,
+            state_site_tensor,
+        )
+        self.assertAllClose(actual_output_tensor,correct_output_tensor)
 #@-others
 #@+node:gcross.20100517000234.1763: *3* Optimization
 #@+others
@@ -1669,6 +1701,7 @@ tests = [
     unswap_inplace,
     swap_matrix_inplace,
     non_hermitian_matrix_detection,
+    extend_state_vector_fragment,
 ]
 
 #@+<< Runner >>
