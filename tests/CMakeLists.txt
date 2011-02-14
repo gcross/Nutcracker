@@ -3,9 +3,11 @@
 include_directories(".")
 
 set(test-SOURCES
+    boundaries
     chain
-    core
     operators
+    optimizer
+    projectors
     tensors
     states
 

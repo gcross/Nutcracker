@@ -32,10 +32,136 @@ using boost::shared_ptr;
 //@-<< Usings >>
 
 //@+others
-//@+node:gcross.20110207005827.1775: ** Typedefs
+//@+node:gcross.20110214164734.1937: ** Tensors
+//@+node:gcross.20110214164734.1938: *3* OperatorSite
+class OperatorSite : public SiteBaseTensor {
+private:
+    BOOST_MOVABLE_BUT_NOT_COPYABLE(OperatorSite)
+
+    unsigned int number_of_matrices;
+    uint32_t* index_data;
+public:
+    OperatorSite()
+      : number_of_matrices(0)
+      , index_data(NULL)
+    { }
+
+    ~OperatorSite() { if(index_data) delete[] index_data; }
+
+    OperatorSite(BOOST_RV_REF(OperatorSite) other)
+      : SiteBaseTensor(boost::move(static_cast<SiteBaseTensor&>(other)))
+      , number_of_matrices(copyAndReset(other.number_of_matrices))
+      , index_data(copyAndReset(other.index_data))
+    { }
+
+    OperatorSite(
+          unsigned int const number_of_matrices
+        , PhysicalDimension const physical_dimension
+        , LeftDimension const left_dimension
+        , RightDimension const right_dimension
+    ) : SiteBaseTensor(
+             physical_dimension
+            ,left_dimension
+            ,right_dimension
+            ,number_of_matrices*(*physical_dimension)*(*physical_dimension)
+        )
+      , number_of_matrices(number_of_matrices)
+      , index_data(new uint32_t[number_of_matrices*2])
+    { }
+
+    OperatorSite(
+          CopyFrom<OperatorSite const> const other
+    ) : SiteBaseTensor(other)
+      , number_of_matrices(other->number_of_matrices)
+      , index_data(new uint32_t[number_of_matrices*2])
+    {
+        copy(other->index_data,other->index_data+2*number_of_matrices,index_data);
+    }
+
+    template<typename G1, typename G2> OperatorSite(
+          unsigned int const number_of_matrices
+        , PhysicalDimension const physical_dimension
+        , LeftDimension const left_dimension
+        , RightDimension const right_dimension
+        , FillWithGenerator<G1> const index_generator
+        , FillWithGenerator<G2> const matrix_generator
+    ) : SiteBaseTensor(
+             physical_dimension
+            ,left_dimension
+            ,right_dimension
+            ,number_of_matrices*(*physical_dimension)*(*physical_dimension)
+            ,matrix_generator
+        )
+      , number_of_matrices(number_of_matrices)
+      , index_data(new uint32_t[number_of_matrices*2])
+    {
+        BOOST_CONCEPT_ASSERT(( Generator<G1,uint32_t> ));
+        uint32_t* index = index_data;
+        REPEAT(number_of_matrices) {
+            uint32_t left_index = (*index_generator)()
+                   , right_index = (*index_generator)()
+                   ;
+            assert(left_index >= 1 && left_index <= *leftDimension());
+            assert(right_index >= 1 && right_index <= *rightDimension());
+            *index++ = left_index;
+            *index++ = right_index;
+        }
+        //generate_n(index_data.get(),size,*index_generator);
+    }
+
+    template<typename Range1, typename Range2> OperatorSite(
+          LeftDimension const left_dimension
+        , RightDimension const right_dimension
+        , FillWithRange<Range1> const index_init
+        , FillWithRange<Range2> const matrix_init
+    ) : SiteBaseTensor(
+             PhysicalDimension((unsigned int)sqrt(matrix_init->size()/(index_init->size()/2)))
+            ,left_dimension
+            ,right_dimension
+            ,matrix_init
+        )
+      , number_of_matrices(index_init->size()/2)
+      , index_data(new uint32_t[index_init->size()])
+    {
+        BOOST_CONCEPT_ASSERT(( RandomAccessRangeConcept<Range1> ));
+        copy(*index_init,index_data);
+    }
+
+    OperatorSite(MakeTrivial const make_trivial)
+      : SiteBaseTensor(make_trivial)
+      , number_of_matrices(1)
+      , index_data(new uint32_t[2])
+    {
+        fill_n(index_data,2,1);
+    }
+
+    OperatorSite& operator=(BOOST_RV_REF(OperatorSite) other) {
+        if(this == &other) return *this;
+        SiteBaseTensor::operator=(boost::move(static_cast<SiteBaseTensor&>(other)));
+        number_of_matrices = copyAndReset(other.number_of_matrices);
+        moveArrayToFrom(index_data,other.index_data); 
+        return *this;
+    }
+
+    void swap(OperatorSite& other) {
+        if(this == &other) return;
+        SiteBaseTensor::swap(other);
+        std::swap(number_of_matrices,other.number_of_matrices);
+        std::swap(index_data,other.index_data);
+    }
+
+    unsigned int numberOfMatrices() const { return number_of_matrices; }
+
+    operator uint32_t*() { return index_data; }
+    operator uint32_t const*() const { return index_data; }
+
+    static OperatorSite const trivial;
+};
+//@+node:gcross.20110207005827.1775: ** Type aliases
 typedef matrix<complex<double> > Matrix;
 typedef vector<shared_ptr<OperatorSite const> > Operators;
-//@+node:gcross.20110206185121.1761: ** struct OperatorLink
+//@+node:gcross.20110214164734.1939: ** Classes
+//@+node:gcross.20110206185121.1761: *3* OperatorLink
 struct OperatorLink {
     unsigned int from, to;
     Matrix matrix;

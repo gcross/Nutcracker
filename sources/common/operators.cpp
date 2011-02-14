@@ -18,6 +18,8 @@ using boost::irange;
 //@-<< Usings >>
 
 //@+others
+//@+node:gcross.20110214164734.2009: ** Values
+OperatorSite const OperatorSite::trivial(make_trivial);
 //@+node:gcross.20110206185121.1783: ** Functions
 //@+node:gcross.20110207115918.1781: *3* constructExternalFieldOperators
 Operators constructExternalFieldOperators(

@@ -10,7 +10,7 @@
 #include <boost/random/uniform_smallint.hpp>
 #include <complex>
 
-#include "tensors.hpp"
+#include "operators.hpp"
 
 using namespace Nutcracker;
 

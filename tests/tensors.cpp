@@ -6,6 +6,9 @@
 //@+node:gcross.20110204201608.1726: ** << Includes >>
 #include <illuminate.hpp>
 
+#include "boundaries.hpp"
+#include "operators.hpp"
+#include "states.hpp"
 #include "utilities.hpp"
 
 #include "test_utils.hpp"

@@ -16,6 +16,9 @@
 
 #include "core.hpp"
 #include "operators.hpp"
+#include "optimizer.hpp"
+#include "projectors.hpp"
+#include "states.hpp"
 #include "tensors.hpp"
 //@-<< Includes >>
 
