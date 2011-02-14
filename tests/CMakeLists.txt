@@ -7,6 +7,7 @@ set(test-SOURCES
     core
     operators
     tensors
+    states
 
     test_utils
 )

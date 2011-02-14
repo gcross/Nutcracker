@@ -5,6 +5,7 @@ add_library(Nutcracker
     core.f95
     core.cpp
     operators
+    states
     tensors
     utilities
 )

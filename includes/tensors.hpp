@@ -12,6 +12,7 @@
 #include <boost/foreach.hpp>
 #include <boost/format.hpp>
 #include <boost/move/move.hpp>
+#include <boost/numeric/ublas/vector.hpp>
 #include <boost/range/algorithm/copy.hpp>
 #include <boost/range/concepts.hpp>
 #include <boost/range/irange.hpp>
@@ -35,6 +36,8 @@ using boost::RandomAccessRangeConcept;
 using std::copy;
 using std::fill_n;
 using std::ostream;
+
+typedef boost::numeric::ublas::vector<complex<double> > StateVector;
 //@-<< Usings >>
 
 //@+others
@@ -955,6 +958,13 @@ public:
         physical_dimension = boost::move(other.physical_dimension);
         right_dimension = boost::move(other.right_dimension);
         return *this;
+    }
+
+    operator StateVector() const {
+        assert(rightDimension(as_unsigned_integer) == 1);
+        StateVector v(size());
+        copy(*this,v.begin());
+        return v;
     }
 
     PhysicalDimension physicalDimension() const { return physical_dimension; }
