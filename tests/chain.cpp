@@ -245,6 +245,7 @@ TEST_SUITE(performOptimizationSweep) {
                      )
                     ,initial_bandwidth_dimension
                 );
+                chain.signalOptimizeSiteFailure.connect(rethrow<OptimizerFailure>);
                 chain.performOptimizationSweep();
                 ASSERT_NEAR_QUOTED(number_of_sites,-chain.getEnergy(),1e-7);
             }
@@ -297,6 +298,7 @@ TEST_SUITE(sweepUntilConverged) {
         , double const correct_energy
     ) {
         Chain chain(constructTransverseIsingModelOperators(number_of_sites,coupling_strength),bandwidth_dimension);
+        chain.signalOptimizeSiteFailure.connect(rethrow<OptimizerFailure>);
         chain.sweepUntilConverged();
         ASSERT_NEAR(correct_energy,chain.getEnergy(),1e-7);
     }
@@ -318,6 +320,7 @@ TEST_SUITE(optimizeChain) {
         , double const correct_energy
     ) {
         Chain chain(constructTransverseIsingModelOperators(number_of_sites,coupling_strength));
+        chain.signalOptimizeSiteFailure.connect(rethrow<OptimizerFailure>);
         chain.optimizeChain();
         ASSERT_NEAR(correct_energy,chain.getEnergy(),1e-10);
     }

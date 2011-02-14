@@ -109,6 +109,8 @@ template<typename T> inline void moveArrayToFrom(T*& to, T*& from) {
     if(to) delete[] to;
     to = copyAndReset(from);
 }
+//@+node:gcross.20110213233103.3637: *3* rethrow
+template<typename Exception> void rethrow(Exception& e) { throw e; }
 //@-others
 //@+node:gcross.20110129220506.1652: ** Macros
 #define REPEAT(n) for(unsigned int _counter##__LINE__ = 0; _##counter##__LINE__ < n; ++_##counter##__LINE__)
