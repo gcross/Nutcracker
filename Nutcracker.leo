@@ -45,6 +45,14 @@
 <v t="gcross.20091106154604.1979"><vh>@thin test.py</vh></v>
 </v>
 </v>
+<v t="gcross.20110213233103.1919"><vh>thin template.hpp</vh>
+<v t="gcross.20110213233103.1920"><vh>&lt;&lt; Includes &gt;&gt;</vh></v>
+<v t="gcross.20110213233103.1921"><vh>&lt;&lt; Usings &gt;&gt;</vh></v>
+</v>
+<v t="gcross.20110213233103.1925"><vh>thin template.cpp</vh>
+<v t="gcross.20110213233103.1926"><vh>&lt;&lt; Includes &gt;&gt;</vh></v>
+<v t="gcross.20110213233103.1927"><vh>&lt;&lt; Usings &gt;&gt;</vh></v>
+</v>
 </vnodes>
 <tnodes>
 <t tx="gcross.20091106154604.1972"></t>
@@ -53,5 +61,36 @@
 <t tx="gcross.20091113142219.1658"></t>
 <t tx="gcross.20110124161335.1865"></t>
 <t tx="gcross.20110124161335.1866"></t>
+<t tx="gcross.20110213233103.1919">@language cplusplus
+
+#ifndef NUTCRACKER_TEMPLATE_HPP
+#define NUTCRACKER_TEMPLATE_HPP
+
+&lt;&lt; Includes &gt;&gt;
+
+namespace Nutcracker {
+
+&lt;&lt; Usings &gt;&gt;
+
+@others
+
+}
+
+#endif</t>
+<t tx="gcross.20110213233103.1920"></t>
+<t tx="gcross.20110213233103.1921"></t>
+<t tx="gcross.20110213233103.1925">@language cplusplus
+
+&lt;&lt; Includes &gt;&gt;
+
+namespace Nutcracker {
+
+&lt;&lt; Usings &gt;&gt;
+
+@others
+
+}</t>
+<t tx="gcross.20110213233103.1926"></t>
+<t tx="gcross.20110213233103.1927"></t>
 </tnodes>
 </leo_file>
