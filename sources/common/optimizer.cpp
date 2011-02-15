@@ -144,11 +144,11 @@ OptimizerResult optimizeStateSite(
     int const status =
         maybe_projector_matrix
             ? Core::optimize(
-                 left_boundary || current_state_site
-                ,current_state_site || right_boundary
-                ,left_boundary || operator_site
-                ,operator_site || right_boundary
-                ,operator_site || current_state_site
+                 left_boundary | current_state_site
+                ,current_state_site | right_boundary
+                ,left_boundary | operator_site
+                ,operator_site | right_boundary
+                ,operator_site | current_state_site
                 ,left_boundary
                 ,operator_site.numberOfMatrices(),operator_site,operator_site
                 ,right_boundary
@@ -167,11 +167,11 @@ OptimizerResult optimizeStateSite(
                 ,normal
               )
             : Core::optimize(
-                 left_boundary || current_state_site
-                ,current_state_site || right_boundary
-                ,left_boundary || operator_site
-                ,operator_site || right_boundary
-                ,operator_site || current_state_site
+                 left_boundary | current_state_site
+                ,current_state_site | right_boundary
+                ,left_boundary | operator_site
+                ,operator_site | right_boundary
+                ,operator_site | current_state_site
                 ,left_boundary
                 ,operator_site.numberOfMatrices(),operator_site,operator_site
                 ,right_boundary

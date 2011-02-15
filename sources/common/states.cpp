@@ -67,7 +67,7 @@ OverlapSitesFromStateSitesAndNormalizeResult computeOverlapSitesFromStateSitesAn
     OverlapSite<Right> right_overlap_site_from_right_state_site(dimensionsOf(right_state_site));
     Core::form_norm_overlap_tensors(
          middle_state_site.leftDimension(as_unsigned_integer)
-        ,middle_state_site || right_state_site
+        ,middle_state_site | right_state_site
         ,right_state_site.rightDimension(as_unsigned_integer)
         ,middle_state_site.physicalDimension(as_unsigned_integer)
         ,right_state_site.physicalDimension(as_unsigned_integer)
@@ -99,7 +99,7 @@ StateVectorFragment extendStateVectorFragment(
         ,state_site.rightDimension()
         );
     Core::extend_state_vector_fragment(
-         old_fragment || state_site
+         old_fragment | state_site
         ,state_site.rightDimension(as_unsigned_integer)
         ,old_fragment.physicalDimension(as_unsigned_integer)
         ,state_site.physicalDimension(as_unsigned_integer)
@@ -116,7 +116,7 @@ static IncreaseDimensionBetweenResult<side1,side2> implIncreaseDimensionBetween(
     , StateSite<side1> const& old_site_1
     , StateSite<side2> const& old_site_2
 ) {
-    unsigned int const old_dimension = old_site_1 || old_site_2;
+    unsigned int const old_dimension = old_site_1 | old_site_2;
     assert(new_dimension >= old_dimension);
 
     StateSite<side1> new_site_1(
@@ -184,7 +184,7 @@ MoveSiteCursorResult<Left> moveSiteCursorLeft(
     unsigned int const info =
     Core::norm_denorm_going_left(
          old_state_site_1.leftDimension(as_unsigned_integer)
-        ,old_state_site_1 || old_state_site_2
+        ,old_state_site_1 | old_state_site_2
         ,old_state_site_2.rightDimension(as_unsigned_integer)
         ,old_state_site_1.physicalDimension(as_unsigned_integer)
         ,old_state_site_2.physicalDimension(as_unsigned_integer)
@@ -209,7 +209,7 @@ MoveSiteCursorResult<Right> moveSiteCursorRight(
     unsigned int const info =
     Core::norm_denorm_going_right(
          old_state_site_1.leftDimension(as_unsigned_integer)
-        ,old_state_site_1 || old_state_site_2
+        ,old_state_site_1 | old_state_site_2
         ,old_state_site_2.rightDimension(as_unsigned_integer)
         ,old_state_site_1.physicalDimension(as_unsigned_integer)
         ,old_state_site_2.physicalDimension(as_unsigned_integer)

@@ -44,7 +44,7 @@ inline unsigned int connectDimensions(
 }
 //@+node:gcross.20110214164734.1977: ** Connectors
 //@+node:gcross.20110214164734.1978: *3* ExpectationBoundary<Left> | OperatorSite
-inline unsigned int operator||(
+inline unsigned int operator|(
       ExpectationBoundary<Left> const& expectation_boundary
     , OperatorSite const& operator_site
 ) {
@@ -56,7 +56,7 @@ inline unsigned int operator||(
     );
 }
 //@+node:gcross.20110214164734.1979: *3* ExpectationBoundary<Left> | StateSite<Middle>
-inline unsigned int operator||(
+inline unsigned int operator|(
       ExpectationBoundary<Left> const& expectation_boundary
     , StateSite<Middle> const& state_site
 ) {
@@ -68,7 +68,7 @@ inline unsigned int operator||(
     );
 }
 //@+node:gcross.20110214164734.1980: *3* ExpectationBoundary<Left> | StateSite<Left>
-inline unsigned int operator||(
+inline unsigned int operator|(
       ExpectationBoundary<Left> const& expectation_boundary
     , StateSite<Left> const& state_site
 ) {
@@ -80,7 +80,7 @@ inline unsigned int operator||(
     );
 }
 //@+node:gcross.20110214164734.1981: *3* OperatorSite | ExpectationBoundary<Right>
-inline unsigned int operator||(
+inline unsigned int operator|(
       OperatorSite const& operator_site
     , ExpectationBoundary<Right> const& expectation_boundary
 ) {
@@ -92,7 +92,7 @@ inline unsigned int operator||(
     );
 }
 //@+node:gcross.20110214164734.1982: *3* OperatorSite | StateSite<Middle>
-template<typename side> inline unsigned int operator||(
+template<typename side> inline unsigned int operator|(
       OperatorSite const& operator_site
     , StateSite<side> const& state_site
 ) {
@@ -104,7 +104,7 @@ template<typename side> inline unsigned int operator||(
     );
 }
 //@+node:gcross.20110214164734.1983: *3* OverlapBoundary<Left> | OverlapSite<Left>
-inline unsigned int operator||(
+inline unsigned int operator|(
       OverlapBoundary<Left> const& overlap_boundary
     , OverlapSite<Left> const& overlap_site
 ) {
@@ -116,7 +116,7 @@ inline unsigned int operator||(
     );
 }
 //@+node:gcross.20110214164734.1984: *3* OverlapBoundary<Left> | OverlapSite<Middle>
-inline unsigned int operator||(
+inline unsigned int operator|(
       OverlapBoundary<Left> const& overlap_boundary
     , OverlapSite<Middle> const& overlap_site
 ) {
@@ -128,7 +128,7 @@ inline unsigned int operator||(
     );
 }
 //@+node:gcross.20110214164734.1985: *3* OverlapBoundary<Left> | StateSite<Left>
-inline unsigned int operator||(
+inline unsigned int operator|(
       OverlapBoundary<Left> const& overlap_boundary
     , StateSite<Left> const& state_site
 ) {
@@ -140,7 +140,7 @@ inline unsigned int operator||(
     );
 }
 //@+node:gcross.20110214164734.1986: *3* OverlapBoundary<Left> | StateSite<Middle>
-inline unsigned int operator||(
+inline unsigned int operator|(
       OverlapBoundary<Left> const& overlap_boundary
     , StateSite<Middle> const& state_site
 ) {
@@ -152,7 +152,7 @@ inline unsigned int operator||(
     );
 }
 //@+node:gcross.20110214164734.1987: *3* OverlapSite<*> | StateSite<*>
-template<typename side> inline unsigned int operator||(
+template<typename side> inline unsigned int operator|(
       OverlapSite<side> const& overlap_site
     , StateSite<side> const& state_site
 ) {
@@ -164,7 +164,7 @@ template<typename side> inline unsigned int operator||(
     );
 }
 //@+node:gcross.20110214164734.1988: *3* OverlapSite<Middle> | OverlapBoundary<Right>
-inline unsigned int operator||(
+inline unsigned int operator|(
       OverlapSite<Middle> const& overlap_site
     , OverlapBoundary<Right> const& overlap_boundary
 ) {
@@ -176,7 +176,7 @@ inline unsigned int operator||(
     );
 }
 //@+node:gcross.20110214164734.1989: *3* OverlapSite<Right> | OverlapBoundary<Right>
-inline unsigned int operator||(
+inline unsigned int operator|(
       OverlapSite<Right> const& overlap_site
     , OverlapBoundary<Right> const& overlap_boundary
 ) {
@@ -188,7 +188,7 @@ inline unsigned int operator||(
     );
 }
 //@+node:gcross.20110214164734.1990: *3* ProjectorMatrix | StateSite<Middle>
-inline unsigned int operator||(
+inline unsigned int operator|(
       ProjectorMatrix const& projector_matrix
     , StateSite<Middle> const& state_site
 ) {
@@ -200,7 +200,7 @@ inline unsigned int operator||(
     );
 }
 //@+node:gcross.20110214164734.1991: *3* StateSite<Left> | StateSite<Middle>
-inline unsigned int operator||(
+inline unsigned int operator|(
       StateSite<Left> const& state_site_1
     , StateSite<Middle> const& state_site_2
 ) {
@@ -212,7 +212,7 @@ inline unsigned int operator||(
     );
 }
 //@+node:gcross.20110214164734.1992: *3* StateSite<Middle> | ExpectationBoundary<Left>
-inline unsigned int operator||(
+inline unsigned int operator|(
       StateSite<Middle> const& state_site
     , ExpectationBoundary<Right> const& expectation_boundary
 ) {
@@ -224,7 +224,7 @@ inline unsigned int operator||(
     );
 }
 //@+node:gcross.20110214164734.1993: *3* StateSite<Middle> | OverlapBoundary<Right>
-inline unsigned int operator||(
+inline unsigned int operator|(
       StateSite<Middle> const& state_site
     , OverlapBoundary<Right> const& overlap_boundary
 ) {
@@ -236,7 +236,7 @@ inline unsigned int operator||(
     );
 }
 //@+node:gcross.20110214164734.1994: *3* StateSite<Middle> | StateSite<Right>
-inline unsigned int operator||(
+inline unsigned int operator|(
       StateSite<Middle> const& state_site_1
     , StateSite<Right> const& state_site_2
 ) {
@@ -248,7 +248,7 @@ inline unsigned int operator||(
     );
 }
 //@+node:gcross.20110214164734.1995: *3* StateSite<Right> | ExpectationBoundary<Right>
-inline unsigned int operator||(
+inline unsigned int operator|(
       StateSite<Right> const& state_site
     , ExpectationBoundary<Right> const& expectation_boundary
 ) {
@@ -260,7 +260,7 @@ inline unsigned int operator||(
     );
 }
 //@+node:gcross.20110214164734.1996: *3* StateSite<Right> | OverlapBoundary<Right>
-inline unsigned int operator||(
+inline unsigned int operator|(
       StateSite<Right> const& state_site
     , OverlapBoundary<Right> const& overlap_boundary
 ) {
@@ -272,7 +272,7 @@ inline unsigned int operator||(
     );
 }
 //@+node:gcross.20110214164734.1997: *3* StateSite<Right> | StateSite<Right>
-inline unsigned int operator||(
+inline unsigned int operator|(
       StateSite<Right> const& state_site_1
     , StateSite<Right> const& state_site_2
 ) {
@@ -284,7 +284,7 @@ inline unsigned int operator||(
     );
 }
 //@+node:gcross.20110214164734.2001: *3* StateVectorFragment | StateSiteAny
-inline unsigned int operator||(
+inline unsigned int operator|(
       StateVectorFragment const& fragment
     , StateSiteAny const& state_site
 ) {

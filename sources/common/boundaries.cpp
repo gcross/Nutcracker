@@ -25,11 +25,11 @@ complex<double> computeExpectationValue(
     , ExpectationBoundary<Right> const& right_boundary
 ) {
     return Core::compute_expectation(
-         left_boundary || state_site
-        ,state_site || right_boundary
-        ,left_boundary || operator_site
-        ,operator_site || right_boundary
-        ,operator_site || state_site
+         left_boundary | state_site
+        ,state_site | right_boundary
+        ,left_boundary | operator_site
+        ,operator_site | right_boundary
+        ,operator_site | state_site
         ,left_boundary
         ,state_site
         ,operator_site.numberOfMatrices(),operator_site,operator_site
@@ -69,11 +69,11 @@ ExpectationBoundary<Left> contractSOSLeft(
         ,StateDimension(state_site.rightDimension(as_unsigned_integer))
         );
     Core::contract_sos_left(
-         old_boundary || state_site
+         old_boundary | state_site
         ,state_site.rightDimension(as_unsigned_integer)
-        ,old_boundary || operator_site
+        ,old_boundary | operator_site
         ,operator_site.rightDimension(as_unsigned_integer)
-        ,operator_site || state_site
+        ,operator_site | state_site
         ,old_boundary
         ,operator_site.numberOfMatrices(),operator_site,operator_site
         ,state_site
@@ -93,10 +93,10 @@ ExpectationBoundary<Right> contractSOSRight(
         );
     Core::contract_sos_right(
          state_site.leftDimension(as_unsigned_integer)
-        ,state_site || old_boundary
+        ,state_site | old_boundary
         ,operator_site.leftDimension(as_unsigned_integer)
-        ,operator_site || old_boundary
-        ,operator_site || state_site
+        ,operator_site | old_boundary
+        ,operator_site | state_site
         ,old_boundary
         ,operator_site.numberOfMatrices(),operator_site,operator_site
         ,state_site
@@ -115,11 +115,11 @@ OverlapBoundary<Left> contractSSLeft(
         ,StateDimension(state_site.rightDimension(as_unsigned_integer))
         );
     Core::contract_ss_left(
-         old_boundary || overlap_site
+         old_boundary | overlap_site
         ,overlap_site.rightDimension(as_unsigned_integer)
-        ,old_boundary || state_site
+        ,old_boundary | state_site
         ,state_site.rightDimension(as_unsigned_integer)
-        ,overlap_site || state_site
+        ,overlap_site | state_site
         ,old_boundary
         ,overlap_site
         ,state_site
@@ -139,10 +139,10 @@ OverlapBoundary<Right> contractSSRight(
         );
     Core::contract_ss_right(
          overlap_site.leftDimension(as_unsigned_integer)
-        ,overlap_site || old_boundary
+        ,overlap_site | old_boundary
         ,state_site.leftDimension(as_unsigned_integer)
-        ,state_site || old_boundary
-        ,overlap_site || state_site
+        ,state_site | old_boundary
+        ,overlap_site | state_site
         ,old_boundary
         ,overlap_site
         ,state_site

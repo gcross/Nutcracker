@@ -24,7 +24,7 @@ StateSite<Middle> applyProjectorMatrix(
 ) {
     StateSite<Middle> new_state_site(dimensionsOf(old_state_site));
     Core::filter_components_outside_orthog(
-         projector_matrix || old_state_site
+         projector_matrix | old_state_site
         ,projector_matrix.numberOfProjectors()
         ,projector_matrix.numberOfReflectors()
         ,projector_matrix.orthogonalSubspaceDimension()
@@ -47,7 +47,7 @@ double computeOverlapWithProjectors(
         ,projector_matrix.reflectorData()
         ,projector_matrix.coefficientData()
         ,projector_matrix.swapData()
-        ,projector_matrix || state_site
+        ,projector_matrix | state_site
         ,state_site
     ));
 }
@@ -71,8 +71,8 @@ ProjectorMatrix formProjectorMatrix(
         ,overlaps
     ) {
         Core::form_overlap_vector(
-             (*overlap.left_boundary) || (*overlap.middle_site)
-            ,(*overlap.middle_site) || (*overlap.right_boundary)
+             (*overlap.left_boundary) | (*overlap.middle_site)
+            ,(*overlap.middle_site) | (*overlap.right_boundary)
             ,state_left_dimension
             ,state_right_dimension
             ,state_physical_dimension
