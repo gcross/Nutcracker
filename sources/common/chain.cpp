@@ -35,9 +35,9 @@ using std::numeric_limits;
 //@+node:gcross.20110208151104.1790: ** Values
 Chain::Options const Chain::defaults =
     { 10000
-    , 1e-13
     , 1e-12
-    , 1e-11
+    , 1e-12
+    , 1e-12
     , lambda::_1+1
     };
 //@+node:gcross.20110130193548.1686: ** Functions
