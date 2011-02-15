@@ -31,7 +31,7 @@ NormalizationError::NormalizationError(int info)
 { }
 //@+node:gcross.20110213161858.1820: ** Functions
 //@+node:gcross.20110213161858.1821: *3* computeStateVector
-StateVector computeStateVector(vector<StateSiteAny const*> state_sites) {
+StateVector computeStateVector(vector<StateSiteAny const*> const& state_sites) {
     if(state_sites.size() == 0) return StateVector();
     StateVectorFragment current_fragment(make_trivial);
     BOOST_FOREACH(StateSiteAny const* state_site,state_sites) {

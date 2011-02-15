@@ -418,7 +418,7 @@ public:
     {}
 };
 //@+node:gcross.20110213161858.1813: ** Functions
-StateVector computeStateVector(vector<StateSiteAny const*> state_sites);
+StateVector computeStateVector(vector<StateSiteAny const*> const& state_sites);
 
 OverlapSite<Middle> computeOverlapSiteFromStateSite(StateSite<Middle> const& state_site);
 
