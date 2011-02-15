@@ -9,6 +9,7 @@ set(test-SOURCES
     optimizer
     projectors
     tensors
+    utilities
     states
 
     test_utils

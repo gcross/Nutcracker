@@ -7,8 +7,13 @@
 
 //@+<< Includes >>
 //@+node:gcross.20110125202132.2157: ** << Includes >>
+#include <boost/container/vector.hpp>
+#include <boost/foreach.hpp>
 #include <boost/format.hpp>
 #include <boost/iterator/iterator_facade.hpp>
+#include <boost/range/adaptor/reversed.hpp>
+#include <boost/range/algorithm/reverse.hpp>
+#include <boost/range/irange.hpp>
 #include <boost/range/iterator_range.hpp>
 #include <boost/move/move.hpp>
 #include <complex>
@@ -23,11 +28,15 @@ namespace Nutcracker {
 
 //@+<< Usings >>
 //@+node:gcross.20110125202132.2158: ** << Usings >>
+using boost::adaptors::reversed;
+using boost::container::vector;
 using boost::format;
 using boost::forward_traversal_tag;
+using boost::irange;
 using boost::iterator_facade;
 using boost::iterator_range;
 using boost::make_iterator_range;
+using boost::reverse;
 
 using std::complex;
 using std::iterator_traits;
@@ -102,6 +111,18 @@ template<typename T> inline T copyAndReset(T& x) {
 //@+node:gcross.20110211120708.1789: *3* dznrm2
 extern "C" double dznrm2_(uint32_t const* n, complex<double>* const x, uint32_t const* incx);
 inline double dznrm2(uint32_t const n, complex<double>* const x, uint32_t const incx=1) { return dznrm2_(&n,x,&incx); }
+//@+node:gcross.20110215135633.1856: *3* flatIndexToTensorIndex
+template<typename DimensionRange> vector<unsigned int> flatIndexToTensorIndex(DimensionRange const& dimensions, unsigned long long flat_index) {
+    vector<unsigned int> tensor_index;
+    tensor_index.reserve(dimensions.size());
+    BOOST_FOREACH(unsigned int const dimension, dimensions | reversed) {
+        tensor_index.push_back(flat_index % dimension);
+        flat_index /= dimension;
+    }
+    assert(flat_index == 0);
+    reverse(tensor_index);
+    return boost::move(tensor_index);
+}
 //@+node:gcross.20110211120708.1798: *3* makeProductIterator
 template<typename T> ProductIterator<T> makeProductIterator(T const x) { return ProductIterator<T>(x); }
 //@+node:gcross.20110211120708.1788: *3* moveArrayToFrom
@@ -111,6 +132,17 @@ template<typename T> inline void moveArrayToFrom(T*& to, T*& from) {
 }
 //@+node:gcross.20110213233103.3637: *3* rethrow
 template<typename Exception> void rethrow(Exception& e) { throw e; }
+//@+node:gcross.20110215135633.1858: *3* tensorIndexToFlatIndex
+template<typename DimensionRange> unsigned long long tensorIndexToFlatIndex(DimensionRange const& dimensions, vector<unsigned int> const& tensor_index) {
+    assert(dimensions.size() == tensor_index.size());
+    unsigned long long flat_index = 0;
+    BOOST_FOREACH(unsigned int const i, irange(0u,(unsigned int)dimensions.size())) {
+        assert(tensor_index[i] < dimensions[i]);
+        flat_index *= dimensions[i];
+        flat_index += tensor_index[i];
+    }
+    return flat_index;
+}
 //@-others
 //@+node:gcross.20110129220506.1652: ** Macros
 #define REPEAT(n) for(unsigned int _counter##__LINE__ = 0; _##counter##__LINE__ < n; ++_##counter##__LINE__)
