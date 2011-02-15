@@ -46,7 +46,7 @@ struct InitialChainEnergyNotRealError : public Exception {
     complex<double> const energy;
     InitialChainEnergyNotRealError(complex<double> const energy)
       : Exception((
-            format("The initial chain energy is not real (energy = %1%).")
+            format("The initial chain energy is not real (energy = %|.15|).")
                 % energy
         ).str())
       , energy(energy)

@@ -53,7 +53,7 @@ OptimizerGivenTooManyProjectors::OptimizerGivenTooManyProjectors(
 OptimizerObtainedComplexEigenvalue::OptimizerObtainedComplexEigenvalue(
        complex<double> const eigenvalue
 ) : OptimizerFailure(
-        (format("Optimizer obtained complex eigenvalue (%1%)") 
+        (format("Optimizer obtained complex eigenvalue (%|.15|)") 
             % eigenvalue
         ).str()
     )
@@ -64,7 +64,7 @@ OptimizerObtainedEigenvalueDifferentFromExpectationValue::OptimizerObtainedEigen
       complex<double> const eigenvalue
     , complex<double> const expected_value
 ) : OptimizerFailure(
-        (format("Optimizer obtained eigenvalue that was different from the final expected value (%1% != %2%)")
+        (format("Optimizer obtained eigenvalue that was different from the final expected value (%|.15| != %|.15|)")
             % eigenvalue
             % expected_value
         ).str()
@@ -76,7 +76,7 @@ OptimizerObtainedEigenvalueDifferentFromExpectationValue::OptimizerObtainedEigen
 OptimizerObtainedEigenvectorInProjectorSpace::OptimizerObtainedEigenvectorInProjectorSpace(
        double const overlap
 ) : OptimizerFailure(
-        (format("Optimizer obtained eigenvector overlapping with the forbidden orthogonal space (overlap = %1%)") 
+        (format("Optimizer obtained eigenvector overlapping with the forbidden orthogonal space (overlap = %|.15|)") 
             % overlap
         ).str()
     )
@@ -87,7 +87,7 @@ OptimizerObtainedGreaterEigenvalue::OptimizerObtainedGreaterEigenvalue(
       double const old_eigenvalue
     , double const new_eigenvalue
 ) : OptimizerFailure(
-        (format("Optimizer obtained an eigenvalue that greater than the old eigenvalue (%2% > %1%)")
+        (format("Optimizer obtained an eigenvalue that greater than the old eigenvalue (%|.15| > %|.15|")
             % new_eigenvalue
             % old_eigenvalue
         ).str()
@@ -99,7 +99,7 @@ OptimizerObtainedGreaterEigenvalue::OptimizerObtainedGreaterEigenvalue(
 OptimizerObtainedVanishingEigenvector::OptimizerObtainedVanishingEigenvector(
        double const norm
 ) : OptimizerFailure(
-        (format("Optimizer obtained vanishing eigenvector (norm = %1%)") 
+        (format("Optimizer obtained vanishing eigenvector (norm = %|.15|)") 
             % norm
         ).str()
     )
