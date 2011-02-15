@@ -199,8 +199,6 @@ public:
 
     bool valid() const { return data; }
     bool invalid() const { return !valid(); }
-
-    operator bool() const { return valid(); }
 };
 //@+node:gcross.20110124175241.1530: *3* Boundary
 //@+node:gcross.20110124161335.2013: *4* ExpectationBoundary

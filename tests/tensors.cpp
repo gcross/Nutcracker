@@ -36,19 +36,19 @@ TEST_CASE(move_assignable) {
             ,fillWithGenerator(random.randomComplexDouble)
             );
 
-        ASSERT_TRUE(old_boundary);
+        ASSERT_TRUE(old_boundary.valid());
         ASSERT_EQ_QUOTED(operator_dimension,old_boundary.operatorDimension());
         ASSERT_EQ_QUOTED(state_dimension,old_boundary.stateDimension());
 
         ExpectationBoundary<Left> new_boundary;
 
-        ASSERT_FALSE(new_boundary);
+        ASSERT_FALSE(new_boundary.valid());
         ASSERT_EQ(0,new_boundary.operatorDimension(as_unsigned_integer));
         ASSERT_EQ(0,new_boundary.stateDimension(as_unsigned_integer));
 
         new_boundary = boost::move(old_boundary);
 
-        ASSERT_FALSE(old_boundary);
+        ASSERT_FALSE(old_boundary.valid());
         ASSERT_EQ(0,old_boundary.operatorDimension(as_unsigned_integer));
         ASSERT_EQ(0,old_boundary.stateDimension(as_unsigned_integer));
 
@@ -71,17 +71,17 @@ TEST_CASE(move_constructable) {
             ,fillWithGenerator(random.randomComplexDouble)
             );
 
-        ASSERT_TRUE(old_boundary);
+        ASSERT_TRUE(old_boundary.valid());
         ASSERT_EQ_QUOTED(operator_dimension,old_boundary.operatorDimension());
         ASSERT_EQ_QUOTED(state_dimension,old_boundary.stateDimension());
 
         ExpectationBoundary<Left> new_boundary(boost::move(old_boundary));
 
-        ASSERT_FALSE(old_boundary);
+        ASSERT_FALSE(old_boundary.valid());
         ASSERT_EQ(0,old_boundary.operatorDimension(as_unsigned_integer));
         ASSERT_EQ(0,old_boundary.stateDimension(as_unsigned_integer));
 
-        ASSERT_TRUE(new_boundary);
+        ASSERT_TRUE(new_boundary.valid());
         ASSERT_EQ_QUOTED(operator_dimension,new_boundary.operatorDimension());
         ASSERT_EQ_QUOTED(state_dimension,new_boundary.stateDimension());
     }
@@ -109,26 +109,26 @@ TEST_CASE(move_assignable) {
             ,fillWithGenerator(random.randomComplexDouble)
             );
 
-        ASSERT_TRUE(old_site);
+        ASSERT_TRUE(old_site.valid());
         ASSERT_EQ_QUOTED(physical_dimension,old_site.physicalDimension());
         ASSERT_EQ_QUOTED(left_dimension,old_site.leftDimension());
         ASSERT_EQ_QUOTED(right_dimension,old_site.rightDimension());
 
         StateSite<Middle> new_site;
 
-        ASSERT_FALSE(new_site);
+        ASSERT_FALSE(new_site.valid());
         ASSERT_EQ(0,new_site.physicalDimension(as_unsigned_integer));
         ASSERT_EQ(0,new_site.leftDimension(as_unsigned_integer));
         ASSERT_EQ(0,new_site.rightDimension(as_unsigned_integer));
 
         new_site = boost::move(old_site);
 
-        ASSERT_FALSE(old_site);
+        ASSERT_FALSE(old_site.valid());
         ASSERT_EQ(0,old_site.physicalDimension(as_unsigned_integer));
         ASSERT_EQ(0,old_site.leftDimension(as_unsigned_integer));
         ASSERT_EQ(0,old_site.rightDimension(as_unsigned_integer));
 
-        ASSERT_TRUE(new_site);
+        ASSERT_TRUE(new_site.valid());
         ASSERT_EQ_QUOTED(physical_dimension,new_site.physicalDimension());
         ASSERT_EQ_QUOTED(left_dimension,new_site.leftDimension());
         ASSERT_EQ_QUOTED(right_dimension,new_site.rightDimension());
@@ -150,19 +150,19 @@ TEST_CASE(move_constructable) {
             ,fillWithGenerator(random.randomComplexDouble)
             );
 
-        ASSERT_TRUE(old_site);
+        ASSERT_TRUE(old_site.valid());
         ASSERT_EQ_QUOTED(physical_dimension,old_site.physicalDimension());
         ASSERT_EQ_QUOTED(left_dimension,old_site.leftDimension());
         ASSERT_EQ_QUOTED(right_dimension,old_site.rightDimension());
 
         StateSite<Middle> new_site(boost::move(old_site));
 
-        ASSERT_FALSE(old_site);
+        ASSERT_FALSE(old_site.valid());
         ASSERT_EQ(0,old_site.physicalDimension(as_unsigned_integer));
         ASSERT_EQ(0,old_site.leftDimension(as_unsigned_integer));
         ASSERT_EQ(0,old_site.rightDimension(as_unsigned_integer));
 
-        ASSERT_TRUE(new_site);
+        ASSERT_TRUE(new_site.valid());
         ASSERT_EQ_QUOTED(physical_dimension,new_site.physicalDimension());
         ASSERT_EQ_QUOTED(left_dimension,new_site.leftDimension());
         ASSERT_EQ_QUOTED(right_dimension,new_site.rightDimension());
@@ -194,7 +194,7 @@ TEST_CASE(move_assignable) {
             ,fillWithGenerator(random.randomComplexDouble)
             );
 
-        ASSERT_TRUE(old_site);
+        ASSERT_TRUE(old_site.valid());
         ASSERT_EQ_QUOTED(number_of_matrices,old_site.numberOfMatrices());
         ASSERT_EQ_QUOTED(physical_dimension,old_site.physicalDimension());
         ASSERT_EQ_QUOTED(left_dimension,old_site.leftDimension());
@@ -202,7 +202,7 @@ TEST_CASE(move_assignable) {
 
         OperatorSite new_site;
 
-        ASSERT_FALSE(new_site);
+        ASSERT_FALSE(new_site.valid());
         ASSERT_EQ(0,new_site.numberOfMatrices());
         ASSERT_EQ(0,new_site.physicalDimension(as_unsigned_integer));
         ASSERT_EQ(0,new_site.leftDimension(as_unsigned_integer));
@@ -210,13 +210,13 @@ TEST_CASE(move_assignable) {
 
         new_site = boost::move(old_site);
 
-        ASSERT_FALSE(old_site);
+        ASSERT_FALSE(old_site.valid());
         ASSERT_EQ(0,old_site.numberOfMatrices());
         ASSERT_EQ(0,old_site.physicalDimension(as_unsigned_integer));
         ASSERT_EQ(0,old_site.leftDimension(as_unsigned_integer));
         ASSERT_EQ(0,old_site.rightDimension(as_unsigned_integer));
 
-        ASSERT_TRUE(new_site);
+        ASSERT_TRUE(new_site.valid());
         ASSERT_EQ_QUOTED(number_of_matrices,new_site.numberOfMatrices());
         ASSERT_EQ_QUOTED(physical_dimension,new_site.physicalDimension());
         ASSERT_EQ_QUOTED(left_dimension,new_site.leftDimension());
@@ -242,7 +242,7 @@ TEST_CASE(move_constructable) {
             ,fillWithGenerator(random.randomComplexDouble)
             );
 
-        ASSERT_TRUE(old_site);
+        ASSERT_TRUE(old_site.valid());
         ASSERT_EQ_QUOTED(number_of_matrices,old_site.numberOfMatrices());
         ASSERT_EQ_QUOTED(physical_dimension,old_site.physicalDimension());
         ASSERT_EQ_QUOTED(left_dimension,old_site.leftDimension());
@@ -250,13 +250,13 @@ TEST_CASE(move_constructable) {
 
         OperatorSite new_site(boost::move(old_site));
 
-        ASSERT_FALSE(old_site);
+        ASSERT_FALSE(old_site.valid());
         ASSERT_EQ(0,old_site.numberOfMatrices());
         ASSERT_EQ(0,old_site.physicalDimension(as_unsigned_integer));
         ASSERT_EQ(0,old_site.leftDimension(as_unsigned_integer));
         ASSERT_EQ(0,old_site.rightDimension(as_unsigned_integer));
 
-        ASSERT_TRUE(new_site);
+        ASSERT_TRUE(new_site.valid());
         ASSERT_EQ_QUOTED(number_of_matrices,new_site.numberOfMatrices());
         ASSERT_EQ_QUOTED(physical_dimension,new_site.physicalDimension());
         ASSERT_EQ_QUOTED(left_dimension,new_site.leftDimension());
@@ -272,11 +272,11 @@ TEST_CASE(random_generator) {
         LeftDimension left_dimension(random);
         RightDimension right_dimension(random);
         OperatorSite operator_site_1(random.randomOperator(physical_dimension,left_dimension,right_dimension));
-        ASSERT_TRUE(operator_site_1);
+        ASSERT_TRUE(operator_site_1.valid());
         OperatorSite operator_site_2;
-        ASSERT_FALSE(operator_site_2);
+        ASSERT_FALSE(operator_site_2.valid());
         operator_site_2 = random.randomOperator(physical_dimension,left_dimension,right_dimension);
-        ASSERT_TRUE(operator_site_2);
+        ASSERT_TRUE(operator_site_2.valid());
     }
 }
 //@-others
@@ -300,23 +300,23 @@ TEST_CASE(move_assignable) {
             ,fillWithGenerator(random.randomComplexDouble)
             );
 
-        ASSERT_TRUE(old_boundary);
+        ASSERT_TRUE(old_boundary.valid());
         ASSERT_EQ_QUOTED(overlap_dimension,old_boundary.overlapDimension());
         ASSERT_EQ_QUOTED(state_dimension,old_boundary.stateDimension());
 
         OverlapBoundary<Left> new_boundary;
 
-        ASSERT_FALSE(new_boundary);
+        ASSERT_FALSE(new_boundary.valid());
         ASSERT_EQ(0,new_boundary.overlapDimension(as_unsigned_integer));
         ASSERT_EQ(0,new_boundary.stateDimension(as_unsigned_integer));
 
         new_boundary = boost::move(old_boundary);
 
-        ASSERT_FALSE(old_boundary);
+        ASSERT_FALSE(old_boundary.valid());
         ASSERT_EQ(0,old_boundary.overlapDimension(as_unsigned_integer));
         ASSERT_EQ(0,old_boundary.stateDimension(as_unsigned_integer));
 
-        ASSERT_TRUE(new_boundary);
+        ASSERT_TRUE(new_boundary.valid());
         ASSERT_EQ_QUOTED(overlap_dimension,new_boundary.overlapDimension());
         ASSERT_EQ_QUOTED(state_dimension,new_boundary.stateDimension());
     }
@@ -335,17 +335,17 @@ TEST_CASE(move_constructable) {
             ,fillWithGenerator(random.randomComplexDouble)
             );
 
-        ASSERT_TRUE(old_boundary);
+        ASSERT_TRUE(old_boundary.valid());
         ASSERT_EQ_QUOTED(overlap_dimension,old_boundary.overlapDimension());
         ASSERT_EQ_QUOTED(state_dimension,old_boundary.stateDimension());
 
         OverlapBoundary<Left> new_boundary(boost::move(old_boundary));
 
-        ASSERT_FALSE(old_boundary);
+        ASSERT_FALSE(old_boundary.valid());
         ASSERT_EQ(0,old_boundary.overlapDimension(as_unsigned_integer));
         ASSERT_EQ(0,old_boundary.stateDimension(as_unsigned_integer));
 
-        ASSERT_TRUE(new_boundary);
+        ASSERT_TRUE(new_boundary.valid());
         ASSERT_EQ_QUOTED(overlap_dimension,new_boundary.overlapDimension());
         ASSERT_EQ_QUOTED(state_dimension,new_boundary.stateDimension());
     }
@@ -373,26 +373,26 @@ TEST_CASE(move_assignable) {
             ,fillWithGenerator(random.randomComplexDouble)
             );
 
-        ASSERT_TRUE(old_site);
+        ASSERT_TRUE(old_site.valid());
         ASSERT_EQ_QUOTED(physical_dimension,old_site.physicalDimension());
         ASSERT_EQ_QUOTED(left_dimension,old_site.leftDimension());
         ASSERT_EQ_QUOTED(right_dimension,old_site.rightDimension());
 
         OverlapSite<Middle> new_site;
 
-        ASSERT_FALSE(new_site);
+        ASSERT_FALSE(new_site.valid());
         ASSERT_EQ(0,new_site.physicalDimension(as_unsigned_integer));
         ASSERT_EQ(0,new_site.leftDimension(as_unsigned_integer));
         ASSERT_EQ(0,new_site.rightDimension(as_unsigned_integer));
 
         new_site = boost::move(old_site);
 
-        ASSERT_FALSE(old_site);
+        ASSERT_FALSE(old_site.valid());
         ASSERT_EQ(0,old_site.physicalDimension(as_unsigned_integer));
         ASSERT_EQ(0,old_site.leftDimension(as_unsigned_integer));
         ASSERT_EQ(0,old_site.rightDimension(as_unsigned_integer));
 
-        ASSERT_TRUE(new_site);
+        ASSERT_TRUE(new_site.valid());
         ASSERT_EQ_QUOTED(physical_dimension,new_site.physicalDimension());
         ASSERT_EQ_QUOTED(left_dimension,new_site.leftDimension());
         ASSERT_EQ_QUOTED(right_dimension,new_site.rightDimension());
@@ -414,19 +414,19 @@ TEST_CASE(move_constructable) {
             ,fillWithGenerator(random.randomComplexDouble)
             );
 
-        ASSERT_TRUE(old_site);
+        ASSERT_TRUE(old_site.valid());
         ASSERT_EQ_QUOTED(physical_dimension,old_site.physicalDimension());
         ASSERT_EQ_QUOTED(left_dimension,old_site.leftDimension());
         ASSERT_EQ_QUOTED(right_dimension,old_site.rightDimension());
 
         OverlapSite<Middle> new_site(boost::move(old_site));
 
-        ASSERT_FALSE(old_site);
+        ASSERT_FALSE(old_site.valid());
         ASSERT_EQ(0,old_site.physicalDimension(as_unsigned_integer));
         ASSERT_EQ(0,old_site.leftDimension(as_unsigned_integer));
         ASSERT_EQ(0,old_site.rightDimension(as_unsigned_integer));
 
-        ASSERT_TRUE(new_site);
+        ASSERT_TRUE(new_site.valid());
         ASSERT_EQ_QUOTED(physical_dimension,new_site.physicalDimension());
         ASSERT_EQ_QUOTED(left_dimension,new_site.leftDimension());
         ASSERT_EQ_QUOTED(right_dimension,new_site.rightDimension());
