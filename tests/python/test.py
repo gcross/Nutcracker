@@ -865,7 +865,7 @@ class optimizer_tests(TestCase):
         optimization_matrix = optimization_matrix_contractor(left_environment,operator_site_tensor,right_environment).transpose().reshape(d*bl*br,d*bl*br).transpose()
         self.assertTrue(allclose(optimization_matrix,optimization_matrix.conj().transpose()))
         guess = crand(br,bl,d)
-        info, result, actual_eigenvalue = \
+        info, result, actual_eigenvalue, result_norm = \
             self.call_optimizer(
                 left_environment,
                 sparse_operator_indices,sparse_operator_matrices,
@@ -875,6 +875,8 @@ class optimizer_tests(TestCase):
                 guess
             )
         self.assertEqual(info,0)
+        self.assertAlmostEqual(1,result_norm)
+        self.assertAlmostEqual(norm(result.ravel()),result_norm)
         correct_eigenvalues, correct_eigenvectors = eigh(optimization_matrix)
         correct_eigenvectors = correct_eigenvectors.transpose()
         correct_solution_index = argmin(correct_eigenvalues)
@@ -917,7 +919,7 @@ class optimizer_tests(TestCase):
         guess = vmps.unproject_from_orthogonal_space(reflectors,coefficients,swaps,crand(orthogonal_subspace_dimension))
         guess /= norm(guess)
         guess = guess.reshape(d,bl,br).transpose()
-        info, result, actual_eigenvalue = \
+        info, result, actual_eigenvalue, result_norm = \
             self.call_optimizer(
                 left_environment,
                 sparse_operator_indices,sparse_operator_matrices,
@@ -927,6 +929,8 @@ class optimizer_tests(TestCase):
                 guess
             )
         self.assertEqual(info,0)
+        self.assertAlmostEqual(1,result_norm)
+        self.assertAlmostEqual(norm(result.ravel()),result_norm)
         actual_eigenvector = result.transpose().ravel()
         self.assertAlmostEqual(norm(dot(projectors.transpose(),actual_eigenvector)),0)
         self.assertAlmostEqual(dot(actual_eigenvector.conj(),dot(optimization_matrix,actual_eigenvector))/norm(actual_eigenvector),actual_eigenvalue)
@@ -942,6 +946,7 @@ class optimizer_tests(TestCase):
         correct_eigenvector /= correct_eigenvector[0]
         actual_eigenvector /= actual_eigenvector[0]
         self.assertAllClose(actual_eigenvector,correct_eigenvector)
+
     #@+node:gcross.20091109182634.1546: *5* test_correct_result_for_simple_operator
     def test_correct_result_for_simple_operator(self):
         left_environment = ones((1,1,1),complex128)
@@ -949,7 +954,7 @@ class optimizer_tests(TestCase):
         sparse_operator_indices = ones((2,1))
         sparse_operator_matrices = diag([1,1,1,-1])
         sparse_operator_matrices = sparse_operator_matrices.reshape(sparse_operator_matrices.shape + (1,))
-        info, result, eigenvalue = \
+        info, result, eigenvalue, result_norm = \
             self.call_optimizer(
                 left_environment,
                 sparse_operator_indices,sparse_operator_matrices,
@@ -959,9 +964,14 @@ class optimizer_tests(TestCase):
                 crand(1,1,4)
             )
         self.assertEqual(info,0)
+        self.assertAlmostEqual(1,result_norm)
+        self.assertAlmostEqual(norm(result.ravel()),result_norm)
         result /= result[0,0,-1]
         self.assertAllClose(result.ravel(),array([0,0,0,1]))
         self.assertAlmostEqual(-1,eigenvalue)
+        self.assertAlmostEqual(1,result_norm)
+        self.assertAlmostEqual(norm(result.ravel()),result_norm)
+
     #@+node:gcross.20091115201814.1735: *5* test_orthogonalization_1
     def test_orthogonalization_1(self):
         left_environment = ones((1,1,1),complex128)
@@ -976,7 +986,7 @@ class optimizer_tests(TestCase):
         orthogonal_subspace_dimension = 3
         guess = vmps.unproject_from_orthogonal_space(reflectors,coefficients,swaps,crand(3)).reshape(1,1,4)
         guess /= norm(guess)
-        info, result, eigenvalue = \
+        info, result, eigenvalue, result_norm = \
             self.call_optimizer(
                 left_environment,
                 sparse_operator_indices,sparse_operator_matrices,
@@ -991,6 +1001,7 @@ class optimizer_tests(TestCase):
         result /= result[2]
         self.assertAllClose(result,[0,0,1,0])
         self.assertAlmostEqual(2,eigenvalue)
+
     #@+node:gcross.20091119150241.1879: *5* test_orthogonalization_1_complex
     def test_orthogonalization_1_complex(self):
         left_environment = ones((1,1,1),complex128)
@@ -1005,7 +1016,7 @@ class optimizer_tests(TestCase):
         orthogonal_subspace_dimension = 3
         guess = vmps.unproject_from_orthogonal_space(reflectors,coefficients,swaps,crand(3)).reshape(1,1,4)
         guess /= norm(guess)
-        info, result, eigenvalue = \
+        info, result, eigenvalue, result_norm = \
             self.call_optimizer(
                 left_environment,
                 sparse_operator_indices,sparse_operator_matrices,
@@ -1015,11 +1026,14 @@ class optimizer_tests(TestCase):
                 guess
             )
         self.assertEqual(info,0)
+        self.assertAlmostEqual(1,result_norm)
+        self.assertAlmostEqual(norm(result.ravel()),result_norm)
         self.assertVanishing(dot(projector.conj(),result.ravel()))
         result = result.ravel()
         result /= result[2]
         self.assertAllClose(result,[0,0,1,0])
         self.assertAlmostEqual(2,eigenvalue)
+
     #@+node:gcross.20100525120117.1851: *5* test_orthogonalization_2
     def test_orthogonalization_2(self):
         left_environment = ones((1,1,1),complex128)
@@ -1034,7 +1048,7 @@ class optimizer_tests(TestCase):
         orthogonal_subspace_dimension = 3
         guess = vmps.unproject_from_orthogonal_space(reflectors,coefficients,swaps,crand(3)).reshape(1,1,5)
         guess /= norm(guess)
-        info, result, eigenvalue = \
+        info, result, eigenvalue, result_norm = \
             self.call_optimizer(
                 left_environment,
                 sparse_operator_indices,sparse_operator_matrices,
@@ -1044,11 +1058,14 @@ class optimizer_tests(TestCase):
                 guess
             )
         self.assertEqual(info,0)
+        self.assertAlmostEqual(1,result_norm)
+        self.assertAlmostEqual(norm(result.ravel()),result_norm)
         self.assertVanishing(dot(projectors.conj().transpose(),result.ravel()))
         result = result.ravel()
         result /= result[2]
         self.assertAllClose(result,[0,0,1,0,0])
         self.assertAlmostEqual(3,eigenvalue)
+
     #@+node:gcross.20091119150241.1877: *5* test_orthogonalization_2_complex
     def test_orthogonalization_2(self):
         left_environment = ones((1,1,1),complex128)
@@ -1063,7 +1080,7 @@ class optimizer_tests(TestCase):
         orthogonal_subspace_dimension = 3
         guess = vmps.unproject_from_orthogonal_space(reflectors,coefficients,swaps,crand(3)).reshape(1,1,5)
         guess /= norm(guess)
-        info, result, eigenvalue = \
+        info, result, eigenvalue, result_norm = \
             self.call_optimizer(
                 left_environment,
                 sparse_operator_indices,sparse_operator_matrices,
@@ -1073,11 +1090,13 @@ class optimizer_tests(TestCase):
                 guess
             )
         self.assertEqual(info,0)
+        self.assertAlmostEqual(1,result_norm)
+        self.assertAlmostEqual(norm(result.ravel()),result_norm)
         self.assertVanishing(dot(projectors.conj().transpose(),result.ravel()))
         result = result.ravel()
         result /= result[2]
         self.assertAllClose(result,[0,0,1,0,0])
-        self.assertAlmostEqual(3,eigenvalue)
+
     #@-others
 #@-others
 
@@ -1091,19 +1110,28 @@ class optimize_strategy_1(optimizer_tests):
     d_range = (1,4)
     b_range = (1,4)
     c_range = (1,4)
-    call_optimizer = staticmethod(vmps.optimize_strategy_1)
+    @staticmethod
+    def call_optimizer(*args,**keywords):
+        info, result, eigenvalue = vmps.optimize_strategy_1(*args,**keywords)
+        return (info, result, eigenvalue, norm(result.ravel()))
 
 class optimize_strategy_2(optimizer_tests):
     d_range = (2,4)
     b_range = (2,10)
     c_range = (2,10)
-    call_optimizer = staticmethod(vmps.optimize_strategy_2)
+    @staticmethod
+    def call_optimizer(*args,**keywords):
+        info, result, eigenvalue = vmps.optimize_strategy_2(*args,**keywords)
+        return (info, result, eigenvalue, norm(result.ravel()))
 
 class optimize_strategy_3(optimizer_tests):
     d_range = (2,4)
     b_range = (2,10)
     c_range = (2,10)
-    call_optimizer = staticmethod(vmps.optimize_strategy_3)
+    @staticmethod
+    def call_optimizer(*args,**keywords):
+        info, result, eigenvalue = vmps.optimize_strategy_3(*args,**keywords)
+        return (info, result, eigenvalue, norm(result.ravel()))
 #@+node:gcross.20091123113033.1634: *3* Randomization
 #@+node:gcross.20091110205054.1924: *4* rand_norm_state_site_tensor
 class rand_norm_state_site_tensor(TestCase):
