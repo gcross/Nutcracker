@@ -794,6 +794,39 @@ class extend_state_vector_fragment(TestCase):
             state_site_tensor,
         )
         self.assertAllClose(actual_output_tensor,correct_output_tensor)
+#@+node:gcross.20110214183844.3002: *4* contract_matrix_left
+class contract_matrix_left(TestCase):
+
+    correct_contractor = staticmethod(form_contractor([
+        ("L1","M2"),
+        ("L2","M*2"),
+        ("L'1","M1"),
+        ("L'2","M*1"),
+    ], [
+        ("L",2),
+        ("M",2),
+        ("M*",2),
+    ], ("L'",2)
+    ))
+
+    @with_checker(number_of_calls=10)
+    def test_agreement_with_contractor(self,
+        bl = irange(2,20),
+        br = irange(2,20),
+    ):
+        left_environment = crand(bl,bl)
+        matrix = crand(br,bl)
+        actual_output_tensor = vmps.contract_matrix_left(
+            left_environment,
+            matrix,
+        )
+        correct_output_tensor = self.correct_contractor(
+            left_environment,
+            matrix,
+            matrix.conj(),
+        )
+        self.assertEqual(actual_output_tensor.shape,correct_output_tensor.shape)
+        self.assertAllClose(actual_output_tensor,correct_output_tensor)
 #@-others
 #@+node:gcross.20100517000234.1763: *3* Optimization
 #@+others
@@ -1702,6 +1735,7 @@ tests = [
     swap_matrix_inplace,
     non_hermitian_matrix_detection,
     extend_state_vector_fragment,
+    contract_matrix_left,
 ]
 
 #@+<< Runner >>

@@ -1020,6 +1020,45 @@ subroutine extend_state_vector_fragment( &
   )
 
 end subroutine
+!@+node:gcross.20110214183844.2998: *3* contract_matrix_left
+subroutine contract_matrix_left( &
+  bl,br, &
+  left_environment, &
+  matrix, &
+  new_left_environment &
+)
+  integer, intent(in) :: bl, br
+  double complex, intent(in) :: &
+    left_environment(bl,bl), &
+    matrix(br,bl)
+  double complex, intent(out) :: new_left_environment(br,br)
+
+  double complex :: &
+    intermediate_tensor(br,bl)
+
+  new_left_environment = 0
+
+  call zgemm( &
+      'N','N', &
+      br,bl,bl, &
+      (1d0,0d0), &
+      matrix, br, &
+      left_environment, bl, &
+      (0d0,0d0), &
+      intermediate_tensor, br &
+  )
+
+  call zgemm( &
+      'N','C', &
+      br,br,bl, &
+      (1d0,0d0), &
+      intermediate_tensor, br, &
+      matrix, br, &
+      (0d0,0d0), &
+      new_left_environment, br &
+  )
+
+end subroutine
 !@+node:gcross.20091211120042.1683: ** apply_single_site_operator
 subroutine apply_single_site_operator( &
   bl, & ! state left bandwidth dimension

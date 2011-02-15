@@ -131,6 +131,30 @@ complex<double> contract_expectation_boundaries(
     );
     return expectation;
 }
+//@+node:gcross.20110214183844.3003: *3* contract_matrix_left
+extern "C" void contract_matrix_left_(
+    uint32_t const* bl
+  , uint32_t const* br
+  , complex<double> const* left_environment
+  , complex<double> const* matrix
+  , complex<double>* new_left_environment
+);
+
+void contract_matrix_left(
+    uint32_t bl
+  , uint32_t br
+  , complex<double> const* left_environment
+  , complex<double> const* matrix
+  , complex<double>* new_left_environment
+) {
+    contract_matrix_left_(
+         &bl
+        ,&br
+        ,left_environment
+        ,matrix
+        ,new_left_environment
+    );
+}
 //@+node:gcross.20110124175241.1626: *3* contract_sos_left
 extern "C" void contract_sos_left_(
     uint32_t const* bl,
