@@ -33,24 +33,24 @@ using std::min;
 namespace Core {
 
 complex<double> compute_expectation(
-    unsigned int const bl,
-    unsigned int const br,
-    unsigned int const cl,
-    unsigned int const cr,
-    unsigned int const d,
+    uint32_t const bl,
+    uint32_t const br,
+    uint32_t const cl,
+    uint32_t const cr,
+    uint32_t const d,
     complex<double> const* left_environment,
     complex<double> const* state_site_tensor,
-    unsigned int const number_of_matrices, uint32_t const* sparse_operator_indices, complex<double> const* sparse_operator_matrices,
+    uint32_t const number_of_matrices, uint32_t const* sparse_operator_indices, complex<double> const* sparse_operator_matrices,
     complex<double> const* right_environment
 );
 
 complex<double> compute_overlap_with_projectors(
-    unsigned int const number_of_projectors
-  , unsigned int const number_of_reflectors
+    uint32_t const number_of_projectors
+  , uint32_t const number_of_reflectors
   , complex<double> const* reflectors
   , complex<double> const* coefficients
   , uint32_t const* swaps
-  , unsigned int const vector_size
+  , uint32_t const vector_size
   , complex<double> const* vector
 );
 
@@ -62,33 +62,33 @@ complex<double> contract_expectation_boundaries(
 );
 
 void contract_sos_left(
-    unsigned int const bl,
-    unsigned int const br,
-    unsigned int const cl,
-    unsigned int const cr,
-    unsigned int const d,
+    uint32_t const bl,
+    uint32_t const br,
+    uint32_t const cl,
+    uint32_t const cr,
+    uint32_t const d,
     complex<double> const* left_environment,
-    unsigned int const number_of_matrices, uint32_t const* sparse_operator_indices, complex<double> const* sparse_operator_matrices,
+    uint32_t const number_of_matrices, uint32_t const* sparse_operator_indices, complex<double> const* sparse_operator_matrices,
     complex<double> const* state_site_tensor,
     complex<double>* new_left_environment
 );
 
 void contract_sos_right(
-    unsigned int const bl,
-    unsigned int const br,
-    unsigned int const cl,
-    unsigned int const cr,
-    unsigned int const d,
+    uint32_t const bl,
+    uint32_t const br,
+    uint32_t const cl,
+    uint32_t const cr,
+    uint32_t const d,
     complex<double> const* right_environment,
-    unsigned int const number_of_matrices, uint32_t const* sparse_operator_indices, complex<double> const* sparse_operator_matrices,
+    uint32_t const number_of_matrices, uint32_t const* sparse_operator_indices, complex<double> const* sparse_operator_matrices,
     complex<double> const* state_site_tensor,
     complex<double>* new_right_environment
 );
 
 void contract_ss_left(
-    unsigned int const b_left_old, unsigned int const b_right_old,
-    unsigned int const b_left_new, unsigned int const b_right_new,
-    unsigned int const d,
+    uint32_t const b_left_old, uint32_t const b_right_old,
+    uint32_t const b_left_new, uint32_t const b_right_new,
+    uint32_t const d,
     complex<double> const* left_environment,
     complex<double> const* normalized_projector_site_tensor,
     complex<double> const* normalized_state_site_tensor,
@@ -96,38 +96,38 @@ void contract_ss_left(
 );
 
 void contract_ss_right(
-    unsigned int const b_left_old, unsigned int const b_right_old,
-    unsigned int const b_left_new, unsigned int const b_right_new,
-    unsigned int const d,
+    uint32_t const b_left_old, uint32_t const b_right_old,
+    uint32_t const b_left_new, uint32_t const b_right_new,
+    uint32_t const d,
     complex<double> const* right_environment,
     complex<double> const* normalized_projector_site_tensor,
     complex<double> const* normalized_state_site_tensor,
     complex<double>* new_right_environment
 );
 
-unsigned int convert_vectors_to_reflectors(
-    unsigned int const n,
-    unsigned int const m,
+uint32_t convert_vectors_to_reflectors(
+    uint32_t const n,
+    uint32_t const m,
     complex<double>* vectors,
     complex<double>* coefficients,
     uint32_t* swaps
 );
 
 void extend_state_vector_fragment(
-    unsigned int const bm
-  , unsigned int const br
-  , unsigned int const dl
-  , unsigned int const dr
+    uint32_t const bm
+  , uint32_t const br
+  , uint32_t const dl
+  , uint32_t const dr
   , complex<double> const* old_state_vector_fragment
   , complex<double> const* site_tensor
   , complex<double>* new_state_vector_fragment
 );
 
 void filter_components_outside_orthog(
-    unsigned int const full_space_dimension
-  , unsigned int const number_of_projectors
-  , unsigned int const number_of_reflectors
-  , unsigned int const orthogonal_subspace_dimension
+    uint32_t const full_space_dimension
+  , uint32_t const number_of_projectors
+  , uint32_t const number_of_reflectors
+  , uint32_t const orthogonal_subspace_dimension
   , complex<double> const* reflectors
   , complex<double> const* coefficients
   , uint32_t const* swaps
@@ -136,8 +136,8 @@ void filter_components_outside_orthog(
 );
 
 void form_norm_overlap_tensors(
-    unsigned int const bl, unsigned int const bm, unsigned int const br,
-    unsigned int const dl, unsigned int const dr,
+    uint32_t const bl, uint32_t const bm, uint32_t const br,
+    uint32_t const dl, uint32_t const dr,
     complex<double> const* unnormalized_state_tensor_1,
     complex<double> const* right_norm_state_tensor_2,
     complex<double> const* left_norm_overlap_tensor_1,
@@ -147,17 +147,17 @@ void form_norm_overlap_tensors(
 );
 
 void form_overlap_site_tensor(
-    unsigned int const br,
-    unsigned int const bl,
-    unsigned int const d,
+    uint32_t const br,
+    uint32_t const bl,
+    uint32_t const d,
     complex<double> const* state_site_tensor,
     complex<double>* overlap_site_tensor
 );
 
 void form_overlap_vector(
-    unsigned int const b_left_old, unsigned int const b_right_old,
-    unsigned int const b_left_new, unsigned int const b_right_new,
-    unsigned int const d,
+    uint32_t const b_left_old, uint32_t const b_right_old,
+    uint32_t const b_left_new, uint32_t const b_right_new,
+    uint32_t const d,
     complex<double> const* left_environment,
     complex<double> const* right_environment,
     complex<double> const* unnormalized_projector_site_tensor,
@@ -165,9 +165,9 @@ void form_overlap_vector(
 );
 
 int increase_bandwidth_between(
-    unsigned int const bl, unsigned int const bm, unsigned int const br,
-    unsigned int const dl, unsigned int const dr,
-    unsigned int const new_bm,
+    uint32_t const bl, uint32_t const bm, uint32_t const br,
+    uint32_t const dl, uint32_t const dr,
+    uint32_t const new_bm,
     complex<double> const* site_tensor_to_normalize,
     complex<double> const* site_tensor_to_denormalize,
     complex<double>* normalized_site_tensor,
@@ -175,8 +175,8 @@ int increase_bandwidth_between(
 );
 
 int norm_denorm_going_left(
-    unsigned int const bll, unsigned int const bl, unsigned int const br,
-    unsigned int const dl, unsigned int const d,
+    uint32_t const bll, uint32_t const bl, uint32_t const br,
+    uint32_t const dl, uint32_t const d,
     complex<double> const* site_tensor_to_denormalize,
     complex<double> const* site_tensor_to_normalize,
     complex<double>* denormalized_site_tensor,
@@ -184,24 +184,24 @@ int norm_denorm_going_left(
 );
 
 int norm_denorm_going_right(
-    unsigned int const bl, unsigned int const br, unsigned int const brr,
-    unsigned int const d, unsigned int const dr,
+    uint32_t const bl, uint32_t const br, uint32_t const brr,
+    uint32_t const d, uint32_t const dr,
     complex<double> const* site_tensor_to_normalize,
     complex<double> const* site_tensor_to_denormalize,
     complex<double>* normalized_site_tensor,
     complex<double>* denormalized_site_tensor
 );
 
-unsigned int optimize(
-    unsigned int const bl,
-    unsigned int const br,
-    unsigned int const cl,
-    unsigned int const cr,
-    unsigned int const d,
+uint32_t optimize(
+    uint32_t const bl,
+    uint32_t const br,
+    uint32_t const cl,
+    uint32_t const cr,
+    uint32_t const d,
     complex<double> const* left_environment,
-    unsigned int const number_of_matrices, uint32_t const* sparse_operator_indices, complex<double> const* sparse_operator_matrices,
+    uint32_t const number_of_matrices, uint32_t const* sparse_operator_indices, complex<double> const* sparse_operator_matrices,
     complex<double> const* right_environment,
-    unsigned int const number_of_projectors, unsigned int const number_of_reflectors, unsigned int const orthogonal_subspace_dimension, complex<double> const* reflectors, complex<double> const* coefficients, uint32_t const* swaps,
+    uint32_t const number_of_projectors, uint32_t const number_of_reflectors, uint32_t const orthogonal_subspace_dimension, complex<double> const* reflectors, complex<double> const* coefficients, uint32_t const* swaps,
     const char* which,
     double const tol,
     uint32_t& number_of_iterations,
@@ -212,21 +212,21 @@ unsigned int optimize(
 );
 
 void rand_norm_state_site_tensor(
-    unsigned int const br,
-    unsigned int const bl,
-    unsigned int const d,
+    uint32_t const br,
+    uint32_t const bl,
+    uint32_t const d,
     complex<double>* state_site_tensor
 );
 
 void rand_unnorm_state_site_tensor(
-    unsigned int const br,
-    unsigned int const bl,
-    unsigned int const d,
+    uint32_t const br,
+    uint32_t const bl,
+    uint32_t const d,
     complex<double>* state_site_tensor
 );
 
-unsigned int random_projector_matrix(
-    unsigned int const projector_length, unsigned int const number_of_projectors,
+uint32_t random_projector_matrix(
+    uint32_t const projector_length, uint32_t const number_of_projectors,
     complex<double>* reflectors, complex<double>* coefficients, uint32_t* swaps
 );
 
