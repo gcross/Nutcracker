@@ -32,17 +32,17 @@ Operator constructExternalFieldOperator(
     Operator operator_sites;
     operator_sites.reserve(number_of_sites);
     if(number_of_sites == 1) {
-        operator_sites.push_back(shared_ptr<OperatorSite const>(new OperatorSite(
+        operator_sites.emplace_back(new OperatorSite(
             constructOperatorSite(
                  physical_dimension
                 ,LeftDimension(1)
                 ,RightDimension(1)
                 ,list_of(OperatorLink(1,1,matrix))
             )
-        )));
+        ));
     } else {
         Matrix I = identityMatrix(*physical_dimension);
-        operator_sites.push_back(shared_ptr<OperatorSite const>(new OperatorSite(
+        operator_sites.emplace_back(new OperatorSite(
             constructOperatorSite(
                  physical_dimension
                 ,LeftDimension(1)
@@ -51,7 +51,7 @@ Operator constructExternalFieldOperator(
                     (OperatorLink(1,1,I))
                     (OperatorLink(1,2,matrix))
             )
-        )));
+        ));
         shared_ptr<OperatorSite const> const middle(new OperatorSite(
             constructOperatorSite(
                  physical_dimension
@@ -64,9 +64,9 @@ Operator constructExternalFieldOperator(
             )
         ));
         REPEAT(number_of_sites-2) {
-            operator_sites.push_back(middle);
+            operator_sites.emplace_back(middle);
         }
-        operator_sites.push_back(shared_ptr<OperatorSite const>(new OperatorSite(
+        operator_sites.emplace_back(new OperatorSite(
             constructOperatorSite(
                  physical_dimension
                 ,LeftDimension(2)
@@ -75,7 +75,7 @@ Operator constructExternalFieldOperator(
                     (OperatorLink(1,1,matrix))
                     (OperatorLink(2,1,I))
             )
-        )));
+        ));
     }
     return boost::move(operator_sites);
 }
@@ -123,7 +123,7 @@ Operator constructTransverseIsingModelOperator(
         ;
     Operator operator_sites;
     operator_sites.reserve(number_of_sites);
-    operator_sites.push_back(shared_ptr<OperatorSite const>(new OperatorSite(
+    operator_sites.emplace_back(new OperatorSite(
         constructOperatorSite(
              PhysicalDimension(2)
             ,LeftDimension(1)
@@ -133,7 +133,7 @@ Operator constructTransverseIsingModelOperator(
                 (OperatorLink(1,2,X1))
                 (OperatorLink(1,3,Z ))
         )
-    )));
+    ));
     shared_ptr<OperatorSite const> const middle(new OperatorSite(
         constructOperatorSite(
              PhysicalDimension(2)
@@ -148,9 +148,9 @@ Operator constructTransverseIsingModelOperator(
         )
     ));
     REPEAT(number_of_sites-2) {
-        operator_sites.push_back(middle);
+        operator_sites.emplace_back(middle);
     }
-    operator_sites.push_back(shared_ptr<OperatorSite const>(new OperatorSite(
+    operator_sites.emplace_back(new OperatorSite(
         constructOperatorSite(
              PhysicalDimension(2)
             ,LeftDimension(3)
@@ -160,7 +160,7 @@ Operator constructTransverseIsingModelOperator(
                 (OperatorLink(2,1,X2))
                 (OperatorLink(3,1,I ))
         )
-    )));
+    ));
     return boost::move(operator_sites);
 }
 //@+node:gcross.20110207120702.1780: *3* identityMatrix
