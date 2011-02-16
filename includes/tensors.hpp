@@ -900,9 +900,9 @@ inline unsigned int operator|(
     );
 }
 //@+node:gcross.20110215235924.1961: *3* OperatorSite | StateSite<Middle>
-template<typename side> inline unsigned int operator|(
+inline unsigned int operator|(
       OperatorSite const& operator_site
-    , StateSite<side> const& state_site
+    , StateSiteAny const& state_site
 ) {
     return connectDimensions(
          "operator site physical"
