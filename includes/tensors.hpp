@@ -77,7 +77,7 @@ public:
     template<typename T> struct ParameterName : public Parameter<T> { \
         explicit ParameterName(T& data) : Parameter<T>(data) {} \
         template<typename U> ParameterName(ParameterName<U>& other) : Parameter<T>(*other) {} \
-        template<typename U> operator ParameterName<U>() { return ParameterName<U>(static_cast<U&>(**this)); } \
+        template<typename U> operator ParameterName<U>() const { return ParameterName<U>(static_cast<U&>(**this)); } \
     }; \
     template<typename T> ParameterName<T> parameter_name(T& data) { return ParameterName<T>(data); } \
     template<typename T> ParameterName<T const> parameter_name(T const& data) { return ParameterName<T const>(data); }
