@@ -57,28 +57,13 @@ complex<double> contractExpectationBoundaries(
         ,right_boundary
     );
 }
-//@+node:gcross.20110214155808.1876: *3* contractSOSLeft
+//@+node:gcross.20110215235924.2010: *3* contractSOSLeft
 ExpectationBoundary<Left> contractSOSLeft(
       ExpectationBoundary<Left> const& old_boundary
     , StateSite<Left> const& state_site
     , OperatorSite const& operator_site
 ) {
-    ExpectationBoundary<Left> new_boundary
-        (OperatorDimension(operator_site.rightDimension(as_unsigned_integer))
-        ,StateDimension(state_site.rightDimension(as_unsigned_integer))
-        );
-    Core::contract_sos_left(
-         old_boundary | state_site
-        ,state_site.rightDimension(as_unsigned_integer)
-        ,old_boundary | operator_site
-        ,operator_site.rightDimension(as_unsigned_integer)
-        ,operator_site | state_site
-        ,old_boundary
-        ,operator_site.numberOfMatrices(),operator_site,operator_site
-        ,state_site
-        ,new_boundary
-    );
-    return boost::move(new_boundary);
+    return Unsafe::contractSOSLeft(old_boundary,state_site,operator_site);
 }
 //@+node:gcross.20110214155808.1877: *3* contractSOSRight
 ExpectationBoundary<Right> contractSOSRight(
@@ -148,6 +133,36 @@ OverlapBoundary<Right> contractSSRight(
         ,new_boundary
     );
     return boost::move(new_boundary);
+}
+//@+node:gcross.20110215235924.2011: *3* Unsafe
+namespace Unsafe {
+
+//@+others
+//@+node:gcross.20110214155808.1876: *4* contractSOSLeft
+ExpectationBoundary<Left> contractSOSLeft(
+      ExpectationBoundary<Left> const& old_boundary
+    , StateSiteAny const& state_site
+    , OperatorSite const& operator_site
+) {
+    ExpectationBoundary<Left> new_boundary
+        (OperatorDimension(operator_site.rightDimension(as_unsigned_integer))
+        ,StateDimension(state_site.rightDimension(as_unsigned_integer))
+        );
+    Core::contract_sos_left(
+         old_boundary | state_site
+        ,state_site.rightDimension(as_unsigned_integer)
+        ,old_boundary | operator_site
+        ,operator_site.rightDimension(as_unsigned_integer)
+        ,operator_site | state_site
+        ,old_boundary
+        ,operator_site.numberOfMatrices(),operator_site,operator_site
+        ,state_site
+        ,new_boundary
+    );
+    return boost::move(new_boundary);
+}
+//@-others
+
 }
 //@-others
 

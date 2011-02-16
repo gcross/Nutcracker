@@ -53,6 +53,16 @@ OverlapBoundary<Right> contractSSRight(
     , OverlapSite<Right> const& overlap_site
     , StateSite<Right> const& state_site
 );
+//@+node:gcross.20110215235924.2012: *3* Unsafe
+namespace Unsafe {
+
+ExpectationBoundary<Left> contractSOSLeft(
+      ExpectationBoundary<Left> const& old_boundary
+    , StateSiteAny const& state_site
+    , OperatorSite const& operator_site
+);
+
+}
 //@+node:gcross.20110214155808.1858: ** struct contract
 template<typename side> struct contract {};
 

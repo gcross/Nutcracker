@@ -863,27 +863,15 @@ inline unsigned int operator|(
         ,operator_site.leftDimension(as_unsigned_integer)
     );
 }
-//@+node:gcross.20110215235924.1958: *3* ExpectationBoundary<Left> | StateSite<Middle>
+//@+node:gcross.20110215235924.1958: *3* ExpectationBoundary<Left> | StateSiteAny
 inline unsigned int operator|(
       ExpectationBoundary<Left> const& expectation_boundary
-    , StateSite<Middle> const& state_site
+    , StateSiteAny const& state_site
 ) {
     return connectDimensions(
          "left expectation boundary state"
         ,expectation_boundary.stateDimension(as_unsigned_integer)
-        ,"middle state site left"
-        ,state_site.leftDimension(as_unsigned_integer)
-    );
-}
-//@+node:gcross.20110215235924.1959: *3* ExpectationBoundary<Left> | StateSite<Left>
-inline unsigned int operator|(
-      ExpectationBoundary<Left> const& expectation_boundary
-    , StateSite<Left> const& state_site
-) {
-    return connectDimensions(
-         "left expectation boundary state"
-        ,expectation_boundary.stateDimension(as_unsigned_integer)
-        ,"middle state site left"
+        ,"state site left"
         ,state_site.leftDimension(as_unsigned_integer)
     );
 }
