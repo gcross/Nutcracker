@@ -23,15 +23,15 @@ using boost::equal;
 TEST_SUITE(Boundaries) {
 
 //@+others
-//@+node:gcross.20110127123226.2507: *3* computeExpectationValue
-TEST_SUITE(computeExpectationValue) {
+//@+node:gcross.20110127123226.2507: *3* computeExpectationValueAtSite
+TEST_SUITE(computeExpectationValueAtSite) {
 
     //@+others
     //@+node:gcross.20110127123226.2518: *4* trivial, all dimensions 1
     TEST_CASE(trivial_with_all_dimensions_1) {
         complex<double> expected_expectation_value = 1;
         complex<double> actual_expectation_value =
-            computeExpectationValue(
+            computeExpectationValueAtSite(
                  ExpectationBoundary<Left>::trivial
                 ,StateSite<Middle>::trivial
                 ,OperatorSite::trivial
@@ -50,7 +50,7 @@ TEST_SUITE(computeExpectationValue) {
 
         complex<double> expected_expectation_value(0,1);
         complex<double> actual_expectation_value =
-            computeExpectationValue(
+            computeExpectationValueAtSite(
                  ExpectationBoundary<Left>::trivial
                 ,StateSite<Middle>::trivial
                 ,operator_site
@@ -78,7 +78,7 @@ TEST_SUITE(computeExpectationValue) {
                 ,fillWithRange(list_of(1)(0)(0)(-1))
                 );
             complex<double> expectation_value =
-                computeExpectationValue(
+                computeExpectationValueAtSite(
                      ExpectationBoundary<Left>::trivial
                     ,state_site
                     ,operator_site
@@ -568,7 +568,7 @@ TEST_CASE(consistent) {
 
         complex<double> const
              result_from_computeExpectationValue =
-                computeExpectationValue(
+                computeExpectationValueAtSite(
                      left_boundary
                     ,state_site
                     ,operator_site

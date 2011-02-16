@@ -179,7 +179,7 @@ public:
 
 template<typename side> OverlapBoundary<side> const OverlapBoundary<side>::trivial(make_trivial);
 //@+node:gcross.20110214155808.1856: ** Functions
-complex<double> computeExpectationValue(
+complex<double> computeExpectationValueAtSite(
       ExpectationBoundary<Left> const& left_boundary
     , StateSite<Middle> const& state_site
     , OperatorSite const& operator_site

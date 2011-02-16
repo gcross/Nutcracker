@@ -17,8 +17,8 @@ namespace Nutcracker {
 
 //@+others
 //@+node:gcross.20110214155808.1873: ** Functions
-//@+node:gcross.20110214155808.1874: *3* computeExpectationValue
-complex<double> computeExpectationValue(
+//@+node:gcross.20110214155808.1874: *3* computeExpectationValueAtSite
+complex<double> computeExpectationValueAtSite(
       ExpectationBoundary<Left> const& left_boundary
     , StateSite<Middle> const& state_site
     , OperatorSite const& operator_site

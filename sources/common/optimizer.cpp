@@ -191,7 +191,7 @@ OptimizerResult optimizeStateSite(
               )
             ;
     complex<double> const expectation_value =
-        computeExpectationValue(
+        computeExpectationValueAtSite(
              left_boundary
             ,new_state_site
             ,operator_site

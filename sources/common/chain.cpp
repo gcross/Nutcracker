@@ -161,14 +161,14 @@ void Chain::reset(unsigned int bandwidth_dimension) {
             ,RightDimension(initial_bandwidth_dimensions[1])
         );
 
-    complex<double> const expectation_value = computeExpectationValue();
+    complex<double> const expectation_value = computeExpectationValueAtSite();
     if(abs(expectation_value.imag()) > 1e-10) throw InitialChainEnergyNotRealError(expectation_value);
     energy = expectation_value.real();
 }
-//@+node:gcross.20110202175920.1720: *3* computeExpectationValue
-complex<double> Chain::computeExpectationValue() const {
+//@+node:gcross.20110202175920.1720: *3* computeExpectationValueAtSite
+complex<double> Chain::computeExpectationValueAtSite() const {
     return 
-        Nutcracker::computeExpectationValue(
+        Nutcracker::computeExpectationValueAtSite(
              left_expectation_boundary
             ,state_site
             ,*operator_sites[current_site_number]
