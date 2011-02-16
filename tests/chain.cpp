@@ -134,7 +134,7 @@ TEST_CASE(moveLeftAndRight) {
 
     REPEAT(10) {
         unsigned int const number_of_operators = random+2;
-        Chain chain(random.randomOperators(number_of_operators));
+        Chain chain(random.randomOperator(number_of_operators));
 
         #define VALIDATE_CHAIN_PROPERTIES \
             { \
@@ -162,7 +162,7 @@ TEST_CASE(optimizeSite) {
 
     REPEAT(10) {
         unsigned int const number_of_operators = random+2;
-        Chain chain(random.randomOperators(number_of_operators));
+        Chain chain(random.randomOperator(number_of_operators));
 
         double energy = chain.getEnergy();
 
@@ -217,7 +217,7 @@ TEST_SUITE(performOptimizationSweep) {
                 ,initial_bandwidth_dimensions
             ) {
                 Chain chain(
-                     constructExternalFieldOperators(
+                     constructExternalFieldOperator(
                           number_of_sites
                         , matrix
                      )
@@ -240,7 +240,7 @@ TEST_CASE(increaseBandwidthDimension) {
 
     REPEAT(10) {
         unsigned int const number_of_operators = random+2;
-        Chain chain(random.randomOperators(number_of_operators));
+        Chain chain(random.randomOperator(number_of_operators));
         unsigned int const maximum_bandwidth_dimension = min(10u,chain.maximum_bandwidth_dimension);
 
         #define VALIDATE_CHAIN_PROPERTIES \
@@ -275,7 +275,7 @@ TEST_SUITE(sweepUntilConverged) {
         , unsigned int const bandwidth_dimension
         , double const correct_energy
     ) {
-        Chain chain(constructTransverseIsingModelOperators(number_of_sites,coupling_strength),bandwidth_dimension);
+        Chain chain(constructTransverseIsingModelOperator(number_of_sites,coupling_strength),bandwidth_dimension);
         chain.signalOptimizeSiteFailure.connect(rethrow<OptimizerFailure>);
         chain.sweepUntilConverged();
         ASSERT_NEAR(correct_energy,chain.getEnergy(),1e-7);
@@ -297,7 +297,7 @@ TEST_SUITE(optimizeChain) {
         , double const coupling_strength
         , double const correct_energy
     ) {
-        Chain chain(constructTransverseIsingModelOperators(number_of_sites,coupling_strength));
+        Chain chain(constructTransverseIsingModelOperator(number_of_sites,coupling_strength));
         chain.signalOptimizeSiteFailure.connect(rethrow<OptimizerFailure>);
         chain.optimizeChain();
         ASSERT_NEAR(correct_energy,chain.getEnergy(),1e-10);

@@ -77,7 +77,7 @@ vector<unsigned int> computeBandwidthDimensionSequence(
 );
 
 vector<unsigned int> extractPhysicalDimensions(
-    Operators const& operators
+    Operator const& operator_sites
 );
 //@+node:gcross.20110208151104.1789: *3* maximumBandwidthDimension
 template<typename T> unsigned int maximumBandwidthDimension(
@@ -179,7 +179,7 @@ class Chain {
 public:
     unsigned int const number_of_sites;
 protected:
-    Operators const operators;
+    Operator const operator_sites;
     vector<vector<OverlapSiteTrio> > overlap_trios;
     unsigned int current_site_number;
     ExpectationBoundary<Left> left_expectation_boundary;
@@ -227,7 +227,7 @@ public:
     signal<void ()> signalChainOptimized;
 
     Chain(
-      Operators const& operators
+      Operator const& operator_sites
     , unsigned int const initial_bandwidth = 1
     , Options const& options = defaults
     );
@@ -272,7 +272,7 @@ template<typename side> void Chain::absorb(
         contract<side>::SOS(
              expectation_boundary
             ,state_site
-            ,*operators[site_number]
+            ,*operator_sites[site_number]
         )
     );
 

@@ -99,10 +99,10 @@ vector<unsigned int> computeBandwidthDimensionSequence(
     return boost::move(forward_bandwidth_dimensions);
 }
 //@+node:gcross.20110207215504.1786: *3* extractPhysicalDimensions
-vector<unsigned int> extractPhysicalDimensions(Operators const& operators) {
+vector<unsigned int> extractPhysicalDimensions(Operator const& operator_sites) {
     vector<unsigned int> physical_dimensions;
-    physical_dimensions.reserve(operators.size()+1);
-    BOOST_FOREACH(shared_ptr<OperatorSite const> const& operator_site, operators) {
+    physical_dimensions.reserve(operator_sites.size()+1);
+    BOOST_FOREACH(shared_ptr<OperatorSite const> const& operator_site, operator_sites) {
         physical_dimensions.push_back(operator_site->physicalDimension(as_unsigned_integer));
     }
     return boost::move(physical_dimensions);
@@ -110,17 +110,17 @@ vector<unsigned int> extractPhysicalDimensions(Operators const& operators) {
 //@+node:gcross.20110202175920.1714: ** class Chain
 //@+node:gcross.20110202175920.1715: *3* (constructors)
 Chain::Chain(
-      Operators const& operators
+      Operator const& operator_sites
     , unsigned int const bandwidth_dimension
     , Options const& options
-) : number_of_sites(operators.size())
-  , operators(operators)
+) : number_of_sites(operator_sites.size())
+  , operator_sites(operator_sites)
   , overlap_trios(number_of_sites)
   , current_site_number(0)
   , left_expectation_boundary(make_trivial)
   , right_expectation_boundary(make_trivial)
   , energy(0)
-  , physical_dimensions(extractPhysicalDimensions(operators))
+  , physical_dimensions(extractPhysicalDimensions(operator_sites))
   , maximum_bandwidth_dimension(maximumBandwidthDimension(physical_dimensions))
   , bandwidth_dimension(bandwidth_dimension)
   , options(options)
@@ -146,7 +146,7 @@ void Chain::reset(unsigned int bandwidth_dimension) {
     ) {
         absorb<Right>(
              randomStateSiteRight(
-                 operators[operator_number]->physicalDimension()
+                 operator_sites[operator_number]->physicalDimension()
                 ,LeftDimension(*(left_dimension++))
                 ,RightDimension(*(right_dimension++))
              )
@@ -156,7 +156,7 @@ void Chain::reset(unsigned int bandwidth_dimension) {
 
     state_site =
         randomStateSiteMiddle(
-             operators[0]->physicalDimension()
+             operator_sites[0]->physicalDimension()
             ,LeftDimension(initial_bandwidth_dimensions[0])
             ,RightDimension(initial_bandwidth_dimensions[1])
         );
@@ -171,7 +171,7 @@ complex<double> Chain::computeExpectationValue() const {
         Nutcracker::computeExpectationValue(
              left_expectation_boundary
             ,state_site
-            ,*operators[current_site_number]
+            ,*operator_sites[current_site_number]
             ,right_expectation_boundary
         );
 }
@@ -234,7 +234,7 @@ void Chain::optimizeSite() {
             optimizeStateSite(
                  left_expectation_boundary
                 ,state_site
-                ,*operators[current_site_number]
+                ,*operator_sites[current_site_number]
                 ,right_expectation_boundary
                 ,none
                 ,options.site_convergence_threshold

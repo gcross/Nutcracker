@@ -8,11 +8,9 @@
 //@+<< Includes >>
 //@+node:gcross.20110206185121.1759: ** << Includes >>
 #include <boost/assign/list_of.hpp>
-#include <boost/container/vector.hpp>
 #include <boost/move/move.hpp>
 #include <boost/numeric/ublas/matrix.hpp>
 #include <boost/range/algorithm/reverse_copy.hpp>
-#include <boost/smart_ptr/shared_ptr.hpp>
 #include <complex>
 
 #include "tensors.hpp"
@@ -24,11 +22,9 @@ namespace Nutcracker {
 //@+<< Usings >>
 //@+node:gcross.20110206185121.1760: ** << Usings >>
 using boost::assign::list_of;
-using boost::container::vector;
 using boost::copy;
 using boost::numeric::ublas::matrix;
 using boost::reverse_copy;
-using boost::shared_ptr;
 //@-<< Usings >>
 
 //@+others
@@ -159,7 +155,6 @@ public:
 };
 //@+node:gcross.20110207005827.1775: ** Type aliases
 typedef matrix<complex<double> > Matrix;
-typedef vector<shared_ptr<OperatorSite const> > Operators;
 //@+node:gcross.20110214164734.1939: ** Classes
 //@+node:gcross.20110206185121.1761: *3* OperatorLink
 struct OperatorLink {
@@ -210,12 +205,12 @@ OperatorSite constructOperatorSite(
     , vector<OperatorLink> const& links
 );
 
-Operators constructExternalFieldOperators(
-      unsigned int const number_of_operators
+Operator constructExternalFieldOperator(
+      unsigned int const number_of_sites
     , Matrix const& matrix
 );
 
-Operators constructTransverseIsingModelOperators(
+Operator constructTransverseIsingModelOperator(
       unsigned int const number_of_operators
     , double spin_coupling_strength
 );

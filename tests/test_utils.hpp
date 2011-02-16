@@ -47,7 +47,7 @@ public:
         , LeftDimension const left_dimension
         , RightDimension const right_dimension
     );
-    Operators randomOperators(optional<unsigned int> maybe_number_of_operators=none);
+    Operator randomOperator(optional<unsigned int> maybe_number_of_sites=none);
 
     vector<StateSite<None> > randomState(optional<unsigned int> maybe_number_of_sites=none);
 

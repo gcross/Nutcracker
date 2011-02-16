@@ -9,6 +9,7 @@
 //@+node:gcross.20110124161335.2010: ** << Includes >>
 #include <boost/assign/list_of.hpp>
 #include <boost/concept_check.hpp>
+#include <boost/container/vector.hpp>
 #include <boost/foreach.hpp>
 #include <boost/format.hpp>
 #include <boost/move/move.hpp>
@@ -16,6 +17,7 @@
 #include <boost/range/algorithm/copy.hpp>
 #include <boost/range/concepts.hpp>
 #include <boost/range/irange.hpp>
+#include <boost/smart_ptr/shared_ptr.hpp>
 #include <boost/utility.hpp>
 #include <complex>
 #include <exception>
@@ -29,9 +31,11 @@ namespace Nutcracker {
 
 //@+<< Usings >>
 //@+node:gcross.20110124161335.2011: ** << Usings >>
+using boost::container::vector;
 using boost::copy;
 using boost::Generator;
 using boost::RandomAccessRangeConcept;
+using boost::shared_ptr;
 
 using std::copy;
 using std::fill_n;
@@ -41,6 +45,9 @@ typedef boost::numeric::ublas::vector<complex<double> > StateVector;
 //@-<< Usings >>
 
 //@+others
+//@+node:gcross.20110215231246.1878: ** Type aliases
+class OperatorSite;
+typedef vector<shared_ptr<OperatorSite const> > Operator;
 //@+node:gcross.20110214164734.1918: ** Exceptions
 //@+node:gcross.20110202172517.1694: *3* InvalidTensorException
 struct InvalidTensorException : public Exception {
@@ -49,7 +56,6 @@ struct InvalidTensorException : public Exception {
 //@+node:gcross.20110215231246.1877: ** Dummy classes
 class Left;
 class Middle;
-class Operator;
 class Overlap;
 class Physical;
 class Right;
