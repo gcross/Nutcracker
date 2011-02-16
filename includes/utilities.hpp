@@ -143,6 +143,64 @@ template<typename DimensionRange> unsigned long long tensorIndexToFlatIndex(Dime
     }
     return flat_index;
 }
+//@+node:gcross.20110215135633.1901: *3* zgemm
+extern "C" void zgemm_(
+    char const* transa, char const* transb,
+    uint32_t const* m, uint32_t const* n, uint32_t const* k,
+    complex<double> const* alpha,
+    complex<double> const* a, uint32_t const* lda,
+    complex<double> const* b, uint32_t const* ldb,
+    complex<double> const* beta,
+    complex<double>* c, uint32_t const* ldc
+);
+inline void zgemm(
+    char const* transa, char const* transb,
+    uint32_t const m, uint32_t const n, uint32_t const k,
+    complex<double> const alpha,
+    complex<double> const* a, uint32_t const lda,
+    complex<double> const* b, uint32_t const ldb,
+    complex<double> const beta,
+    complex<double>* c, uint32_t const ldc
+) {
+    zgemm_(
+        transa,transb,
+        &m,&n,&k,
+        &alpha,
+        a,&lda,
+        b,&ldb,
+        &beta,
+        c,&ldc
+    );        
+}
+//@+node:gcross.20110215135633.1903: *3* zgemv
+extern "C" void zgemv_(
+    char const* trans,
+    uint32_t const* m, uint32_t const* n,
+    complex<double> const* alpha,
+    complex<double> const* a, uint32_t const* lda,
+    complex<double> const* x, uint32_t const* incx,
+    complex<double> const* beta,
+    complex<double>* y, uint32_t const* incy
+);
+inline void zgemv(
+    char const* trans,
+    uint32_t const m, uint32_t const n,
+    complex<double> const alpha,
+    complex<double> const* a, uint32_t const lda,
+    complex<double> const* x, uint32_t const incx,
+    complex<double> const beta,
+    complex<double>* y, uint32_t const incy
+) {
+    zgemv_(
+        trans,
+        &m,&n,
+        &alpha,
+        a,&lda,
+        x,&incx,
+        &beta,
+        y,&incy
+    );        
+}
 //@-others
 //@+node:gcross.20110129220506.1652: ** Macros
 #define REPEAT(n) for(unsigned int _counter##__LINE__ = 0; _##counter##__LINE__ < n; ++_##counter##__LINE__)
