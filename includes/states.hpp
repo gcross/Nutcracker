@@ -7,8 +7,14 @@
 
 //@+<< Includes >>
 //@+node:gcross.20110213161858.1811: ** << Includes >>
+#include <boost/bind.hpp>
+#include <boost/concept_check.hpp>
 #include <boost/container/vector.hpp>
+#include <boost/range/adaptor/transformed.hpp>
+#include <boost/range/concepts.hpp>
+#include <boost/smart_ptr/scoped_array.hpp>
 
+#include "core.hpp"
 #include "tensors.hpp"
 //@-<< Includes >>
 
@@ -16,7 +22,12 @@ namespace Nutcracker {
 
 //@+<< Usings >>
 //@+node:gcross.20110213161858.1812: ** << Usings >>
+namespace ublas = boost::numeric::ublas;
+
+using boost::adaptors::transformed;
 using boost::container::vector;
+using boost::scoped_array;
+using boost::SinglePassRangeConcept;
 //@-<< Usings >>
 
 //@+others
@@ -123,6 +134,19 @@ protected:
 
     void swap(StateSiteAny& other) {
         SiteBaseTensor::swap(other);
+    }
+public:
+    unsigned int observationValueOffset(unsigned int const observation_value) const {
+        assert(observation_value < physicalDimension(as_unsigned_integer));
+        return observation_value*leftDimension(as_unsigned_integer)*rightDimension(as_unsigned_integer);
+    }
+
+    complex<double>* transitionMatrixForObservation(unsigned int observation_value) {
+        return begin() + observationValueOffset(observation_value);
+    }
+
+    complex<double> const* transitionMatrixForObservation(unsigned int observation_value) const {
+        return begin() + observationValueOffset(observation_value);
     }
 };
 //@+node:gcross.20110214164734.1931: *3* StateSite
@@ -418,8 +442,6 @@ public:
     {}
 };
 //@+node:gcross.20110213161858.1813: ** Functions
-StateVector computeStateVector(vector<StateSiteAny const*> const& state_sites);
-
 OverlapSite<Middle> computeOverlapSiteFromStateSite(StateSite<Middle> const& state_site);
 
 OverlapSitesFromStateSitesAndNormalizeResult computeOverlapSitesFromStateSitesAndNormalize(
@@ -465,6 +487,64 @@ StateSite<Right> randomStateSiteRight(
     , const LeftDimension left_dimension
     , const RightDimension right_dimension
 );
+//@+node:gcross.20110215135633.1860: *3* computeStateComponent
+template<typename StateSiteRange> complex<double> computeStateComponent(StateSiteRange const& state_sites, vector<unsigned int> const& observed_values) {
+    BOOST_CONCEPT_ASSERT((SinglePassRangeConcept<StateSiteRange>));
+    scoped_array<complex<double> > left_boundary(new complex<double>[1]);  left_boundary[0] = c(1,0);
+    unsigned int left_dimension = 1;
+    unsigned int i = 0;
+    BOOST_FOREACH(StateSiteAny const& state_site, state_sites) {
+        assert(state_site.leftDimension(as_unsigned_integer)==left_dimension);
+        complex<double> const* const transition_matrix = state_site.transitionMatrixForObservation(observed_values[i]);
+        assert(transition_matrix >= state_site.begin());
+        assert(transition_matrix < state_site.end());
+        unsigned int const right_dimension = state_site.rightDimension(as_unsigned_integer);
+        scoped_array<complex<double> > new_left_boundary(new complex<double>[right_dimension]);
+        zgemv(
+            "N"
+            ,right_dimension,left_dimension
+            ,c(1,0)
+            ,transition_matrix,right_dimension
+            ,left_boundary.get(),1
+            ,c(0,0)
+            ,new_left_boundary.get(),1
+        );
+        left_dimension = right_dimension;
+        left_boundary.swap(new_left_boundary);
+        ++i;
+    }
+    assert(i == observed_values.size() && "observed_values vector is larger than the list of state sites");
+    assert(left_dimension == 1);
+    return left_boundary[0];
+}
+//@+node:gcross.20110213161858.1821: *3* computeStateVector
+template<typename StateSiteRange> StateVector computeStateVector(StateSiteRange const& state_sites) {
+    BOOST_CONCEPT_ASSERT((SinglePassRangeConcept<StateSiteRange>));
+    StateVectorFragment current_fragment(make_trivial);
+    BOOST_FOREACH(StateSiteAny const& state_site, state_sites) {
+        StateVectorFragment next_fragment =
+            extendStateVectorFragment(
+                 current_fragment
+                ,state_site
+            );
+        current_fragment = boost::move(next_fragment);
+    }
+    return current_fragment;
+}
+//@+node:gcross.20110215135633.1870: *3* computeStateVectorLength
+template<typename StateSiteRange> unsigned long long computeStateVectorLength(StateSiteRange const& state_sites) {
+    BOOST_CONCEPT_ASSERT((SinglePassRangeConcept<StateSiteRange>));
+    unsigned long long length = 1;
+    BOOST_FOREACH(StateSiteAny const& state_site, state_sites) {
+        length *= state_site.physicalDimension(as_unsigned_integer);
+    }
+    return length;
+}
+//@+node:gcross.20110215135633.1859: *3* computeStateVectorComponent
+template<typename StateSiteRange> complex<double> computeStateVectorComponent(StateSiteRange const& state_sites, unsigned long long const component) {
+    using namespace boost;
+    return computeStateComponent(state_sites,flatIndexToTensorIndex(state_sites | transformed(bind(&StateSiteAny::physicalDimension,_1,as_unsigned_integer)),component));
+}
 //@+node:gcross.20110213233103.2755: ** struct moveSiteCursor
 template<typename side> struct moveSiteCursor { };
 

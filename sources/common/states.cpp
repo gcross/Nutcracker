@@ -13,7 +13,6 @@ namespace Nutcracker {
 
 //@+<< Usings >>
 //@+node:gcross.20110213161858.1818: ** << Usings >>
-namespace ublas = boost::numeric::ublas;
 //@-<< Usings >>
 
 //@+others
@@ -30,20 +29,6 @@ NormalizationError::NormalizationError(int info)
     , info(info)
 { }
 //@+node:gcross.20110213161858.1820: ** Functions
-//@+node:gcross.20110213161858.1821: *3* computeStateVector
-StateVector computeStateVector(vector<StateSiteAny const*> const& state_sites) {
-    if(state_sites.size() == 0) return StateVector();
-    StateVectorFragment current_fragment(make_trivial);
-    BOOST_FOREACH(StateSiteAny const* state_site,state_sites) {
-        StateVectorFragment next_fragment =
-            extendStateVectorFragment(
-                 current_fragment
-                ,*state_site
-            );
-        current_fragment = boost::move(next_fragment);
-    }
-    return current_fragment;
-}
 //@+node:gcross.20110126102637.2188: *3* computeMiddleOverlapSiteFromStateSite
 OverlapSite<Middle> computeOverlapSiteFromStateSite(StateSite<Middle> const& state_site) {
     OverlapSite<Middle> overlap_site(dimensionsOf(state_site));

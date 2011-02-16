@@ -7,6 +7,8 @@
 #include <boost/assign/list_of.hpp>
 #include <boost/container/vector.hpp>
 #include <boost/numeric/ublas/vector_expression.hpp>
+#include <boost/range/adaptor/indirected.hpp>
+#include <boost/range/adaptor/transformed.hpp>
 #include <boost/range/algorithm/equal.hpp>
 #include <boost/range/irange.hpp>
 #include <boost/range/numeric.hpp>
@@ -18,6 +20,8 @@
 
 using namespace Nutcracker;
 
+using boost::adaptors::indirected;
+using boost::adaptors::transformed;
 using boost::assign::list_of;
 using boost::container::vector;
 using boost::equal;
@@ -35,23 +39,19 @@ TEST_SUITE(States) {
 TEST_SUITE(computeStateVector) {
 
 //@+others
-//@+node:gcross.20110213161858.1826: *4* trivial
-TEST_CASE(trivial) {
-    ASSERT_TRUE(equal(StateVector(),computeStateVector(vector<StateSiteAny const*>())));
-}
 //@+node:gcross.20110213161858.1828: *4* single site
 TEST_CASE(single_site) {
     RNG random;
 
     REPEAT(10) {
         PhysicalDimension physical_dimension(random);
-        StateSite<Middle> state_site(
+        StateSite<None> state_site(
              physical_dimension
             ,LeftDimension(1)
             ,RightDimension(1)
             ,fillWithGenerator(random.randomComplexDouble)
         );
-        StateVector state_vector = computeStateVector(vector<StateSiteAny const*>(1,&state_site));
+        StateVector state_vector = computeStateVector(vector<StateSiteAny const*>(1,&state_site) | indirected);
         ASSERT_EQ_QUOTED(*physical_dimension,state_vector.size());
         ASSERT_TRUE(equal(state_site,state_vector));
     }
@@ -61,15 +61,14 @@ TEST_CASE(single_site_squared) {
     RNG random;
 
     REPEAT(10) {
-        unsigned int d = random;
-        PhysicalDimension physical_dimension(d);
-        StateSite<Middle> state_site(
-             physical_dimension
+        unsigned int const d = random;
+        StateSite<None> state_site(
+             PhysicalDimension(d)
             ,LeftDimension(1)
             ,RightDimension(1)
             ,fillWithGenerator(random.randomComplexDouble)
         );
-        StateVector actual_state_vector = computeStateVector(vector<StateSiteAny const*>(2,&state_site));
+        StateVector actual_state_vector = computeStateVector(vector<StateSiteAny const*>(2,&state_site) | indirected);
         StateVector correct_state_vector(d*d);
         BOOST_FOREACH(unsigned int i, irange(0u,d)) {
             BOOST_FOREACH(unsigned int j, irange(0u,d)) {
@@ -86,7 +85,7 @@ TEST_CASE(two_trivial_sites) {
 
     REPEAT(10) {
         unsigned int b = random;
-        StateSite<Middle>
+        StateSite<None>
              state_site_1
                 (PhysicalDimension(1)
                 ,LeftDimension(1)
@@ -100,7 +99,7 @@ TEST_CASE(two_trivial_sites) {
                 ,fillWithGenerator(random.randomComplexDouble)
                 )
             ;
-        StateVector state_vector = computeStateVector(list_of(&state_site_1)(&state_site_2));
+        StateVector state_vector = computeStateVector(list_of(&state_site_1)(&state_site_2) | indirected);
         ASSERT_EQ(1,state_vector.size());
         ASSERT_NEAR(inner_product(state_site_1,state_site_2,c(0,0)),state_vector[0],1e-15);
     }
@@ -111,7 +110,7 @@ TEST_SUITE(W_state) {
 //@+others
 //@+node:gcross.20110213161858.1834: *5* two sites
 TEST_CASE(two_sites) {
-    StateSite<Middle>
+    StateSite<None>
          state_site_1
             (LeftDimension(1)
             ,RightDimension(2)
@@ -120,7 +119,7 @@ TEST_CASE(two_sites) {
                 (0)
 
                 (0)
-                (1)
+                (-1)
              )
             )
         ,state_site_2
@@ -135,14 +134,14 @@ TEST_CASE(two_sites) {
              )
             )
         ;
-    StateVector actual_state_vector = computeStateVector(list_of(&state_site_1)(&state_site_2));
+    StateVector actual_state_vector = computeStateVector(list_of(&state_site_1)(&state_site_2) | indirected);
     ASSERT_EQ(4,actual_state_vector.size());
-    complex<double> correct_state_vector[] = {0,1,1,0};
+    complex<double> correct_state_vector[] = {0,1,-1,0};
     ASSERT_TRUE(equal(correct_state_vector,actual_state_vector));
 }
 //@+node:gcross.20110213161858.1837: *5* three sites
 TEST_CASE(three_sites) {
-    StateSite<Middle>
+    StateSite<None>
          state_site_1
             (LeftDimension(1)
             ,RightDimension(2)
@@ -151,7 +150,7 @@ TEST_CASE(three_sites) {
                 (0)
 
                 (0)
-                (1)
+                (-1)
              )
             )
         ,state_site_2
@@ -172,22 +171,22 @@ TEST_CASE(three_sites) {
                 (0)
                 (1)
 
-                (1)
-                (0)                
+                (2)
+                (0)
              )
             )
         ;
-    StateVector actual_state_vector = computeStateVector(list_of(&state_site_1)(&state_site_2)(&state_site_3));
+    StateVector actual_state_vector = computeStateVector(list_of(&state_site_1)(&state_site_2)(&state_site_3) | indirected);
     ASSERT_EQ(8,actual_state_vector.size());
     complex<double> correct_state_vector[] =
-        {0 // 000
-        ,1 // 001
-        ,1 // 010
-        ,0 // 011
-        ,1 // 100
-        ,0 // 101
-        ,0 // 110
-        ,0 // 111
+        {0  // 000
+        ,2  // 001
+        ,1  // 010
+        ,0  // 011
+        ,-1 // 100
+        ,0  // 101
+        ,0  // 110
+        ,0  // 111
         }
     ;
     ASSERT_TRUE(equal(correct_state_vector,actual_state_vector));
@@ -197,6 +196,248 @@ TEST_CASE(three_sites) {
 }
 //@-others
 
+}
+//@+node:gcross.20110215135633.1890: *3* computeStateVectorComponent
+TEST_SUITE(computeStateVectorComponent) {
+
+//@+others
+//@+node:gcross.20110215135633.1891: *4* single site
+TEST_CASE(single_site) {
+    RNG random;
+
+    REPEAT(10) {
+        StateSite<None> state_site(
+             PhysicalDimension(random)
+            ,LeftDimension(1)
+            ,RightDimension(1)
+            ,fillWithGenerator(random.randomComplexDouble)
+        );
+        BOOST_FOREACH(unsigned int const i, irange(0u,state_site.physicalDimension(as_unsigned_integer))) {
+            ASSERT_EQ_QUOTED(state_site.begin()[i],computeStateVectorComponent(list_of(&state_site) | indirected,i));
+        }
+    }
+}
+//@+node:gcross.20110215135633.1892: *4* single site squared
+TEST_CASE(single_site_squared) {
+    RNG random;
+
+    REPEAT(10) {
+        unsigned int d = random;
+        StateSite<None> state_site(
+             PhysicalDimension(d)
+            ,LeftDimension(1)
+            ,RightDimension(1)
+            ,fillWithGenerator(random.randomComplexDouble)
+        );
+        BOOST_FOREACH(unsigned int i, irange(0u,d)) {
+            BOOST_FOREACH(unsigned int j, irange(0u,d)) {
+                ASSERT_EQ_QUOTED(state_site.begin()[i]*state_site.begin()[j],computeStateVectorComponent(list_of(&state_site)(&state_site) | indirected,i*d+j));
+            }
+        }
+    }
+}
+//@+node:gcross.20110215135633.1893: *4* two trivial sites
+TEST_CASE(two_trivial_sites) {
+    RNG random;
+
+    REPEAT(10) {
+        StateSite<None>
+             state_site_1
+                (PhysicalDimension(random)
+                ,LeftDimension(1)
+                ,RightDimension(1)
+                ,fillWithGenerator(random.randomComplexDouble)
+                )
+            ,state_site_2
+                (PhysicalDimension(random)
+                ,LeftDimension(1)
+                ,RightDimension(1)
+                ,fillWithGenerator(random.randomComplexDouble)
+                )
+            ;
+        BOOST_FOREACH(unsigned int const i, irange(0u,state_site_1.physicalDimension(as_unsigned_integer))) {
+            BOOST_FOREACH(unsigned int const j, irange(0u,state_site_2.physicalDimension(as_unsigned_integer))) {
+                ASSERT_EQ_QUOTED(
+                     state_site_1.begin()[i]*state_site_2.begin()[j]
+                    ,computeStateVectorComponent(
+                         list_of(&state_site_1)(&state_site_2) | indirected
+                        ,i*state_site_2.physicalDimension(as_unsigned_integer)+j
+                     )
+                );
+            }
+        }
+    }
+}
+//@+node:gcross.20110215135633.1894: *4* W state
+TEST_SUITE(W_state) {
+
+//@+others
+//@+node:gcross.20110215135633.1895: *5* two sites
+TEST_CASE(two_sites) {
+    StateSite<None>
+         state_site_1
+            (LeftDimension(1)
+            ,RightDimension(2)
+            ,fillWithRange(list_of
+                (1)
+                (0)
+
+                (0)
+                (-1)
+             )
+            )
+        ,state_site_2
+            (LeftDimension(2)
+            ,RightDimension(1)
+            ,fillWithRange(list_of
+                (0)
+                (1)
+
+                (1)
+                (0)                
+             )
+            )
+        ;
+    vector<StateSiteAny const*> state = list_of(&state_site_1)(&state_site_2);
+    ASSERT_EQ(c( 0,0),computeStateVectorComponent(state | indirected,0));
+    ASSERT_EQ(c( 1,0),computeStateVectorComponent(state | indirected,1));
+    ASSERT_EQ(c(-1,0),computeStateVectorComponent(state | indirected,2));
+    ASSERT_EQ(c( 0,0),computeStateVectorComponent(state | indirected,3));
+}
+//@+node:gcross.20110215135633.1896: *5* three sites
+TEST_CASE(three_sites) {
+    StateSite<None>
+         state_site_1
+            (LeftDimension(1)
+            ,RightDimension(2)
+            ,fillWithRange(list_of
+                (1)
+                (0)
+
+                (0)
+                (-1)
+             )
+            )
+        ,state_site_2
+            (LeftDimension(2)
+            ,RightDimension(2)
+            ,fillWithRange(list_of
+                (1)(0)
+                (0)(1)
+
+                (0)(1)
+                (0)(0)
+             )
+            )
+        ,state_site_3
+            (LeftDimension(2)
+            ,RightDimension(1)
+            ,fillWithRange(list_of
+                (0)
+                (1)
+
+                (2)
+                (0)                
+             )
+            )
+        ;
+    vector<StateSiteAny const*> state = list_of(&state_site_1)(&state_site_2)(&state_site_3);
+    ASSERT_EQ(c( 0,0),computeStateVectorComponent(state | indirected,0));
+    ASSERT_EQ(c( 2,0),computeStateVectorComponent(state | indirected,1));
+    ASSERT_EQ(c( 1,0),computeStateVectorComponent(state | indirected,2));
+    ASSERT_EQ(c( 0,0),computeStateVectorComponent(state | indirected,3));
+    ASSERT_EQ(c(-1,0),computeStateVectorComponent(state | indirected,4));
+    ASSERT_EQ(c( 0,0),computeStateVectorComponent(state | indirected,5));
+    ASSERT_EQ(c( 0,0),computeStateVectorComponent(state | indirected,6));
+    ASSERT_EQ(c( 0,0),computeStateVectorComponent(state | indirected,7));
+}
+//@-others
+
+}
+//@-others
+
+}
+//@+node:gcross.20110215135633.1871: *3* computeStateVectorLength
+TEST_SUITE(computeStateVectorLength) {
+
+//@+others
+//@+node:gcross.20110215135633.1873: *4* single site
+TEST_CASE(single_site) {
+    RNG random;
+
+    REPEAT(10) {
+        StateSite<None> state_site(
+             PhysicalDimension(random)
+            ,LeftDimension(1)
+            ,RightDimension(1)
+        );
+        ASSERT_EQ_QUOTED(
+             state_site.physicalDimension(as_unsigned_integer)
+            ,computeStateVectorLength(vector<StateSiteAny const*>(1,&state_site) | indirected)
+        );
+    }
+}
+//@+node:gcross.20110215135633.1877: *4* single site squared
+TEST_CASE(single_site_squared) {
+    RNG random;
+
+    REPEAT(10) {
+        StateSite<None> state_site(
+             PhysicalDimension(random)
+            ,LeftDimension(1)
+            ,RightDimension(1)
+        );
+        ASSERT_EQ_QUOTED(
+             state_site.physicalDimension(as_unsigned_integer)*state_site.physicalDimension(as_unsigned_integer)
+            ,computeStateVectorLength(vector<StateSiteAny const*>(2,&state_site) | indirected)
+        );
+    }
+}
+//@+node:gcross.20110215135633.1879: *4* two trivial sites
+TEST_CASE(two_trivial_sites) {
+    RNG random;
+
+    REPEAT(10) {
+        unsigned int b = random;
+        StateSite<None>
+             state_site_1
+                (PhysicalDimension(random)
+                ,LeftDimension(1)
+                ,RightDimension(b)
+                ,fillWithGenerator(random.randomComplexDouble)
+                )
+            ,state_site_2
+                (PhysicalDimension(random)
+                ,LeftDimension(b)
+                ,RightDimension(1)
+                ,fillWithGenerator(random.randomComplexDouble)
+                )
+            ;
+        ASSERT_EQ_QUOTED(
+             state_site_1.physicalDimension(as_unsigned_integer)*state_site_2.physicalDimension(as_unsigned_integer)
+            ,computeStateVectorLength(list_of(&state_site_1)(&state_site_2) | indirected)
+        );
+    }
+}
+//@-others
+
+}
+//@+node:gcross.20110215135633.1905: *3* consistent with computeStateVectorComponent
+TEST_CASE(computeStateVector_consistent_with_computeStateVectorComponent) {
+    using namespace boost;
+
+    RNG random;
+
+    REPEAT(10) {
+        vector<StateSite<None> > state; state = random.randomState();
+        StateVector state_vector = computeStateVector(state);
+        unsigned long long const state_length = computeStateVectorLength(state);
+        REPEAT(10) {
+            unsigned long long const index = random(0,state_length-1);
+            complex<double> const component = computeStateVectorComponent(state,index);
+            ASSERT_NEAR_QUOTED(component,state_vector[index],1e-13);
+        }
+    }
 }
 //@-others
 
