@@ -8,6 +8,7 @@
 //@+<< Includes >>
 //@+node:gcross.20110130170743.1666: ** << Includes >>
 #include <boost/container/vector.hpp>
+#include <boost/iterator/iterator_facade.hpp>
 #include <boost/lambda/lambda.hpp>
 #include <boost/move/move.hpp>
 #include <boost/signals2/signal.hpp>
@@ -29,7 +30,9 @@ namespace Nutcracker {
 //@+node:gcross.20110130170743.1667: ** << Usings >>
 using boost::function;
 using boost::irange;
+using boost::iterator_facade;
 using boost::none;
+using boost::random_access_traversal_tag;
 using boost::reverse_copy;
 using boost::signals2::signal;
 
@@ -250,6 +253,53 @@ public:
     void optimizeChain();
 
     State makeCopyOfState() const;
+
+    friend class const_iterator;
+    class const_iterator :
+        public iterator_facade<
+             const_iterator
+            ,StateSiteAny const
+            ,random_access_traversal_tag
+        >
+    {
+        Chain const* chain;
+        unsigned int index;
+    public:
+        const_iterator(
+              Chain const* chain
+            , unsigned int const index
+        ) : chain(chain)
+          , index(index)
+        {}
+
+        StateSiteAny const& dereference() const {
+            unsigned int i = index;
+            if(i < chain->left_neighbors.size()) {
+                return chain->left_neighbors[i].state_site;
+            }
+            i -= chain->left_neighbors.size();
+            if(i == 0) {
+                return chain->state_site;
+            }
+            i = chain->right_neighbors.size()-i;
+            assert(i < chain->right_neighbors.size());
+            return chain->right_neighbors[i].state_site;
+        }
+
+        bool equal(const_iterator const& other) const {
+            return (chain == other.chain) && (index == other.index);
+        }
+
+        void increment() { ++index; }
+        void decrement() { --index; }
+
+        void advance(size_t n) { index += n; }
+
+        size_t distance_to(const_iterator const& other) const { return other.index - index; }
+    };
+
+    const_iterator begin() const { return const_iterator(this,0); }
+    const_iterator end() const { return const_iterator(this,number_of_sites); }
 };
 
 template<> inline ExpectationBoundary<Left>& Chain::expectationBoundary<Left>() { return left_expectation_boundary; }
