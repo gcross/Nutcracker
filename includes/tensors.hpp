@@ -41,19 +41,19 @@ typedef boost::numeric::ublas::vector<complex<double> > StateVector;
 //@-<< Usings >>
 
 //@+others
-//@+node:gcross.20110124175241.1520: ** type function Other
-struct Left;
-struct Middle;
-struct Right;
-
-template<typename other_side> struct Other { };
-template<> struct Other<Left> { typedef Right value; };
-template<> struct Other<Right> { typedef Left value; };
 //@+node:gcross.20110214164734.1918: ** Exceptions
 //@+node:gcross.20110202172517.1694: *3* InvalidTensorException
 struct InvalidTensorException : public Exception {
     InvalidTensorException() : Exception("Attempt to dereference an invalid tensor") {}
 };
+//@+node:gcross.20110215231246.1877: ** Dummy classes
+class Left;
+class Middle;
+class Operator;
+class Overlap;
+class Physical;
+class Right;
+class State;
 //@+node:gcross.20110127123226.2852: ** Parameters wrappers
 template<typename T> class Parameter {
 private:
@@ -96,7 +96,7 @@ public:
 template<typename label> inline ostream& operator<<(ostream& out, Dimension<label> const d) { return (out << *d); }
 
 #define DEFINE_DIMENSION(Name) \
-    struct Name; typedef Dimension<Name> Name##Dimension;
+    typedef Dimension<Name> Name##Dimension;
 
 DEFINE_DIMENSION(Left);
 DEFINE_DIMENSION(Operator);
@@ -110,6 +110,10 @@ DEFINE_DIMENSION(State);
 
 DEFINE_DUMMY_PARAMETER(MakeTrivial,make_trivial);
 DEFINE_DUMMY_PARAMETER(AsUnsignedInteger,as_unsigned_integer);
+//@+node:gcross.20110124175241.1520: ** type function Other
+template<typename other_side> struct Other { };
+template<> struct Other<Left> { typedef Right value; };
+template<> struct Other<Right> { typedef Left value; };
 //@+node:gcross.20110124161335.2012: ** Classes
 //@+node:gcross.20110126150230.1601: *3* BaseTensor
 class BaseTensor {
