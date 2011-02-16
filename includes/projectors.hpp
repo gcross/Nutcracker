@@ -7,8 +7,7 @@
 
 //@+<< Includes >>
 //@+node:gcross.20110213233103.2783: ** << Includes >>
-#include "boundaries.hpp"
-#include "states.hpp"
+#include "tensors.hpp"
 //@-<< Includes >>
 
 namespace Nutcracker {
@@ -119,6 +118,15 @@ public:
     bool invalid() const { return !valid(); }
 
     operator bool() const { return valid(); }
+
+    unsigned int operator|(StateSite<Middle> const& state_site) const {
+        return connectDimensions(
+             "state site size"
+            ,state_site.size()
+            ,"projector length"
+            ,projectorLength()
+        );
+    }
 };
 //@+node:gcross.20110213233103.2794: ** Classes
 //@+node:gcross.20110213233103.2796: *3* OverlapVectorTrio

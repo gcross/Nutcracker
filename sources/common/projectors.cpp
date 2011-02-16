@@ -4,7 +4,6 @@
 
 //@+<< Includes >>
 //@+node:gcross.20110213233103.2777: ** << Includes >>
-#include "connectors.hpp"
 #include "core.hpp"
 #include "projectors.hpp"
 //@-<< Includes >>

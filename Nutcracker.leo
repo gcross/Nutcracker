@@ -13,7 +13,6 @@
 <v t="gcross.20110124161335.1866"><vh>@path includes</vh>
 <v t="gcross.20110214183844.1813"><vh>@thin boundaries.hpp</vh></v>
 <v t="gcross.20110130170743.1665"><vh>@thin chain.hpp</vh></v>
-<v t="gcross.20110214155808.1852"><vh>@thin connectors.hpp</vh></v>
 <v t="gcross.20110125120748.2458"><vh>@thin core.hpp</vh></v>
 <v t="gcross.20110206185121.1758"><vh>@thin operators.hpp</vh></v>
 <v t="gcross.20110214155808.1922"><vh>@thin optimizer.hpp</vh></v>
@@ -34,6 +33,7 @@
 <v t="gcross.20110214155808.1884"><vh>@thin optimizer.cpp</vh></v>
 <v t="gcross.20110213233103.2776"><vh>@thin projectors.cpp</vh></v>
 <v t="gcross.20110213161858.1816"><vh>@thin states.cpp</vh></v>
+<v t="gcross.20110215235924.1990"><vh>@thin tensors.cpp</vh></v>
 <v t="gcross.20110125202132.2160"><vh>@thin utilities.cpp</vh></v>
 </v>
 </v>

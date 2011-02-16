@@ -9,6 +9,7 @@ add_library(Nutcracker
     optimizer
     projectors
     states
+    tensors
     utilities
 )
 target_link_libraries(Nutcracker

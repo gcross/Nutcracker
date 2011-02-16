@@ -14,6 +14,7 @@
 #include <functional>
 #include <numeric>
 
+#include "boundaries.hpp"
 #include "core.hpp"
 #include "operators.hpp"
 #include "optimizer.hpp"

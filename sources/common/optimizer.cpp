@@ -5,7 +5,6 @@
 //@+<< Includes >>
 //@+node:gcross.20110214155808.1885: ** << Includes >>
 #include "boundaries.hpp"
-#include "connectors.hpp"
 #include "core.hpp"
 #include "optimizer.hpp"
 #include "projectors.hpp"

@@ -16,7 +16,6 @@
 #include "boundaries.hpp"
 #include "chain.hpp"
 #include "core.hpp"
-#include "connectors.hpp"
 #include "optimizer.hpp"
 #include "utilities.hpp"
 //@-<< Includes >>
