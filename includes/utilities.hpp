@@ -16,6 +16,7 @@
 #include <boost/range/irange.hpp>
 #include <boost/range/iterator_range.hpp>
 #include <boost/move/move.hpp>
+#include <boost/none_t.hpp>
 #include <complex>
 #include <exception>
 #include <iterator>
@@ -45,6 +46,8 @@ using std::type_info;
 //@-<< Usings >>
 
 //@+others
+//@+node:gcross.20110215135633.1864: ** Type aliases
+typedef boost::none_t None;
 //@+node:gcross.20110202200838.1710: ** Exceptions
 //@+node:gcross.20110125202132.2159: *3* Exception
 struct Exception : public std::exception {
