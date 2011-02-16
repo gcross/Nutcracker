@@ -153,9 +153,9 @@ OperatorSite RNG::randomOperatorSite(
     );
 }
 //@+node:gcross.20110215135633.1863: *3* randomState
-vector<StateSite<None> > RNG::randomState(optional<unsigned int> maybe_number_of_sites) {
+State RNG::randomState(optional<unsigned int> maybe_number_of_sites) {
     unsigned int const number_of_sites = maybe_number_of_sites ? *maybe_number_of_sites : (*this)(1,5);
-    vector<StateSite<None> > state;
+    State state;
     unsigned int left_dimension = 1;
     BOOST_FOREACH(unsigned int const site_number, irange(0u,number_of_sites)) {
         unsigned int const right_dimension

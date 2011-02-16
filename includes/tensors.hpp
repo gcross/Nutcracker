@@ -48,6 +48,9 @@ typedef boost::numeric::ublas::vector<complex<double> > StateVector;
 //@+node:gcross.20110215231246.1878: ** Type aliases
 class OperatorSite;
 typedef vector<shared_ptr<OperatorSite const> > Operator;
+
+template<typename side> class StateSite;
+typedef vector<StateSite<None> > State;
 //@+node:gcross.20110214164734.1918: ** Exceptions
 //@+node:gcross.20110202172517.1694: *3* InvalidTensorException
 struct InvalidTensorException : public Exception {
@@ -59,7 +62,6 @@ class Middle;
 class Overlap;
 class Physical;
 class Right;
-class State;
 //@+node:gcross.20110127123226.2852: ** Parameters wrappers
 template<typename T> class Parameter {
 private:

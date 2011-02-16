@@ -49,7 +49,7 @@ public:
     );
     Operator randomOperator(optional<unsigned int> maybe_number_of_sites=none);
 
-    vector<StateSite<None> > randomState(optional<unsigned int> maybe_number_of_sites=none);
+    State randomState(optional<unsigned int> maybe_number_of_sites=none);
 
     function<complex<double>()> generateRandomHermitianMatrices(unsigned int const size);
     function<unsigned int()> generateRandomIntegers(unsigned int lo, unsigned int hi);
