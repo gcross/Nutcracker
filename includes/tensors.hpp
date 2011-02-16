@@ -1055,18 +1055,6 @@ inline unsigned int operator|(
         ,overlap_boundary.stateDimension(as_unsigned_integer)
     );
 }
-//@+node:gcross.20110215235924.1976: *3* StateSite<Right> | StateSite<Right>
-inline unsigned int operator|(
-      StateSite<Right> const& state_site_1
-    , StateSite<Right> const& state_site_2
-) {
-    return connectDimensions(
-         "right state site right"
-        ,state_site_1.rightDimension(as_unsigned_integer)
-        ,"right state site left"
-        ,state_site_2.leftDimension(as_unsigned_integer)
-    );
-}
 //@-others
 
 }

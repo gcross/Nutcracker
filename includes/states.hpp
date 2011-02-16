@@ -342,6 +342,71 @@ template<typename StateSiteRange> complex<double> computeStateVectorComponent(St
     using namespace boost;
     return computeStateComponent(state_sites,flatIndexToTensorIndex(state_sites | transformed(bind(&StateSiteAny::physicalDimension,_1,as_unsigned_integer)),component));
 }
+//@+node:gcross.20110215235924.2015: *3* Unsafe
+namespace Unsafe {
+
+//@+others
+//@+node:gcross.20110215235924.2016: *4* increaseDimensionBetween
+template<typename side1,typename side2>
+IncreaseDimensionBetweenResult<side1,side2> increaseDimensionBetween(
+      unsigned int const new_dimension
+    , StateSiteAny const& old_site_1
+    , StateSiteAny const& old_site_2
+) {
+    unsigned int const old_dimension = connectDimensions(
+         "state site 1 right"
+        ,old_site_1.rightDimension(as_unsigned_integer)
+        ,"state site 2 left"
+        ,old_site_2.leftDimension(as_unsigned_integer)
+    );
+    assert(new_dimension >= old_dimension);
+
+    StateSite<side1> new_site_1(
+         old_site_1.physicalDimension()
+        ,old_site_1.leftDimension()
+        ,RightDimension(new_dimension)
+    );
+    StateSite<side2> new_site_2(
+         old_site_2.physicalDimension()
+        ,LeftDimension(new_dimension)
+        ,old_site_2.rightDimension()
+    );
+
+    int const info =
+        new_dimension > old_dimension
+            ? Core::increase_bandwidth_between(
+                 old_site_1.leftDimension(as_unsigned_integer)
+                ,old_dimension
+                ,old_site_2.rightDimension(as_unsigned_integer)
+                ,old_site_1.physicalDimension(as_unsigned_integer)
+                ,old_site_2.physicalDimension(as_unsigned_integer)
+                ,new_dimension
+                ,old_site_1
+                ,old_site_2
+                ,new_site_1
+                ,new_site_2
+              )
+            : Core::norm_denorm_going_left(
+                 old_site_1.leftDimension(as_unsigned_integer)
+                ,old_dimension
+                ,old_site_2.rightDimension(as_unsigned_integer)
+                ,old_site_1.physicalDimension(as_unsigned_integer)
+                ,old_site_2.physicalDimension(as_unsigned_integer)
+                ,old_site_1
+                ,old_site_2
+                ,new_site_1
+                ,new_site_2
+              )
+    ;
+    if(info != 0) throw NormalizationError(info);
+    return IncreaseDimensionBetweenResult<side1,side2>
+        (boost::move(new_site_1)
+        ,boost::move(new_site_2)
+        );
+}
+//@-others
+
+}
 //@+node:gcross.20110213233103.2755: ** struct moveSiteCursor
 template<typename side> struct moveSiteCursor { };
 

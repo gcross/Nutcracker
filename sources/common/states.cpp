@@ -93,71 +93,18 @@ StateVectorFragment extendStateVectorFragment(
     );
     return boost::move(new_fragment);
 }
-//@+node:gcross.20110124175241.1649: *3* increaseDimensionBetween
-template<typename side1,typename side2>
-static IncreaseDimensionBetweenResult<side1,side2> implIncreaseDimensionBetween(
-      unsigned int const new_dimension
-    , StateSite<side1> const& old_site_1
-    , StateSite<side2> const& old_site_2
-) {
-    unsigned int const old_dimension = old_site_1 | old_site_2;
-    assert(new_dimension >= old_dimension);
-
-    StateSite<side1> new_site_1(
-         old_site_1.physicalDimension()
-        ,old_site_1.leftDimension()
-        ,RightDimension(new_dimension)
-    );
-    StateSite<side2> new_site_2(
-         old_site_2.physicalDimension()
-        ,LeftDimension(new_dimension)
-        ,old_site_2.rightDimension()
-    );
-
-    int const info =
-        new_dimension > old_dimension
-            ? Core::increase_bandwidth_between(
-                 old_site_1.leftDimension(as_unsigned_integer)
-                ,old_dimension
-                ,old_site_2.rightDimension(as_unsigned_integer)
-                ,old_site_1.physicalDimension(as_unsigned_integer)
-                ,old_site_2.physicalDimension(as_unsigned_integer)
-                ,new_dimension
-                ,old_site_1
-                ,old_site_2
-                ,new_site_1
-                ,new_site_2
-              )
-            : Core::norm_denorm_going_left(
-                 old_site_1.leftDimension(as_unsigned_integer)
-                ,old_dimension
-                ,old_site_2.rightDimension(as_unsigned_integer)
-                ,old_site_1.physicalDimension(as_unsigned_integer)
-                ,old_site_2.physicalDimension(as_unsigned_integer)
-                ,old_site_1
-                ,old_site_2
-                ,new_site_1
-                ,new_site_2
-              )
-    ;
-    if(info != 0) throw NormalizationError(info);
-    return IncreaseDimensionBetweenResult<side1,side2>
-        (boost::move(new_site_1)
-        ,boost::move(new_site_2)
-        );
-}
-
+//@+node:gcross.20110124175241.1649: *3* increaseDimensionBetweenXY
 IncreaseDimensionBetweenResult<Right,Right> increaseDimensionBetweenRightRight(
       unsigned int new_dimension
     , StateSite<Right> const& old_site_1
     , StateSite<Right> const& old_site_2
-) { return implIncreaseDimensionBetween(new_dimension,old_site_1,old_site_2); }
+) { return Unsafe::increaseDimensionBetween<Right,Right>(new_dimension,old_site_1,old_site_2); }
 
 IncreaseDimensionBetweenResult<Middle,Right>increaseDimensionBetweenMiddleRight(
       unsigned int new_dimension
     , StateSite<Middle> const& old_site_1
     , StateSite<Right> const& old_site_2
-) { return implIncreaseDimensionBetween(new_dimension,old_site_1,old_site_2); }
+) { return Unsafe::increaseDimensionBetween<Middle,Right>(new_dimension,old_site_1,old_site_2); }
 //@+node:gcross.20110124175241.1654: *3* moveSiteCursorLeft
 MoveSiteCursorResult<Left> moveSiteCursorLeft(
       StateSite<Middle> const& old_state_site_2
