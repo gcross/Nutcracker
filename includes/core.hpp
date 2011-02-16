@@ -61,6 +61,14 @@ complex<double> contract_expectation_boundaries(
     , complex<double> const* right_boundary
 );
 
+void contract_matrix_left(
+    uint32_t bl
+  , uint32_t br
+  , complex<double> const* left_environment
+  , complex<double> const* matrix
+  , complex<double>* new_left_environment
+);
+
 void contract_sos_left(
     uint32_t const bl,
     uint32_t const br,
