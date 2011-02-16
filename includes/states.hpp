@@ -263,6 +263,56 @@ StateSite<Right> randomStateSiteRight(
     , const LeftDimension left_dimension
     , const RightDimension right_dimension
 );
+//@+node:gcross.20110215235924.1909: *3* computeExpectationValue
+template<typename StateSiteRange> complex<double> computeExpectationValue(
+      StateSiteRange const& state_sites
+    , Operator const& operator_sites
+) {
+    BOOST_CONCEPT_ASSERT((SinglePassRangeConcept<StateSiteRange>));
+    scoped_array<complex<double> > left_boundary(new complex<double>[1]);  left_boundary[0] = c(1,0);
+    unsigned int
+          left_operator_dimension = 1
+        , left_state_dimension = 1
+        , i = 0
+        ;
+    BOOST_FOREACH(StateSiteAny const& state_site, state_sites) {
+        OperatorSite const& operator_site = *operator_sites[i];
+        assert(operator_site.leftDimension(as_unsigned_integer)==left_operator_dimension);
+        assert(state_site.leftDimension(as_unsigned_integer)==left_state_dimension);
+        unsigned int const
+              right_operator_dimension = operator_site.rightDimension(as_unsigned_integer)
+            , right_state_dimension = state_site.rightDimension(as_unsigned_integer)
+            ;
+        scoped_array<complex<double> > new_left_boundary(
+            new complex<double>[
+                 right_state_dimension
+                *right_operator_dimension
+                *right_state_dimension
+            ]
+        );
+
+        Core::contract_sos_left(
+             left_state_dimension
+            ,right_state_dimension
+            ,left_operator_dimension
+            ,right_operator_dimension
+            ,operator_site | state_site
+            ,left_boundary.get()
+            ,operator_site.numberOfMatrices(),operator_site,operator_site
+            ,state_site
+            ,new_left_boundary.get()
+        );
+
+        left_operator_dimension = right_operator_dimension;
+        left_state_dimension = right_state_dimension;
+        left_boundary.swap(new_left_boundary);
+        ++i;
+    }
+    assert(i == operator_sites.size() && "the number of state sites is greater than the number of operator sites");
+    assert(left_operator_dimension == 1);
+    assert(left_state_dimension == 1);
+    return left_boundary[0];
+}
 //@+node:gcross.20110215135633.1860: *3* computeStateComponent
 template<typename StateSiteRange> complex<double> computeStateComponent(StateSiteRange const& state_sites, vector<unsigned int> const& observed_values) {
     BOOST_CONCEPT_ASSERT((SinglePassRangeConcept<StateSiteRange>));

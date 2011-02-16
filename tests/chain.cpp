@@ -306,6 +306,20 @@ TEST_SUITE(optimizeChain) {
     TEST_CASE(10_sites_1p0) { runTest(10,1.0,-12.3814899997); }
 
 }
+//@+node:gcross.20110215235924.2008: *3* expectation matches computeExpectationValue
+TEST_CASE(expectation_matches_computeExpectationValue) {
+    RNG random;
+
+    REPEAT(10) {
+        unsigned int const number_of_sites = random;
+        Operator O = random.randomOperator(number_of_sites);
+        Chain chain(O);
+        unsigned int current_site_number = random(0,number_of_sites-1);
+        REPEAT(current_site_number) { chain.move<Right>(); }
+        State state = chain.makeCopyOfState();
+        ASSERT_NEAR_QUOTED(chain.getEnergy(),computeExpectationValue(state,O),1e-10);
+    }
+}
 //@-others
 
 }

@@ -5,6 +5,7 @@
 //@+<< Includes >>
 //@+node:gcross.20110130170743.1675: ** << Includes >>
 #include <boost/assign.hpp>
+#include <boost/bind.hpp>
 #include <boost/lambda/lambda.hpp>
 #include <boost/range/adaptor/reversed.hpp>
 #include <boost/range/algorithm/reverse_copy.hpp>
@@ -286,6 +287,28 @@ void Chain::optimizeChain() {
         sweepUntilConverged();
     }
     signalChainOptimized();
+}
+//@+node:gcross.20110215235924.1878: *3* makeCopyOfState
+State Chain::makeCopyOfState() const {
+    using namespace boost;
+    State state_sites; state_sites.reserve(number_of_sites);
+    BOOST_FOREACH(
+         StateSite<Left> const& left_state_site
+        ,left_neighbors
+            | transformed(bind(&Neighbor<Left>::state_site,_1))
+    ) {
+        state_sites.emplace_back(copyFrom(left_state_site));
+    }
+    state_sites.emplace_back(copyFrom(state_site));
+    BOOST_FOREACH(
+         StateSite<Right> const& right_state_site
+        ,right_neighbors
+            | reversed
+            | transformed(bind(&Neighbor<Right>::state_site,_1))
+    ) {
+        state_sites.emplace_back(copyFrom(right_state_site));
+    }
+    return boost::move(state_sites);
 }
 //@-others
 

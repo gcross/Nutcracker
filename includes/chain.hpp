@@ -248,6 +248,8 @@ public:
     void performOptimizationSweep();
     void sweepUntilConverged();
     void optimizeChain();
+
+    State makeCopyOfState() const;
 };
 
 template<> inline ExpectationBoundary<Left>& Chain::expectationBoundary<Left>() { return left_expectation_boundary; }
