@@ -13,7 +13,7 @@ using namespace Nutcracker;
 //@-<< Includes >>
 
 //@+others
-//@+node:gcross.20110207005827.1778: ** Operators
+//@+node:gcross.20110207005827.1778: ** Tests
 TEST_SUITE(Operators) {
 
 //@+others
