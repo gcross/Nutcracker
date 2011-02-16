@@ -5,18 +5,22 @@
 //@+<< Includes >>
 //@+node:gcross.20110202223558.1715: ** << Includes >>
 #include <boost/function.hpp>
+#include <boost/optional.hpp>
 #include <boost/random.hpp>
 #include <boost/random/normal_distribution.hpp>
 #include <boost/random/uniform_smallint.hpp>
 #include <complex>
 
 #include "operators.hpp"
+#include "states.hpp"
 
 using namespace Nutcracker;
 
 using boost::function;
 using boost::taus88;
+using boost::none;
 using boost::normal_distribution;
+using boost::optional;
 using boost::uniform_smallint;
 //@-<< Includes >>
 
@@ -38,11 +42,14 @@ public:
     RNG();
 
     unsigned int operator()(unsigned int lo, unsigned int hi);
-    OperatorSite randomOperator(
+    OperatorSite randomOperatorSite(
           PhysicalDimension const physical_dimension
         , LeftDimension const left_dimension
         , RightDimension const right_dimension
     );
+    Operators randomOperators(optional<unsigned int> maybe_number_of_operators=none);
+
+    vector<StateSite<None> > randomState(optional<unsigned int> maybe_number_of_sites=none);
 
     function<complex<double>()> generateRandomHermitianMatrices(unsigned int const size);
     function<unsigned int()> generateRandomIntegers(unsigned int lo, unsigned int hi);

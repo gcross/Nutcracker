@@ -274,11 +274,11 @@ TEST_CASE(random_generator) {
         PhysicalDimension physical_dimension(random);
         LeftDimension left_dimension(random);
         RightDimension right_dimension(random);
-        OperatorSite operator_site_1(random.randomOperator(physical_dimension,left_dimension,right_dimension));
+        OperatorSite operator_site_1(random.randomOperatorSite(physical_dimension,left_dimension,right_dimension));
         ASSERT_TRUE(operator_site_1.valid());
         OperatorSite operator_site_2;
         ASSERT_FALSE(operator_site_2.valid());
-        operator_site_2 = random.randomOperator(physical_dimension,left_dimension,right_dimension);
+        operator_site_2 = random.randomOperatorSite(physical_dimension,left_dimension,right_dimension);
         ASSERT_TRUE(operator_site_2.valid());
     }
 }

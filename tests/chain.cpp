@@ -32,32 +32,10 @@ using std::pair;
 //@-<< Includes >>
 
 //@+others
-//@+node:gcross.20110130193548.1689: ** Chain
+//@+node:gcross.20110130193548.1689: ** Tests
 TEST_SUITE(Chain) {
 
 //@+others
-//@+node:gcross.20110202223558.1711: *3* randomOperators
-Operators randomOperators(RNG& random,optional<unsigned int> maybe_number_of_operators=none) {
-    unsigned int const number_of_operators = maybe_number_of_operators ? *maybe_number_of_operators : random+1;
-    Operators operators;
-    unsigned int left_dimension = 1;
-    BOOST_FOREACH(unsigned int const operator_number, irange(0u,number_of_operators)) {
-        unsigned int const right_dimension
-            = operator_number == number_of_operators-1
-                ? 1
-                : random
-                ;
-        operators.push_back(boost::shared_ptr<OperatorSite const>(new OperatorSite(
-            random.randomOperator(
-                 PhysicalDimension(random+1)
-                ,LeftDimension(left_dimension)
-                ,RightDimension(right_dimension)
-            )
-        )));
-        left_dimension = right_dimension;
-    }
-    return boost::move(operators);
-}
 //@+node:gcross.20110130193548.1694: *3* computeBandwidthDimensionSequence
 TEST_SUITE(computeBandwidthDimensionSequence) {
 
@@ -156,7 +134,7 @@ TEST_CASE(moveLeftAndRight) {
 
     REPEAT(10) {
         unsigned int const number_of_operators = random+2;
-        Chain chain(randomOperators(random,number_of_operators));
+        Chain chain(random.randomOperators(number_of_operators));
 
         #define VALIDATE_CHAIN_PROPERTIES \
             { \
@@ -184,7 +162,7 @@ TEST_CASE(optimizeSite) {
 
     REPEAT(10) {
         unsigned int const number_of_operators = random+2;
-        Chain chain(randomOperators(random,number_of_operators));
+        Chain chain(random.randomOperators(number_of_operators));
 
         double energy = chain.getEnergy();
 
@@ -262,7 +240,7 @@ TEST_CASE(increaseBandwidthDimension) {
 
     REPEAT(10) {
         unsigned int const number_of_operators = random+2;
-        Chain chain(randomOperators(random,number_of_operators));
+        Chain chain(random.randomOperators(number_of_operators));
         unsigned int const maximum_bandwidth_dimension = min(10u,chain.maximum_bandwidth_dimension);
 
         #define VALIDATE_CHAIN_PROPERTIES \

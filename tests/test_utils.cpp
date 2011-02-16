@@ -111,8 +111,34 @@ function<uint32_t()> RNG::generateRandomIndices(
 function<unsigned int()> RNG::generateRandomIntegers(unsigned int lo, unsigned int hi) {
     return IntegerGenerator(*this,lo,hi);
 }
-//@+node:gcross.20110206092738.1746: *3* randomOperator
-OperatorSite RNG::randomOperator(
+//@+node:gcross.20110206092738.1751: *3* generateRandomHermitianMatrices
+function<complex<double>()> RNG::generateRandomHermitianMatrices(unsigned int const size) {
+    return HermitianMatrixGenerator(*this,size);
+}
+//@+node:gcross.20110215135633.1866: *3* randomOperators
+Operators RNG::randomOperators(optional<unsigned int> maybe_number_of_operators) {
+    unsigned int const number_of_operators = maybe_number_of_operators ? *maybe_number_of_operators : randomInteger()+1;
+    Operators operators;
+    unsigned int left_dimension = 1;
+    BOOST_FOREACH(unsigned int const operator_number, irange(0u,number_of_operators)) {
+        unsigned int const right_dimension
+            = operator_number == number_of_operators-1
+                ? 1
+                : randomInteger()
+                ;
+        operators.push_back(boost::shared_ptr<OperatorSite const>(new OperatorSite(
+            randomOperatorSite(
+                 PhysicalDimension(randomInteger()+1)
+                ,LeftDimension(left_dimension)
+                ,RightDimension(right_dimension)
+            )
+        )));
+        left_dimension = right_dimension;
+    }
+    return boost::move(operators);
+}
+//@+node:gcross.20110206092738.1746: *3* randomOperatorSite
+OperatorSite RNG::randomOperatorSite(
       PhysicalDimension const physical_dimension
     , LeftDimension const left_dimension
     , RightDimension const right_dimension
@@ -126,9 +152,26 @@ OperatorSite RNG::randomOperator(
             ,fillWithGenerator(generateRandomHermitianMatrices(*physical_dimension))
     );
 }
-//@+node:gcross.20110206092738.1751: *3* generateRandomHermitianMatrices
-function<complex<double>()> RNG::generateRandomHermitianMatrices(unsigned int const size) {
-    return HermitianMatrixGenerator(*this,size);
+//@+node:gcross.20110215135633.1863: *3* randomState
+vector<StateSite<None> > RNG::randomState(optional<unsigned int> maybe_number_of_sites) {
+    unsigned int const number_of_sites = maybe_number_of_sites ? *maybe_number_of_sites : (*this)(1,5);
+    vector<StateSite<None> > state;
+    unsigned int left_dimension = 1;
+    BOOST_FOREACH(unsigned int const site_number, irange(0u,number_of_sites)) {
+        unsigned int const right_dimension
+            = site_number == number_of_sites-1
+                ? 1
+                : randomInteger()
+                ;
+        state.emplace_back(
+             PhysicalDimension(randomInteger()+1)
+            ,LeftDimension(left_dimension)
+            ,RightDimension(right_dimension)
+            ,fillWithGenerator(randomComplexDouble)
+        );
+        left_dimension = right_dimension;
+    }
+    return boost::move(state);
 }
 //@-others
 //@-leo
