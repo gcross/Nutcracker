@@ -105,22 +105,22 @@ template<typename T> unsigned int maximumBandwidthDimension(
     );
 }
 //@+node:gcross.20110202175920.1701: ** Classes
-//@+node:gcross.20110202175920.1702: *3* OverlapSiteTrio
-struct OverlapSiteTrio {
+//@+node:gcross.20110202175920.1702: *3* ProjectorSite
+struct ProjectorSite {
 private:
-    BOOST_MOVABLE_BUT_NOT_COPYABLE(OverlapSiteTrio)
+    BOOST_MOVABLE_BUT_NOT_COPYABLE(ProjectorSite)
 
     OverlapSite<Left> left;
     OverlapSite<Middle> middle;
     OverlapSite<Right> right;
 public:
-    OverlapSiteTrio(BOOST_RV_REF(OverlapSiteTrio) other)
+    ProjectorSite(BOOST_RV_REF(ProjectorSite) other)
       : left(boost::move(left))
       , middle(boost::move(middle))
       , right(boost::move(right))
     { }
 
-    OverlapSiteTrio(
+    ProjectorSite(
           BOOST_RV_REF(OverlapSite<Left>) left
         , BOOST_RV_REF(OverlapSite<Middle>) middle
         , BOOST_RV_REF(OverlapSite<Right>) right
@@ -129,13 +129,13 @@ public:
       , right(right)
     { }
 
-    void operator=(BOOST_RV_REF(OverlapSiteTrio) other) {
+    void operator=(BOOST_RV_REF(ProjectorSite) other) {
         left = boost::move(other.left);
         middle = boost::move(other.middle);
         right = boost::move(other.right);
     }
 
-    void swap(OverlapSiteTrio& other) {
+    void swap(ProjectorSite& other) {
         left.swap(other.left);
         middle.swap(other.middle);
         right.swap(other.right);
@@ -145,9 +145,9 @@ public:
         throw BadLabelException("OverlapSite::get",typeid(side));
     }
 };
-template<> inline OverlapSite<Left> const& OverlapSiteTrio::get<Left>() const { return left; }
-template<> inline OverlapSite<Middle> const& OverlapSiteTrio::get<Middle>() const { return middle; }
-template<> inline OverlapSite<Right> const& OverlapSiteTrio::get<Right>() const { return right; }
+template<> inline OverlapSite<Left> const& ProjectorSite::get<Left>() const { return left; }
+template<> inline OverlapSite<Middle> const& ProjectorSite::get<Middle>() const { return middle; }
+template<> inline OverlapSite<Right> const& ProjectorSite::get<Right>() const { return right; }
 //@+node:gcross.20110202175920.1703: *3* Neighbor
 template<typename side> struct Neighbor {
 private:
@@ -184,7 +184,7 @@ public:
     unsigned int const number_of_sites;
 protected:
     Operator const operator_sites;
-    vector<vector<OverlapSiteTrio> > overlap_trios;
+    vector<Projector> projectors;
     unsigned int current_site_number;
     ExpectationBoundary<Left> left_expectation_boundary;
     vector<OverlapBoundary<Left> > left_overlap_boundaries;
@@ -331,16 +331,16 @@ template<typename side> void Chain::absorb(
 
     vector<OverlapBoundary<side> >& overlap_boundaries = overlapBoundaries<side>();
     vector<OverlapBoundary<side> > new_overlap_boundaries;
-    new_overlap_boundaries.reserve(overlap_boundaries.size());
+    new_overlap_boundaries.reserve(projectors.size());
     typename vector<OverlapBoundary<side> >::const_iterator overlap_boundary = overlap_boundaries.begin();
     BOOST_FOREACH(
-         OverlapSiteTrio const& overlap_site_trio
-        ,overlap_trios[site_number]
+         Projector const& projector
+        ,projectors
     ) {
         new_overlap_boundaries.push_back(
             contract<side>::SS(
                  *overlap_boundary
-                ,overlap_site_trio.get<side>()
+                ,projector[site_number].get<side>()
                 ,state_site
             )
         );

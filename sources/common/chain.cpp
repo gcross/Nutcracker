@@ -115,7 +115,6 @@ Chain::Chain(
     , Options const& options
 ) : number_of_sites(operator_sites.size())
   , operator_sites(operator_sites)
-  , overlap_trios(number_of_sites)
   , current_site_number(0)
   , left_expectation_boundary(make_trivial)
   , right_expectation_boundary(make_trivial)

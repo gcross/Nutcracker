@@ -49,6 +49,9 @@ typedef boost::numeric::ublas::vector<complex<double> > StateVector;
 class OperatorSite;
 typedef vector<shared_ptr<OperatorSite const> > Operator;
 
+class ProjectorSite;
+typedef vector<ProjectorSite> Projector;
+
 template<typename side> class StateSite;
 typedef vector<StateSite<None> > State;
 //@+node:gcross.20110214164734.1918: ** Exceptions
