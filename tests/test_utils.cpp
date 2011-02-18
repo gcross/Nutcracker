@@ -167,10 +167,11 @@ State RNG::randomState(vector<unsigned int> const& physical_dimensions) {
     unsigned int const number_of_sites = physical_dimensions.size();
     unsigned int left_dimension = number_of_sites == 1 ? 1 : (*this);
     StateSite<Middle> first_state_site(
-         PhysicalDimension(physical_dimensions[0])
-        ,LeftDimension(1)
-        ,RightDimension(left_dimension)
-        ,fillWithGenerator(randomComplexDouble)
+        randomStateSiteMiddle(
+             PhysicalDimension(physical_dimensions[0])
+            ,LeftDimension(1)
+            ,RightDimension(left_dimension)
+        )
     );
     vector<StateSite<Right> > rest_state_sites;
     BOOST_FOREACH(unsigned int const site_number, irange(1u,number_of_sites)) {

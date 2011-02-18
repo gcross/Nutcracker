@@ -209,6 +209,50 @@ TEST_CASE(overlaps_consistent) {
     }
 
 }
+//@+node:gcross.20110217014932.1935: *3* computeStateOverlap
+TEST_SUITE(computeStateOverlap) {
+
+//@+others
+//@+node:gcross.20110217014932.1937: *4* self-overlap is 1
+TEST_CASE(self_overlap_is_1) {
+
+    RNG random;
+
+    REPEAT(10) {
+        State state(random.randomState());
+        ASSERT_NEAR(
+             c(1,0)
+            ,computeStateOverlap(state,state)
+            ,1e-15
+        )
+    }
+
+}
+//@-others
+
+}
+//@+node:gcross.20110217175626.1924: *3* computeProjectorOverlap
+TEST_SUITE(computeProjectorOverlap) {
+
+//@+others
+//@+node:gcross.20110217175626.1925: *4* self-overlap is 1
+TEST_CASE(self_overlap_is_1) {
+
+    RNG random;
+
+    REPEAT(10) {
+        State state(random.randomState());
+        ASSERT_NEAR(
+             c(1,0)
+            ,computeProjectorOverlap(computeProjectorFromState(state),state)
+            ,1e-15
+        )
+    }
+
+}
+//@-others
+
+}
 //@-others
 
 }
