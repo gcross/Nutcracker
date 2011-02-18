@@ -313,6 +313,62 @@ TEST_CASE(projector_matrix) {
 //@-others
 
 }
+//@+node:gcross.20110217175626.1933: *3* minimumBandwidthDimensionForProjectorCount
+TEST_CASE(minimumBandwidthDimensionForProjectorCount) {
+    RNG random;
+
+    REPEAT(10) {
+        vector<unsigned int> const physical_dimensions = random.randomUnsignedIntegerVector(random(2,10),2,10);
+        unsigned int const
+             number_of_projectors = random(2,2*physical_dimensions.size()-1)
+            ,minimum_bandwidth_dimension =
+                minimumBandwidthDimensionForProjectorCount(
+                     physical_dimensions
+                    ,number_of_projectors
+                )
+            ;
+        {
+            vector<unsigned int> const bandwidth_dimension_sequence =
+                computeBandwidthDimensionSequence(
+                     minimum_bandwidth_dimension
+                    ,physical_dimensions
+                );
+            for(vector<unsigned int>::const_iterator
+                      physical_dimension_iterator = physical_dimensions.begin()
+                    , left_dimension_iterator = bandwidth_dimension_sequence.begin()
+                    , right_dimension_iterator = bandwidth_dimension_sequence.begin()+1
+               ;physical_dimension_iterator != physical_dimensions.end()
+               ;++physical_dimension_iterator, ++left_dimension_iterator, ++right_dimension_iterator
+            ) {
+                if((*physical_dimension_iterator) * (*left_dimension_iterator) * (*right_dimension_iterator) > number_of_projectors) {
+                    goto found;
+                }
+            }
+
+            FATALLY_FAIL("minimum bandwidth dimension is too small");
+
+            found: ;
+        }
+        {
+            vector<unsigned int> const bandwidth_dimension_sequence =
+                computeBandwidthDimensionSequence(
+                     minimum_bandwidth_dimension-1
+                    ,physical_dimensions
+                );
+            for(vector<unsigned int>::const_iterator
+                      physical_dimension_iterator = physical_dimensions.begin()
+                    , left_dimension_iterator = bandwidth_dimension_sequence.begin()
+                    , right_dimension_iterator = bandwidth_dimension_sequence.begin()+1
+               ;physical_dimension_iterator != physical_dimensions.end()
+               ;++physical_dimension_iterator, ++left_dimension_iterator, ++right_dimension_iterator
+            ) {
+                if((*physical_dimension_iterator) * (*left_dimension_iterator) * (*right_dimension_iterator) > number_of_projectors) {
+                    FATALLY_FAIL("minimum bandwidth dimension is too big");
+                }
+            }
+        }
+    }
+}
 //@-others
 
 }

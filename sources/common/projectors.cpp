@@ -157,6 +157,30 @@ ProjectorMatrix formProjectorMatrix(
             ,swaps
     );
 }
+//@+node:gcross.20110217175626.1932: *3* minimumBandwidthDimensionForProjectorCount
+unsigned int minimumBandwidthDimensionForProjectorCount(
+      vector<unsigned int> const& physical_dimensions
+    , unsigned int const number_of_projectors
+) {
+    for(unsigned int bandwidth_dimension = 1; true; ++bandwidth_dimension) {
+        vector<unsigned int> const bandwidth_dimension_sequence =
+            computeBandwidthDimensionSequence(
+                 bandwidth_dimension
+                ,physical_dimensions
+            );
+        for(vector<unsigned int>::const_iterator
+                  physical_dimension_iterator = physical_dimensions.begin()
+                , left_dimension_iterator = bandwidth_dimension_sequence.begin()
+                , right_dimension_iterator = bandwidth_dimension_sequence.begin()+1
+           ;physical_dimension_iterator != physical_dimensions.end()
+           ;++physical_dimension_iterator, ++left_dimension_iterator, ++right_dimension_iterator
+        ) {
+            if((*physical_dimension_iterator) * (*left_dimension_iterator) * (*right_dimension_iterator) > number_of_projectors) {
+                return bandwidth_dimension;
+            }
+        }
+    }
+}
 //@+node:gcross.20110213233103.2810: *3* randomProjectorMatrix
 ProjectorMatrix randomProjectorMatrix(
      unsigned int const vector_length

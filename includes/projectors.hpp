@@ -254,6 +254,11 @@ ProjectorMatrix formProjectorMatrix(
     vector<OverlapVectorTrio> const& overlaps
 );
 
+unsigned int minimumBandwidthDimensionForProjectorCount(
+      vector<unsigned int> const& physical_dimensions
+    , unsigned int const number_of_projectors
+);
+
 ProjectorMatrix randomProjectorMatrix(
      unsigned int const vector_length
     ,unsigned int const number_of_projectors
