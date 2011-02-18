@@ -197,15 +197,18 @@ TEST_CASE(overlaps_consistent) {
 
     REPEAT(10) {
         vector<unsigned int> physical_dimensions(random.randomUnsignedIntegerVector(random(1,5)));
-        State state_1(random.randomState(physical_dimensions))
-            , state_2(random.randomState(physical_dimensions))
-            ;
+        State const state_1(random.randomState(physical_dimensions))
+                  , state_2(random.randomState(physical_dimensions))
+                  ;
+        complex<double> const state_overlap = computeStateOverlap(state_1,state_2);
         Projector projector = computeProjectorFromState(state_1);
-        ASSERT_NEAR(
-             computeStateOverlap(state_1,state_2)
-            ,computeProjectorOverlap(projector,state_2)
-            ,1e-15
-        )
+        BOOST_FOREACH(unsigned int const active_site_number, irange(0u,(unsigned int)physical_dimensions.size())) {
+            ASSERT_NEAR(
+                 state_overlap
+                ,computeProjectorOverlap(projector,state_2,active_site_number)
+                ,1e-15
+            )
+        }
     }
 
 }
