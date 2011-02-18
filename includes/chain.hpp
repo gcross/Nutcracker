@@ -12,8 +12,6 @@
 #include <boost/lambda/lambda.hpp>
 #include <boost/move/move.hpp>
 #include <boost/signals2/signal.hpp>
-#include <functional>
-#include <numeric>
 
 #include "boundaries.hpp"
 #include "core.hpp"
@@ -33,12 +31,7 @@ using boost::irange;
 using boost::iterator_facade;
 using boost::none;
 using boost::random_access_traversal_tag;
-using boost::reverse_copy;
 using boost::signals2::signal;
-
-using std::accumulate;
-using std::min;
-using std::multiplies;
 
 namespace lambda = boost::lambda;
 //@-<< Usings >>
@@ -56,54 +49,6 @@ struct InitialChainEnergyNotRealError : public Exception {
       , energy(energy)
     {}
 };
-//@+node:gcross.20110130193548.1685: *3* RequestedBandwidthDimensionTooLargeError
-struct RequestedBandwidthDimensionTooLargeError : public Exception {
-    unsigned int const
-          requested_bandwidth_dimension
-        , greatest_possible_bandwidth_dimension
-        ;
-    RequestedBandwidthDimensionTooLargeError(
-        unsigned int const requested_bandwidth_dimension
-      , unsigned int const greatest_possible_bandwidth_dimension
-    ) : Exception((
-            format("Requested bandwidth dimension %1% is too large;  the highest possible with the given physical dimensions is %2%.")
-                % requested_bandwidth_dimension
-                % greatest_possible_bandwidth_dimension
-        ).str())
-      , requested_bandwidth_dimension(requested_bandwidth_dimension)
-      , greatest_possible_bandwidth_dimension(greatest_possible_bandwidth_dimension)    
-    {}
-};
-//@+node:gcross.20110130170743.1683: ** Functions
-vector<unsigned int> computeBandwidthDimensionSequence(
-    unsigned int const requested_bandwidth_dimension
-   ,vector<unsigned int> const& physical_dimensions
-);
-
-vector<unsigned int> extractPhysicalDimensions(
-    Operator const& operator_sites
-);
-//@+node:gcross.20110208151104.1789: *3* maximumBandwidthDimension
-template<typename T> unsigned int maximumBandwidthDimension(
-    T const& physical_dimensions
-) {
-    size_t middle_index = (physical_dimensions.size()+1)/2;
-
-    return min(
-        accumulate(
-             physical_dimensions.begin()
-            ,physical_dimensions.begin()+middle_index
-            ,1
-            ,multiplies<unsigned int>()
-        )
-       ,accumulate(
-             physical_dimensions.rbegin()
-            ,physical_dimensions.rbegin()+middle_index
-            ,1
-            ,multiplies<unsigned int>()
-        )
-    );
-}
 //@+node:gcross.20110202175920.1701: ** Classes
 //@+node:gcross.20110202175920.1703: *3* Neighbor
 template<typename side> struct Neighbor {

@@ -161,6 +161,15 @@ Operator constructTransverseIsingModelOperator(
     ));
     return boost::move(operator_sites);
 }
+//@+node:gcross.20110217175626.1939: *3* extractPhysicalDimensions
+vector<unsigned int> extractPhysicalDimensions(Operator const& operator_sites) {
+    vector<unsigned int> physical_dimensions;
+    physical_dimensions.reserve(operator_sites.size()+1);
+    BOOST_FOREACH(shared_ptr<OperatorSite const> const& operator_site, operator_sites) {
+        physical_dimensions.push_back(operator_site->physicalDimension(as_unsigned_integer));
+    }
+    return boost::move(physical_dimensions);
+}
 //@+node:gcross.20110207120702.1780: *3* identityMatrix
 Matrix identityMatrix(unsigned int const n) {
     Matrix I(n,n);

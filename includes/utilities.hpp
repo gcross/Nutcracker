@@ -13,13 +13,16 @@
 #include <boost/iterator/iterator_facade.hpp>
 #include <boost/range/adaptor/reversed.hpp>
 #include <boost/range/algorithm/reverse.hpp>
+#include <boost/range/algorithm/reverse_copy.hpp>
 #include <boost/range/irange.hpp>
 #include <boost/range/iterator_range.hpp>
 #include <boost/move/move.hpp>
 #include <boost/none_t.hpp>
 #include <complex>
 #include <exception>
+#include <functional>
 #include <iterator>
+#include <numeric>
 #include <stdint.h>
 #include <string>
 #include <typeinfo>
@@ -38,9 +41,14 @@ using boost::iterator_facade;
 using boost::iterator_range;
 using boost::make_iterator_range;
 using boost::reverse;
+using boost::reverse_copy;
 
+using std::accumulate;
 using std::complex;
 using std::iterator_traits;
+using std::min;
+using std::multiplies;
+using std::numeric_limits;
 using std::string;
 using std::type_info;
 //@-<< Usings >>
@@ -68,6 +76,24 @@ struct BadLabelException : public BadProgrammerException {
             % symbol
             % type.name()
         ).str())
+    {}
+};
+//@+node:gcross.20110217175626.1943: *3* RequestedBandwidthDimensionTooLargeError
+struct RequestedBandwidthDimensionTooLargeError : public Exception {
+    unsigned int const
+          requested_bandwidth_dimension
+        , greatest_possible_bandwidth_dimension
+        ;
+    RequestedBandwidthDimensionTooLargeError(
+        unsigned int const requested_bandwidth_dimension
+      , unsigned int const greatest_possible_bandwidth_dimension
+    ) : Exception((
+            format("Requested bandwidth dimension %1% is too large;  the highest possible with the given physical dimensions is %2%.")
+                % requested_bandwidth_dimension
+                % greatest_possible_bandwidth_dimension
+        ).str())
+      , requested_bandwidth_dimension(requested_bandwidth_dimension)
+      , greatest_possible_bandwidth_dimension(greatest_possible_bandwidth_dimension)
     {}
 };
 //@+node:gcross.20110211120708.1791: ** Classes
@@ -102,6 +128,11 @@ public:
     }
 };
 //@+node:gcross.20110127123226.2857: ** Functions
+vector<unsigned int> computeBandwidthDimensionSequence(
+    unsigned int const requested_bandwidth_dimension
+   ,vector<unsigned int> const& physical_dimensions
+);
+
 //@+others
 //@+node:gcross.20110211120708.1786: *3* c
 inline complex<double> c(double x, double y) { return complex<double>(x,y); }
@@ -128,6 +159,27 @@ template<typename DimensionRange> vector<unsigned int> flatIndexToTensorIndex(Di
 }
 //@+node:gcross.20110211120708.1798: *3* makeProductIterator
 template<typename T> ProductIterator<T> makeProductIterator(T const x) { return ProductIterator<T>(x); }
+//@+node:gcross.20110217175626.1941: *3* maximumBandwidthDimension
+template<typename T> unsigned int maximumBandwidthDimension(
+    T const& physical_dimensions
+) {
+    size_t middle_index = (physical_dimensions.size()+1)/2;
+
+    return min(
+        accumulate(
+             physical_dimensions.begin()
+            ,physical_dimensions.begin()+middle_index
+            ,1
+            ,multiplies<unsigned int>()
+        )
+       ,accumulate(
+             physical_dimensions.rbegin()
+            ,physical_dimensions.rbegin()+middle_index
+            ,1
+            ,multiplies<unsigned int>()
+        )
+    );
+}
 //@+node:gcross.20110211120708.1788: *3* moveArrayToFrom
 template<typename T> inline void moveArrayToFrom(T*& to, T*& from) {
     if(to) delete[] to;

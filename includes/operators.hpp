@@ -90,6 +90,10 @@ Operator constructTransverseIsingModelOperator(
     , double spin_coupling_strength
 );
 
+vector<unsigned int> extractPhysicalDimensions(
+    Operator const& operator_sites
+);
+
 Matrix identityMatrix(unsigned int const n);
 
 //@+others
