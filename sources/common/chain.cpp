@@ -174,17 +174,18 @@ void Chain::optimizeSite() {
 //@+node:gcross.20110206130502.1759: *3* performOptimizationSweep
 void Chain::performOptimizationSweep() {
     unsigned int const starting_site = current_site_number;
+    optimizeSite();
     while(current_site_number+1 < number_of_sites) {
-        optimizeSite();
         move<Right>();
+        optimizeSite();
     }
     while(current_site_number > 0) {
-        optimizeSite();
         move<Left>();
+        optimizeSite();
     }
     while(current_site_number < starting_site) {
-        optimizeSite();
         move<Right>();
+        optimizeSite();
     }
     signalSweepPerformed();
 }
