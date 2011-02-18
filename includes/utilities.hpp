@@ -7,6 +7,7 @@
 
 //@+<< Includes >>
 //@+node:gcross.20110125202132.2157: ** << Includes >>
+#include <boost/concept_check.hpp>
 #include <boost/container/vector.hpp>
 #include <boost/foreach.hpp>
 #include <boost/format.hpp>
@@ -14,6 +15,7 @@
 #include <boost/range/adaptor/reversed.hpp>
 #include <boost/range/algorithm/reverse.hpp>
 #include <boost/range/algorithm/reverse_copy.hpp>
+#include <boost/range/concepts.hpp>
 #include <boost/range/irange.hpp>
 #include <boost/range/iterator_range.hpp>
 #include <boost/move/move.hpp>
@@ -40,6 +42,7 @@ using boost::irange;
 using boost::iterator_facade;
 using boost::iterator_range;
 using boost::make_iterator_range;
+using boost::RandomAccessRangeConcept;
 using boost::reverse;
 using boost::reverse_copy;
 
@@ -160,9 +163,11 @@ template<typename DimensionRange> vector<unsigned int> flatIndexToTensorIndex(Di
 //@+node:gcross.20110211120708.1798: *3* makeProductIterator
 template<typename T> ProductIterator<T> makeProductIterator(T const x) { return ProductIterator<T>(x); }
 //@+node:gcross.20110217175626.1941: *3* maximumBandwidthDimension
-template<typename T> unsigned int maximumBandwidthDimension(
-    T const& physical_dimensions
+template<typename PhysicalDimensionRange> unsigned int maximumBandwidthDimension(
+    PhysicalDimensionRange const& physical_dimensions
 ) {
+    BOOST_CONCEPT_ASSERT((RandomAccessRangeConcept<PhysicalDimensionRange>));
+    if(physical_dimensions.size() == 1) return 1;
     size_t middle_index = (physical_dimensions.size()+1)/2;
 
     return min(
