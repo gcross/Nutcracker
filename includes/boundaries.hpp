@@ -62,6 +62,12 @@ ExpectationBoundary<Left> contractSOSLeft(
     , OperatorSite const& operator_site
 );
 
+OverlapBoundary<Left> contractSSLeft(
+      OverlapBoundary<Left> const& old_boundary
+    , OverlapSiteAny const& overlap_site
+    , StateSiteAny const& state_site
+);
+
 }
 //@+node:gcross.20110214155808.1858: ** struct contract
 template<typename side> struct contract {};

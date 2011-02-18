@@ -88,28 +88,13 @@ ExpectationBoundary<Right> contractSOSRight(
     );
     return boost::move(new_boundary);
 }
-//@+node:gcross.20110214155808.1878: *3* contractSSLeft
+//@+node:gcross.20110216193817.1923: *3* contractSSLeft
 OverlapBoundary<Left> contractSSLeft(
       OverlapBoundary<Left> const& old_boundary
     , OverlapSite<Left> const& overlap_site
     , StateSite<Left> const& state_site
 ) {
-    OverlapBoundary<Left> new_boundary
-        (OverlapDimension(overlap_site.rightDimension(as_unsigned_integer))
-        ,StateDimension(state_site.rightDimension(as_unsigned_integer))
-        );
-    Core::contract_ss_left(
-         old_boundary | overlap_site
-        ,overlap_site.rightDimension(as_unsigned_integer)
-        ,old_boundary | state_site
-        ,state_site.rightDimension(as_unsigned_integer)
-        ,overlap_site | state_site
-        ,old_boundary
-        ,overlap_site
-        ,state_site
-        ,new_boundary
-    );
-    return boost::move(new_boundary);
+    return Unsafe::contractSSLeft(old_boundary,overlap_site,state_site);
 }
 //@+node:gcross.20110214155808.1879: *3* contractSSRight
 OverlapBoundary<Right> contractSSRight(
@@ -138,6 +123,29 @@ OverlapBoundary<Right> contractSSRight(
 namespace Unsafe {
 
 //@+others
+//@+node:gcross.20110214155808.1878: *4* contractSSLeft
+OverlapBoundary<Left> contractSSLeft(
+      OverlapBoundary<Left> const& old_boundary
+    , OverlapSiteAny const& overlap_site
+    , StateSiteAny const& state_site
+) {
+    OverlapBoundary<Left> new_boundary
+        (OverlapDimension(overlap_site.rightDimension(as_unsigned_integer))
+        ,StateDimension(state_site.rightDimension(as_unsigned_integer))
+        );
+    Core::contract_ss_left(
+         old_boundary | overlap_site
+        ,overlap_site.rightDimension(as_unsigned_integer)
+        ,old_boundary | state_site
+        ,state_site.rightDimension(as_unsigned_integer)
+        ,overlap_site | state_site
+        ,old_boundary
+        ,overlap_site
+        ,state_site
+        ,new_boundary
+    );
+    return boost::move(new_boundary);
+}
 //@+node:gcross.20110214155808.1876: *4* contractSOSLeft
 ExpectationBoundary<Left> contractSOSLeft(
       ExpectationBoundary<Left> const& old_boundary
