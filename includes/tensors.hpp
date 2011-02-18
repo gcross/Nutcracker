@@ -959,7 +959,7 @@ public:
     StateSite<Middle> const& getFirstSite() const { return first_site; }
     vector<StateSite<Right> > const& getRestSites() const { return rest_sites; }
     StateSite<Right> const& getRestSite(unsigned int i) const { return rest_sites[i]; }
-    StateSiteAny const& getSite(unsigned int i) const {
+    StateSiteAny const& operator[](unsigned int i) const {
         if(i == 0) return first_site;
         else return rest_sites[i-1];
     }
@@ -983,7 +983,7 @@ public:
         {}
 
         StateSiteAny const& dereference() const {
-            return state->getSite(index);
+            return (*state)[index];
         }
 
         bool equal(const_iterator const& other) const {
