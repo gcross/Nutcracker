@@ -61,42 +61,6 @@ Chain::Chain(
 
     reset(bandwidth_dimension);
 }
-//@+node:gcross.20110208233325.1798: *3* reset
-void Chain::reset(unsigned int bandwidth_dimension) {
-    current_site_number = 0;
-
-    right_neighbors.clear();
-    right_neighbors.reserve(number_of_sites-1);
-
-    vector<unsigned int> initial_bandwidth_dimensions = computeBandwidthDimensionSequence(bandwidth_dimension,physical_dimensions);
-    vector<unsigned int>::const_reverse_iterator
-          right_dimension = initial_bandwidth_dimensions.rbegin()
-        , left_dimension = right_dimension+1;
-    BOOST_FOREACH(
-         unsigned int const operator_number
-        ,irange(1u,number_of_sites) | reversed
-    ) {
-        absorb<Right>(
-             randomStateSiteRight(
-                 operator_sites[operator_number]->physicalDimension()
-                ,LeftDimension(*(left_dimension++))
-                ,RightDimension(*(right_dimension++))
-             )
-            ,operator_number
-        );
-    }
-
-    state_site =
-        randomStateSiteMiddle(
-             operator_sites[0]->physicalDimension()
-            ,LeftDimension(initial_bandwidth_dimensions[0])
-            ,RightDimension(initial_bandwidth_dimensions[1])
-        );
-
-    complex<double> const expectation_value = computeExpectationValueAtSite();
-    if(abs(expectation_value.imag()) > 1e-10) throw InitialChainEnergyNotRealError(expectation_value);
-    energy = expectation_value.real();
-}
 //@+node:gcross.20110202175920.1720: *3* computeExpectationValueAtSite
 complex<double> Chain::computeExpectationValueAtSite() const {
     return 
@@ -159,6 +123,30 @@ void Chain::increaseBandwidthDimension(unsigned int const new_bandwidth_dimensio
     }
     bandwidth_dimension = new_bandwidth_dimension;
 }
+//@+node:gcross.20110215235924.1878: *3* makeCopyOfState
+State Chain::makeCopyOfState() const {
+    assert(current_site_number == 0);
+    StateSite<Middle> first_state_site(copyFrom<StateSite<Middle> const>(state_site));
+    vector<StateSite<Right> > rest_state_sites; rest_state_sites.reserve(number_of_sites-1);
+    BOOST_FOREACH(Neighbor<Right> const& neighbor, right_neighbors | reversed) {
+        rest_state_sites.emplace_back(copyFrom<StateSite<Right> const>(neighbor.state_site));
+    }
+    return State(
+         boost::move(first_state_site)
+        ,boost::move(rest_state_sites)
+    );
+}
+//@+node:gcross.20110208230325.1790: *3* optimizeChain
+void Chain::optimizeChain() {
+    double previous_energy = energy;
+    sweepUntilConverged();
+    while(abs(previous_energy - energy)/(abs(previous_energy)+abs(energy)+options.chain_convergence_threshold) > options.chain_convergence_threshold) {
+        previous_energy = energy;
+        increaseBandwidthDimension(options.computeNewBandwidthDimension(bandwidth_dimension));
+        sweepUntilConverged();
+    }
+    signalChainOptimized();
+}
 //@+node:gcross.20110206130502.1754: *3* optimizeSite
 void Chain::optimizeSite() {
     try {
@@ -200,6 +188,42 @@ void Chain::performOptimizationSweep() {
     }
     signalPerformedSweep();
 }
+//@+node:gcross.20110208233325.1798: *3* reset
+void Chain::reset(unsigned int bandwidth_dimension) {
+    current_site_number = 0;
+
+    right_neighbors.clear();
+    right_neighbors.reserve(number_of_sites-1);
+
+    vector<unsigned int> initial_bandwidth_dimensions = computeBandwidthDimensionSequence(bandwidth_dimension,physical_dimensions);
+    vector<unsigned int>::const_reverse_iterator
+          right_dimension = initial_bandwidth_dimensions.rbegin()
+        , left_dimension = right_dimension+1;
+    BOOST_FOREACH(
+         unsigned int const operator_number
+        ,irange(1u,number_of_sites) | reversed
+    ) {
+        absorb<Right>(
+             randomStateSiteRight(
+                 operator_sites[operator_number]->physicalDimension()
+                ,LeftDimension(*(left_dimension++))
+                ,RightDimension(*(right_dimension++))
+             )
+            ,operator_number
+        );
+    }
+
+    state_site =
+        randomStateSiteMiddle(
+             operator_sites[0]->physicalDimension()
+            ,LeftDimension(initial_bandwidth_dimensions[0])
+            ,RightDimension(initial_bandwidth_dimensions[1])
+        );
+
+    complex<double> const expectation_value = computeExpectationValueAtSite();
+    if(abs(expectation_value.imag()) > 1e-10) throw InitialChainEnergyNotRealError(expectation_value);
+    energy = expectation_value.real();
+}
 //@+node:gcross.20110208151104.1791: *3* sweepUntilConverged
 void Chain::sweepUntilConverged() {
     double previous_energy = numeric_limits<double>::max();
@@ -208,30 +232,6 @@ void Chain::sweepUntilConverged() {
         performOptimizationSweep();
     }
     signalSweepsConverged();
-}
-//@+node:gcross.20110208230325.1790: *3* optimizeChain
-void Chain::optimizeChain() {
-    double previous_energy = energy;
-    sweepUntilConverged();
-    while(abs(previous_energy - energy)/(abs(previous_energy)+abs(energy)+options.chain_convergence_threshold) > options.chain_convergence_threshold) {
-        previous_energy = energy;
-        increaseBandwidthDimension(options.computeNewBandwidthDimension(bandwidth_dimension));
-        sweepUntilConverged();
-    }
-    signalChainOptimized();
-}
-//@+node:gcross.20110215235924.1878: *3* makeCopyOfState
-State Chain::makeCopyOfState() const {
-    assert(current_site_number == 0);
-    StateSite<Middle> first_state_site(copyFrom<StateSite<Middle> const>(state_site));
-    vector<StateSite<Right> > rest_state_sites; rest_state_sites.reserve(number_of_sites-1);
-    BOOST_FOREACH(Neighbor<Right> const& neighbor, right_neighbors | reversed) {
-        rest_state_sites.emplace_back(copyFrom<StateSite<Right> const>(neighbor.state_site));
-    }
-    return State(
-         boost::move(first_state_site)
-        ,boost::move(rest_state_sites)
-    );
 }
 //@-others
 
