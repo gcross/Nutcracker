@@ -130,7 +130,7 @@ public:
 
     operator bool() const { return valid(); }
 
-    unsigned int operator|(StateSite<Middle> const& state_site) const {
+    unsigned int operator|(StateSiteAny const& state_site) const {
         return connectDimensions(
              "state site size"
             ,state_site.size()
@@ -245,7 +245,7 @@ OverlapSitesFromStateSitesAndNormalizeResult computeOverlapSitesFromStateSitesAn
 
 double computeOverlapWithProjectors(
      ProjectorMatrix const& projector_matrix
-    ,StateSite<Middle> const& state_site
+    ,StateSiteAny const& state_site
 );
 
 Projector computeProjectorFromState(State const& state);

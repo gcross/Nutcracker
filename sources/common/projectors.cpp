@@ -89,7 +89,7 @@ OverlapSitesFromStateSitesAndNormalizeResult computeOverlapSitesFromStateSitesAn
 //@+node:gcross.20110213233103.2808: *3* computeOverlapWithProjectors
 double computeOverlapWithProjectors(
      ProjectorMatrix const& projector_matrix
-    ,StateSite<Middle> const& state_site
+    ,StateSiteAny const& state_site
 ) {
     return abs(Core::compute_overlap_with_projectors(
          projector_matrix.numberOfProjectors()
