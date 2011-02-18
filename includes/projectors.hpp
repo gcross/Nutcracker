@@ -13,6 +13,7 @@
 #include <utility>
 
 #include "boundaries.hpp"
+#include "core.hpp"
 #include "tensors.hpp"
 //@-<< Includes >>
 
@@ -21,6 +22,7 @@ namespace Nutcracker {
 //@+<< Usings >>
 //@+node:gcross.20110213233103.2784: ** << Usings >>
 using boost::make_tuple;
+using boost::RandomAccessRangeConcept;
 using boost::SinglePassRangeConcept;
 using boost::tuple;
 
@@ -214,21 +216,6 @@ public:
       , right_overlap_site_from_right_state_site(right_overlap_site_from_right_state_site)
     {}
 };
-//@+node:gcross.20110213233103.2796: *3* OverlapVectorTrio
-struct OverlapVectorTrio {
-    OverlapBoundary<Left> const* left_boundary;
-    OverlapBoundary<Right> const* right_boundary;
-    OverlapSite<Middle> const* middle_site;
-
-    OverlapVectorTrio(
-          OverlapBoundary<Left> const& left_boundary
-        , OverlapBoundary<Right> const& right_boundary
-        , OverlapSite<Middle> const& middle_site
-    ) : left_boundary(&left_boundary)
-      , right_boundary(&right_boundary)
-      , middle_site(&middle_site)
-    {}
-};
 //@+node:gcross.20110213233103.2786: ** Functions
 StateSite<Middle> applyProjectorMatrix(
       ProjectorMatrix const& projector_matrix
@@ -251,7 +238,9 @@ double computeOverlapWithProjectors(
 Projector computeProjectorFromState(State const& state);
 
 ProjectorMatrix formProjectorMatrix(
-    vector<OverlapVectorTrio> const& overlaps
+     vector<OverlapBoundary<Left> > const& left_boundaries
+    ,vector<OverlapBoundary<Right> > const& right_boundaries
+    ,vector<OverlapSite<Middle> > const& overlap_sites
 );
 
 unsigned int minimumBandwidthDimensionForProjectorCount(
@@ -375,6 +364,90 @@ template<
     }
     assert(left_boundary.size() == 1);
     return left_boundary[0];
+}
+//@+node:gcross.20110218083552.1928: *3* formProjectorMatrix
+template<
+     typename OverlapBoundaryLeftRange
+    ,typename OverlapBoundaryRightRange
+    ,typename OverlapSiteMiddleRange
+> ProjectorMatrix formProjectorMatrix(
+     OverlapBoundaryLeftRange const& left_boundaries
+    ,OverlapBoundaryRightRange const& right_boundaries
+    ,OverlapSiteMiddleRange const& overlap_sites
+) {
+    BOOST_CONCEPT_ASSERT((RandomAccessRangeConcept<OverlapBoundaryLeftRange>));
+    BOOST_CONCEPT_ASSERT((RandomAccessRangeConcept<OverlapBoundaryRightRange>));
+    BOOST_CONCEPT_ASSERT((RandomAccessRangeConcept<OverlapSiteMiddleRange>));
+    assert(left_boundaries.size() == right_boundaries.size());
+    assert(left_boundaries.size() == overlap_sites.size());
+    unsigned int const
+         number_of_projectors = left_boundaries.size()
+        ,state_physical_dimension = overlap_sites.begin()->physicalDimension(as_unsigned_integer)
+        ,state_left_dimension = left_boundaries.begin()->stateDimension(as_unsigned_integer)
+        ,state_right_dimension = right_boundaries.begin()->stateDimension(as_unsigned_integer)
+        ,overlap_vector_length = state_physical_dimension*state_left_dimension*state_right_dimension
+        ,number_of_reflectors = min(overlap_vector_length,number_of_projectors)
+        ;
+    complex<double>* overlap_vectors
+        = new complex<double>[number_of_projectors*overlap_vector_length];
+    complex<double>* overlap_vector = overlap_vectors;
+    typedef tuple<
+             OverlapBoundary<Left> const&
+            ,OverlapBoundary<Right> const&
+            ,OverlapSite<Middle> const&
+            > OverlapVectorTriplet;
+    BOOST_FOREACH(
+         OverlapVectorTriplet const overlap_vector_triplet
+        ,make_pair(
+             make_zip_iterator(make_tuple(
+                 left_boundaries.begin()
+                ,right_boundaries.begin()
+                ,overlap_sites.begin()
+             ))
+            ,make_zip_iterator(make_tuple(
+                 left_boundaries.end()
+                ,right_boundaries.end()
+                ,overlap_sites.end()
+             ))
+         )
+    ) {
+        OverlapBoundary<Left> const& left_boundary = overlap_vector_triplet.get<0>();
+        OverlapBoundary<Right> const& right_boundary = overlap_vector_triplet.get<1>();
+        OverlapSite<Middle> const& overlap_site = overlap_vector_triplet.get<2>();
+        assert(left_boundary.stateDimension(as_unsigned_integer) == state_left_dimension);
+        assert(right_boundary.stateDimension(as_unsigned_integer) == state_right_dimension);
+        Core::form_overlap_vector(
+             left_boundary | overlap_site
+            ,overlap_site  | right_boundary
+            ,state_left_dimension
+            ,state_right_dimension
+            ,state_physical_dimension
+            ,left_boundary
+            ,right_boundary
+            ,overlap_site
+            ,overlap_vector
+        );
+        overlap_vector += overlap_vector_length;
+    }
+    complex<double>* coefficients = new complex<double>[number_of_reflectors];
+    uint32_t* swaps = new uint32_t[number_of_reflectors];
+    unsigned int const subspace_dimension =
+    Core::convert_vectors_to_reflectors(
+         overlap_vector_length
+        ,number_of_projectors
+        ,overlap_vectors
+        ,coefficients
+        ,swaps
+    );
+    return ProjectorMatrix(
+             number_of_projectors
+            ,overlap_vector_length
+            ,number_of_reflectors
+            ,overlap_vector_length-subspace_dimension
+            ,overlap_vectors
+            ,coefficients
+            ,swaps
+    );
 }
 //@-others
 

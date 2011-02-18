@@ -105,58 +105,6 @@ double computeOverlapWithProjectors(
 Projector computeProjectorFromState(State const& state) {
     return computeProjectorFromStateSites(state.getFirstSite(),state.getRestSites());
 }
-//@+node:gcross.20110213233103.2809: *3* formProjectorMatrix
-ProjectorMatrix formProjectorMatrix(
-    vector<OverlapVectorTrio> const& overlaps
-) {
-    unsigned int const
-         number_of_projectors = overlaps.size()
-        ,state_physical_dimension = overlaps[0].middle_site->physicalDimension(as_unsigned_integer)
-        ,state_left_dimension = overlaps[0].left_boundary->stateDimension(as_unsigned_integer)
-        ,state_right_dimension = overlaps[0].right_boundary->stateDimension(as_unsigned_integer)
-        ,overlap_vector_length = state_physical_dimension*state_left_dimension*state_right_dimension
-        ,number_of_reflectors = min(overlap_vector_length,number_of_projectors)
-        ;
-    complex<double>* overlap_vectors
-        = new complex<double>[number_of_projectors*overlap_vector_length];
-    complex<double>* overlap_vector = overlap_vectors;
-    BOOST_FOREACH(
-         OverlapVectorTrio const& overlap
-        ,overlaps
-    ) {
-        Core::form_overlap_vector(
-             (*overlap.left_boundary) | (*overlap.middle_site)
-            ,(*overlap.middle_site) | (*overlap.right_boundary)
-            ,state_left_dimension
-            ,state_right_dimension
-            ,state_physical_dimension
-            ,*overlap.left_boundary
-            ,*overlap.right_boundary
-            ,*overlap.middle_site
-            ,overlap_vector
-        );
-        overlap_vector += overlap_vector_length;
-    }
-    complex<double>* coefficients = new complex<double>[number_of_reflectors];
-    uint32_t* swaps = new uint32_t[number_of_reflectors];
-    unsigned int const subspace_dimension =
-    Core::convert_vectors_to_reflectors(
-         overlap_vector_length
-        ,number_of_projectors
-        ,overlap_vectors
-        ,coefficients
-        ,swaps
-    );
-    return ProjectorMatrix(
-             number_of_projectors
-            ,overlap_vector_length
-            ,number_of_reflectors
-            ,overlap_vector_length-subspace_dimension
-            ,overlap_vectors
-            ,coefficients
-            ,swaps
-    );
-}
 //@+node:gcross.20110217175626.1932: *3* minimumBandwidthDimensionForProjectorCount
 unsigned int minimumBandwidthDimensionForProjectorCount(
       vector<unsigned int> const& physical_dimensions

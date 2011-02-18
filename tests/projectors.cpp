@@ -5,6 +5,7 @@
 //@+<< Includes >>
 //@+node:gcross.20110213233103.2812: ** << Includes >>
 #include <boost/assign/list_of.hpp>
+#include <boost/range/adaptor/indirected.hpp>
 #include <illuminate.hpp>
 
 #include "projectors.hpp"
@@ -13,6 +14,7 @@
 
 using namespace Nutcracker;
 
+using boost::adaptors::indirected;
 using boost::assign::list_of;
 //@-<< Includes >>
 
@@ -110,13 +112,9 @@ static OverlapSite<Middle> const
 TEST_CASE(trivial) {
     ProjectorMatrix const projector_matrix(
         formProjectorMatrix(
-            list_of(
-                OverlapVectorTrio(
-                     OverlapBoundary<Left>::trivial
-                    ,OverlapBoundary<Right>::trivial
-                    ,OverlapSite<Middle>::trivial
-                )
-            )
+             list_of(&OverlapBoundary<Left>::trivial) | indirected
+            ,list_of(&OverlapBoundary<Right>::trivial) | indirected
+            ,list_of(&OverlapSite<Middle>::trivial) | indirected
         )
     );
     ASSERT_EQ(1,projector_matrix.numberOfProjectors());
@@ -127,12 +125,10 @@ TEST_CASE(trivial) {
 //@+node:gcross.20110213233103.2823: *4* physical dimension 4, one projector
 TEST_CASE(physical_dimension_4_with_one_projector) {
     ProjectorMatrix const projector_matrix(
-        formProjectorMatrix(list_of
-            (OverlapVectorTrio(
-                 OverlapBoundary<Left>::trivial
-                ,OverlapBoundary<Right>::trivial
-                ,test_overlap_site_1
-            ))
+        formProjectorMatrix(
+             list_of(&OverlapBoundary<Left>::trivial) | indirected
+            ,list_of(&OverlapBoundary<Right>::trivial) | indirected
+            ,list_of(&test_overlap_site_1) | indirected
         )
     );
     ASSERT_EQ(1,projector_matrix.numberOfProjectors());
@@ -143,17 +139,10 @@ TEST_CASE(physical_dimension_4_with_one_projector) {
 //@+node:gcross.20110213233103.2824: *4* physical dimension 4, two projectors
 TEST_CASE(physical_dimension_4_with_two_projectors) {
     ProjectorMatrix const projector_matrix(
-        formProjectorMatrix(list_of
-            (OverlapVectorTrio(
-                 OverlapBoundary<Left>::trivial
-                ,OverlapBoundary<Right>::trivial
-                ,test_overlap_site_1
-            ))
-            (OverlapVectorTrio(
-                 OverlapBoundary<Left>::trivial
-                ,OverlapBoundary<Right>::trivial
-                ,test_overlap_site_2
-            ))
+        formProjectorMatrix(
+             list_of(&OverlapBoundary<Left>::trivial)(&OverlapBoundary<Left>::trivial) | indirected
+            ,list_of(&OverlapBoundary<Right>::trivial)(&OverlapBoundary<Right>::trivial) | indirected
+            ,list_of(&test_overlap_site_1)(&test_overlap_site_2) | indirected
         )
     );
     ASSERT_EQ(2,projector_matrix.numberOfProjectors());
@@ -164,22 +153,10 @@ TEST_CASE(physical_dimension_4_with_two_projectors) {
 //@+node:gcross.20110213233103.2825: *4* physical dimension 4, three projectors
 TEST_CASE(physical_dimension_4_with_three_projectors) {
     ProjectorMatrix const projector_matrix(
-        formProjectorMatrix(list_of
-            (OverlapVectorTrio(
-                 OverlapBoundary<Left>::trivial
-                ,OverlapBoundary<Right>::trivial
-                ,test_overlap_site_1
-            ))
-            (OverlapVectorTrio(
-                 OverlapBoundary<Left>::trivial
-                ,OverlapBoundary<Right>::trivial
-                ,test_overlap_site_2
-            ))
-            (OverlapVectorTrio(
-                 OverlapBoundary<Left>::trivial
-                ,OverlapBoundary<Right>::trivial
-                ,test_overlap_site_3
-            ))
+        formProjectorMatrix(
+             list_of(&OverlapBoundary<Left>::trivial)(&OverlapBoundary<Left>::trivial)(&OverlapBoundary<Left>::trivial) | indirected
+            ,list_of(&OverlapBoundary<Right>::trivial)(&OverlapBoundary<Right>::trivial)(&OverlapBoundary<Right>::trivial) | indirected
+            ,list_of(&test_overlap_site_1)(&test_overlap_site_2)(&test_overlap_site_3) | indirected
         )
     );
     ASSERT_EQ(3,projector_matrix.numberOfProjectors());
@@ -287,11 +264,11 @@ TEST_CASE(projector_matrix) {
             OverlapBoundary<Right> right_boundary(boost::move(right_boundaries.back()));
             right_boundaries.pop_back();
             ProjectorMatrix projector_matrix(
-                formProjectorMatrix(list_of(OverlapVectorTrio(
-                     left_boundary
-                    ,right_boundary
-                    ,projector[i].get<Middle>()
-                )))
+                formProjectorMatrix(
+                     list_of(&left_boundary) | indirected
+                    ,list_of(&right_boundary) | indirected
+                    ,list_of(&projector[i].get<Middle>()) | indirected
+                )
             );
             ASSERT_NEAR(
                  abs(overlap)
