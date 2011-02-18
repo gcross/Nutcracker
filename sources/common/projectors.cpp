@@ -4,6 +4,9 @@
 
 //@+<< Includes >>
 //@+node:gcross.20110213233103.2777: ** << Includes >>
+#include <boost/lambda/lambda.hpp>
+#include <boost/range/algorithm/for_each.hpp>
+
 #include "core.hpp"
 #include "projectors.hpp"
 //@-<< Includes >>
@@ -12,6 +15,9 @@ namespace Nutcracker {
 
 //@+<< Usings >>
 //@+node:gcross.20110213233103.2778: ** << Usings >>
+namespace lambda = boost::lambda;
+
+using boost::for_each;
 //@-<< Usings >>
 
 //@+others
@@ -21,6 +27,7 @@ StateSite<Middle> applyProjectorMatrix(
       ProjectorMatrix const& projector_matrix
     , StateSite<Middle> const& old_state_site
 ) {
+    assert(projector_matrix.orthogonalSubspaceDimension() > 0);
     StateSite<Middle> new_state_site(dimensionsOf(old_state_site));
     Core::filter_components_outside_orthog(
          projector_matrix | old_state_site
@@ -33,6 +40,8 @@ StateSite<Middle> applyProjectorMatrix(
         ,old_state_site
         ,new_state_site
     );
+    assert(new_state_site.norm() > 1e-7);
+    for_each(new_state_site,lambda::_1 /= new_state_site.norm());
     return boost::move(new_state_site);
 }
 //@+node:gcross.20110126102637.2188: *3* computeOverlapSiteFromStateSite
