@@ -35,6 +35,57 @@ StateSite<Middle> applyProjectorMatrix(
     );
     return boost::move(new_state_site);
 }
+//@+node:gcross.20110126102637.2188: *3* computeOverlapSiteFromStateSite
+template<typename side>
+static OverlapSite<side> implComputeOverlapSiteFromStateSite(StateSiteAny const& state_site) {
+    OverlapSite<side> overlap_site(dimensionsOf(state_site));
+    Core::form_overlap_site_tensor(
+         state_site.rightDimension(as_unsigned_integer)
+        ,state_site.leftDimension(as_unsigned_integer)
+        ,state_site.physicalDimension(as_unsigned_integer)
+        ,state_site
+        ,overlap_site
+    );
+    return boost::move(overlap_site);
+}
+
+OverlapSite<Middle> computeOverlapSiteFromStateSite(StateSite<Middle> const& state_site) {
+    return implComputeOverlapSiteFromStateSite<Middle>(state_site);
+}
+
+OverlapSite<None> computeOverlapSiteFromStateSite(StateSiteAny const& state_site) {
+    return implComputeOverlapSiteFromStateSite<None>(state_site);
+}
+//@+node:gcross.20110126102637.2189: *3* computeOverlapSitesFromStateSitesAndNormalize
+OverlapSitesFromStateSitesAndNormalizeResult computeOverlapSitesFromStateSitesAndNormalize(
+      StateSite<Middle> const& middle_state_site
+     ,StateSite<Right> const& right_state_site
+) {
+    OverlapSite<Left> left_overlap_site_from_middle_state_site(dimensionsOf(middle_state_site));
+    OverlapSite<Middle> middle_overlap_site_from_middle_state_site(dimensionsOf(middle_state_site));
+    StateSite<Middle> middle_state_site_from_right_state_site(dimensionsOf(right_state_site));
+    OverlapSite<Right> right_overlap_site_from_right_state_site(dimensionsOf(right_state_site));
+    Core::form_norm_overlap_tensors(
+         middle_state_site.leftDimension(as_unsigned_integer)
+        ,middle_state_site | right_state_site
+        ,right_state_site.rightDimension(as_unsigned_integer)
+        ,middle_state_site.physicalDimension(as_unsigned_integer)
+        ,right_state_site.physicalDimension(as_unsigned_integer)
+        ,middle_state_site
+        ,right_state_site
+        ,left_overlap_site_from_middle_state_site
+        ,middle_overlap_site_from_middle_state_site
+        ,middle_state_site_from_right_state_site
+        ,right_overlap_site_from_right_state_site
+    );
+    return
+        OverlapSitesFromStateSitesAndNormalizeResult(
+             boost::move(left_overlap_site_from_middle_state_site)
+            ,boost::move(middle_overlap_site_from_middle_state_site)
+            ,boost::move(middle_state_site_from_right_state_site)
+            ,boost::move(right_overlap_site_from_right_state_site)
+        );
+}
 //@+node:gcross.20110213233103.2808: *3* computeOverlapWithProjectors
 double computeOverlapWithProjectors(
      ProjectorMatrix const& projector_matrix
@@ -49,6 +100,10 @@ double computeOverlapWithProjectors(
         ,projector_matrix | state_site
         ,state_site
     ));
+}
+//@+node:gcross.20110217014932.1932: *3* computeProjectorFromState
+Projector computeProjectorFromState(State const& state) {
+    return computeProjectorFromStateSites(state.getFirstSite(),state.getRestSites());
 }
 //@+node:gcross.20110213233103.2809: *3* formProjectorMatrix
 ProjectorMatrix formProjectorMatrix(

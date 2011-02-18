@@ -10,9 +10,11 @@
 #include <boost/bind.hpp>
 #include <boost/concept_check.hpp>
 #include <boost/container/vector.hpp>
+#include <boost/iterator/zip_iterator.hpp>
 #include <boost/range/adaptor/transformed.hpp>
 #include <boost/range/concepts.hpp>
 #include <boost/smart_ptr/scoped_array.hpp>
+#include <boost/tuple/tuple.hpp>
 
 #include "boundaries.hpp"
 #include "core.hpp"
@@ -27,8 +29,11 @@ namespace ublas = boost::numeric::ublas;
 
 using boost::adaptors::transformed;
 using boost::container::vector;
+using boost::make_tuple;
+using boost::make_zip_iterator;
 using boost::scoped_array;
 using boost::SinglePassRangeConcept;
+using boost::tuple;
 //@-<< Usings >>
 
 //@+others
@@ -189,43 +194,7 @@ public:
       , other_side_state_site(other_side_state_site)
     {}
 };
-//@+node:gcross.20110214164734.2011: *3* OverlapSitesFromStateSitesAndNormalizeResult
-class OverlapSitesFromStateSitesAndNormalizeResult {
-private:
-    BOOST_MOVABLE_BUT_NOT_COPYABLE(OverlapSitesFromStateSitesAndNormalizeResult)
-public:
-    OverlapSite<Left> left_overlap_site_from_middle_state_site;
-    OverlapSite<Middle> middle_overlap_site_from_middle_state_site;
-    StateSite<Middle> middle_state_site_from_right_state_site;
-    OverlapSite<Right> right_overlap_site_from_right_state_site;
-
-    OverlapSitesFromStateSitesAndNormalizeResult(
-          BOOST_RV_REF(OverlapSitesFromStateSitesAndNormalizeResult) other
-    ) : left_overlap_site_from_middle_state_site(boost::move(other.left_overlap_site_from_middle_state_site))
-      , middle_overlap_site_from_middle_state_site(boost::move(other.middle_overlap_site_from_middle_state_site))
-      , middle_state_site_from_right_state_site(boost::move(other.middle_state_site_from_right_state_site))
-      , right_overlap_site_from_right_state_site(boost::move(other.right_overlap_site_from_right_state_site))
-    {}
-
-    OverlapSitesFromStateSitesAndNormalizeResult(
-          BOOST_RV_REF(OverlapSite<Left>) left_overlap_site_from_middle_state_site
-        , BOOST_RV_REF(OverlapSite<Middle>) middle_overlap_site_from_middle_state_site
-        , BOOST_RV_REF(StateSite<Middle>) middle_state_site_from_right_state_site
-        , BOOST_RV_REF(OverlapSite<Right>) right_overlap_site_from_right_state_site
-    ) : left_overlap_site_from_middle_state_site(left_overlap_site_from_middle_state_site)
-      , middle_overlap_site_from_middle_state_site(middle_overlap_site_from_middle_state_site)
-      , middle_state_site_from_right_state_site(middle_state_site_from_right_state_site)
-      , right_overlap_site_from_right_state_site(right_overlap_site_from_right_state_site)
-    {}
-};
 //@+node:gcross.20110213161858.1813: ** Functions
-OverlapSite<Middle> computeOverlapSiteFromStateSite(StateSite<Middle> const& state_site);
-
-OverlapSitesFromStateSitesAndNormalizeResult computeOverlapSitesFromStateSitesAndNormalize(
-      StateSite<Middle> const& middle_state_site
-     ,StateSite<Right> const& right_state_site
-);
-
 StateVectorFragment extendStateVectorFragment(
       StateVectorFragment const& old_fragment
     , StateSiteAny const& state_site

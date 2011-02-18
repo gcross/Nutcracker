@@ -314,8 +314,6 @@ TEST_CASE(expectation_matches_computeExpectationValue) {
         unsigned int const number_of_sites = random;
         Operator O = random.randomOperator(number_of_sites);
         Chain chain(O);
-        unsigned int current_site_number = random(0,number_of_sites-1);
-        REPEAT(current_site_number) { chain.move<Right>(); }
         State state = chain.makeCopyOfState();
         ASSERT_NEAR_QUOTED(chain.getEnergy(),computeExpectationValue(state,O),1e-10);
     }

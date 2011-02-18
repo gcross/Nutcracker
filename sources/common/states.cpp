@@ -28,48 +28,6 @@ NormalizationError::NormalizationError(int info)
     , info(info)
 { }
 //@+node:gcross.20110213161858.1820: ** Functions
-//@+node:gcross.20110126102637.2188: *3* computeMiddleOverlapSiteFromStateSite
-OverlapSite<Middle> computeOverlapSiteFromStateSite(StateSite<Middle> const& state_site) {
-    OverlapSite<Middle> overlap_site(dimensionsOf(state_site));
-    Core::form_overlap_site_tensor(
-         state_site.rightDimension(as_unsigned_integer)
-        ,state_site.leftDimension(as_unsigned_integer)
-        ,state_site.physicalDimension(as_unsigned_integer)
-        ,state_site
-        ,overlap_site
-    );
-    return boost::move(overlap_site);
-}
-//@+node:gcross.20110126102637.2189: *3* computeOverlapSitesFromStateSitesAndNormalize
-OverlapSitesFromStateSitesAndNormalizeResult computeOverlapSitesFromStateSitesAndNormalize(
-      StateSite<Middle> const& middle_state_site
-     ,StateSite<Right> const& right_state_site
-) {
-    OverlapSite<Left> left_overlap_site_from_middle_state_site(dimensionsOf(middle_state_site));
-    OverlapSite<Middle> middle_overlap_site_from_middle_state_site(dimensionsOf(middle_state_site));
-    StateSite<Middle> middle_state_site_from_right_state_site(dimensionsOf(right_state_site));
-    OverlapSite<Right> right_overlap_site_from_right_state_site(dimensionsOf(right_state_site));
-    Core::form_norm_overlap_tensors(
-         middle_state_site.leftDimension(as_unsigned_integer)
-        ,middle_state_site | right_state_site
-        ,right_state_site.rightDimension(as_unsigned_integer)
-        ,middle_state_site.physicalDimension(as_unsigned_integer)
-        ,right_state_site.physicalDimension(as_unsigned_integer)
-        ,middle_state_site
-        ,right_state_site
-        ,left_overlap_site_from_middle_state_site
-        ,middle_overlap_site_from_middle_state_site
-        ,middle_state_site_from_right_state_site
-        ,right_overlap_site_from_right_state_site
-    );
-    return
-        OverlapSitesFromStateSitesAndNormalizeResult(
-             boost::move(left_overlap_site_from_middle_state_site)
-            ,boost::move(middle_overlap_site_from_middle_state_site)
-            ,boost::move(middle_state_site_from_right_state_site)
-            ,boost::move(right_overlap_site_from_right_state_site)
-        );
-}
 //@+node:gcross.20110214155808.1984: *3* extendStateVectorFragment
 StateVectorFragment extendStateVectorFragment(
       StateVectorFragment const& old_fragment

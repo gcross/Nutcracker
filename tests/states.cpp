@@ -429,7 +429,7 @@ TEST_CASE(computeStateVector_consistent_with_computeStateVectorComponent) {
     RNG random;
 
     REPEAT(10) {
-        vector<StateSite<None> > state; state = random.randomState();
+        State state = random.randomState();
         StateVector state_vector = computeStateVector(state);
         unsigned long long const state_length = computeStateVectorLength(state);
         REPEAT(10) {

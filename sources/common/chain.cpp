@@ -289,12 +289,16 @@ void Chain::optimizeChain() {
 }
 //@+node:gcross.20110215235924.1878: *3* makeCopyOfState
 State Chain::makeCopyOfState() const {
-    using namespace boost;
-    State state_sites; state_sites.reserve(number_of_sites);
-    BOOST_FOREACH(StateSiteAny const& state_site, *this) {
-        state_sites.emplace_back(copyFrom(state_site));
+    assert(current_site_number == 0);
+    StateSite<Middle> first_state_site(copyFrom<StateSite<Middle> const>(state_site));
+    vector<StateSite<Right> > rest_state_sites; rest_state_sites.reserve(number_of_sites-1);
+    BOOST_FOREACH(Neighbor<Right> const& neighbor, right_neighbors | reversed) {
+        rest_state_sites.emplace_back(copyFrom<StateSite<Right> const>(neighbor.state_site));
     }
-    return boost::move(state_sites);
+    return State(
+         boost::move(first_state_site)
+        ,boost::move(rest_state_sites)
+    );
 }
 //@-others
 

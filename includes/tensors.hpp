@@ -12,6 +12,7 @@
 #include <boost/container/vector.hpp>
 #include <boost/foreach.hpp>
 #include <boost/format.hpp>
+#include <boost/iterator/iterator_facade.hpp>
 #include <boost/move/move.hpp>
 #include <boost/numeric/ublas/vector.hpp>
 #include <boost/range/algorithm/copy.hpp>
@@ -34,7 +35,9 @@ namespace Nutcracker {
 using boost::container::vector;
 using boost::copy;
 using boost::Generator;
+using boost::iterator_facade;
 using boost::RandomAccessRangeConcept;
+using boost::random_access_traversal_tag;
 using boost::shared_ptr;
 
 using std::copy;
@@ -45,15 +48,6 @@ typedef boost::numeric::ublas::vector<complex<double> > StateVector;
 //@-<< Usings >>
 
 //@+others
-//@+node:gcross.20110215231246.1878: ** Type aliases
-class OperatorSite;
-typedef vector<shared_ptr<OperatorSite const> > Operator;
-
-class ProjectorSite;
-typedef vector<ProjectorSite> Projector;
-
-template<typename side> class StateSite;
-typedef vector<StateSite<None> > State;
 //@+node:gcross.20110214164734.1918: ** Exceptions
 //@+node:gcross.20110215235924.1979: *3* DimensionMismatch
 struct DimensionMismatch : public Exception {
@@ -80,12 +74,19 @@ inline unsigned int connectDimensions(
     if(d1 != d2) throw DimensionMismatch(n1,d1,n2,d2);
     return d1;
 }
-//@+node:gcross.20110215231246.1877: ** Dummy classes
+//@+node:gcross.20110215231246.1878: ** Type aliases
+class OperatorSite;
+typedef vector<shared_ptr<OperatorSite const> > Operator;
+
+class ProjectorSite;
+typedef vector<ProjectorSite> Projector;
+//@+node:gcross.20110215231246.1877: ** Dummy/Forward classes
 class Left;
 class Middle;
 class Overlap;
 class Physical;
 class Right;
+class State;
 //@+node:gcross.20110127123226.2852: ** Parameters wrappers
 template<typename T> class Parameter {
 private:
@@ -146,7 +147,7 @@ DEFINE_DUMMY_PARAMETER(AsUnsignedInteger,as_unsigned_integer);
 template<typename other_side> struct Other { };
 template<> struct Other<Left> { typedef Right value; };
 template<> struct Other<Right> { typedef Left value; };
-//@+node:gcross.20110124161335.2012: ** Classes
+//@+node:gcross.20110124161335.2012: ** Tensors
 //@+node:gcross.20110215235924.2007: *3* Base
 //@+node:gcross.20110126150230.1601: *4* BaseTensor
 class BaseTensor {
@@ -495,7 +496,7 @@ public:
 };
 
 template<typename side> OverlapBoundary<side> const OverlapBoundary<side>::trivial(make_trivial);
-//@+node:gcross.20110215235924.1926: *3* State / Overlap
+//@+node:gcross.20110215235924.1926: *3* State
 //@+node:gcross.20110215235924.1927: *4* StateSiteAny
 class StateSiteAny : public SiteBaseTensor {
 private:
@@ -653,18 +654,19 @@ public:
 };
 
 template<typename side> StateSite<side> const StateSite<side>::trivial(make_trivial);
-//@+node:gcross.20110215235924.1929: *4* OverlapSite
-template<typename side> class OverlapSite : public SiteBaseTensor {
+//@+node:gcross.20110216193817.1919: *3* Overlap
+//@+node:gcross.20110216193817.1921: *4* OverlapSiteAny
+class OverlapSiteAny : public SiteBaseTensor {
 private:
-    BOOST_MOVABLE_BUT_NOT_COPYABLE(OverlapSite)
-public:
-    OverlapSite() {}
+    BOOST_MOVABLE_BUT_NOT_COPYABLE(OverlapSiteAny)
+protected:
+    OverlapSiteAny() {}
 
-    OverlapSite(BOOST_RV_REF(OverlapSite) other)
+    OverlapSiteAny(BOOST_RV_REF(OverlapSiteAny) other)
       : SiteBaseTensor(boost::move(static_cast<SiteBaseTensor&>(other)))
     { }
 
-    OverlapSite(
+    OverlapSiteAny(
           RightDimension const right_dimension
         , PhysicalDimension const physical_dimension
         , LeftDimension const left_dimension
@@ -676,17 +678,17 @@ public:
         )
     { }
 
-    template<typename other_side> OverlapSite(
-          CopyFrom<OverlapSite<other_side> const> const other_site
+    OverlapSiteAny(
+          CopyFrom<OverlapSiteAny const> const other_site
     ) : SiteBaseTensor(other_site)
     { }
 
-    template<typename other_side> OverlapSite(
-          DimensionsOf<StateSite<other_side> const> const other_site
+    OverlapSiteAny(
+          DimensionsOf<StateSiteAny const> const other_site
     ) : SiteBaseTensor(other_site)
     { }
 
-    template<typename G> OverlapSite(
+    template<typename G> OverlapSiteAny(
           RightDimension const right_dimension
         , PhysicalDimension const physical_dimension
         , LeftDimension const left_dimension
@@ -700,7 +702,7 @@ public:
         )
     { }
 
-    template<typename Range> OverlapSite(
+    template<typename Range> OverlapSiteAny(
           RightDimension const right_dimension
         , LeftDimension const left_dimension
         , FillWithRange<Range> const init
@@ -712,17 +714,83 @@ public:
         )
     { }
 
-    OverlapSite(MakeTrivial const make_trivial) : SiteBaseTensor(make_trivial) {}
+    OverlapSiteAny(MakeTrivial const make_trivial) : SiteBaseTensor(make_trivial) {}
+
+    void operator=(BOOST_RV_REF(OverlapSiteAny) other) {
+        SiteBaseTensor::operator=(boost::move(static_cast<SiteBaseTensor&>(other)));
+    }
+
+    void swap(OverlapSiteAny& other) {
+        SiteBaseTensor::swap(other);
+    }
+};
+//@+node:gcross.20110215235924.1929: *4* OverlapSite
+template<typename side> class OverlapSite : public OverlapSiteAny {
+private:
+    BOOST_MOVABLE_BUT_NOT_COPYABLE(OverlapSite)
+public:
+    OverlapSite() {}
+
+    OverlapSite(BOOST_RV_REF(OverlapSite) other)
+      : OverlapSiteAny(boost::move(static_cast<OverlapSiteAny&>(other)))
+    { }
+
+    OverlapSite(
+          RightDimension const right_dimension
+        , PhysicalDimension const physical_dimension
+        , LeftDimension const left_dimension
+    ) : OverlapSiteAny(
+             right_dimension
+            ,physical_dimension
+            ,left_dimension
+        )
+    { }
+
+    OverlapSite(
+          CopyFrom<OverlapSiteAny const> const other_site
+    ) : OverlapSiteAny(other_site)
+    { }
+
+    OverlapSite(
+          DimensionsOf<StateSiteAny const> const other_site
+    ) : OverlapSiteAny(other_site)
+    { }
+
+    template<typename G> OverlapSite(
+          RightDimension const right_dimension
+        , PhysicalDimension const physical_dimension
+        , LeftDimension const left_dimension
+        , FillWithGenerator<G> const generator
+    ) : OverlapSiteAny(
+             right_dimension
+            ,physical_dimension
+            ,left_dimension
+            ,generator
+        )
+    { }
+
+    template<typename Range> OverlapSite(
+          RightDimension const right_dimension
+        , LeftDimension const left_dimension
+        , FillWithRange<Range> const init
+    ) : OverlapSiteAny(
+             right_dimension
+            ,left_dimension
+            ,init
+        )
+    { }
+
+    OverlapSite(MakeTrivial const make_trivial) : OverlapSiteAny(make_trivial) {}
 
     OverlapSite& operator=(BOOST_RV_REF(OverlapSite) other) {
         if(this == &other) return *this;
-        SiteBaseTensor::operator=(boost::move(static_cast<SiteBaseTensor&>(other)));
+        OverlapSiteAny::operator=(boost::move(static_cast<OverlapSiteAny&>(other)));
         return *this;
     }
 
     void swap(OverlapSite& other) {
         if(this == &other) return;
-        SiteBaseTensor::swap(other);
+        OverlapSiteAny::swap(other);
     }
 
     static OverlapSite const trivial;
@@ -853,6 +921,86 @@ public:
 
     static OperatorSite const trivial;
 };
+//@+node:gcross.20110217014932.1927: ** Classes
+//@+node:gcross.20110217014932.1928: *3* State
+struct State {
+private:
+    BOOST_MOVABLE_BUT_NOT_COPYABLE(State)
+protected:    
+    StateSite<Middle> first_site;
+    vector<StateSite<Right> > rest_sites;
+public:
+    State() {}
+
+    State(BOOST_RV_REF(State) other)
+      : first_site(boost::move(other.first_site))
+      , rest_sites(boost::move(other.rest_sites))
+    {}
+
+    State(
+          BOOST_RV_REF(StateSite<Middle>) first_site
+        , BOOST_RV_REF(vector<StateSite<Right> >) rest_sites
+    ) : first_site(first_site)
+      , rest_sites(rest_sites)
+    { }
+
+    void operator=(BOOST_RV_REF(State) other) {
+        first_site = boost::move(other.first_site);
+        rest_sites = boost::move(other.rest_sites);
+    }
+
+    void swap(State& other) {
+        first_site.swap(other.first_site);
+        rest_sites.swap(other.rest_sites);
+    }
+
+    unsigned int numberOfSites() const { return 1+rest_sites.size(); }
+
+    StateSite<Middle> const& getFirstSite() const { return first_site; }
+    vector<StateSite<Right> > const& getRestSites() const { return rest_sites; }
+    StateSite<Right> const& getRestSite(unsigned int i) const { return rest_sites[i]; }
+    StateSiteAny const& getSite(unsigned int i) const {
+        if(i == 0) return first_site;
+        else return rest_sites[i-1];
+    }
+
+
+    class const_iterator :
+        public iterator_facade<
+             const_iterator
+            ,StateSiteAny const
+            ,random_access_traversal_tag
+        >
+    {
+        State const* state;
+        unsigned int index;
+    public:
+        const_iterator(
+              State const* state
+            , unsigned int const index
+        ) : state(state)
+          , index(index)
+        {}
+
+        StateSiteAny const& dereference() const {
+            return state->getSite(index);
+        }
+
+        bool equal(const_iterator const& other) const {
+            return (state == other.state) && (index == other.index);
+        }
+
+        void increment() { ++index; }
+        void decrement() { --index; }
+
+        void advance(size_t n) { index += n; }
+
+        size_t distance_to(const_iterator const& other) const { return other.index - index; }
+    };
+
+    const_iterator begin() const { return const_iterator(this,0); }
+    const_iterator end() const { return const_iterator(this,numberOfSites()); }
+};
 //@+node:gcross.20110215235924.1956: ** Connectors
 //@+node:gcross.20110215235924.1957: *3* ExpectationBoundary<Left> | OperatorSite
 inline unsigned int operator|(
@@ -902,64 +1050,28 @@ inline unsigned int operator|(
         ,state_site.physicalDimension(as_unsigned_integer)
     );
 }
-//@+node:gcross.20110215235924.1962: *3* OverlapBoundary<Left> | OverlapSite<Left>
+//@+node:gcross.20110215235924.1962: *3* OverlapBoundary<Left> | OverlapSiteAny
 inline unsigned int operator|(
       OverlapBoundary<Left> const& overlap_boundary
-    , OverlapSite<Left> const& overlap_site
+    , OverlapSiteAny const& overlap_site
 ) {
     return connectDimensions(
          "left overlap boundary overlap"
         ,overlap_boundary.overlapDimension(as_unsigned_integer)
-        ,"left overlap site left"
+        ,"overlap site left"
         ,overlap_site.leftDimension(as_unsigned_integer)
     );
 }
-//@+node:gcross.20110215235924.1963: *3* OverlapBoundary<Left> | OverlapSite<Middle>
+//@+node:gcross.20110215235924.1964: *3* OverlapBoundary<Left> | StateSiteAny
 inline unsigned int operator|(
       OverlapBoundary<Left> const& overlap_boundary
-    , OverlapSite<Middle> const& overlap_site
-) {
-    return connectDimensions(
-         "left overlap boundary overlap"
-        ,overlap_boundary.overlapDimension(as_unsigned_integer)
-        ,"middle overlap site left"
-        ,overlap_site.leftDimension(as_unsigned_integer)
-    );
-}
-//@+node:gcross.20110215235924.1964: *3* OverlapBoundary<Left> | StateSite<Left>
-inline unsigned int operator|(
-      OverlapBoundary<Left> const& overlap_boundary
-    , StateSite<Left> const& state_site
+    , StateSiteAny const& state_site
 ) {
     return connectDimensions(
          "left overlap boundary state"
         ,overlap_boundary.stateDimension(as_unsigned_integer)
-        ,"left state site left"
+        ,"state site left"
         ,state_site.leftDimension(as_unsigned_integer)
-    );
-}
-//@+node:gcross.20110215235924.1965: *3* OverlapBoundary<Left> | StateSite<Middle>
-inline unsigned int operator|(
-      OverlapBoundary<Left> const& overlap_boundary
-    , StateSite<Middle> const& state_site
-) {
-    return connectDimensions(
-         "left overlap boundary state"
-        ,overlap_boundary.stateDimension(as_unsigned_integer)
-        ,"middle state site left"
-        ,state_site.leftDimension(as_unsigned_integer)
-    );
-}
-//@+node:gcross.20110215235924.1966: *3* OverlapSite<*> | StateSite<*>
-template<typename side> inline unsigned int operator|(
-      OverlapSite<side> const& overlap_site
-    , StateSite<side> const& state_site
-) {
-    return connectDimensions(
-         "overlap site physical"
-        ,overlap_site.physicalDimension(as_unsigned_integer)
-        ,"state site physical"
-        ,state_site.physicalDimension(as_unsigned_integer)
     );
 }
 //@+node:gcross.20110215235924.1967: *3* OverlapSite<Middle> | OverlapBoundary<Right>
@@ -984,6 +1096,18 @@ inline unsigned int operator|(
         ,overlap_site.rightDimension(as_unsigned_integer)
         ,"right overlap boundary overlap"
         ,overlap_boundary.overlapDimension(as_unsigned_integer)
+    );
+}
+//@+node:gcross.20110215235924.1966: *3* OverlapSiteAny | StateSiteAny
+inline unsigned int operator|(
+      OverlapSiteAny const& overlap_site
+    , StateSiteAny const& state_site
+) {
+    return connectDimensions(
+         "overlap site physical"
+        ,overlap_site.physicalDimension(as_unsigned_integer)
+        ,"state site physical"
+        ,state_site.physicalDimension(as_unsigned_integer)
     );
 }
 //@+node:gcross.20110215235924.1970: *3* StateSite<Left> | StateSite<Middle>

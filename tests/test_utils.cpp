@@ -13,6 +13,7 @@
 #include "test_utils.hpp"
 
 using boost::irange;
+using boost::generate;
 using boost::variate_generator;
 //@-<< Includes >>
 
@@ -153,25 +154,47 @@ OperatorSite RNG::randomOperatorSite(
     );
 }
 //@+node:gcross.20110215135633.1863: *3* randomState
-State RNG::randomState(optional<unsigned int> maybe_number_of_sites) {
-    unsigned int const number_of_sites = maybe_number_of_sites ? *maybe_number_of_sites : (*this)(1,5);
-    State state;
-    unsigned int left_dimension = 1;
-    BOOST_FOREACH(unsigned int const site_number, irange(0u,number_of_sites)) {
+State RNG::randomState() {
+    return randomState((*this)(1,5));
+}
+
+State RNG::randomState(unsigned int const number_of_sites) {
+    assert(number_of_sites > 0);
+    return randomState(randomUnsignedIntegerVector(number_of_sites));
+}
+
+State RNG::randomState(vector<unsigned int> const& physical_dimensions) {
+    unsigned int const number_of_sites = physical_dimensions.size();
+    unsigned int left_dimension = number_of_sites == 1 ? 1 : (*this);
+    StateSite<Middle> first_state_site(
+         PhysicalDimension(physical_dimensions[0])
+        ,LeftDimension(1)
+        ,RightDimension(left_dimension)
+        ,fillWithGenerator(randomComplexDouble)
+    );
+    vector<StateSite<Right> > rest_state_sites;
+    BOOST_FOREACH(unsigned int const site_number, irange(1u,number_of_sites)) {
         unsigned int const right_dimension
             = site_number == number_of_sites-1
                 ? 1
                 : randomInteger()
                 ;
-        state.emplace_back(
-             PhysicalDimension(randomInteger()+1)
-            ,LeftDimension(left_dimension)
-            ,RightDimension(right_dimension)
-            ,fillWithGenerator(randomComplexDouble)
+        rest_state_sites.push_back(
+            randomStateSiteRight(
+                 PhysicalDimension(physical_dimensions[site_number])
+                ,LeftDimension(left_dimension)
+                ,RightDimension(right_dimension)
+            )
         );
         left_dimension = right_dimension;
     }
-    return boost::move(state);
+    return State(boost::move(first_state_site),boost::move(rest_state_sites));
+}
+//@+node:gcross.20110217014932.1933: *3* randomUnsignedIntegerVector
+vector<unsigned int> RNG::randomUnsignedIntegerVector(unsigned int n, unsigned int lo,unsigned int hi) {
+    vector<unsigned int> physical_dimensions(n);
+    generate(physical_dimensions,generateRandomIntegers(lo,hi));
+    return boost::move(physical_dimensions);
 }
 //@-others
 //@-leo

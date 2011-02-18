@@ -190,6 +190,25 @@ TEST_CASE(physical_dimension_4_with_three_projectors) {
 //@-others
 
 }
+//@+node:gcross.20110217014932.1924: *3* overlaps consistent
+TEST_CASE(overlaps_consistent) {
+
+    RNG random;
+
+    REPEAT(10) {
+        vector<unsigned int> physical_dimensions(random.randomUnsignedIntegerVector(random(1,5)));
+        State state_1(random.randomState(physical_dimensions))
+            , state_2(random.randomState(physical_dimensions))
+            ;
+        Projector projector = computeProjectorFromState(state_1);
+        ASSERT_NEAR(
+             computeStateOverlap(state_1,state_2)
+            ,computeProjectorOverlap(projector,state_2)
+            ,1e-15
+        )
+    }
+
+}
 //@-others
 
 }
