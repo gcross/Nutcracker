@@ -190,28 +190,6 @@ TEST_CASE(physical_dimension_4_with_three_projectors) {
 //@-others
 
 }
-//@+node:gcross.20110217014932.1924: *3* overlaps consistent
-TEST_CASE(overlaps_consistent) {
-
-    RNG random;
-
-    REPEAT(10) {
-        vector<unsigned int> physical_dimensions(random.randomUnsignedIntegerVector(random(1,5)));
-        State const state_1(random.randomState(physical_dimensions))
-                  , state_2(random.randomState(physical_dimensions))
-                  ;
-        complex<double> const state_overlap = computeStateOverlap(state_1,state_2);
-        Projector projector = computeProjectorFromState(state_1);
-        BOOST_FOREACH(unsigned int const active_site_number, irange(0u,(unsigned int)physical_dimensions.size())) {
-            ASSERT_NEAR(
-                 state_overlap
-                ,computeProjectorOverlap(projector,state_2,active_site_number)
-                ,1e-15
-            )
-        }
-    }
-
-}
 //@+node:gcross.20110217014932.1935: *3* computeStateOverlap
 TEST_SUITE(computeStateOverlap) {
 
@@ -250,6 +228,85 @@ TEST_CASE(self_overlap_is_1) {
             ,computeProjectorOverlap(computeProjectorFromState(state),state)
             ,1e-15
         )
+    }
+
+}
+//@-others
+
+}
+//@+node:gcross.20110217175626.1927: *3* consistency
+TEST_SUITE(consistency) {
+
+//@+others
+//@+node:gcross.20110217014932.1924: *4* overlaps
+TEST_CASE(overlaps) {
+
+    RNG random;
+
+    REPEAT(10) {
+        vector<unsigned int> physical_dimensions(random.randomUnsignedIntegerVector(random(1,5)));
+        State const state_1(random.randomState(physical_dimensions))
+                  , state_2(random.randomState(physical_dimensions))
+                  ;
+        complex<double> const state_overlap = computeStateOverlap(state_1,state_2);
+        Projector projector = computeProjectorFromState(state_1);
+        BOOST_FOREACH(unsigned int const active_site_number, irange(0u,(unsigned int)physical_dimensions.size())) {
+            ASSERT_NEAR(
+                 state_overlap
+                ,computeProjectorOverlap(projector,state_2,active_site_number)
+                ,1e-15
+            )
+        }
+    }
+
+}
+//@+node:gcross.20110217175626.1929: *4* projector matrix
+TEST_CASE(projector_matrix) {
+
+    RNG random;
+
+    REPEAT(10) {
+        vector<unsigned int> physical_dimensions(random.randomUnsignedIntegerVector(random(1,5)));
+        unsigned int const number_of_sites = physical_dimensions.size();
+        Projector const projector(computeProjectorFromState(random.randomState(physical_dimensions)));
+        State const state(random.randomState(physical_dimensions));
+        complex<double> const overlap = computeProjectorOverlap(projector,state);
+        vector<OverlapBoundary<Right> > right_boundaries;
+        right_boundaries.emplace_back(make_trivial);
+        BOOST_FOREACH(unsigned int const i, irange(1u,number_of_sites) | reversed) {
+            right_boundaries.push_back(
+                contract<Right>::SS(
+                     right_boundaries.back()
+                    ,projector[i].get<Right>()
+                    ,state.getRestSite(i-1)
+                )
+            );
+        }
+        OverlapBoundary<Left> left_boundary(make_trivial);
+        BOOST_FOREACH(unsigned int const i, irange(0u,number_of_sites)) {
+            OverlapBoundary<Right> right_boundary(boost::move(right_boundaries.back()));
+            right_boundaries.pop_back();
+            ProjectorMatrix projector_matrix(
+                formProjectorMatrix(list_of(OverlapVectorTrio(
+                     left_boundary
+                    ,right_boundary
+                    ,projector[i].get<Middle>()
+                )))
+            );
+            ASSERT_NEAR(
+                 abs(overlap)
+                ,computeOverlapWithProjectors(projector_matrix,state[i])
+                ,1e-15
+            );
+            if(i > 0) {
+                left_boundary =
+                    Unsafe::contractSSLeft(
+                         left_boundary
+                        ,projector[i].get<Left>()
+                        ,state[i]
+                    );
+            }
+        }
     }
 
 }
