@@ -186,7 +186,7 @@ void Chain::performOptimizationSweep() {
         optimizeSite();
         move<Right>();
     }
-    signalPerformedSweep();
+    signalSweepPerformed();
 }
 //@+node:gcross.20110208233325.1798: *3* reset
 void Chain::reset(unsigned int bandwidth_dimension) {

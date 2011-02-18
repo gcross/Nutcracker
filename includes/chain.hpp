@@ -128,7 +128,7 @@ public:
 
     signal<void (unsigned int)> signalOptimizeSiteSuccess;
     signal<void (OptimizerFailure&)> signalOptimizeSiteFailure;
-    signal<void ()> signalPerformedSweep;
+    signal<void ()> signalSweepPerformed;
     signal<void ()> signalSweepsConverged;
     signal<void ()> signalChainOptimized;
 
