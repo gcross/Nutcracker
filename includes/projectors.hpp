@@ -237,12 +237,6 @@ double computeOverlapWithProjectors(
 
 Projector computeProjectorFromState(State const& state);
 
-ProjectorMatrix formProjectorMatrix(
-     vector<OverlapBoundary<Left> > const& left_boundaries
-    ,vector<OverlapBoundary<Right> > const& right_boundaries
-    ,vector<OverlapSite<Middle> > const& overlap_sites
-);
-
 unsigned int minimumBandwidthDimensionForProjectorCount(
       vector<unsigned int> const& physical_dimensions
     , unsigned int const number_of_projectors
