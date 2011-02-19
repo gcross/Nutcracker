@@ -7,11 +7,17 @@
 #include <boost/assign.hpp>
 #include <boost/container/vector.hpp>
 #include <boost/foreach.hpp>
+#include <boost/format.hpp>
+#include <boost/lambda/bind.hpp>
+#include <boost/lambda/lambda.hpp>
+#include <boost/local/function.hpp>
+#include <boost/range/algorithm/equal.hpp>
 #include <boost/range/algorithm/max_element.hpp>
 #include <boost/range/irange.hpp>
 #include <boost/range/numeric.hpp>
 #include <boost/smart_ptr/shared_ptr.hpp>
 #include <illuminate.hpp>
+#include <sstream>
 #include <functional>
 
 #include "chain.hpp"
@@ -24,10 +30,14 @@ using namespace Nutcracker;
 
 using boost::accumulate;
 using boost::container::vector;
+using boost::equal;
+using boost::format;
 using boost::max_element;
 using boost::shared_ptr;
 
 using std::abs;
+using std::conj;
+using std::ostringstream;
 using std::pair;
 //@-<< Includes >>
 
@@ -382,6 +392,105 @@ TEST_CASE(expectation_matches_computeExpectationValue) {
         State state = chain.makeCopyOfState();
         ASSERT_NEAR_QUOTED(chain.getEnergy(),computeExpectationValue(state,O),1e-10);
     }
+}
+//@+node:gcross.20110218150430.2590: *3* solveForMultipleLevels
+TEST_SUITE(solveForMultipleLevels) {
+
+//@+others
+//@+node:gcross.20110219101843.1944: *4* function checkEnergies
+void checkEnergies(
+     Chain& chain
+    ,vector<double> const& correct_energies
+) {
+    unsigned int const number_of_levels = correct_energies.size();
+    chain.signalOptimizeSiteFailure.connect(rethrow<OptimizerFailure>);
+    BOOST_LOCAL_FUNCTION(
+        (void)(checkOverlap)(
+            (unsigned int const)(number_of_iterations)(default)(0)
+            (const bind)((&chain))
+        )
+    ) {
+        ASSERT_NEAR(0,chain.computeProjectorOverlapAtCurrentSite(),1e-12);
+    } BOOST_LOCAL_FUNCTION_END(checkOverlap)
+    chain.signalOptimizeSiteSuccess.connect(checkOverlap);
+    chain.signalChainReset.connect(checkOverlap);
+    vector<double> actual_energies; actual_energies.reserve(number_of_levels);
+    BOOST_LOCAL_FUNCTION(
+        (void)(postEnergy)(
+            (const bind)((&chain))
+            (bind)((&actual_energies))
+        )
+    ) {
+        actual_energies.push_back(chain.getEnergy());
+    } BOOST_LOCAL_FUNCTION_END(postEnergy)
+    chain.signalChainOptimized.connect(postEnergy);
+    chain.solveForMultipleLevels(number_of_levels);
+    BOOST_FOREACH(unsigned int const i, irange(0u,number_of_levels)) {
+        if(abs(correct_energies[i]-actual_energies[i])>chain.options.chain_convergence_threshold) {
+            ostringstream message;
+            message << format("Wrong energies [#%||: %|.15| != %|.15|]: ") % i % correct_energies[i] % actual_energies[i];
+            BOOST_FOREACH(unsigned int const i, irange(0u,number_of_levels)) {
+                message << format("%1% (%2%); ") % actual_energies[i] % correct_energies[i];
+            }
+            FATALLY_FAIL(message.str());
+        }
+    }
+}
+//@+node:gcross.20110218150430.2591: *4* external field
+TEST_SUITE(external_field) {
+
+    void runTest(
+          unsigned int const physical_dimension
+        , unsigned int const number_of_sites
+        , vector<double> const& correct_energies
+    ) {
+        Chain chain(constructExternalFieldOperator(number_of_sites,diagonalMatrix(irange(0u,physical_dimension))));
+        checkEnergies(chain,correct_energies);
+    }
+
+    TEST_SUITE(physical_dimension_2) {
+        TEST_CASE(1_site) { runTest(2,1,list_of(0)(1)); }
+        TEST_CASE(2_sites) { runTest(2,2,list_of(0)(1)(1)(2)); }
+        TEST_CASE(4_sites) { runTest(2,4,list_of(0)(1)(1)(1)(1)(2)(2)(2)(2)(2)(2)(3)(3)(3)(3)(4)); }
+    }
+    TEST_SUITE(physical_dimension_3) {
+        TEST_CASE(1_site) { runTest(3,1,list_of(0)(1)(2)); }
+        TEST_CASE(2_sites) { runTest(3,2,list_of(0)(1)(1)(2)(2)(2)(3)); }
+    }
+
+}
+//@+node:gcross.20110219101843.1943: *4* transverse Ising model
+TEST_SUITE(transverse_Ising_model) {
+
+    void runTest(
+          unsigned int const number_of_sites
+        , double coupling_strength
+        , vector<double> const& correct_energies
+    ) {
+        Chain chain(constructTransverseIsingModelOperator(number_of_sites,coupling_strength));
+        if(coupling_strength == 0.1) {
+            chain.options.site_convergence_threshold = 1e-10;
+            chain.options.sweep_convergence_threshold = 1e-9;
+            chain.options.chain_convergence_threshold = 1e-8;
+        } else if(coupling_strength == 0.5) {
+            chain.options.site_convergence_threshold = 1e-9;
+            chain.options.sweep_convergence_threshold = 1e-8;
+            chain.options.chain_convergence_threshold = 1e-7;
+        } else {
+            chain.options.site_convergence_threshold = 1e-10;
+            chain.options.sweep_convergence_threshold = 1e-9;
+            chain.options.chain_convergence_threshold = 1e-8;
+        }
+        checkEnergies(chain,correct_energies);
+    }
+
+    TEST_CASE( 6_sites_0p1) { runTest( 6,0.1,list_of( -6.012504691)( -4.1912659256)(-4.13264494449)( -4.0501210912)); }
+    TEST_CASE(10_sites_0p1) { runTest(10,0.1,list_of(-10.022510957)( -8.2137057257)(-8.18819723717)( -8.1485537719)); }
+    TEST_CASE(10_sites_0p5) { runTest(10,0.5,list_of(-10.569659557)( -9.5030059614)(-9.32268792732)( -9.0714705801)); }
+    TEST_CASE(10_sites_2p0) { runTest(10,2.0,list_of(-19.531007915)(-19.5280782081)(-17.3076728844)(-17.3047431766)); }
+}
+//@-others
+
 }
 //@-others
 

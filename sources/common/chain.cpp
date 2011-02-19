@@ -10,9 +10,11 @@
 #include <boost/lambda/lambda.hpp>
 #include <boost/range/adaptor/reversed.hpp>
 #include <boost/range/algorithm/reverse_copy.hpp>
+#include <boost/range/numeric.hpp>
 #include <boost/range/irange.hpp>
 #include <iterator>
 #include <limits>
+#include <numeric>
 #include <utility>
 
 #include "boundaries.hpp"
@@ -26,9 +28,13 @@ namespace Nutcracker {
 
 //@+<< Usings >>
 //@+node:gcross.20110130170743.1676: ** << Usings >>
+using boost::accumulate;
 using boost::adaptors::reversed;
+using boost::function;
 
 using std::abs;
+using std::max;
+using std::min;
 using std::numeric_limits;
 //@-<< Usings >>
 
@@ -54,11 +60,13 @@ Chain::Chain(
   , right_expectation_boundary(make_trivial)
   , energy(0)
   , physical_dimensions(extractPhysicalDimensions(operator_sites))
+  , maximum_number_of_levels(accumulate(physical_dimensions,1,multiplies<unsigned int>()))
   , maximum_bandwidth_dimension(maximumBandwidthDimension(physical_dimensions))
   , bandwidth_dimension(bandwidth_dimension)
   , options(options)
 {
     assert(number_of_sites > 0);
+    assert(bandwidth_dimension <= maximum_bandwidth_dimension);
 
     reset(bandwidth_dimension);
 }
@@ -79,6 +87,27 @@ double Chain::computeProjectorOverlapAtCurrentSite() const {
 //@+node:gcross.20110202175920.1721: *3* computeStateNorm
 double Chain::computeStateNorm() const {
     return state_site.norm();
+}
+//@+node:gcross.20110218083552.1930: *3* convertStateToProjectorAndReset
+void Chain::convertStateToProjectorAndReset(unsigned int const new_bandwidth_dimension) {
+    using namespace boost;
+    assert(current_site_number == 0);
+    projectors.push_back(
+        computeProjectorFromStateSites(
+             state_site
+            ,right_neighbors | reversed | transformed(bind(&Neighbor<Right>::state_site,_1))
+        )
+    );
+    reset(
+        min(maximum_bandwidth_dimension
+           ,max(new_bandwidth_dimension
+               ,minimumBandwidthDimensionForProjectorCount(
+                     physical_dimensions
+                    ,projectors.size()
+                )+1
+            )
+        )
+    );
 }
 //@+node:gcross.20110207120702.1784: *3* increaseBandwidthDimension
 void Chain::increaseBandwidthDimension(unsigned int const new_bandwidth_dimension) {
@@ -290,6 +319,15 @@ void Chain::resetProjectorMatrix() {
             ,right_overlap_boundaries
             ,projectors | transformed(FetchOverlapSite(current_site_number))
         );
+}
+//@+node:gcross.20110218083552.3113: *3* solveForMultipleLevels
+void Chain::solveForMultipleLevels(unsigned int number_of_levels) {
+    assert(number_of_levels+projectors.size() <= maximum_number_of_levels);
+    REPEAT(number_of_levels-1) {
+        optimizeChain();
+        convertStateToProjectorAndReset();
+    }
+    optimizeChain();
 }
 //@+node:gcross.20110208151104.1791: *3* sweepUntilConverged
 void Chain::sweepUntilConverged() {

@@ -99,6 +99,7 @@ protected:
     double energy;
     vector<unsigned int> physical_dimensions;
 public:
+    unsigned int const maximum_number_of_levels;
     unsigned int const maximum_bandwidth_dimension;
 protected:
     unsigned int bandwidth_dimension;
@@ -154,11 +155,13 @@ public:
     template<typename side> void move();
     void moveTo(unsigned int new_site_number);
     void increaseBandwidthDimension(unsigned int const new_bandwidth_dimension);
+    void convertStateToProjectorAndReset(unsigned int const new_bandwidth_dimension=1);
 
     void optimizeSite();
     void performOptimizationSweep();
     void sweepUntilConverged();
     void optimizeChain();
+    void solveForMultipleLevels(unsigned int number_of_levels);
 
     State makeCopyOfState() const;
 
