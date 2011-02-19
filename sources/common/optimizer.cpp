@@ -131,7 +131,7 @@ OptimizerResult optimizeStateSite(
     , StateSite<Middle> const& current_state_site
     , OperatorSite const& operator_site
     , ExpectationBoundary<Right> const& right_boundary
-    , optional<ProjectorMatrix const&> maybe_projector_matrix
+    , ProjectorMatrix const& projector_matrix
     , double const tolerance
     , unsigned int const maximum_number_of_iterations
 ) {
@@ -141,7 +141,7 @@ OptimizerResult optimizeStateSite(
 
     double normal;
     int const status =
-        maybe_projector_matrix
+        projector_matrix.valid()
             ? Core::optimize(
                  left_boundary | current_state_site
                 ,current_state_site | right_boundary
@@ -151,12 +151,12 @@ OptimizerResult optimizeStateSite(
                 ,left_boundary
                 ,operator_site.numberOfMatrices(),operator_site,operator_site
                 ,right_boundary
-                ,maybe_projector_matrix->numberOfProjectors()
-                ,maybe_projector_matrix->numberOfReflectors()
-                ,maybe_projector_matrix->orthogonalSubspaceDimension()
-                ,maybe_projector_matrix->reflectorData()
-                ,maybe_projector_matrix->coefficientData()
-                ,maybe_projector_matrix->swapData()
+                ,projector_matrix.numberOfProjectors()
+                ,projector_matrix.numberOfReflectors()
+                ,projector_matrix.orthogonalSubspaceDimension()
+                ,projector_matrix.reflectorData()
+                ,projector_matrix.coefficientData()
+                ,projector_matrix.swapData()
                 ,"SR"
                 ,tolerance
                 ,number_of_iterations
@@ -197,9 +197,9 @@ OptimizerResult optimizeStateSite(
             ,right_boundary
         );
     double const overlap =
-        maybe_projector_matrix
+        projector_matrix.valid()
             ? computeOverlapWithProjectors(
-                 *maybe_projector_matrix
+                 projector_matrix
                 ,new_state_site
               )
             : 0
@@ -209,7 +209,7 @@ OptimizerResult optimizeStateSite(
             throw OptimizerUnableToConverge(number_of_iterations);
         case  10:
             throw OptimizerGivenTooManyProjectors(
-                 maybe_projector_matrix->numberOfProjectors()
+                 projector_matrix.numberOfProjectors()
                 ,current_state_site.physicalDimension()
                 ,current_state_site.leftDimension()
                 ,current_state_site.rightDimension()

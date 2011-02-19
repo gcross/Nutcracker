@@ -7,7 +7,9 @@
 #include <boost/assign/list_of.hpp>
 #include <illuminate.hpp>
 
+#include "operators.hpp"
 #include "optimizer.hpp"
+#include "states.hpp"
 
 #include "test_utils.hpp"
 
@@ -26,52 +28,61 @@ TEST_SUITE(Optimizer) {
 TEST_SUITE(optimizeStateSite) {
 
 //@+others
-//@+node:gcross.20110214155808.2046: *4* trivial, d = 4
-TEST_CASE(trivial_with_physical_dimension_4) {
-    RNG rng;
+//@+node:gcross.20110214155808.2046: *4* one site under external field
+TEST_SUITE(one_site_under_external_field) {
 
-    StateSite<Middle> state_site(
-         PhysicalDimension(4)
-        ,LeftDimension(1)
-        ,RightDimension(1)
-        ,fillWithGenerator(rng.randomComplexDouble)
-    );
+    void runTests(unsigned int const physical_dimension) {
+        REPEAT(10) {
+            StateSite<Middle> state_site(
+                randomStateSiteMiddle(
+                     PhysicalDimension(physical_dimension)
+                    ,LeftDimension(1)
+                    ,RightDimension(1)
+                )
+            );
 
-    OperatorSite operator_site(
-         LeftDimension(1)
-        ,RightDimension(1)
-        ,fillWithRange(list_of(1)(1))
-        ,fillWithRange(list_of
-            ( 1)( 0)( 0)( 0)
-            ( 0)( 1)( 0)( 0)
-            ( 0)( 0)( 1)( 0)
-            ( 0)( 0)( 0)(-1)
-         )
-    );
+            vector<complex<double> > diagonal(physical_dimension,c(1,0));
+            diagonal.back() = c(-1,0);
+            OperatorSite operator_site(
+                constructOperatorSite(
+                     PhysicalDimension(physical_dimension)
+                    ,LeftDimension(1)
+                    ,RightDimension(1)
+                    ,list_of(OperatorLink(1,1,diagonalMatrix(diagonal)))
+                )
 
-    OptimizerResult optimizer_result(
-        optimizeStateSite(
-             ExpectationBoundary<Left>::trivial
-            ,state_site
-            ,operator_site
-            ,ExpectationBoundary<Right>::trivial
-            ,none
-            ,0
-            ,10000
-        )
-    );
+            );
 
-    StateSite<Middle> const& new_state_site = optimizer_result.state_site;
+            OptimizerResult optimizer_result(
+                optimizeStateSite(
+                     ExpectationBoundary<Left>::trivial
+                    ,state_site
+                    ,operator_site
+                    ,ExpectationBoundary<Right>::trivial
+                    ,ProjectorMatrix()
+                    ,0
+                    ,10000
+                )
+            );
 
-    ASSERT_EQ(4,new_state_site.physicalDimension(as_unsigned_integer));
-    ASSERT_EQ(1,new_state_site.leftDimension(as_unsigned_integer));
-    ASSERT_EQ(1,new_state_site.rightDimension(as_unsigned_integer));
-    ASSERT_NEAR(c(0,0),new_state_site[0],1e-7);
-    ASSERT_NEAR(c(0,0),new_state_site[1],1e-7);
-    ASSERT_NEAR(c(0,0),new_state_site[2],1e-7);
-    ASSERT_NEAR(1,abs(new_state_site[3]),1e-7);
-    ASSERT_NEAR(-1,optimizer_result.eigenvalue,1e-7);
-    ASSERT_EQ(0,optimizer_result.number_of_iterations);
+            StateSite<Middle> const& new_state_site = optimizer_result.state_site;
+
+            ASSERT_EQ(physical_dimension,new_state_site.physicalDimension(as_unsigned_integer));
+            ASSERT_EQ(1,new_state_site.leftDimension(as_unsigned_integer));
+            ASSERT_EQ(1,new_state_site.rightDimension(as_unsigned_integer));
+            BOOST_FOREACH(unsigned int const i, irange(0u,physical_dimension-1)) {
+                ASSERT_NEAR(c(0,0),new_state_site[i],1e-15);
+            }
+            ASSERT_NEAR(1,abs(new_state_site[physical_dimension-1]),1e-5);
+            ASSERT_NEAR(-1,optimizer_result.eigenvalue,1e-5);
+            ASSERT_EQ(0,optimizer_result.number_of_iterations);
+        }
+    }
+
+    TEST_CASE(physical_dimension_1) { runTests(1); }
+    TEST_CASE(physical_dimension_2) { runTests(2); }
+    TEST_CASE(physical_dimension_3) { runTests(3); }
+    TEST_CASE(physical_dimension_4) { runTests(4); }
 }
 //@-others
 

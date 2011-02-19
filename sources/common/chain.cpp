@@ -156,7 +156,7 @@ void Chain::optimizeSite() {
                 ,state_site
                 ,*operator_sites[current_site_number]
                 ,right_expectation_boundary
-                ,none
+                ,projector_matrix
                 ,options.site_convergence_threshold
                 ,options.maximum_number_of_iterations
             )

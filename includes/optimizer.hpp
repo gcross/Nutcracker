@@ -7,8 +7,6 @@
 
 //@+<< Includes >>
 //@+node:gcross.20110214155808.1923: ** << Includes >>
-#include <boost/optional.hpp>
-
 #include "operators.hpp"
 #include "projectors.hpp"
 #include "states.hpp"
@@ -18,8 +16,6 @@ namespace Nutcracker {
 
 //@+<< Usings >>
 //@+node:gcross.20110214155808.1924: ** << Usings >>
-using boost::optional;
-
 using std::abs;
 //@-<< Usings >>
 
@@ -120,7 +116,7 @@ OptimizerResult optimizeStateSite(
     , StateSite<Middle> const& current_state_site
     , OperatorSite const& operator_site
     , ExpectationBoundary<Right> const& right_boundary
-    , optional<ProjectorMatrix const&> projector_matrix
+    , ProjectorMatrix const& projector_matrix
     , double const tolerance
     , unsigned int const maximum_number_of_iterations
 );
