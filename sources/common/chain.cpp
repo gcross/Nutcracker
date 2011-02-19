@@ -227,6 +227,8 @@ void Chain::reset(unsigned int bandwidth_dimension) {
     complex<double> const expectation_value = computeExpectationValueAtCurrentSite();
     if(abs(expectation_value.imag()) > 1e-10) throw InitialChainEnergyNotRealError(expectation_value);
     energy = expectation_value.real();
+
+    signalChainReset();
 }
 //@+node:gcross.20110208151104.1791: *3* sweepUntilConverged
 void Chain::sweepUntilConverged() {

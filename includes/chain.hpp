@@ -131,6 +131,7 @@ public:
     signal<void ()> signalSweepPerformed;
     signal<void ()> signalSweepsConverged;
     signal<void ()> signalChainOptimized;
+    signal<void ()> signalChainReset;
 
     Chain(
       Operator const& operator_sites
