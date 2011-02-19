@@ -116,6 +116,7 @@ protected:
         throw BadLabelException("Chain::moveSiteNumber()",typeid(side));
     }
 
+    void resetBoundaries();
 public:
     struct Options {
         unsigned int maximum_number_of_iterations;
@@ -235,19 +236,14 @@ template<typename side> void Chain::absorb(
     vector<OverlapBoundary<side> >& overlap_boundaries = overlapBoundaries<side>();
     vector<OverlapBoundary<side> > new_overlap_boundaries;
     new_overlap_boundaries.reserve(projectors.size());
-    typename vector<OverlapBoundary<side> >::const_iterator overlap_boundary = overlap_boundaries.begin();
-    BOOST_FOREACH(
-         Projector const& projector
-        ,projectors
-    ) {
+    BOOST_FOREACH(unsigned int const i, irange(0u,(unsigned int)projectors.size())) {
         new_overlap_boundaries.push_back(
             contract<side>::SS(
-                 *overlap_boundary
-                ,projector[site_number].get<side>()
+                 overlap_boundaries[i]
+                ,projectors[i][site_number].get<side>()
                 ,state_site
             )
         );
-        ++overlap_boundary;
     }
 
     neighbors<side>().emplace_back(

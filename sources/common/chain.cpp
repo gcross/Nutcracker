@@ -88,10 +88,7 @@ void Chain::increaseBandwidthDimension(unsigned int const new_bandwidth_dimensio
 
     StateSite<Middle> first_state_site(boost::move(state_site));
 
-    {
-        ExpectationBoundary<Right> trivial(make_trivial);
-        right_expectation_boundary = boost::move(trivial);
-    }
+    resetBoundaries();
 
     unsigned int operator_number = number_of_sites-1;
     for(vector<Neighbor<Right> >::iterator neighbor_iterator = old_right_neighbors.begin()
@@ -195,6 +192,8 @@ void Chain::performOptimizationSweep() {
 void Chain::reset(unsigned int bandwidth_dimension) {
     current_site_number = 0;
 
+    resetBoundaries();
+
     right_neighbors.clear();
     right_neighbors.reserve(number_of_sites-1);
 
@@ -228,6 +227,22 @@ void Chain::reset(unsigned int bandwidth_dimension) {
     energy = expectation_value.real();
 
     signalChainReset();
+}
+//@+node:gcross.20110218114759.1932: *3* resetBoundaries
+void Chain::resetBoundaries() {
+    left_expectation_boundary = ExpectationBoundary<Left>(make_trivial);
+
+    left_overlap_boundaries.clear();
+    REPEAT(projectors.size()) {
+        left_overlap_boundaries.emplace_back(make_trivial);
+    }
+
+    right_expectation_boundary = ExpectationBoundary<Right>(make_trivial);
+
+    right_overlap_boundaries.clear();
+    REPEAT(projectors.size()) {
+        right_overlap_boundaries.emplace_back(make_trivial);
+    }
 }
 //@+node:gcross.20110208151104.1791: *3* sweepUntilConverged
 void Chain::sweepUntilConverged() {
