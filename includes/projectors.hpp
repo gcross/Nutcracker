@@ -153,9 +153,9 @@ public:
     ProjectorSite() {}
 
     ProjectorSite(BOOST_RV_REF(ProjectorSite) other)
-      : left(boost::move(left))
-      , middle(boost::move(middle))
-      , right(boost::move(right))
+      : left(boost::move(other.left))
+      , middle(boost::move(other.middle))
+      , right(boost::move(other.right))
     { }
 
     ProjectorSite(
