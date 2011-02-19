@@ -46,6 +46,7 @@ using boost::RandomAccessRangeConcept;
 using boost::reverse;
 using boost::reverse_copy;
 
+using std::abs;
 using std::accumulate;
 using std::complex;
 using std::iterator_traits;
@@ -189,6 +190,10 @@ template<typename PhysicalDimensionRange> unsigned int maximumBandwidthDimension
 template<typename T> inline void moveArrayToFrom(T*& to, T*& from) {
     if(to) delete[] to;
     to = copyAndReset(from);
+}
+//@+node:gcross.20110219083229.2603: *3* outsideTolerance
+template<typename A, typename B, typename C> bool outsideTolerance(A a, B b, C tolerance) {
+    return ((abs(a)+abs(b))/2 > tolerance) && (abs(a-b)/(abs(a)+abs(b)+tolerance) > tolerance);
 }
 //@+node:gcross.20110213233103.3637: *3* rethrow
 template<typename Exception> void rethrow(Exception& e) { throw e; }

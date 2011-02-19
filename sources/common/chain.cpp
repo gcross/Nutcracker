@@ -140,9 +140,8 @@ State Chain::makeCopyOfState() const {
 void Chain::optimizeChain() {
     double previous_energy = energy;
     sweepUntilConverged();
-    while(
-        (abs(previous_energy - energy)/(abs(previous_energy)+abs(energy)+options.chain_convergence_threshold) > options.chain_convergence_threshold)
-     && (bandwidth_dimension < maximum_bandwidth_dimension)
+    while(outsideTolerance(previous_energy,energy,options.chain_convergence_threshold)
+       && bandwidth_dimension < maximum_bandwidth_dimension
     ) {
         previous_energy = energy;
         increaseBandwidthDimension(options.computeNewBandwidthDimension(bandwidth_dimension));
@@ -164,7 +163,7 @@ void Chain::optimizeSite() {
                 ,options.maximum_number_of_iterations
             )
         );
-        if((result.eigenvalue - energy)/abs(energy) > options.site_convergence_threshold) {
+        if(result.eigenvalue > energy && outsideTolerance(result.eigenvalue,energy,options.site_convergence_threshold)) {
             throw OptimizerObtainedGreaterEigenvalue(energy,result.eigenvalue);
         }
         energy = result.eigenvalue;
@@ -232,8 +231,9 @@ void Chain::reset(unsigned int bandwidth_dimension) {
 }
 //@+node:gcross.20110208151104.1791: *3* sweepUntilConverged
 void Chain::sweepUntilConverged() {
-    double previous_energy = numeric_limits<double>::max();
-    while(abs(previous_energy - energy)/(abs(previous_energy)+abs(energy)+options.sweep_convergence_threshold) > options.sweep_convergence_threshold) {
+    double previous_energy = energy;
+    performOptimizationSweep();
+    while(outsideTolerance(previous_energy,energy,options.sweep_convergence_threshold)) {
         previous_energy = energy;
         performOptimizationSweep();
     }

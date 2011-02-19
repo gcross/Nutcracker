@@ -217,13 +217,14 @@ OptimizerResult optimizeStateSite(
         case 11:
             throw OptimizerGivenGuessInProjectorSpace();
         case 0:
-            if(abs(eigenvalue-expectation_value)/(abs(eigenvalue)+abs(expectation_value)) > tolerance)
+            if(outsideTolerance(eigenvalue,expectation_value,tolerance))
                 throw OptimizerObtainedEigenvalueDifferentFromExpectationValue(
                      eigenvalue
                     ,expectation_value
                 );
-            if(eigenvalue.imag()/abs(eigenvalue) > tolerance)
-                throw OptimizerObtainedComplexEigenvalue(eigenvalue);
+            if(abs(eigenvalue) > tolerance
+            && abs(eigenvalue.imag())/abs(eigenvalue) > tolerance
+              ) throw OptimizerObtainedComplexEigenvalue(eigenvalue);
             if(normal < 1-tolerance)
                 throw OptimizerObtainedVanishingEigenvector(normal);
             if(overlap > tolerance)
