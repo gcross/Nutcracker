@@ -45,6 +45,7 @@ Chain::Options const Chain::defaults =
     , 1e-12
     , 1e-12
     , 1e-12
+    , 1e-12
     , lambda::_1+1
     };
 //@+node:gcross.20110202175920.1714: ** class Chain
@@ -203,10 +204,11 @@ void Chain::optimizeSite() {
                 ,right_expectation_boundary
                 ,projector_matrix
                 ,options.site_convergence_threshold
+                ,options.sanity_check_threshold
                 ,options.maximum_number_of_iterations
             )
         );
-        if(result.eigenvalue > energy && outsideTolerance(result.eigenvalue,energy,options.site_convergence_threshold)) {
+        if(result.eigenvalue > energy && outsideTolerance(result.eigenvalue,energy,options.sanity_check_threshold)) {
             throw OptimizerObtainedGreaterEigenvalue(energy,result.eigenvalue);
         }
         energy = result.eigenvalue;

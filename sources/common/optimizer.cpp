@@ -132,7 +132,8 @@ OptimizerResult optimizeStateSite(
     , OperatorSite const& operator_site
     , ExpectationBoundary<Right> const& right_boundary
     , ProjectorMatrix const& projector_matrix
-    , double const tolerance
+    , double const convergence_threshold
+    , double const sanity_check_threshold
     , unsigned int const maximum_number_of_iterations
 ) {
     uint32_t number_of_iterations = maximum_number_of_iterations;
@@ -158,7 +159,7 @@ OptimizerResult optimizeStateSite(
                 ,projector_matrix.coefficientData()
                 ,projector_matrix.swapData()
                 ,"SR"
-                ,tolerance
+                ,convergence_threshold
                 ,number_of_iterations
                 ,current_state_site
                 ,new_state_site
@@ -181,7 +182,7 @@ OptimizerResult optimizeStateSite(
                 ,NULL
                 ,NULL
                 ,"SR"
-                ,tolerance
+                ,convergence_threshold
                 ,number_of_iterations
                 ,current_state_site
                 ,new_state_site
@@ -217,17 +218,17 @@ OptimizerResult optimizeStateSite(
         case 11:
             throw OptimizerGivenGuessInProjectorSpace();
         case 0:
-            if(outsideTolerance(eigenvalue,expectation_value,tolerance))
+            if(outsideTolerance(eigenvalue,expectation_value,sanity_check_threshold))
                 throw OptimizerObtainedEigenvalueDifferentFromExpectationValue(
                      eigenvalue
                     ,expectation_value
                 );
-            if(abs(eigenvalue) > tolerance
-            && abs(eigenvalue.imag())/abs(eigenvalue) > tolerance
+            if(abs(eigenvalue) > sanity_check_threshold
+            && abs(eigenvalue.imag())/abs(eigenvalue) > sanity_check_threshold
               ) throw OptimizerObtainedComplexEigenvalue(eigenvalue);
-            if(normal < 1-tolerance)
+            if(normal < 1-sanity_check_threshold)
                 throw OptimizerObtainedVanishingEigenvector(normal);
-            if(overlap > tolerance)
+            if(overlap > sanity_check_threshold)
                 throw OptimizerObtainedEigenvectorInProjectorSpace(overlap);
             break;
         default:

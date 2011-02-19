@@ -117,7 +117,8 @@ OptimizerResult optimizeStateSite(
     , OperatorSite const& operator_site
     , ExpectationBoundary<Right> const& right_boundary
     , ProjectorMatrix const& projector_matrix
-    , double const tolerance
+    , double const convergence_threshold
+    , double const sanity_check_threshold
     , unsigned int const maximum_number_of_iterations
 );
 //@-others

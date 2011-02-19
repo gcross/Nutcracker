@@ -469,14 +469,17 @@ TEST_SUITE(transverse_Ising_model) {
     ) {
         Chain chain(constructTransverseIsingModelOperator(number_of_sites,coupling_strength));
         if(coupling_strength == 0.1) {
+            chain.options.sanity_check_threshold = 1e-10;
             chain.options.site_convergence_threshold = 1e-10;
             chain.options.sweep_convergence_threshold = 1e-9;
             chain.options.chain_convergence_threshold = 1e-8;
         } else if(coupling_strength == 0.5) {
+            chain.options.sanity_check_threshold = 1e-9;
             chain.options.site_convergence_threshold = 1e-9;
             chain.options.sweep_convergence_threshold = 1e-8;
             chain.options.chain_convergence_threshold = 1e-7;
         } else {
+            chain.options.sanity_check_threshold = 1e-10;
             chain.options.site_convergence_threshold = 1e-10;
             chain.options.sweep_convergence_threshold = 1e-9;
             chain.options.chain_convergence_threshold = 1e-8;

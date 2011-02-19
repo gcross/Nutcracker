@@ -123,6 +123,7 @@ protected:
 public:
     struct Options {
         unsigned int maximum_number_of_iterations;
+        double sanity_check_threshold;
         double site_convergence_threshold;
         double sweep_convergence_threshold;
         double chain_convergence_threshold;

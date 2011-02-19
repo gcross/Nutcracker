@@ -61,6 +61,7 @@ TEST_SUITE(one_site_under_external_field) {
                     ,ExpectationBoundary<Right>::trivial
                     ,ProjectorMatrix()
                     ,0
+                    ,0
                     ,10000
                 )
             );
