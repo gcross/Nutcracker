@@ -62,7 +62,7 @@ Chain::Chain(
     reset(bandwidth_dimension);
 }
 //@+node:gcross.20110202175920.1720: *3* computeExpectationValueAtSite
-complex<double> Chain::computeExpectationValueAtSite() const {
+complex<double> Chain::computeExpectationValueAtCurrentSite() const {
     return 
         Nutcracker::computeExpectationValueAtSite(
              left_expectation_boundary
@@ -221,7 +221,7 @@ void Chain::reset(unsigned int bandwidth_dimension) {
             ,RightDimension(initial_bandwidth_dimensions[1])
         );
 
-    complex<double> const expectation_value = computeExpectationValueAtSite();
+    complex<double> const expectation_value = computeExpectationValueAtCurrentSite();
     if(abs(expectation_value.imag()) > 1e-10) throw InitialChainEnergyNotRealError(expectation_value);
     energy = expectation_value.real();
 }

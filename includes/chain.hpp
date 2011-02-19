@@ -142,7 +142,7 @@ public:
     double getEnergy() const { return energy; }
     unsigned int bandwidthDimension() const { return bandwidth_dimension; }
 
-    complex<double> computeExpectationValueAtSite() const;
+    complex<double> computeExpectationValueAtCurrentSite() const;
     double computeStateNorm() const;
 
     template<typename side> void absorb(BOOST_RV_REF(StateSite<side>) state_site, unsigned int operator_number);
