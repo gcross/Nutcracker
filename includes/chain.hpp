@@ -117,6 +117,8 @@ protected:
     }
 
     void resetBoundaries();
+    void resetProjectorMatrix();
+
 public:
     struct Options {
         unsigned int maximum_number_of_iterations;
@@ -281,6 +283,8 @@ template<typename side> void Chain::move() {
     state_site = boost::move(cursor.middle_state_site);
 
     side_neighbors.pop_back();
+
+    resetProjectorMatrix();
 }
 //@-others
 //@-others

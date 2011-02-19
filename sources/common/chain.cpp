@@ -120,6 +120,8 @@ void Chain::increaseBandwidthDimension(unsigned int const new_bandwidth_dimensio
         }
     }
     bandwidth_dimension = new_bandwidth_dimension;
+
+    resetProjectorMatrix();
 }
 //@+node:gcross.20110215235924.1878: *3* makeCopyOfState
 State Chain::makeCopyOfState() const {
@@ -233,6 +235,17 @@ void Chain::reset(unsigned int bandwidth_dimension) {
             ,RightDimension(initial_bandwidth_dimensions[1])
         );
 
+    resetProjectorMatrix();
+
+    if(projectors.size() > 0) {
+        while(projector_matrix.orthogonalSubspaceDimension() == 0) {
+            move<Right>();
+        }
+        state_site = applyProjectorMatrix(projector_matrix,state_site);
+        assert(abs(state_site.norm()-1) < 1e-7);
+        moveTo(0);
+    }
+
     complex<double> const expectation_value = computeExpectationValueAtCurrentSite();
     if(abs(expectation_value.imag()) > 1e-10) throw InitialChainEnergyNotRealError(expectation_value);
     energy = expectation_value.real();
@@ -254,6 +267,25 @@ void Chain::resetBoundaries() {
     REPEAT(projectors.size()) {
         right_overlap_boundaries.emplace_back(make_trivial);
     }
+}
+//@+node:gcross.20110218083552.1931: *3* resetProjectorMatrix
+namespace resetProjectorMatrix_IMPLEMENTATION {
+    struct FetchOverlapSite {
+        typedef OverlapSite<Middle> const& result_type;
+        unsigned int const current_site_number;
+        FetchOverlapSite(unsigned int const current_site_number) : current_site_number(current_site_number) {}
+        OverlapSite<Middle> const& operator()(Projector const& projector) const { return projector[current_site_number].get<Middle>(); }
+    };
+}
+
+void Chain::resetProjectorMatrix() {
+    using namespace resetProjectorMatrix_IMPLEMENTATION;
+    projector_matrix =
+        formProjectorMatrix(
+             left_overlap_boundaries
+            ,right_overlap_boundaries
+            ,projectors | transformed(FetchOverlapSite(current_site_number))
+        );
 }
 //@+node:gcross.20110208151104.1791: *3* sweepUntilConverged
 void Chain::sweepUntilConverged() {
