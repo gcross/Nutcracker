@@ -86,7 +86,7 @@ OptimizerObtainedGreaterEigenvalue::OptimizerObtainedGreaterEigenvalue(
       double const old_eigenvalue
     , double const new_eigenvalue
 ) : OptimizerFailure(
-        (format("Optimizer obtained an eigenvalue that greater than the old eigenvalue (%|.15| > %|.15|")
+        (format("Optimizer obtained an eigenvalue that greater than the old eigenvalue (%|.15| > %|.15|)")
             % new_eigenvalue
             % old_eigenvalue
         ).str()
