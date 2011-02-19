@@ -373,10 +373,11 @@ template<
     BOOST_CONCEPT_ASSERT((RandomAccessRangeConcept<OverlapBoundaryRightRange>));
     BOOST_CONCEPT_ASSERT((RandomAccessRangeConcept<OverlapSiteMiddleRange>));
     assert(left_boundaries.size() == right_boundaries.size());
-    assert(left_boundaries.size() == overlap_sites.size());
+    assert(left_boundaries.size() == (unsigned int)overlap_sites.size());
+    unsigned int const number_of_projectors = left_boundaries.size();
+    if(number_of_projectors == 0u) return ProjectorMatrix();
     unsigned int const
-         number_of_projectors = left_boundaries.size()
-        ,state_physical_dimension = overlap_sites.begin()->physicalDimension(as_unsigned_integer)
+         state_physical_dimension = overlap_sites.begin()->physicalDimension(as_unsigned_integer)
         ,state_left_dimension = left_boundaries.begin()->stateDimension(as_unsigned_integer)
         ,state_right_dimension = right_boundaries.begin()->stateDimension(as_unsigned_integer)
         ,overlap_vector_length = state_physical_dimension*state_left_dimension*state_right_dimension
