@@ -100,7 +100,9 @@ double computeOverlapWithProjectors(
      ProjectorMatrix const& projector_matrix
     ,StateSiteAny const& state_site
 ) {
-    return abs(Core::compute_overlap_with_projectors(
+    if(projector_matrix.invalid()) return 0;
+    else return
+    abs(Core::compute_overlap_with_projectors(
          projector_matrix.numberOfProjectors()
         ,projector_matrix.numberOfReflectors()
         ,projector_matrix.reflectorData()
