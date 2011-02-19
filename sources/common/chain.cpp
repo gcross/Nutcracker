@@ -140,7 +140,10 @@ State Chain::makeCopyOfState() const {
 void Chain::optimizeChain() {
     double previous_energy = energy;
     sweepUntilConverged();
-    while(abs(previous_energy - energy)/(abs(previous_energy)+abs(energy)+options.chain_convergence_threshold) > options.chain_convergence_threshold) {
+    while(
+        (abs(previous_energy - energy)/(abs(previous_energy)+abs(energy)+options.chain_convergence_threshold) > options.chain_convergence_threshold)
+     && (bandwidth_dimension < maximum_bandwidth_dimension)
+    ) {
         previous_energy = energy;
         increaseBandwidthDimension(options.computeNewBandwidthDimension(bandwidth_dimension));
         sweepUntilConverged();
