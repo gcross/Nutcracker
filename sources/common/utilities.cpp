@@ -4,6 +4,9 @@
 
 //@+<< Includes >>
 //@+node:gcross.20110125202132.2161: ** << Includes >>
+#include <boost/range/numeric.hpp>
+#include <boost/range/irange.hpp>
+#include <numeric>
 #include <string>
 
 #include "utilities.hpp"
@@ -13,6 +16,10 @@ namespace Nutcracker {
 
 //@+<< Usings >>
 //@+node:gcross.20110125202132.2162: ** << Usings >>
+using boost::accumulate;
+using boost::irange;
+
+using std::multiplies;
 //@-<< Usings >>
 
 //@+others
@@ -23,6 +30,11 @@ const char* Exception::what() const throw() { return message.c_str(); }
 
 Exception::~Exception() throw() { }
 //@+node:gcross.20110217175626.1937: ** Functions
+//@+node:gcross.20110219101843.1939: *3* choose
+unsigned long long choose(unsigned int const n, unsigned int const k) {
+    assert(k <= n);
+    return accumulate(irange((n-k)+1,n+1),1,multiplies<unsigned long long>()) / accumulate(irange(1u,k+1),1,multiplies<unsigned long long>());
+}
 //@+node:gcross.20110217175626.1936: *3* computeBandwidthDimensionSequence
 vector<unsigned int> computeBandwidthDimensionSequence(
     unsigned int const requested_bandwidth_dimension

@@ -132,6 +132,8 @@ public:
     }
 };
 //@+node:gcross.20110127123226.2857: ** Functions
+unsigned long long choose(unsigned int n, unsigned int k);
+
 vector<unsigned int> computeBandwidthDimensionSequence(
     unsigned int const requested_bandwidth_dimension
    ,vector<unsigned int> const& physical_dimensions
