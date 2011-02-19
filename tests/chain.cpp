@@ -243,6 +243,8 @@ TEST_CASE(increaseBandwidthDimension) {
         Chain chain(random.randomOperator(number_of_operators));
         unsigned int const maximum_bandwidth_dimension = min(10u,chain.maximum_bandwidth_dimension);
 
+        State old_state = chain.makeCopyOfState();
+
         #define VALIDATE_CHAIN_PROPERTIES \
             { \
                 ASSERT_NEAR(1,chain.computeStateNorm(),1e-9); \
@@ -253,6 +255,8 @@ TEST_CASE(increaseBandwidthDimension) {
 
         BOOST_FOREACH(unsigned int const bandwidth_dimension, irange(1u,maximum_bandwidth_dimension)) {
             chain.increaseBandwidthDimension(bandwidth_dimension);
+            State new_state = chain.makeCopyOfState();
+            ASSERT_NEAR(c(1,0),computeStateOverlap(old_state,new_state),1e-13);
             REPEAT(number_of_operators-1) {
                 chain.move<Right>();
                 VALIDATE_CHAIN_PROPERTIES
