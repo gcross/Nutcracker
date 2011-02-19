@@ -6,6 +6,7 @@
 //@+node:gcross.20110130170743.1675: ** << Includes >>
 #include <boost/assign.hpp>
 #include <boost/bind.hpp>
+#include <boost/foreach.hpp>
 #include <boost/lambda/lambda.hpp>
 #include <boost/range/adaptor/reversed.hpp>
 #include <boost/range/algorithm/reverse_copy.hpp>
