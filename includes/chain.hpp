@@ -149,6 +149,7 @@ public:
 
     template<typename side> void absorb(BOOST_RV_REF(StateSite<side>) state_site, unsigned int operator_number);
     template<typename side> void move();
+    void moveTo(unsigned int new_site_number);
     void increaseBandwidthDimension(unsigned int const new_bandwidth_dimension);
 
     void optimizeSite();

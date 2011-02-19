@@ -134,6 +134,16 @@ State Chain::makeCopyOfState() const {
         ,boost::move(rest_state_sites)
     );
 }
+//@+node:gcross.20110218083552.2522: *3* moveTo
+void Chain::moveTo(unsigned int new_site_number) {
+    assert(new_site_number < number_of_sites);
+    while(current_site_number > new_site_number) {
+        move<Left>();
+    }
+    while(current_site_number < new_site_number) {
+        move<Right>();
+    }
+}
 //@+node:gcross.20110208230325.1790: *3* optimizeChain
 void Chain::optimizeChain() {
     double previous_energy = energy;
