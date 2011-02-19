@@ -977,17 +977,9 @@ subroutine contract_expectation_boundaries( &
     right_environment(b,b,c)
   double complex :: expectation, transposed_left_environment(b,b,c)
 
-  interface
-    function zdotu(n,x,incx,y,incy)
-      integer, intent(in) :: n, incx, incy
-      double complex, intent(in) :: x, y
-      double complex :: zdotu
-    end function
-  end interface
-
   transposed_left_environment = reshape(left_environment,shape(left_environment),order=(/2,1,3/))
 
-  expectation = zdotu(b*b*c,transposed_left_environment(1,1,1),1,right_environment(1,1,1),1)
+  expectation = sum(transposed_left_environment(:,:,:)*right_environment(:,:,:))
 
 end subroutine
 !@+node:gcross.20110213125549.2327: *3* extend_state_vector_fragment
