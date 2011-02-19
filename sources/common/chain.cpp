@@ -72,6 +72,10 @@ complex<double> Chain::computeExpectationValueAtCurrentSite() const {
             ,right_expectation_boundary
         );
 }
+//@+node:gcross.20110219083229.1937: *3* computeProjectorOverlapAtSite
+double Chain::computeProjectorOverlapAtCurrentSite() const {
+    return computeOverlapWithProjectors(projector_matrix,state_site);
+}
 //@+node:gcross.20110202175920.1721: *3* computeStateNorm
 double Chain::computeStateNorm() const {
     return state_site.norm();
