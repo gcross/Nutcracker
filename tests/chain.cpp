@@ -296,6 +296,63 @@ TEST_SUITE(sweepUntilConverged) {
 //@+node:gcross.20110208230325.1792: *3* optimizeChain
 TEST_SUITE(optimizeChain) {
 
+//@+others
+//@+node:gcross.20110218150430.2594: *4* external field
+TEST_SUITE(external_field) {
+
+    vector<pair<unsigned int,vector<unsigned int> > > system_parameters =
+        list_of<pair<unsigned int,vector<unsigned int> > >
+            (1,list_of(1))
+            (2,list_of(1)(2))
+            (3,list_of(1)(2))
+            (4,list_of(1)(2)(4))
+            (5,list_of(1)(2)(4))
+            (10,list_of(1)(2)(4)(8)(17))
+    ;
+
+    void runTests(
+          unsigned int const physical_dimension
+    ) {
+        Matrix matrix;
+        {
+            vector<complex<double> > diagonal(physical_dimension,1); diagonal[0] = -1;
+            matrix = diagonalMatrix(diagonal);
+        }
+        typedef pair<unsigned int,vector<unsigned int> > Parameters;
+        BOOST_FOREACH(
+             Parameters const& parameters
+            ,system_parameters
+        ) {
+            unsigned int const number_of_sites = parameters.first;
+            vector<unsigned int> const& initial_bandwidth_dimensions = parameters.second;
+            BOOST_FOREACH(
+                 unsigned int const initial_bandwidth_dimension
+                ,initial_bandwidth_dimensions
+            ) {
+                Chain chain(
+                     constructExternalFieldOperator(
+                          number_of_sites
+                        , matrix
+                     )
+                    ,initial_bandwidth_dimension
+                );
+                chain.signalOptimizeSiteFailure.connect(rethrow<OptimizerFailure>);
+                unsigned int number_of_sweeps = 0;
+                chain.signalSweepPerformed.connect(++lambda::var(number_of_sweeps));
+                chain.optimizeChain();
+                ASSERT_TRUE(number_of_sweeps < 5);
+                ASSERT_NEAR_QUOTED(number_of_sites,-chain.getEnergy(),1e-7);
+            }
+        }
+    }
+
+    TEST_CASE(physical_dimension_2) { runTests(2); }
+    TEST_CASE(physical_dimension_3) { runTests(3); }
+    TEST_CASE(physical_dimension_4) { runTests(4); }
+}
+//@+node:gcross.20110218150430.2592: *4* transverse Ising model
+TEST_SUITE(transverse_Ising_model) {
+
     void runTest(
           unsigned int const number_of_sites
         , double const coupling_strength
@@ -306,8 +363,12 @@ TEST_SUITE(optimizeChain) {
         chain.optimizeChain();
         ASSERT_NEAR(correct_energy,chain.getEnergy(),1e-10);
     }
+
     TEST_CASE(10_sites_0p1) { runTest(10,0.1,-10.0225109571); }
     TEST_CASE(10_sites_1p0) { runTest(10,1.0,-12.3814899997); }
+
+}
+//@-others
 
 }
 //@+node:gcross.20110215235924.2008: *3* expectation matches computeExpectationValue
