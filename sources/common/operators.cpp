@@ -4,8 +4,13 @@
 
 //@+<< Includes >>
 //@+node:gcross.20110206185121.1778: ** << Includes >>
+#include <boost/iterator/zip_iterator.hpp>
 #include <boost/range/algorithm/copy.hpp>
+#include <boost/tuple/tuple.hpp>
+#include <complex>
+#include <iterator>
 #include <stdint.h>
+#include <utility>
 
 #include "operators.hpp"
 //@-<< Includes >>
@@ -15,9 +20,47 @@ namespace Nutcracker {
 //@+<< Usings >>
 //@+node:gcross.20110206185121.1779: ** << Usings >>
 using boost::irange;
+using boost::make_tuple;
+using boost::make_zip_iterator;
+using boost::tuple;
+
+using std::make_pair;
+using std::ostream_iterator;
 //@-<< Usings >>
 
 //@+others
+//@+node:gcross.20110219101843.2614: ** I/O
+//@+node:gcross.20110219101843.2615: *3* OperatorLink
+//@+node:gcross.20110219101843.2616: *4* >>
+void operator >> (YAML::Node const& node, OperatorLink& link) {
+    node["from"] >> link.from;
+    node["to"] >> link.to;
+    YAML::Node const& data = node["data"];
+    unsigned int nsq = data.size(), n = (unsigned int)sqrt(nsq);
+    assert(n*n == nsq);
+    link.matrix.resize(n,n);
+    YAML::Iterator node_iter = data.begin();
+    Matrix::array_type::iterator matrix_iter = link.matrix.data().begin();
+    REPEAT(n*n) {
+        using namespace std;
+        using namespace YAML;
+        *node_iter++ >> *matrix_iter++;
+    }
+}
+//@+node:gcross.20110219101843.2617: *4* <<
+YAML::Emitter& operator << (YAML::Emitter& out, OperatorLink const& link) {
+    out << YAML::BeginMap;
+    out << YAML::Key << "from" << YAML::Value << link.from;
+    out << YAML::Key << "to" << YAML::Value << link.to;
+    out << YAML::Key << "data" << YAML::Value;
+    {
+        out << YAML::Flow << YAML::BeginSeq;
+        BOOST_FOREACH(complex<double> const x, link.matrix.data()) { out << x; }
+        out << YAML::EndSeq;
+    }
+    out << YAML::EndMap;
+    return out;
+}
 //@+node:gcross.20110206185121.1783: ** Functions
 //@+node:gcross.20110207115918.1781: *3* constructExternalFieldOperator
 Operator constructExternalFieldOperator(

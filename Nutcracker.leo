@@ -10,6 +10,7 @@
 <v t="gcross.20110125120748.2417"><vh>@thin CMakeLists.txt</vh></v>
 <v t="gcross.20110220093853.2005"><vh>@path CMakeModules</vh>
 <v t="gcross.20110127123226.2818"><vh>@thin FindARPACK.cmake</vh></v>
+<v t="gcross.20110220093853.2006"><vh>@thin FindYamlCXX.cmake</vh></v>
 </v>
 <v t="gcross.20110124161335.1866"><vh>@path includes</vh>
 <v t="gcross.20110214183844.1813"><vh>@thin boundaries.hpp</vh></v>

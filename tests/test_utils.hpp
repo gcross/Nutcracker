@@ -47,7 +47,11 @@ public:
         , LeftDimension const left_dimension
         , RightDimension const right_dimension
     );
-    Operator randomOperator(optional<unsigned int> maybe_number_of_sites=none);
+    Operator randomOperator(
+          optional<unsigned int> maybe_number_of_sites=none
+        , unsigned int const maximum_physical_dimension=10
+        , unsigned int const maximum_bandwidth_dimension=10
+    );
 
     vector<unsigned int> randomUnsignedIntegerVector(unsigned int n, unsigned int lo=1,unsigned int hi=10);
 

@@ -4,7 +4,10 @@
 
 //@+<< Includes >>
 //@+node:gcross.20110204201608.1726: ** << Includes >>
+#include <algorithm>
+#include <boost/range/algorithm/equal.hpp>
 #include <illuminate.hpp>
+#include <sstream>
 
 #include "boundaries.hpp"
 #include "operators.hpp"
@@ -14,18 +17,43 @@
 #include "test_utils.hpp"
 
 using namespace Nutcracker;
+
+using boost::equal;
+
+using std::endl;
+using std::equal;
+using std::istringstream;
+using std::ostringstream;
 //@-<< Includes >>
 
 //@+others
-//@+node:gcross.20110204201608.1727: ** Tensors
+//@+node:gcross.20110220141808.1989: ** Functions
+//@+node:gcross.20110220141808.1990: *3* checkOperatorSitesEqual
+void checkOperatorSitesEqual(OperatorSite const& operator_site_1,OperatorSite const& operator_site_2) {
+    ASSERT_EQ(operator_site_1.physicalDimension(),operator_site_2.physicalDimension());
+    ASSERT_EQ(operator_site_1.leftDimension(),operator_site_2.leftDimension());
+    ASSERT_EQ(operator_site_1.rightDimension(),operator_site_2.rightDimension());
+    ASSERT_EQ(operator_site_1.numberOfMatrices(),operator_site_2.numberOfMatrices());
+    ASSERT_TRUE(equal(operator_site_1,operator_site_2));
+    ASSERT_TRUE(equal((uint32_t const*)operator_site_1,((uint32_t const*)operator_site_1)+2*operator_site_1.numberOfMatrices(),(uint32_t const*)operator_site_2));
+}
+//@+node:gcross.20110220141808.1994: *3* checkOperatorsEqual
+void checkOperatorsEqual(Operator const& operator_1,Operator const& operator_2) {
+    ASSERT_EQ(operator_1.size(),operator_2.size());
+    BOOST_FOREACH(unsigned int const i, irange(0u,(unsigned int)operator_1.size())) {
+        checkOperatorSitesEqual(*operator_1[i],*operator_2[i]);
+    }
+}
+//@+node:gcross.20110220093853.1987: ** Tests
+//@+node:gcross.20110204201608.1727: *3* Tensors
 TEST_SUITE(Tensors) {
 
 //@+others
-//@+node:gcross.20110204201608.1751: *3* ExpectationBoundary
+//@+node:gcross.20110204201608.1751: *4* ExpectationBoundary
 TEST_SUITE(ExpectationBoundary) {
 
 //@+others
-//@+node:gcross.20110204201608.1752: *4* move assignable
+//@+node:gcross.20110204201608.1752: *5* move assignable
 TEST_CASE(move_assignable) {
     RNG random;
 
@@ -60,7 +88,7 @@ TEST_CASE(move_assignable) {
         ASSERT_EQ_QUOTED(state_dimension,new_boundary.stateDimension());
     }
 }
-//@+node:gcross.20110204201608.1755: *4* move constructable
+//@+node:gcross.20110204201608.1755: *5* move constructable
 TEST_CASE(move_constructable) {
     RNG random;
 
@@ -92,11 +120,11 @@ TEST_CASE(move_constructable) {
 //@-others
 
 }
-//@+node:gcross.20110204201608.1742: *3* StateSite
+//@+node:gcross.20110204201608.1742: *4* StateSite
 TEST_SUITE(StateSite) {
 
 //@+others
-//@+node:gcross.20110204201608.1743: *4* move assignable
+//@+node:gcross.20110204201608.1743: *5* move assignable
 TEST_CASE(move_assignable) {
     RNG random;
 
@@ -137,7 +165,7 @@ TEST_CASE(move_assignable) {
         ASSERT_EQ_QUOTED(right_dimension,new_site.rightDimension());
     }
 }
-//@+node:gcross.20110204201608.1747: *4* move constructable
+//@+node:gcross.20110204201608.1747: *5* move constructable
 TEST_CASE(move_constructable) {
     RNG random;
 
@@ -174,11 +202,11 @@ TEST_CASE(move_constructable) {
 //@-others
 
 }
-//@+node:gcross.20110204201608.1733: *3* OperatorSite
+//@+node:gcross.20110204201608.1733: *4* OperatorSite
 TEST_SUITE(OperatorSite) {
 
 //@+others
-//@+node:gcross.20110204201608.1736: *4* move assignable
+//@+node:gcross.20110204201608.1736: *5* move assignable
 TEST_CASE(move_assignable) {
     RNG random;
 
@@ -226,7 +254,7 @@ TEST_CASE(move_assignable) {
         ASSERT_EQ_QUOTED(right_dimension,new_site.rightDimension());
     }
 }
-//@+node:gcross.20110204201608.1734: *4* move constructable
+//@+node:gcross.20110204201608.1734: *5* move constructable
 TEST_CASE(move_constructable) {
     RNG random;
 
@@ -266,7 +294,7 @@ TEST_CASE(move_constructable) {
         ASSERT_EQ_QUOTED(right_dimension,new_site.rightDimension());
     }
 }
-//@+node:gcross.20110204201608.1737: *4* random generator
+//@+node:gcross.20110204201608.1737: *5* random generator
 TEST_CASE(random_generator) {
     RNG random;
 
@@ -285,11 +313,11 @@ TEST_CASE(random_generator) {
 //@-others
 
 }
-//@+node:gcross.20110204201608.1759: *3* OverlapBoundary
+//@+node:gcross.20110204201608.1759: *4* OverlapBoundary
 TEST_SUITE(OverlapBoundary) {
 
 //@+others
-//@+node:gcross.20110204201608.1760: *4* move assignable
+//@+node:gcross.20110204201608.1760: *5* move assignable
 TEST_CASE(move_assignable) {
     RNG random;
 
@@ -324,7 +352,7 @@ TEST_CASE(move_assignable) {
         ASSERT_EQ_QUOTED(state_dimension,new_boundary.stateDimension());
     }
 }
-//@+node:gcross.20110204201608.1761: *4* move constructable
+//@+node:gcross.20110204201608.1761: *5* move constructable
 TEST_CASE(move_constructable) {
     RNG random;
 
@@ -356,11 +384,11 @@ TEST_CASE(move_constructable) {
 //@-others
 
 }
-//@+node:gcross.20110204201608.2062: *3* OverlapSite
+//@+node:gcross.20110204201608.2062: *4* OverlapSite
 TEST_SUITE(OverlapSite) {
 
 //@+others
-//@+node:gcross.20110204201608.2063: *4* move assignable
+//@+node:gcross.20110204201608.2063: *5* move assignable
 TEST_CASE(move_assignable) {
     RNG random;
 
@@ -401,7 +429,7 @@ TEST_CASE(move_assignable) {
         ASSERT_EQ_QUOTED(right_dimension,new_site.rightDimension());
     }
 }
-//@+node:gcross.20110204201608.2064: *4* move constructable
+//@+node:gcross.20110204201608.2064: *5* move constructable
 TEST_CASE(move_constructable) {
     RNG random;
 
@@ -434,6 +462,154 @@ TEST_CASE(move_constructable) {
         ASSERT_EQ_QUOTED(left_dimension,new_site.leftDimension());
         ASSERT_EQ_QUOTED(right_dimension,new_site.rightDimension());
     }
+}
+//@-others
+
+}
+//@-others
+
+}
+//@+node:gcross.20110220093853.1978: *3* I/O
+TEST_SUITE(IO) {
+
+//@+others
+//@+node:gcross.20110220093853.1982: *4* OperatorSite
+TEST_SUITE(OperatorSite) {
+
+//@+others
+//@+node:gcross.20110220093853.1984: *5* encode then decode
+TEST_CASE(encode_then_decode) {
+
+    RNG random;
+
+    REPEAT(10) {
+        OperatorSite operator_site_1 =
+            random.randomOperatorSite(
+                 PhysicalDimension(random(1,5))
+                ,LeftDimension(random(1,5))
+                ,RightDimension(random(1,5))
+            );
+
+        YAML::Emitter out;
+        out << operator_site_1;
+        string out_string(out.c_str());
+
+        istringstream in(out_string);
+        YAML::Parser parser(in);
+        YAML::Node doc;
+        parser.GetNextDocument(doc);
+
+        OperatorSite operator_site_2;
+        doc >> operator_site_2;
+
+        checkOperatorSitesEqual(operator_site_1,operator_site_2);
+    }
+
+}
+//@-others
+
+}
+//@+node:gcross.20110220141808.1987: *4* Operator
+TEST_SUITE(Operator) {
+
+//@+others
+//@+node:gcross.20110220141808.1991: *5* examples
+TEST_SUITE(examples) {
+
+//@+others
+//@+node:gcross.20110220141808.1992: *6* external field
+TEST_CASE(external_field) {
+
+    RNG random;
+
+    REPEAT(10) {
+        unsigned int const number_of_middle_sites = random;
+
+        Operator operator_1 =
+            constructExternalFieldOperator(
+                 number_of_middle_sites+2
+                ,Pauli::Z
+            );
+
+        ostringstream out;
+        out << "sequence: [0,";
+        REPEAT(number_of_middle_sites) { out << "1, "; }
+        out << "2]" << endl;
+        out << (
+            "sites:\n"
+            "  - physical dimension: 2\n"
+            "    left dimension:     1\n"
+            "    right dimension:    2\n"
+            "    matrices:\n"
+            "       - from: 1\n"
+            "         to:   1\n"
+            "         data: [1,0,0,1]\n"
+            "       - from: 1\n"
+            "         to:   2\n"
+            "         data: [1,0,0,-1]\n"
+            "  - physical dimension: 2\n"
+            "    left dimension:     2\n"
+            "    right dimension:    2\n"
+            "    matrices:\n"
+            "       - from: 1\n"
+            "         to:   1\n"
+            "         data: [1,0,0,1]\n"
+            "       - from: 1\n"
+            "         to:   2\n"
+            "         data: [1,0,0,-1]\n"
+            "       - from: 2\n"
+            "         to:   2\n"
+            "         data: [1,0,0,1]\n"
+            "  - physical dimension: 2\n"
+            "    left dimension:     2\n"
+            "    right dimension:    1\n"
+            "    matrices:\n"
+            "       - from: 1\n"
+            "         to:   1\n"
+            "         data: [1,0,0,-1]\n"
+            "       - from: 2\n"
+            "         to:   1\n"
+            "         data: [1,0,0,1]\n"
+        ) << endl;
+
+        istringstream in(out.str());
+        YAML::Parser parser(in);
+        YAML::Node doc;
+        parser.GetNextDocument(doc);
+
+        Operator operator_2;
+        doc >> operator_2;
+
+        checkOperatorsEqual(operator_1,operator_2);
+    }
+
+}
+//@-others
+
+}
+//@+node:gcross.20110220141808.1988: *5* encode then decode
+TEST_CASE(encode_then_decode) {
+
+    RNG random;
+
+    REPEAT(10) {
+        Operator operator_1 = random.randomOperator();
+
+        YAML::Emitter out;
+        out << operator_1;
+        string out_string(out.c_str());
+
+        istringstream in(out_string);
+        YAML::Parser parser(in);
+        YAML::Node doc;
+        parser.GetNextDocument(doc);
+
+        Operator operator_2;
+        doc >> operator_2;
+
+        checkOperatorsEqual(operator_1,operator_2);
+    }
+
 }
 //@-others
 

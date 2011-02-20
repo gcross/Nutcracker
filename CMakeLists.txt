@@ -27,6 +27,10 @@ include_directories ( ${LAPACK_INCLUDE_DIRS} )
 find_package( ARPACK REQUIRED )
 link_directories ( ${ARPACK_LIBRARY_DIRS} )
 
+find_package( YamlCXX REQUIRED )
+link_directories ( ${YAMLCXX_LIBRARY_DIRS} )
+include_directories ( ${YAMLCXX_INCLUDE_DIRS} )
+
 if(UNIX)
     if(CMAKE_COMPILER_IS_GNUCC)
          add_definitions(-Wall -Wno-strict-aliasing)

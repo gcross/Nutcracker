@@ -17,5 +17,6 @@ target_link_libraries(Nutcracker
     ${BLAS_LIBRARIES}
     ${LAPACK_LIBRARIES}
     ${ARPACK_LIBRARIES}
+    ${YAMLCXX_LIBRARIES}
 )
 #@-leo

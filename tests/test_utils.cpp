@@ -117,7 +117,12 @@ function<complex<double>()> RNG::generateRandomHermitianMatrices(unsigned int co
     return HermitianMatrixGenerator(*this,size);
 }
 //@+node:gcross.20110215135633.1866: *3* randomOperator
-Operator RNG::randomOperator(optional<unsigned int> maybe_number_of_sites) {
+Operator RNG::randomOperator(
+      optional<unsigned int> maybe_number_of_sites
+    , unsigned int const maximum_physical_dimension
+    , unsigned int const maximum_bandwidth_dimension
+
+) {
     unsigned int const number_of_sites = maybe_number_of_sites ? *maybe_number_of_sites : randomInteger()+1;
     Operator operator_sites;
     unsigned int left_dimension = 1;
@@ -125,11 +130,11 @@ Operator RNG::randomOperator(optional<unsigned int> maybe_number_of_sites) {
         unsigned int const right_dimension
             = site_number == number_of_sites-1
                 ? 1
-                : randomInteger()
+                : (*this)(1,maximum_bandwidth_dimension)
                 ;
         operator_sites.push_back(boost::shared_ptr<OperatorSite const>(new OperatorSite(
             randomOperatorSite(
-                 PhysicalDimension(randomInteger()+1)
+                 PhysicalDimension((*this)(1,maximum_physical_dimension))
                 ,LeftDimension(left_dimension)
                 ,RightDimension(right_dimension)
             )

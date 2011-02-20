@@ -25,9 +25,11 @@
 #include <functional>
 #include <iterator>
 #include <numeric>
+#include <sstream>
 #include <stdint.h>
 #include <string>
 #include <typeinfo>
+#include <yaml-cpp/yaml.h>
 //@-<< Includes >>
 
 namespace Nutcracker {
@@ -269,6 +271,35 @@ inline void zgemv(
     );        
 }
 //@-others
+//@+node:gcross.20110219101843.2618: ** I/O
+//@+node:gcross.20110220093853.1990: *3* complex<T>
+//@+node:gcross.20110219101843.2619: *4* >>
+template<typename T> inline void operator>>(YAML::Node const& node,complex<T>& x) {
+    switch(node.GetType()) {
+        case YAML::CT_SCALAR:
+            node >> x.real();
+            x.imag() = 0;
+            return;
+        case YAML::CT_SEQUENCE:
+            assert(node.size() == 2);
+            node[0] >> x.real();
+            node[1] >> x.imag();
+            return;
+        default: assert(!"bad node type");
+    }
+}
+//@+node:gcross.20110219101843.2623: *4* <<
+template<typename T> inline YAML::Emitter& operator<<(YAML::Emitter& out,complex<T> const& x) {
+    if(x.imag() == 0) {
+        return out << (format("%|.20|") % x.real()).str();
+    } else {
+        return out
+            << YAML::Flow << YAML::BeginSeq
+                << (format("%|.20|") % x.real()).str()
+                << (format("%|.20|") % x.imag()).str()
+            << YAML::EndSeq;
+    }
+}
 //@+node:gcross.20110129220506.1652: ** Macros
 #define REPEAT(n) for(unsigned int _counter##__LINE__ = 0; _##counter##__LINE__ < n; ++_##counter##__LINE__)
 //@-others

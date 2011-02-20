@@ -1182,6 +1182,13 @@ inline unsigned int operator|(
         ,overlap_boundary.stateDimension(as_unsigned_integer)
     );
 }
+//@+node:gcross.20110220093853.1976: ** I/O
+//@+node:gcross.20110220093853.1977: *3* Operator
+void operator >> (const YAML::Node& node, Operator& operator_site);
+YAML::Emitter& operator << (YAML::Emitter& emitter, Operator const& operator_site);
+//@+node:gcross.20110220093853.1998: *3* OperatorSite
+void operator >> (const YAML::Node& node, OperatorSite& operator_site);
+YAML::Emitter& operator << (YAML::Emitter& emitter, OperatorSite const& operator_site);
 //@-others
 
 }
