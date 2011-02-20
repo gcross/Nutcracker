@@ -9,7 +9,6 @@
 <v t="gcross.20091113142219.1658"><vh>@chapters</vh></v>
 <v t="gcross.20110125120748.2417"><vh>@thin CMakeLists.txt</vh></v>
 <v t="gcross.20110127123226.2818"><vh>@thin CMakeModules/FindARPACK.cmake</vh></v>
-<v t="gcross.20110129220506.1648"><vh>@thin CMakeModules/FindGOTOBLAS.cmake</vh></v>
 <v t="gcross.20110124161335.1866"><vh>@path includes</vh>
 <v t="gcross.20110214183844.1813"><vh>@thin boundaries.hpp</vh></v>
 <v t="gcross.20110130170743.1665"><vh>@thin chain.hpp</vh></v>
