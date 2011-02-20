@@ -188,7 +188,7 @@ void Chain::optimizeChain() {
        && bandwidth_dimension < maximum_bandwidth_dimension
     ) {
         previous_energy = energy;
-        increaseBandwidthDimension(options.computeNewBandwidthDimension(bandwidth_dimension));
+        increaseBandwidthDimension(min(options.computeNewBandwidthDimension(bandwidth_dimension),maximum_bandwidth_dimension));
         sweepUntilConverged();
     }
     signalChainOptimized();
