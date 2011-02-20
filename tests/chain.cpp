@@ -401,6 +401,7 @@ TEST_SUITE(solveForMultipleLevels) {
 void checkEnergies(
      Chain& chain
     ,vector<double> const& correct_energies
+    ,double tolerance
 ) {
     unsigned int const number_of_levels = correct_energies.size();
     chain.signalOptimizeSiteFailure.connect(rethrow<OptimizerFailure>);
@@ -426,7 +427,7 @@ void checkEnergies(
     chain.signalChainOptimized.connect(postEnergy);
     chain.solveForMultipleLevels(number_of_levels);
     BOOST_FOREACH(unsigned int const i, irange(0u,number_of_levels)) {
-        if(abs(correct_energies[i]-actual_energies[i])>chain.options.chain_convergence_threshold) {
+        if(abs(correct_energies[i]-actual_energies[i])>tolerance) {
             ostringstream message;
             message << format("Wrong energies [#%||: %|.15| != %|.15|]: ") % i % correct_energies[i] % actual_energies[i];
             BOOST_FOREACH(unsigned int const i, irange(0u,number_of_levels)) {
@@ -445,7 +446,7 @@ TEST_SUITE(external_field) {
         , vector<double> const& correct_energies
     ) {
         Chain chain(constructExternalFieldOperator(number_of_sites,diagonalMatrix(irange(0u,physical_dimension))));
-        checkEnergies(chain,correct_energies);
+        checkEnergies(chain,correct_energies,1e-12);
     }
 
     TEST_SUITE(physical_dimension_2) {
@@ -455,7 +456,8 @@ TEST_SUITE(external_field) {
     }
     TEST_SUITE(physical_dimension_3) {
         TEST_CASE(1_site) { runTest(3,1,list_of(0)(1)(2)); }
-        TEST_CASE(2_sites) { runTest(3,2,list_of(0)(1)(1)(2)(2)(2)(3)); }
+        TEST_CASE(2_sites) { runTest(3,2,list_of(0)(1)(1)(2)(2)(2)(3)(3)(4)); }
+        TEST_CASE(3_sites) { runTest(3,3,list_of(0)(1)(1)(1)(2)(2)(2)(2)(2)(2)(3)(3)(3)(3)(3)(3)(3)(4)); }
     }
 
 }
@@ -468,23 +470,10 @@ TEST_SUITE(transverse_Ising_model) {
         , vector<double> const& correct_energies
     ) {
         Chain chain(constructTransverseIsingModelOperator(number_of_sites,coupling_strength));
-        if(coupling_strength == 0.1) {
-            chain.options.sanity_check_threshold = 1e-10;
-            chain.options.site_convergence_threshold = 1e-10;
-            chain.options.sweep_convergence_threshold = 1e-9;
-            chain.options.chain_convergence_threshold = 1e-8;
-        } else if(coupling_strength == 0.5) {
-            chain.options.sanity_check_threshold = 1e-9;
-            chain.options.site_convergence_threshold = 1e-9;
-            chain.options.sweep_convergence_threshold = 1e-8;
-            chain.options.chain_convergence_threshold = 1e-7;
-        } else {
-            chain.options.sanity_check_threshold = 1e-10;
-            chain.options.site_convergence_threshold = 1e-10;
-            chain.options.sweep_convergence_threshold = 1e-9;
-            chain.options.chain_convergence_threshold = 1e-8;
-        }
-        checkEnergies(chain,correct_energies);
+        chain.options.site_convergence_threshold = 1e-10;
+        chain.options.sweep_convergence_threshold = 1e-9;
+        chain.options.chain_convergence_threshold = 1e-9;
+        checkEnergies(chain,correct_energies,1e-7);
     }
 
     TEST_CASE( 6_sites_0p1) { runTest( 6,0.1,list_of( -6.012504691)( -4.1912659256)(-4.13264494449)( -4.0501210912)); }
