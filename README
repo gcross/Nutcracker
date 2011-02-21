@@ -1,0 +1,194 @@
+Nutcracker version 0.1
+======================
+
+Nutcracker is a quantum simulation program that uses the variational
+matrix product state method to compute the ground and lowest lying
+excited states of a system.  If you have been given the sources, then
+please first read the INSTALL file for information on how to build
+Nutcracker.
+
+(This README file assumes that you have already built Nutcracker and
+have changed to the directory where you unpacked and built the
+source.)
+
+To get a complete list of the options to Nutcracker, run it with the
+--help option:
+
+    programs/nutcracker --help
+
+If you want to see Nutcracker in action, type
+
+    python examples/generate/external-field.py 5
+
+to see an example of the input format, and then
+
+    python examples/generate/external-field.py 5 | programs/nutcracker -n 4
+
+to see Nutcracker find the first four levels of the system.
+
+If you are feeling more adventurous, you can have fun solving the
+transverse Ising model:
+
+    python examples/generate/transverse-ising-model.py 0.1 6 | programs/nutcracker -n 3
+
+To use Nutcracker, you will need to have first decomposed your
+Hamiltonian into matrix product operator form.  Describing how to do
+this is outside the scope of this README at this time, but you can
+read an introduction to this idea at
+
+    http://arxiv.org/abs/0708.1221
+
+Since matrix product operators typically have repeated sites, the
+input to Nutcracker takes the form of a list of site tensors and then
+a list of indices to specify the order of the tensors in the operator.
+Currently the only input format supported is YAML.  For example, the
+following is the output of "python examples/generate/external-field.py
+5", which specifies a simple Hamiltonian with an external field for a
+system with 5 sites:
+
+sites:
+  - physical dimension: 2
+    left dimension:     1
+    right dimension:    2
+    matrices:
+       - from: 1
+         to:   1
+         data: [1,0,0,1]
+       - from: 1
+         to:   2
+         data: [1,0,0,-1]
+  - physical dimension: 2
+    left dimension:     2
+    right dimension:    2
+    matrices:
+       - from: 1
+         to:   1
+         data: [1,0,0,1]
+       - from: 1
+         to:   2
+         data: [1,0,0,-1]
+       - from: 2
+         to:   2
+         data: [1,0,0,1]
+  - physical dimension: 2
+    left dimension:     2
+    right dimension:    1
+    matrices:
+       - from: 1
+         to:   1
+         data: [1,0,0,-1]
+       - from: 2
+         to:   1
+         data: [1,0,0,1]
+sequence: [1, 2, 2, 2, 3]
+
+First, some background.  In YAML, there are two kinds of sections:
+key/value sections and lists.  Key/value sections are specified by
+entries of the form "key: value".  Whitespace is significant, so all
+of the keys in a key/value section need to be aligned;  the values
+don't have to be aligned, but I often added whitespace to line them up
+anyway.
+
+Lists take either the form
+ - A
+ - B
+ - C
+(that is, aligned entries beginning with a dash) or
+ [A,B,C]
+(that is, something that looks like an array in JavaScript or Python).
+
+Values can themselves be lists or key/value sections, so that in the
+Hamiltonian I listed above the keys "sites" and "sequence" specify
+values which are themselves lists;  in the case of "sites", each list
+entry contains a key/value pair.
+
+Now to explain how to interpret the above.  Note that this document
+has two parts: a "sites" section which lists the site tensors and a
+"sequence" section that specifies how they are ordered.  In this case,
+the sequence is [1,2,2,2,3], which says that the Hamiltonian contains
+five sites and the matrix product representation consists of first
+tensor 1 (the first tensor in the list), then three copies of tensor
+2, and finally tensor 3.
+
+Each tensor has metadata providing its physical dimension (which
+corresponds to the dimension of the particle at that chain site) and
+the left and right "bandwidth" dimensions that connect it to its
+respective left and right neighbors.  The first tensor must have left
+dimension 1, the last tensor must have right dimension 1, and the
+interior tensors must agree with their neighbors on the size of the
+connecting dimension (i.e. the left tensor's right dimension must
+match the right tensor's left dimension).
+
+Matrix product operator tensors are typically very sparse in the
+bandwidth dimension indices, and so the input format specifies the
+contents of each tensor by way of a list of "matrices" where each
+dense submatrix is selected within the tensor by specifying the left
+bandwidth index ("from") and right bandwidth index ("to"), and the
+data contained in the submatrix (of size physical dimension by
+physical dimension) is specified using a flat array in row-major
+order.
+
+The reason why I use the labels "from" and "to" rather than "left" and
+"right" is because this list corresponds to a list of transitions in a
+state machine generating the Hamiltonian.  So for example in the
+second tensor above we see that there is a transition from the 1 state
+to the 1 state that produces an identity ([1,0,0,1] = [[1,0],[0,1]] =
+I), a transition from the 1 state to the 2 state that produces a Pauli
+Z operator ([1,0,0,-1]=[[1,0],[0,-1]]=Z), and finally a transition
+from the 2 state to the 2 state that also produces an identity.  This
+site was engineered this way because it guarantees that only a single
+Z operator will be generated, as it is impossible to generate a second
+one after the 2 state has been entered.
+
+An alternative way of specifying the system above is as follows
+(generated by "python examples/generate/external-field-using-anchors.py 5"):
+
+paulis:
+  - &I [1,0,0,1]
+  - &Z [1,0,0,-1]
+sites:
+  - physical dimension: 2
+    left dimension:     1
+    right dimension:    2
+    matrices:
+       - from: 1
+         to:   1
+         data: *I
+       - from: 1
+         to:   2
+         data: *Z
+  - physical dimension: 2
+    left dimension:     2
+    right dimension:    2
+    matrices:
+       - from: 1
+         to:   1
+         data: *I
+       - from: 1
+         to:   2
+         data: *Z
+       - from: 2
+         to:   2
+         data: *I
+  - physical dimension: 2
+    left dimension:     2
+    right dimension:    1
+    matrices:
+       - from: 1
+         to:   1
+         data: *Z
+       - from: 2
+         to:   1
+         data: *I
+sequence: [1, 2, 2, 2, 3]
+
+This example contains a "paulis" section.  When reading in the
+Hamiltonian, Nutcracker ignores sections that it does not recognize,
+so it won't complain that this section is present.  However, within
+this section there are values that have been tagged with the "anchors"
+&I and &Z.  These values can now be referenced using respectively *I
+and *Z, which substitutes the tagged value in the place of the
+reference.  This allows me to specify the matrix data once and then
+refer to it using descriptive aliases.  (Note that this is a generic
+feature of YAML and is not specific to my program or restricted in
+which values you tag and reference using anchors.)
