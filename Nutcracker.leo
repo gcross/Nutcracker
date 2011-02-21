@@ -23,6 +23,13 @@
 <v t="gcross.20110124161335.2009"><vh>@thin tensors.hpp</vh></v>
 <v t="gcross.20110125202132.2156"><vh>@thin utilities.hpp</vh></v>
 </v>
+<v t="gcross.20110220182654.1998"><vh>@path examples</vh>
+<v t="gcross.20110220182654.2000"><vh>@path generate</vh>
+<v t="gcross.20110220182654.1999"><vh>@thin external-field.py</vh></v>
+<v t="gcross.20110220182654.2002"><vh>@thin external-field-using-anchors.py</vh></v>
+<v t="gcross.20110220182654.2005"><vh>@thin transverse-ising-model.py</vh></v>
+</v>
+</v>
 <v t="gcross.20091106154604.9812"><vh>@path sources</vh>
 <v t="gcross.20110125120748.2419"><vh>@thin CMakeLists.txt</vh></v>
 <v t="gcross.20110124161335.1865"><vh>@path common</vh>
@@ -37,6 +44,10 @@
 <v t="gcross.20110213161858.1816"><vh>@thin states.cpp</vh></v>
 <v t="gcross.20110215235924.1990"><vh>@thin tensors.cpp</vh></v>
 <v t="gcross.20110125202132.2160"><vh>@thin utilities.cpp</vh></v>
+</v>
+<v t="gcross.20110220141808.2711"><vh>@path programs</vh>
+<v t="gcross.20110220141808.2949"><vh>@thin CMakeLists.txt</vh></v>
+<v t="gcross.20110220141808.2717"><vh>@thin nutcracker.cpp</vh></v>
 </v>
 </v>
 <v t="gcross.20091106154604.1972"><vh>@path tests</vh>
@@ -107,5 +118,8 @@ namespace Nutcracker {
 <t tx="gcross.20110213233103.1927"></t>
 <t tx="gcross.20110215235924.1877"></t>
 <t tx="gcross.20110220093853.2005"></t>
+<t tx="gcross.20110220141808.2711"></t>
+<t tx="gcross.20110220182654.1998"></t>
+<t tx="gcross.20110220182654.2000"></t>
 </tnodes>
 </leo_file>

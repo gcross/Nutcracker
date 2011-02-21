@@ -6,3 +6,6 @@ Makefile
 *.so
 *.a
 tests/test
+programs
+*.cfg
+out
