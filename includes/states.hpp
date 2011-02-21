@@ -146,7 +146,7 @@ public:
     operator StateVector() const {
         assert(rightDimension(as_unsigned_integer) == 1);
         StateVector v(size());
-        copy(*this,v.begin());
+        copy(*this,v.data().begin());
         return v;
     }
 
