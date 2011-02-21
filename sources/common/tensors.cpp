@@ -45,13 +45,13 @@ void operator >> (YAML::Node const& node, Operator& operator_sites) {
         REPEAT(sequence.size()) {
             unsigned int index;
             *sequence_iterator++ >> index;
-            shared_ptr<OperatorSite const> operator_site_ptr = unique_operator_sites[index];
+            shared_ptr<OperatorSite const> operator_site_ptr = unique_operator_sites[index-1];
             if(operator_sites.empty()) {
                 assert(operator_site_ptr->leftDimension(as_unsigned_integer) == 1);
             } else {
                 assert(operator_site_ptr->leftDimension(as_unsigned_integer) == operator_sites.back()->rightDimension(as_unsigned_integer));
             }
-            operator_sites.emplace_back(unique_operator_sites[index]);
+            operator_sites.emplace_back(operator_site_ptr);
         }
     }
 }
@@ -63,7 +63,7 @@ YAML::Emitter& operator << (YAML::Emitter& out, Operator const& operator_sites) 
     typedef map<shared_ptr<OperatorSite const>,unsigned int> SequenceNumberMap;
     SequenceNumberMap sequence_number_map;
     vector<shared_ptr<OperatorSite const> > unique_operator_sites;
-    unsigned int next_sequence_number = 0;
+    unsigned int next_sequence_number = 1;
     BOOST_FOREACH(shared_ptr<OperatorSite const> const operator_site_ptr, operator_sites) {
         SequenceNumberMap::iterator sequence_number_iterator = sequence_number_map.find(operator_site_ptr);
         if(sequence_number_iterator == sequence_number_map.end()) {

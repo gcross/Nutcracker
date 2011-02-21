@@ -532,9 +532,9 @@ TEST_CASE(external_field) {
             );
 
         ostringstream out;
-        out << "sequence: [0,";
-        REPEAT(number_of_middle_sites) { out << "1, "; }
-        out << "2]" << endl;
+        out << "sequence: [1,";
+        REPEAT(number_of_middle_sites) { out << "2, "; }
+        out << "3]" << endl;
         out << (
             "paulis:\n"
             "  - &I [1,0,0,1]\n"
