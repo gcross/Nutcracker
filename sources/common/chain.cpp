@@ -322,7 +322,8 @@ void Chain::resetBoundaries() {
 namespace resetProjectorMatrix_IMPLEMENTATION {
     struct FetchOverlapSite {
         typedef OverlapSite<Middle> const& result_type;
-        unsigned int const current_site_number;
+        unsigned int current_site_number;
+        FetchOverlapSite() {}
         FetchOverlapSite(unsigned int const current_site_number) : current_site_number(current_site_number) {}
         OverlapSite<Middle> const& operator()(Projector const& projector) const { return projector[current_site_number].get<Middle>(); }
     };
