@@ -1272,5 +1272,12 @@ YAML::Emitter& operator << (YAML::Emitter& emitter, OperatorSite const& operator
 
 }
 
+//@+<< Outside namespace >>
+//@+node:gcross.20110220182654.2075: ** << Outside namespace >>
+namespace boost {
+    template<> struct range_iterator<Nutcracker::State const> { typedef Nutcracker::State::const_iterator type; };
+}
+//@-<< Outside namespace >>
+
 #endif
 //@-leo
