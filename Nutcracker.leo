@@ -70,10 +70,12 @@
 </v>
 </v>
 <v t="gcross.20110213233103.1919"><vh>thin template.hpp</vh>
+<v t="gcross.20110220182654.2068"><vh>&lt;&lt; License &gt;&gt;</vh></v>
 <v t="gcross.20110213233103.1920"><vh>&lt;&lt; Includes &gt;&gt;</vh></v>
 <v t="gcross.20110213233103.1921"><vh>&lt;&lt; Usings &gt;&gt;</vh></v>
 </v>
 <v t="gcross.20110213233103.1925"><vh>thin template.cpp</vh>
+<v t="gcross.20110220182654.2070"><vh>&lt;&lt; License &gt;&gt;</vh></v>
 <v t="gcross.20110213233103.1926"><vh>&lt;&lt; Includes &gt;&gt;</vh></v>
 <v t="gcross.20110213233103.1927"><vh>&lt;&lt; Usings &gt;&gt;</vh></v>
 </v>
@@ -86,6 +88,8 @@
 <t tx="gcross.20110124161335.1865"></t>
 <t tx="gcross.20110124161335.1866"></t>
 <t tx="gcross.20110213233103.1919">@language cplusplus
+
+&lt;&lt; License &gt;&gt;
 
 #ifndef NUTCRACKER_TEMPLATE_HPP
 #define NUTCRACKER_TEMPLATE_HPP
@@ -105,6 +109,8 @@ namespace Nutcracker {
 <t tx="gcross.20110213233103.1921"></t>
 <t tx="gcross.20110213233103.1925">@language cplusplus
 
+&lt;&lt; License &gt;&gt;
+
 &lt;&lt; Includes &gt;&gt;
 
 namespace Nutcracker {
@@ -121,5 +127,27 @@ namespace Nutcracker {
 <t tx="gcross.20110220141808.2711"></t>
 <t tx="gcross.20110220182654.1998"></t>
 <t tx="gcross.20110220182654.2000"></t>
+<t tx="gcross.20110220182654.2068">@
+Copyright (c) 2011, Gregory Crosswhite
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
+
+    * Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+@c</t>
+<t tx="gcross.20110220182654.2070">@
+Copyright (c) 2011, Gregory Crosswhite
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
+
+    * Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+@c</t>
 </tnodes>
 </leo_file>
