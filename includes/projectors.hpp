@@ -156,51 +156,6 @@ public:
         );
     }
 };
-//@+node:gcross.20110216193817.1913: *3* ProjectorSite
-class ProjectorSite {
-private:
-    BOOST_MOVABLE_BUT_NOT_COPYABLE(ProjectorSite)
-
-    OverlapSite<Left> left;
-    OverlapSite<Middle> middle;
-    OverlapSite<Right> right;
-public:
-    ProjectorSite() {}
-
-    ProjectorSite(BOOST_RV_REF(ProjectorSite) other)
-      : left(boost::move(other.left))
-      , middle(boost::move(other.middle))
-      , right(boost::move(other.right))
-    { }
-
-    ProjectorSite(
-          BOOST_RV_REF(OverlapSite<Left>) left
-        , BOOST_RV_REF(OverlapSite<Middle>) middle
-        , BOOST_RV_REF(OverlapSite<Right>) right
-    ) : left(left)
-      , middle(middle)
-      , right(right)
-    { }
-
-    void operator=(BOOST_RV_REF(ProjectorSite) other) {
-        left = boost::move(other.left);
-        middle = boost::move(other.middle);
-        right = boost::move(other.right);
-    }
-
-    void swap(ProjectorSite& other) {
-        left.swap(other.left);
-        middle.swap(other.middle);
-        right.swap(other.right);
-    }
-
-    template<typename side> OverlapSite<side> const& get() const {
-        throw BadLabelException("OverlapSite::get",typeid(side));
-    }
-};
-template<> inline OverlapSite<Left> const& ProjectorSite::get<Left>() const { return left; }
-template<> inline OverlapSite<Middle> const& ProjectorSite::get<Middle>() const { return middle; }
-template<> inline OverlapSite<Right> const& ProjectorSite::get<Right>() const { return right; }
 //@+node:gcross.20110213233103.2794: ** Classes
 //@+node:gcross.20110216193817.1917: *3* OverlapSitesFromStateSitesAndNormalizeResult
 class OverlapSitesFromStateSitesAndNormalizeResult {

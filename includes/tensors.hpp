@@ -92,9 +92,6 @@ inline unsigned int connectDimensions(
 //@+node:gcross.20110215231246.1878: ** Type aliases
 class OperatorSite;
 typedef vector<shared_ptr<OperatorSite const> > Operator;
-
-class ProjectorSite;
-typedef vector<ProjectorSite> Projector;
 //@+node:gcross.20110215231246.1877: ** Dummy/Forward classes
 class Left;
 class Middle;
@@ -936,7 +933,74 @@ public:
 
     static OperatorSite const trivial;
 };
+//@+node:gcross.20110220182654.2072: *3* ProjectorSite
+class ProjectorSite {
+private:
+    BOOST_MOVABLE_BUT_NOT_COPYABLE(ProjectorSite)
+
+    OverlapSite<Left> left;
+    OverlapSite<Middle> middle;
+    OverlapSite<Right> right;
+public:
+    ProjectorSite() {}
+
+    ProjectorSite(BOOST_RV_REF(ProjectorSite) other)
+      : left(boost::move(other.left))
+      , middle(boost::move(other.middle))
+      , right(boost::move(other.right))
+    { }
+
+    ProjectorSite(
+          BOOST_RV_REF(OverlapSite<Left>) left
+        , BOOST_RV_REF(OverlapSite<Middle>) middle
+        , BOOST_RV_REF(OverlapSite<Right>) right
+    ) : left(left)
+      , middle(middle)
+      , right(right)
+    { }
+
+    void operator=(BOOST_RV_REF(ProjectorSite) other) {
+        left = boost::move(other.left);
+        middle = boost::move(other.middle);
+        right = boost::move(other.right);
+    }
+
+    void swap(ProjectorSite& other) {
+        left.swap(other.left);
+        middle.swap(other.middle);
+        right.swap(other.right);
+    }
+
+    template<typename side> OverlapSite<side> const& get() const {
+        throw BadLabelException("OverlapSite::get",typeid(side));
+    }
+};
+template<> inline OverlapSite<Left> const& ProjectorSite::get<Left>() const { return left; }
+template<> inline OverlapSite<Middle> const& ProjectorSite::get<Middle>() const { return middle; }
+template<> inline OverlapSite<Right> const& ProjectorSite::get<Right>() const { return right; }
 //@+node:gcross.20110217014932.1927: ** Classes
+//@+node:gcross.20110220182654.2074: *3* Projector
+struct Projector : vector<ProjectorSite> {
+private:
+    BOOST_MOVABLE_BUT_NOT_COPYABLE(Projector)
+    typedef vector<ProjectorSite> Base;
+public:
+    Projector() {}
+
+    Projector(BOOST_RV_REF(Projector) other)
+      : Base(boost::move(static_cast<Base&>(other)))
+    {}
+
+    Projector& operator=(BOOST_RV_REF(Projector) other) {
+        if(this == &other) return *this;
+        Base::operator=(boost::move(static_cast<Base&>(other)));
+        return *this;
+    }
+
+    void swap(Projector& other) {
+        Base::swap(other);
+    }
+};
 //@+node:gcross.20110217014932.1928: *3* State
 struct State {
 private:
