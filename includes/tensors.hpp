@@ -202,7 +202,7 @@ protected:
       : data_size(init->size())
       , data(new complex<double>[data_size])
     {
-        BOOST_CONCEPT_ASSERT(( RandomAccessRangeConcept<Range> ));
+        BOOST_CONCEPT_ASSERT(( RandomAccessRangeConcept<Range const> ));
         copy(*init,begin());
     }
 
@@ -899,7 +899,7 @@ public:
       , number_of_matrices(index_init->size()/2)
       , index_data(new uint32_t[index_init->size()])
     {
-        BOOST_CONCEPT_ASSERT(( RandomAccessRangeConcept<Range1> ));
+        BOOST_CONCEPT_ASSERT(( RandomAccessRangeConcept<Range1 const> ));
         copy(*index_init,index_data);
     }
 

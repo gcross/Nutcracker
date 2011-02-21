@@ -186,7 +186,7 @@ template<typename T> ProductIterator<T> makeProductIterator(T const x) { return 
 template<typename PhysicalDimensionRange> unsigned int maximumBandwidthDimension(
     PhysicalDimensionRange const& physical_dimensions
 ) {
-    BOOST_CONCEPT_ASSERT((RandomAccessRangeConcept<PhysicalDimensionRange>));
+    BOOST_CONCEPT_ASSERT((RandomAccessRangeConcept<PhysicalDimensionRange const>));
     if(physical_dimensions.size() == 1) return 1;
     size_t middle_index = (physical_dimensions.size()+1)/2;
 

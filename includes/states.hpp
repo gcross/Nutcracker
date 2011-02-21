@@ -253,7 +253,7 @@ template<typename StateSiteRange> complex<double> computeExpectationValue(
       StateSiteRange const& state_sites
     , Operator const& operator_sites
 ) {
-    BOOST_CONCEPT_ASSERT((SinglePassRangeConcept<StateSiteRange>));
+    BOOST_CONCEPT_ASSERT((SinglePassRangeConcept<StateSiteRange const>));
     ExpectationBoundary<Left> left_boundary(make_trivial);
     unsigned int i = 0;
     BOOST_FOREACH(StateSiteAny const& state_site, state_sites) {
@@ -270,7 +270,7 @@ template<typename StateSiteRange> complex<double> computeExpectationValue(
 }
 //@+node:gcross.20110215135633.1860: *3* computeStateComponent
 template<typename StateSiteRange> complex<double> computeStateComponent(StateSiteRange const& state_sites, vector<unsigned int> const& observed_values) {
-    BOOST_CONCEPT_ASSERT((SinglePassRangeConcept<StateSiteRange>));
+    BOOST_CONCEPT_ASSERT((SinglePassRangeConcept<StateSiteRange const>));
     scoped_array<complex<double> > left_boundary(new complex<double>[1]);  left_boundary[0] = c(1,0);
     unsigned int left_dimension = 1;
     unsigned int i = 0;
@@ -300,7 +300,7 @@ template<typename StateSiteRange> complex<double> computeStateComponent(StateSit
 }
 //@+node:gcross.20110213161858.1821: *3* computeStateVector
 template<typename StateSiteRange> StateVector computeStateVector(StateSiteRange const& state_sites) {
-    BOOST_CONCEPT_ASSERT((SinglePassRangeConcept<StateSiteRange>));
+    BOOST_CONCEPT_ASSERT((SinglePassRangeConcept<StateSiteRange const>));
     StateVectorFragment current_fragment(make_trivial);
     BOOST_FOREACH(StateSiteAny const& state_site, state_sites) {
         StateVectorFragment next_fragment =
@@ -314,7 +314,7 @@ template<typename StateSiteRange> StateVector computeStateVector(StateSiteRange 
 }
 //@+node:gcross.20110215135633.1870: *3* computeStateVectorLength
 template<typename StateSiteRange> unsigned long long computeStateVectorLength(StateSiteRange const& state_sites) {
-    BOOST_CONCEPT_ASSERT((SinglePassRangeConcept<StateSiteRange>));
+    BOOST_CONCEPT_ASSERT((SinglePassRangeConcept<StateSiteRange const>));
     unsigned long long length = 1;
     BOOST_FOREACH(StateSiteAny const& state_site, state_sites) {
         length *= state_site.physicalDimension(as_unsigned_integer);

@@ -224,7 +224,7 @@ Projector computeProjectorFromStateSites(
       StateSite<Middle> const& first_state_site
     , StateSiteRightRange const& rest_state_sites
 ) {
-    BOOST_CONCEPT_ASSERT((SinglePassRangeConcept<StateSiteRightRange>));
+    BOOST_CONCEPT_ASSERT((SinglePassRangeConcept<StateSiteRightRange const>));
     Projector projector;
     StateSite<Middle> current_state_site(copyFrom(first_state_site));
     OverlapSite<Right> current_right_overlap_site;
@@ -262,7 +262,7 @@ complex<double> computeProjectorOverlap(
     , StateSiteRange const& state_sites
     , unsigned int const active_site_number=0
 ) {
-    BOOST_CONCEPT_ASSERT((SinglePassRangeConcept<StateSiteRange>));
+    BOOST_CONCEPT_ASSERT((SinglePassRangeConcept<StateSiteRange const>));
     OverlapBoundary<Left> left_boundary(make_trivial);
     unsigned int i = 0;
     BOOST_FOREACH(
@@ -304,8 +304,8 @@ template<
       StateSiteRange1 const& state_sites_1
     , StateSiteRange2 const& state_sites_2
 ) {
-    BOOST_CONCEPT_ASSERT((SinglePassRangeConcept<StateSiteRange1>));
-    BOOST_CONCEPT_ASSERT((SinglePassRangeConcept<StateSiteRange2>));
+    BOOST_CONCEPT_ASSERT((SinglePassRangeConcept<StateSiteRange1 const>));
+    BOOST_CONCEPT_ASSERT((SinglePassRangeConcept<StateSiteRange2 const>));
     OverlapBoundary<Left> left_boundary(make_trivial);
     typedef tuple<
              StateSiteAny const&
@@ -339,9 +339,9 @@ template<
     ,OverlapBoundaryRightRange const& right_boundaries
     ,OverlapSiteMiddleRange const& overlap_sites
 ) {
-    BOOST_CONCEPT_ASSERT((RandomAccessRangeConcept<OverlapBoundaryLeftRange>));
-    BOOST_CONCEPT_ASSERT((RandomAccessRangeConcept<OverlapBoundaryRightRange>));
-    BOOST_CONCEPT_ASSERT((RandomAccessRangeConcept<OverlapSiteMiddleRange>));
+    BOOST_CONCEPT_ASSERT((RandomAccessRangeConcept<OverlapBoundaryLeftRange const>));
+    BOOST_CONCEPT_ASSERT((RandomAccessRangeConcept<OverlapBoundaryRightRange const>));
+    BOOST_CONCEPT_ASSERT((RandomAccessRangeConcept<OverlapSiteMiddleRange const>));
     assert(left_boundaries.size() == right_boundaries.size());
     assert(left_boundaries.size() == (unsigned int)overlap_sites.size());
     unsigned int const number_of_projectors = left_boundaries.size();
