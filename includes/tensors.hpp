@@ -137,6 +137,7 @@ public:
     Dimension& operator=(BOOST_RV_REF(Dimension) other) { dimension = copyAndReset(other.dimension); return *this; }
     unsigned int operator *() const { return dimension; }
     bool operator==(Dimension const other) const { return dimension == other.dimension; }
+    bool operator!=(Dimension const other) const { return dimension != other.dimension; }
 };
 template<typename label> inline ostream& operator<<(ostream& out, Dimension<label> const d) { return (out << *d); }
 
