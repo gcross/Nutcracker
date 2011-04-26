@@ -1,5 +1,5 @@
 //@+leo-ver=5-thin
-//@+node:gcross.20110213161858.1810: * @thin states.hpp
+//@+node:gcross.20110213161858.1810: * @file states.hpp
 //@@language cplusplus
 
 //@+<< License >>

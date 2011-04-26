@@ -1,5 +1,5 @@
 //@+leo-ver=5-thin
-//@+node:gcross.20110307093706.3168: * @thin moveLeftAndRight.cpp
+//@+node:gcross.20110307093706.3168: * @file moveLeftAndRight.cpp
 //@@language cplusplus
 //@+<< License >>
 //@+node:gcross.20110307093706.3169: ** << License >>

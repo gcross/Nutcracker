@@ -1,5 +1,5 @@
 !@+leo-ver=5-thin
-!@+node:gcross.20091110205054.1939: * @thin core.f95
+!@+node:gcross.20091110205054.1939: * @file core.f95
 !@@language fortran90
 !@@tabwidth -2
 

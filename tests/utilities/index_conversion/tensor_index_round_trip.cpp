@@ -1,5 +1,5 @@
 //@+leo-ver=5-thin
-//@+node:gcross.20110307093706.2369: * @thin tensor_index_round_trip.cpp
+//@+node:gcross.20110307093706.2369: * @file tensor_index_round_trip.cpp
 //@@language cplusplus
 //@+<< License >>
 //@+node:gcross.20110307093706.2370: ** << License >>

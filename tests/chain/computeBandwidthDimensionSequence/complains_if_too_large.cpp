@@ -1,5 +1,5 @@
 //@+leo-ver=5-thin
-//@+node:gcross.20110307093706.3154: * @thin complains_if_too_large.cpp
+//@+node:gcross.20110307093706.3154: * @file complains_if_too_large.cpp
 //@@language cplusplus
 //@+<< License >>
 //@+node:gcross.20110307093706.3155: ** << License >>

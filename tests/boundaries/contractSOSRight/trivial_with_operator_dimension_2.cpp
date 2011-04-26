@@ -1,5 +1,5 @@
 //@+leo-ver=5-thin
-//@+node:gcross.20110307093706.3448: * @thin trivial_with_operator_dimension_2.cpp
+//@+node:gcross.20110307093706.3448: * @file trivial_with_operator_dimension_2.cpp
 //@@language cplusplus
 //@+<< License >>
 //@+node:gcross.20110307093706.3449: ** << License >>

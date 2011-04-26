@@ -1,5 +1,5 @@
 //@+leo-ver=5-thin
-//@+node:gcross.20110307093706.3285: * @thin solveForMultipleLevels.hpp
+//@+node:gcross.20110307093706.3285: * @file solveForMultipleLevels.hpp
 //@@language cplusplus
 //@+<< License >>
 //@+node:gcross.20110307093706.3286: ** << License >>

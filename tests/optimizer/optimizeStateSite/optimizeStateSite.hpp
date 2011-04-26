@@ -1,5 +1,5 @@
 //@+leo-ver=5-thin
-//@+node:gcross.20110307093706.3080: * @thin optimizeStateSite.hpp
+//@+node:gcross.20110307093706.3080: * @file optimizeStateSite.hpp
 //@@language cplusplus
 //@+<< License >>
 //@+node:gcross.20110307093706.3081: ** << License >>

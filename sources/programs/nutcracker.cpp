@@ -1,5 +1,5 @@
 //@+leo-ver=5-thin
-//@+node:gcross.20110220141808.2717: * @thin nutcracker.cpp
+//@+node:gcross.20110220141808.2717: * @file nutcracker.cpp
 //@@language cplusplus
 
 //@+<< License >>

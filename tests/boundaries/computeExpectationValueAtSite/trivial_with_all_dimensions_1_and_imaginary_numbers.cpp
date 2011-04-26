@@ -1,5 +1,5 @@
 //@+leo-ver=5-thin
-//@+node:gcross.20110307093706.3370: * @thin trivial_with_all_dimensions_1_and_imaginary_numbers.cpp
+//@+node:gcross.20110307093706.3370: * @file trivial_with_all_dimensions_1_and_imaginary_numbers.cpp
 //@@language cplusplus
 //@+<< License >>
 //@+node:gcross.20110307093706.3371: ** << License >>

@@ -1,5 +1,5 @@
 //@+leo-ver=5-thin
-//@+node:gcross.20110307093706.2971: * @thin computeStateVector_consistent_with_computeStateComponent.cpp
+//@+node:gcross.20110307093706.2971: * @file computeStateVector_consistent_with_computeStateComponent.cpp
 //@@language cplusplus
 //@+<< License >>
 //@+node:gcross.20110307093706.2972: ** << License >>

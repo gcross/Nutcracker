@@ -1,5 +1,5 @@
 //@+leo-ver=5-thin
-//@+node:gcross.20110307093706.3068: * @thin minimumBandwidthDimensionForProjectorCount.cpp
+//@+node:gcross.20110307093706.3068: * @file minimumBandwidthDimensionForProjectorCount.cpp
 //@@language cplusplus
 //@+<< License >>
 //@+node:gcross.20110307093706.3069: ** << License >>

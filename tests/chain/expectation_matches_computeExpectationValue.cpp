@@ -1,5 +1,5 @@
 //@+leo-ver=5-thin
-//@+node:gcross.20110307093706.3278: * @thin expectation_matches_computeExpectationValue.cpp
+//@+node:gcross.20110307093706.3278: * @file expectation_matches_computeExpectationValue.cpp
 //@@language cplusplus
 //@+<< License >>
 //@+node:gcross.20110307093706.3279: ** << License >>

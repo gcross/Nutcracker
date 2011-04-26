@@ -1,5 +1,5 @@
 //@+leo-ver=5-thin
-//@+node:gcross.20110307093706.2924: * @thin two_trivial_sites.cpp
+//@+node:gcross.20110307093706.2924: * @file two_trivial_sites.cpp
 //@@language cplusplus
 //@+<< License >>
 //@+node:gcross.20110307093706.2925: ** << License >>

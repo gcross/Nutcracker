@@ -1,5 +1,5 @@
 //@+leo-ver=5-thin
-//@+node:gcross.20110307093706.3209: * @thin sweepUntilConverged.hpp
+//@+node:gcross.20110307093706.3209: * @file sweepUntilConverged.hpp
 //@@language cplusplus
 //@+<< License >>
 //@+node:gcross.20110307093706.3210: ** << License >>

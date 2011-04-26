@@ -1,5 +1,5 @@
 //@+leo-ver=5-thin
-//@+node:gcross.20110307093706.3148: * @thin correct_properties.cpp
+//@+node:gcross.20110307093706.3148: * @file correct_properties.cpp
 //@@language cplusplus
 //@+<< License >>
 //@+node:gcross.20110307093706.3149: ** << License >>

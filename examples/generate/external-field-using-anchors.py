@@ -1,5 +1,5 @@
 #@+leo-ver=5-thin
-#@+node:gcross.20110220182654.2002: * @thin external-field-using-anchors.py
+#@+node:gcross.20110220182654.2002: * @file external-field-using-anchors.py
 #@@language python
 import sys
 

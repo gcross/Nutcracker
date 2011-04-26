@@ -1,5 +1,5 @@
 //@+leo-ver=5-thin
-//@+node:gcross.20110307093706.3222: * @thin 2_sites_1p0.cpp
+//@+node:gcross.20110307093706.3222: * @file 2_sites_1p0.cpp
 //@@language cplusplus
 //@+<< License >>
 //@+node:gcross.20110307093706.3223: ** << License >>

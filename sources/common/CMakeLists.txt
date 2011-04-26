@@ -1,5 +1,5 @@
 #@+leo-ver=5-thin
-#@+node:gcross.20110125120748.2421: * @thin CMakeLists.txt
+#@+node:gcross.20110125120748.2421: * @file CMakeLists.txt
 add_library(Nutcracker
     boundaries
     chain

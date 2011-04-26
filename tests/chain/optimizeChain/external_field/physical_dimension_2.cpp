@@ -1,5 +1,5 @@
 //@+leo-ver=5-thin
-//@+node:gcross.20110307093706.3250: * @thin physical_dimension_2.cpp
+//@+node:gcross.20110307093706.3250: * @file physical_dimension_2.cpp
 //@@language cplusplus
 //@+<< License >>
 //@+node:gcross.20110307093706.3251: ** << License >>

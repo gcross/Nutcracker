@@ -1,5 +1,5 @@
 #@+leo-ver=5-thin
-#@+node:gcross.20110220141808.2949: * @thin CMakeLists.txt
+#@+node:gcross.20110220141808.2949: * @file CMakeLists.txt
 add_executable(nutcracker
     nutcracker
 )

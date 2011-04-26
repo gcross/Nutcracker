@@ -1,5 +1,5 @@
 //@+leo-ver=5-thin
-//@+node:gcross.20110307093706.3162: * @thin maximumBandwidthDimension.cpp
+//@+node:gcross.20110307093706.3162: * @file maximumBandwidthDimension.cpp
 //@@language cplusplus
 //@+<< License >>
 //@+node:gcross.20110307093706.3163: ** << License >>

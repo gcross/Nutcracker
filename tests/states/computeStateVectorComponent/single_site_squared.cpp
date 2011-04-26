@@ -1,5 +1,5 @@
 //@+leo-ver=5-thin
-//@+node:gcross.20110307093706.2921: * @thin single_site_squared.cpp
+//@+node:gcross.20110307093706.2921: * @file single_site_squared.cpp
 //@@language cplusplus
 //@+<< License >>
 //@+node:gcross.20110307093706.2922: ** << License >>

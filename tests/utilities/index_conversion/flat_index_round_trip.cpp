@@ -1,5 +1,5 @@
 //@+leo-ver=5-thin
-//@+node:gcross.20110307093706.2354: * @thin flat_index_round_trip.cpp
+//@+node:gcross.20110307093706.2354: * @file flat_index_round_trip.cpp
 //@@language cplusplus
 //@+<< License >>
 //@+node:gcross.20110307093706.2356: ** << License >>

@@ -1,5 +1,5 @@
 //@+leo-ver=5-thin
-//@+node:gcross.20110307093706.3062: * @thin projector_matrix.cpp
+//@+node:gcross.20110307093706.3062: * @file projector_matrix.cpp
 //@@language cplusplus
 //@+<< License >>
 //@+node:gcross.20110307093706.3063: ** << License >>

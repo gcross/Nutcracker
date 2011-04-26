@@ -1,5 +1,5 @@
 //@+leo-ver=5-thin
-//@+node:gcross.20110214155808.1862: * @thin boundaries.cpp
+//@+node:gcross.20110214155808.1862: * @file boundaries.cpp
 //@@language cplusplus
 
 //@+<< License >>

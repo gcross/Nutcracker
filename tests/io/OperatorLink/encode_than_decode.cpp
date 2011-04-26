@@ -1,5 +1,5 @@
 //@+leo-ver=5-thin
-//@+node:gcross.20110307093706.3117: * @thin encode_than_decode.cpp
+//@+node:gcross.20110307093706.3117: * @file encode_than_decode.cpp
 //@@language cplusplus
 //@+<< License >>
 //@+node:gcross.20110307093706.3118: ** << License >>

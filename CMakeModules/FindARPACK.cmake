@@ -1,5 +1,5 @@
 #@+leo-ver=5-thin
-#@+node:gcross.20110127123226.2818: * @thin FindARPACK.cmake
+#@+node:gcross.20110127123226.2818: * @file FindARPACK.cmake
 FIND_LIBRARY(ARPACK_LIBRARIES NAMES arpack PATH /usr/lib /usr/local/lib) 
 
 IF (ARPACK_LIBRARIES)

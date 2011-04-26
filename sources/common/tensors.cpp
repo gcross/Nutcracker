@@ -1,5 +1,5 @@
 //@+leo-ver=5-thin
-//@+node:gcross.20110215235924.1990: * @thin tensors.cpp
+//@+node:gcross.20110215235924.1990: * @file tensors.cpp
 //@@language cplusplus
 
 //@+<< License >>

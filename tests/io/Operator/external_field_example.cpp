@@ -1,5 +1,5 @@
 //@+leo-ver=5-thin
-//@+node:gcross.20110307093706.2449: * @thin external_field_example.cpp
+//@+node:gcross.20110307093706.2449: * @file external_field_example.cpp
 //@@language cplusplus
 //@+<< License >>
 //@+node:gcross.20110307093706.2450: ** << License >>

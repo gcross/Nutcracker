@@ -1,5 +1,5 @@
 #@+leo-ver=5-thin
-#@+node:gcross.20091106154604.1979: * @thin test.py
+#@+node:gcross.20091106154604.1979: * @file test.py
 #@+<< Import needed modules >>
 #@+node:gcross.20091115094257.1715: ** << Import needed modules >>
 import unittest

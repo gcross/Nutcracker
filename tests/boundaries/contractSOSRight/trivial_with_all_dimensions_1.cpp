@@ -1,5 +1,5 @@
 //@+leo-ver=5-thin
-//@+node:gcross.20110307093706.3445: * @thin trivial_with_all_dimensions_1.cpp
+//@+node:gcross.20110307093706.3445: * @file trivial_with_all_dimensions_1.cpp
 //@@language cplusplus
 //@+<< License >>
 //@+node:gcross.20110307093706.3446: ** << License >>

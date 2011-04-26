@@ -1,5 +1,5 @@
 //@+leo-ver=5-thin
-//@+node:gcross.20110307093706.2516: * @thin random_generator.cpp
+//@+node:gcross.20110307093706.2516: * @file random_generator.cpp
 //@@language cplusplus
 //@+<< License >>
 //@+node:gcross.20110307093706.2517: ** << License >>

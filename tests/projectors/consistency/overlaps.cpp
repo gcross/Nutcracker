@@ -1,5 +1,5 @@
 //@+leo-ver=5-thin
-//@+node:gcross.20110307093706.3056: * @thin overlaps.cpp
+//@+node:gcross.20110307093706.3056: * @file overlaps.cpp
 //@@language cplusplus
 //@+<< License >>
 //@+node:gcross.20110307093706.3057: ** << License >>

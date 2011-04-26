@@ -1,5 +1,5 @@
 #@+leo-ver=5-thin
-#@+node:gcross.20110125120748.2426: * @thin CMakeLists.txt
+#@+node:gcross.20110125120748.2426: * @file CMakeLists.txt
 #@+<< Functions >>
 #@+node:gcross.20110307093706.2981: ** << Functions >>
 function(addAllTestsInDirectory test-directory-name)

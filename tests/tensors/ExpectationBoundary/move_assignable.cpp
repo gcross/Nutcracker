@@ -1,5 +1,5 @@
 //@+leo-ver=5-thin
-//@+node:gcross.20110307093706.2472: * @thin move_assignable.cpp
+//@+node:gcross.20110307093706.2472: * @file move_assignable.cpp
 //@@language cplusplus
 //@+<< License >>
 //@+node:gcross.20110307093706.2473: ** << License >>

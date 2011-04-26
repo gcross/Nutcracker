@@ -1,5 +1,5 @@
 #@+leo-ver=5-thin
-#@+node:gcross.20110220182654.1999: * @thin external-field.py
+#@+node:gcross.20110220182654.1999: * @file external-field.py
 #@@language python
 import sys
 

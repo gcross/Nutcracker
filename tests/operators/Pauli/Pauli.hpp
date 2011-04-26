@@ -1,5 +1,5 @@
 //@+leo-ver=5-thin
-//@+node:gcross.20110307093706.3124: * @thin Pauli.hpp
+//@+node:gcross.20110307093706.3124: * @file Pauli.hpp
 //@@language cplusplus
 //@+<< License >>
 //@+node:gcross.20110307093706.3125: ** << License >>

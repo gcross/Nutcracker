@@ -1,5 +1,5 @@
 //@+leo-ver=5-thin
-//@+node:gcross.20110202223558.1713: * @thin test_utils.hpp
+//@+node:gcross.20110202223558.1713: * @file test_utils.hpp
 //@@language cplusplus
 
 //@+<< License >>

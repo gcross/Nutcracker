@@ -1,5 +1,5 @@
 //@+leo-ver=5-thin
-//@+node:gcross.20110307093706.3202: * @thin increaseBandwidthDimension.cpp
+//@+node:gcross.20110307093706.3202: * @file increaseBandwidthDimension.cpp
 //@@language cplusplus
 //@+<< License >>
 //@+node:gcross.20110307093706.3203: ** << License >>

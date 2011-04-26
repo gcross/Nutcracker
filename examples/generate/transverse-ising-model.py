@@ -1,5 +1,5 @@
 #@+leo-ver=5-thin
-#@+node:gcross.20110220182654.2005: * @thin transverse-ising-model.py
+#@+node:gcross.20110220182654.2005: * @file transverse-ising-model.py
 #@@language python
 import sys
 

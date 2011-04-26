@@ -1,5 +1,5 @@
 //@+leo-ver=5-thin
-//@+node:gcross.20110307093706.3018: * @thin function_is_hermitian.cpp
+//@+node:gcross.20110307093706.3018: * @file function_is_hermitian.cpp
 //@@language cplusplus
 //@+<< License >>
 //@+node:gcross.20110307093706.3019: ** << License >>

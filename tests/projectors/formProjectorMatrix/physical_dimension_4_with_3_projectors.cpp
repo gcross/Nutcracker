@@ -1,5 +1,5 @@
 //@+leo-ver=5-thin
-//@+node:gcross.20110307093706.3004: * @thin physical_dimension_4_with_3_projectors.cpp
+//@+node:gcross.20110307093706.3004: * @file physical_dimension_4_with_3_projectors.cpp
 //@@language cplusplus
 //@+<< License >>
 //@+node:gcross.20110307093706.3005: ** << License >>

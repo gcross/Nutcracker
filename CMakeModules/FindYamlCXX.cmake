@@ -1,5 +1,5 @@
 #@+leo-ver=5-thin
-#@+node:gcross.20110220093853.2006: * @thin FindYamlCXX.cmake
+#@+node:gcross.20110220093853.2006: * @file FindYamlCXX.cmake
 # - Try to find YamlCXX
 # Once done this will define
 #  YAMLCXX_FOUND - System has YamlCXX

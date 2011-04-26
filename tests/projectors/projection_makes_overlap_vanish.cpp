@@ -1,5 +1,5 @@
 //@+leo-ver=5-thin
-//@+node:gcross.20110307093706.2978: * @thin projection_makes_overlap_vanish.cpp
+//@+node:gcross.20110307093706.2978: * @file projection_makes_overlap_vanish.cpp
 //@@language cplusplus
 //@+<< License >>
 //@+node:gcross.20110307093706.2979: ** << License >>

@@ -1,5 +1,5 @@
 //@+leo-ver=5-thin
-//@+node:gcross.20110307093706.3031: * @thin single_site_orthogonal_overlap_is_0.hpp
+//@+node:gcross.20110307093706.3031: * @file single_site_orthogonal_overlap_is_0.hpp
 //@@language cplusplus
 //@+<< License >>
 //@+node:gcross.20110307093706.3032: ** << License >>

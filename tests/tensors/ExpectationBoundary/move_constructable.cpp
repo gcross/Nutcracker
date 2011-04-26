@@ -1,5 +1,5 @@
 //@+leo-ver=5-thin
-//@+node:gcross.20110307093706.2478: * @thin move_constructable.cpp
+//@+node:gcross.20110307093706.2478: * @file move_constructable.cpp
 //@@language cplusplus
 //@+<< License >>
 //@+node:gcross.20110307093706.2479: ** << License >>

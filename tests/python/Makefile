@@ -1,5 +1,5 @@
 #@+leo-ver=5-thin
-#@+node:gcross.20091110205054.1950: * @thin Makefile
+#@+node:gcross.20091110205054.1950: * @file Makefile
 #@@language Makefile
 #@@tabwidth 4
 

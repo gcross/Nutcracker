@@ -1,5 +1,5 @@
 //@+leo-ver=5-thin
-//@+node:gcross.20110307093706.3180: * @thin performOptimizationSweep.hpp
+//@+node:gcross.20110307093706.3180: * @file performOptimizationSweep.hpp
 //@@language cplusplus
 //@+<< License >>
 //@+node:gcross.20110307093706.3181: ** << License >>

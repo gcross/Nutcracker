@@ -1,5 +1,5 @@
 //@+leo-ver=5-thin
-//@+node:gcross.20110213233103.2782: * @thin projectors.hpp
+//@+node:gcross.20110213233103.2782: * @file projectors.hpp
 //@@language cplusplus
 
 //@+<< License >>
