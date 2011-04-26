@@ -290,12 +290,12 @@ inline void zgemv(
 //@+node:gcross.20110220093853.1990: *3* complex<T>
 //@+node:gcross.20110219101843.2619: *4* >>
 template<typename T> inline void operator>>(YAML::Node const& node,complex<T>& x) {
-    switch(node.GetType()) {
-        case YAML::CT_SCALAR:
+    switch(node.Type()) {
+        case YAML::NodeType::Scalar:
             node >> x.real();
             x.imag() = 0;
             return;
-        case YAML::CT_SEQUENCE:
+        case YAML::NodeType::Sequence:
             assert(node.size() == 2);
             node[0] >> x.real();
             node[1] >> x.imag();
