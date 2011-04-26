@@ -5,11 +5,10 @@ cmake_install.cmake
 Makefile
 *.so
 *.a
-programs
 *.cfg
 out
 core
 Testing
 CTestTestfile.cmake
 \#*
-tests/bin
+build
