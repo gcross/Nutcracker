@@ -4,6 +4,5 @@ add_executable(nutcracker
     nutcracker
 )
 target_link_libraries(nutcracker Nutcracker)
-set_property(TARGET nutcracker PROPERTY RUNTIME_OUTPUT_DIRECTORY ../../programs)
 install (TARGETS nutcracker RUNTIME DESTINATION bin)
 #@-leo

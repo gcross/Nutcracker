@@ -3,11 +3,29 @@
 cmake_minimum_required (VERSION 2.8)
 project (Nutcracker C CXX Fortran)
 
+#@+<< Settings >>
+#@+node:gcross.20110426132142.2444: ** << Settings >>
+set (LIBRARY_OUTPUT_PATH
+    ${PROJECT_BINARY_DIR}/lib
+    CACHE PATH
+    "Single directory for all libraries."
+    )
+
+set (EXECUTABLE_OUTPUT_PATH
+    ${PROJECT_BINARY_DIR}/bin
+    CACHE PATH
+    "Single directory for all executables."
+    )
+
+mark_as_advanced(
+    LIBRARY_OUTPUT_PATH
+    EXECUTABLE_OUTPUT_PATH
+    )
+#@-<< Settings >>
+
 enable_testing()
 
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/CMakeModules/")
-
-
 
 if(APPLE)
     message (STATUS "Compiling on Darwin, adding -arch x86_64")
