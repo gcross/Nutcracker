@@ -74,6 +74,21 @@ endif ()
 message (STATUS "Build type is " ${CMAKE_BUILD_TYPE})
 #@-<< Configure build type >>
 
+#@+<< Configure documentation >>
+#@+node:gcross.20110427003658.2449: ** << Configure documentation >>
+# add a target to generate API documentation with Doxygen
+find_package(Doxygen)
+
+if(DOXYGEN_FOUND)
+    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.in ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile @ONLY)
+    add_custom_target(doc
+        ${DOXYGEN_EXECUTABLE} ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile
+        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+        COMMENT "Generating API documentation with Doxygen" VERBATIM
+    )
+endif(DOXYGEN_FOUND)
+#@-<< Configure documentation >>
+
 include_directories ("includes")
 
 add_subdirectory ("sources")

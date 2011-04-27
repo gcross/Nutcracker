@@ -8,6 +8,7 @@
 <vnodes>
 <v t="gcross.20091113142219.1658"><vh>@chapters</vh></v>
 <v t="gcross.20110125120748.2417"><vh>@file CMakeLists.txt</vh></v>
+<v t="gcross.20110426163859.2445"><vh>@file Doxyfile.in</vh></v>
 <v t="gcross.20110220093853.2005"><vh>@path CMakeModules</vh>
 <v t="gcross.20110127123226.2818"><vh>@file FindARPACK.cmake</vh></v>
 <v t="gcross.20110220093853.2006"><vh>@file FindYamlCXX.cmake</vh></v>
