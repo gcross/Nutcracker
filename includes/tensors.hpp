@@ -99,21 +99,21 @@ class Overlap;
 class Physical;
 class Right;
 class State;
-//@+node:gcross.20110127123226.2852: ** Parameters wrappers
-template<typename T> class Parameter {
+//@+node:gcross.20110127123226.2852: ** Constructor parameters wrappers
+template<typename T> class ConstructorParameter {
 private:
     T& data;
 protected:
-    explicit Parameter(T& data) : data(data) {}
+    explicit ConstructorParameter(T& data) : data(data) {}
 public:
     T& operator*() const { return data; }
     T* operator->() const { return &data; }
 };
 
 #define DEFINE_TEMPLATIZED_PARAMETER(ParameterName,parameter_name) \
-    template<typename T> struct ParameterName : public Parameter<T> { \
-        explicit ParameterName(T& data) : Parameter<T>(data) {} \
-        template<typename U> ParameterName(ParameterName<U>& other) : Parameter<T>(*other) {} \
+    template<typename T> struct ParameterName : public ConstructorParameter<T> { \
+        explicit ParameterName(T& data) : ConstructorParameter<T>(data) {} \
+        template<typename U> ParameterName(ParameterName<U>& other) : ConstructorParameter<T>(*other) {} \
         template<typename U> operator ParameterName<U>() const { return ParameterName<U>(static_cast<U&>(**this)); } \
     }; \
     template<typename T> ParameterName<T> parameter_name(T& data) { return ParameterName<T>(data); } \
