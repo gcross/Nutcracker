@@ -67,11 +67,14 @@ include_directories ( ${YAMLCXX_INCLUDE_DIRS} )
 #@-others
 #@-<< Find packages >>
 
+#@+<< Configure build type >>
+#@+node:gcross.20110427003658.2448: ** << Configure build type >>
 if( NOT CMAKE_BUILD_TYPE )
 set( CMAKE_BUILD_TYPE "RelWithDebInfo" )
 endif ()
 
 message (STATUS "Build type is " ${CMAKE_BUILD_TYPE})
+#@-<< Configure build type >>
 
 include_directories ("includes")
 
