@@ -27,10 +27,19 @@ enable_testing()
 
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/CMakeModules/")
 
+#@+<< Platform-specific tweaks >>
+#@+node:gcross.20110427003658.2447: ** << Platform-specific tweaks >>
 if(APPLE)
     message (STATUS "Compiling on Darwin, adding -arch x86_64")
     add_definitions(-arch x86_64)
 endif(APPLE)
+
+if(UNIX)
+    if(CMAKE_COMPILER_IS_GNUCC)
+         add_definitions(-Wall -Wno-strict-aliasing)
+    endif(CMAKE_COMPILER_IS_GNUCC)
+endif(UNIX)
+#@-<< Platform-specific tweaks >>
 
 #@+<< Find packages >>
 #@+node:gcross.20110426132142.2438: ** << Find packages >>
@@ -57,12 +66,6 @@ link_directories ( ${YAMLCXX_LIBRARY_DIRS} )
 include_directories ( ${YAMLCXX_INCLUDE_DIRS} )
 #@-others
 #@-<< Find packages >>
-
-if(UNIX)
-    if(CMAKE_COMPILER_IS_GNUCC)
-         add_definitions(-Wall -Wno-strict-aliasing)
-    endif(CMAKE_COMPILER_IS_GNUCC)
-endif(UNIX)
 
 if( NOT CMAKE_BUILD_TYPE )
 set( CMAKE_BUILD_TYPE "RelWithDebInfo" )
