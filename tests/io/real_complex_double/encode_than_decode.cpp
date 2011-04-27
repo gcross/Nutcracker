@@ -58,7 +58,7 @@ int main() {
         YAML::Parser parser(in);
         YAML::Node doc;
         parser.GetNextDocument(doc);
-        ASSERT_EQUAL(YAML::CT_SCALAR,doc.GetType());
+        ASSERT_EQUAL(YAML::NodeType::Scalar,doc.Type());
         doc >> y;
 
         ASSERT_EQUAL(x,y);
