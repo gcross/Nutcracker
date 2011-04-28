@@ -100,29 +100,182 @@ class Physical;
 class Right;
 class State;
 //@+node:gcross.20110127123226.2852: ** Constructor parameters wrappers
+/*! \defgroup ConstructorParameters Constructor parameter wrappers
+
+C++ constructors can only take the name of the class itself, so it is impossible
+to distinguish different ways in which a class can be constructed by using
+constructors with different names.  Fortunately, C++ allows one to create
+several methods in a class that share the same name but that have different
+types and numbers of arguments.  Thus, several "wrapper" classes have been
+created that are nothing more than a simple wrapper around an argument in
+order to explicitly specify a particular constructor.  Associated with each such
+class is also a convenience function for wrapping a value in this class, so that
+for example one can construct a tensor \c B that as a copy of a tensor \c A
+via code like the following:
+
+\code
+OperatorTensor B(copyFrom(A));
+\endcode
+
+where \c copyFrom(A) constructs a value of type CopyFrom<OperatorSite> and passes
+it to the constructor, which causes C++ (using the argument-dependent lookup rules)
+to select the constructor that we want --- the one that will make a copy of the
+data in \c A.
+*/
+
+// @{
+//@+<< Base class >>
+//@+node:gcross.20110427160525.2450: *3* << Base class >>
+/*! \brief The base class of the constructor parameter wrappers.
+
+See the \ref ConstructorParameter "Constructor parameter wrappers" section for a list of these and explanation of their purpose.
+
+*/
 template<typename T> class ConstructorParameter {
 private:
+    //! The data wrapped by this class.
     T& data;
 protected:
+    //! Wrap \c data in this class.
     explicit ConstructorParameter(T& data) : data(data) {}
 public:
+    //! Get a reference to the wrapped data.
     T& operator*() const { return data; }
+    //! Access a field of the wrapped data.
     T* operator->() const { return &data; }
 };
+//@-<< Base class >>
 
-#define DEFINE_TEMPLATIZED_PARAMETER(ParameterName,parameter_name) \
+//@+<< DEFINE_TEMPLATIZED_PARAMETER >>
+//@+node:gcross.20110427160525.2451: *3* << DEFINE_TEMPLATIZED_PARAMETER >>
+/*! \brief A convenience macro for constructing constructor parameter wrappers.
+
+For example, the \ref CopyFrom class is defined using the following line of code:
+
+\code
+DEFINE_TEMPLATIZED_PARAMETER(CopyFrom,copyFrom)
+\endcode
+
+(Note that the two parameters are essentially the same thing, but using different capitalization.)
+
+\param ParameterName the name of the parameter class
+\param parameterName the name of the convenience function used to wrap values in the class
+
+*/
+#define DEFINE_TEMPLATIZED_PARAMETER(ParameterName,parameterName) \
     template<typename T> struct ParameterName : public ConstructorParameter<T> { \
         explicit ParameterName(T& data) : ConstructorParameter<T>(data) {} \
         template<typename U> ParameterName(ParameterName<U>& other) : ConstructorParameter<T>(*other) {} \
         template<typename U> operator ParameterName<U>() const { return ParameterName<U>(static_cast<U&>(**this)); } \
     }; \
-    template<typename T> ParameterName<T> parameter_name(T& data) { return ParameterName<T>(data); } \
-    template<typename T> ParameterName<T const> parameter_name(T const& data) { return ParameterName<T const>(data); }
+    template<typename T> ParameterName<T> parameterName(T& data) { return ParameterName<T>(data); } \
+    template<typename T> ParameterName<T const> parameterName(T const& data) { return ParameterName<T const>(data); }
+//@-<< DEFINE_TEMPLATIZED_PARAMETER >>
 
+//@+others
+//@+node:gcross.20110427160525.2452: *3* CopyFrom
+/*! \brief A parameter wrapper class that indicates a tensor should be constructed by making a copy of the data in the wrapped tensor.
+
+It is easiest to wrap a tensor in this class by using the convenience functions \p copyFrom.
+
+\sa ConstructorParameters
+*/
 DEFINE_TEMPLATIZED_PARAMETER(CopyFrom,copyFrom)
+
+/*!
+\fn CopyFrom::CopyFrom(T &data)
+\brief Construct a new CopyFrom object wrapping data.
+
+\fn template<typename U> CopyFrom::CopyFrom(CopyFrom<U> &other) 
+\brief Constructs (possibly implicitly) a CopyFrom<T> from a CopyFrom<U> iff U can be cast to T.
+
+\fn template<typename U> CopyFrom::operator CopyFrom<U>() const
+\brief Performs a (possibly implicit) cast from CopyFrom<U> to CopyFrom<T> iff U can be cast to T.
+
+\fn template<typename T> CopyFrom<T> copyFrom (T &data)
+\brief A convenience function for wrapping values in CopyFrom.
+
+\fn template<typename T> CopyFrom<T const> copyFrom (T const &data)
+\brief A convenience function for wrapping constant values in CopyFrom.
+*/
+//@+node:gcross.20110427160525.2453: *3* DimensionsOf
+/*! \brief A parameter wrapper class that indicates a tensor should be constructed with the same dimensions as the wrapped tensor.
+
+It is easiest to wrap a tensor in this class by using the convenience functions \p dimensionsOf.
+
+\sa ConstructorParameters
+*/
 DEFINE_TEMPLATIZED_PARAMETER(DimensionsOf,dimensionsOf)
+
+/*!
+\fn DimensionsOf::DimensionsOf(T &data)
+\brief Construct a new DimensionsOf object wrapping data.
+
+\fn template<typename U> DimensionsOf::DimensionsOf(DimensionsOf<U> &other) 
+\brief Constructs (possibly implicitly) a DimensionsOf<T> from a DimensionsOf<U> iff U can be cast to T.
+
+\fn template<typename U> DimensionsOf::operator DimensionsOf<U>() const
+\brief Performs a (possibly implicit) cast from DimensionsOf<U> to DimensionsOf<T> iff U can be cast to T.
+
+\fn template<typename T> DimensionsOf<T> dimensionsOf (T &data)
+\brief A convenience function for wrapping values in DimensionsOf.
+
+\fn template<typename T> DimensionsOf<T const> dimensionsOf (T const &data)
+\brief A convenience function for wrapping constant values in DimensionsOf.
+*/
+//@+node:gcross.20110427160525.2457: *3* FillWithGenerator
+/*! \brief A parameter wrapper class that indicates a tensor should be constructed using data from a generator.
+
+It is easiest to wrap a tensor in this class by using the convenience functions \p fillWithGenerator.
+
+\sa ConstructorParameters
+*/
 DEFINE_TEMPLATIZED_PARAMETER(FillWithGenerator,fillWithGenerator)
+
+/*!
+\fn FillWithGenerator::FillWithGenerator(T &data)
+\brief Construct a new FillWithGenerator object wrapping data.
+
+\fn template<typename U> FillWithGenerator::FillWithGenerator(FillWithGenerator<U> &other) 
+\brief Constructs (possibly implicitly) a FillWithGenerator<T> from a FillWithGenerator<U> iff U can be cast to T.
+
+\fn template<typename U> FillWithGenerator::operator FillWithGenerator<U>() const
+\brief Performs a (possibly implicit) cast from FillWithGenerator<U> to FillWithGenerator<T> iff U can be cast to T.
+
+\fn template<typename T> FillWithGenerator<T> fillWithGenerator (T &data)
+\brief A convenience function for wrapping values in FillWithGenerator.
+
+\fn template<typename T> FillWithGenerator<T const> fillWithGenerator (T const &data)
+\brief A convenience function for wrapping constant values in FillWithGenerator.
+*/
+//@+node:gcross.20110427160525.2459: *3* FillWithRange
+/*! \brief A parameter wrapper class that indicates a tensor should be constructed using data from a range.
+
+It is easiest to wrap a tensor in this class by using the convenience functions \p fillWithRange.
+
+\sa ConstructorParameters
+*/
 DEFINE_TEMPLATIZED_PARAMETER(FillWithRange,fillWithRange)
+
+/*!
+\fn FillWithRange::FillWithRange(T &data)
+\brief Construct a new FillWithRange object wrapping data.
+
+\fn template<typename U> FillWithRange::FillWithRange(FillWithRange<U> &other) 
+\brief Constructs (possibly implicitly) a FillWithRange<T> from a FillWithRange<U> iff U can be cast to T.
+
+\fn template<typename U> FillWithRange::operator FillWithRange<U>() const
+\brief Performs a (possibly implicit) cast from FillWithRange<U> to FillWithRange<T> iff U can be cast to T.
+
+\fn template<typename T> FillWithRange<T> FillWithRange (T &data)
+\brief A convenience function for wrapping values in FillWithRange.
+
+\fn template<typename T> FillWithRange<T const> fillWithRange (T const &data)
+\brief A convenience function for wrapping constant values in FillWithRange.
+*/
+//@-others
+
+// @}
 //@+node:gcross.20110127123226.2856: ** Dimension wrappers
 template<typename label> class Dimension {
 private:
