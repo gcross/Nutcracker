@@ -79,10 +79,18 @@ using std::type_info;
 typedef boost::none_t None;
 //@+node:gcross.20110202200838.1710: ** Exceptions
 //@+node:gcross.20110125202132.2159: *3* Exception
+//! A convenient base class for exceptions.
+/*!
+The feature that this class provides over std::exception is that rather than making you override the what() method yourself its constructor takes a string message that it then returns when the user calls what(), saving you from having to write some boilerplate code.
+*/
 struct Exception : public std::exception {
+    //! The user-supplied message.
     string const message;
+    //! The message to be stored in this exception.
     Exception(string const& message);
+    //! Get a read-only pointer to the character string of this message.
     virtual char const* what() const throw();
+    //! Destroy this message.
     virtual ~Exception() throw();
 };
 //@+node:gcross.20110202200838.1709: *3* BadProgrammerException
