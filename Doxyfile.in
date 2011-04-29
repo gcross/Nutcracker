@@ -1395,7 +1395,7 @@ PREDEFINED             =
 # The macro definition that is found in the sources will be used.
 # Use the PREDEFINED tag if you want to use a different macro definition.
 
-EXPAND_AS_DEFINED      = DEFINE_TEMPLATIZED_PARAMETER DEFINE_DIMENSION DEFINE_DUMMY_PARAMETER
+EXPAND_AS_DEFINED      = DEFINE_TEMPLATIZED_PARAMETER DEFINE_DIMENSION DECLARE_DUMMY_PARAMETER
 
 # If the SKIP_FUNCTION_MACROS tag is set to YES (the default) then
 # doxygen's preprocessor will remove all function-like macros that are alone

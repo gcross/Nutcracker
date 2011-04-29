@@ -304,11 +304,61 @@ DEFINE_DIMENSION(Physical);
 DEFINE_DIMENSION(Right);
 DEFINE_DIMENSION(State);
 //@+node:gcross.20110129220506.1661: ** Dummy arguments
-#define DEFINE_DUMMY_PARAMETER(Parameter,parameter) \
-    static struct Parameter {} const parameter = Parameter();
+//@+<< Description >>
+//@+node:gcross.20110428160636.2465: *3* << Description >>
+/*! \defgroup DummyArguments Dummy arguments
 
-DEFINE_DUMMY_PARAMETER(MakeTrivial,make_trivial);
-DEFINE_DUMMY_PARAMETER(AsUnsignedInteger,as_unsigned_integer);
+The classes in these groups are trivial (i.e., empty) structs that exist solely for the purpose of creating a singleton with a unique type in order to distinguish between overloaded methods using argument-dependent lookup.
+
+*/
+//@-<< Description >>
+
+//! @{
+
+//@+<< Macros >>
+//@+node:gcross.20110428160636.2466: *3* << Macros >>
+//@+others
+//@+node:gcross.20110428160636.2467: *4* DECLARE_DUMMY_PARAMETER
+//! A convenience macro for defining a dummy parameter class and the singleton object associated with it.
+/*!
+\note The singleton is declared with external linkage, so it needs to actually be defined in one of the source files using the DEFINE_DUMMY_PARAMETER macro.
+
+\param Parameter the name of the dummy class
+\param parameter the name of the singleton object
+
+\see DEFINE_DUMMY_PARAMETER
+*/
+#define DECLARE_DUMMY_PARAMETER(Parameter,parameter) struct Parameter {}; extern Parameter const parameter;
+//@+node:gcross.20110428160636.2468: *4* DEFINE_DUMMY_PARAMETER
+//! A convenience macro for defining the singleton associated with a dummy parameter class.
+/*!
+\param Parameter the name of the dummy class
+\param parameter the name of the singleton object
+
+\see DECLARE_DUMMY_PARAMETER
+*/
+#define DEFINE_DUMMY_PARAMETER(Parameter,parameter) Parameter const parameter = {};
+//@-others
+//@-<< Macros >>
+
+//@+others
+//@+node:gcross.20110428160636.2470: *3* AsUnsignedInteger
+//! Dummy class used to specify that the integer inside a dimension wrapper class should be unwrapped and returned directly.
+/*! Its associated singleton is as_unsigned_integer.*/
+DECLARE_DUMMY_PARAMETER(AsUnsignedInteger,as_unsigned_integer)
+//!< The singleton instance of AsUnsignedInteger.
+//@+node:gcross.20110428160636.2469: *3* MakeTrivial
+//! Dummy class used to specify that a tensor should be constructed as the "trivial" tensor.
+/*!
+Specifically, it indicates that a tensor should be constructed to have an array with all dimensions 1 and initialized to contain the value 1.
+
+Its associated singleton is make_trivial.
+*/
+DECLARE_DUMMY_PARAMETER(MakeTrivial,make_trivial)
+//!< The singleton instance of MakeTrivial.
+//@-others
+
+//! @}
 //@+node:gcross.20110124175241.1520: ** type function Other
 template<typename other_side> struct Other { };
 template<> struct Other<Left> { typedef Right value; };

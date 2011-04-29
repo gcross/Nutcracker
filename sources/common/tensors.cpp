@@ -37,6 +37,9 @@ using std::map;
 //@+others
 //@+node:gcross.20110215235924.2000: ** Values
 OperatorSite const OperatorSite::trivial(make_trivial);
+
+DEFINE_DUMMY_PARAMETER(MakeTrivial,make_trivial)
+DEFINE_DUMMY_PARAMETER(AsUnsignedInteger,as_unsigned_integer)
 //@+node:gcross.20110220093853.1967: ** I/O
 //@+node:gcross.20110220093853.2002: *3* Operator
 //@+node:gcross.20110220093853.2003: *4* >>
