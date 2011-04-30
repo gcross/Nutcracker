@@ -17,6 +17,14 @@
 //@@c
 //@-<< License >>
 
+//@+<< Documentation >>
+//@+node:gcross.20110429225820.2525: ** << Documentation >>
+/*!
+\file utilities.hpp
+\brief Utility classes and functions
+*/
+//@-<< Documentation >>
+
 #ifndef NUTCRACKER_UTILITIES_HPP
 #define NUTCRACKER_UTILITIES_HPP
 
@@ -74,8 +82,12 @@ using std::string;
 using std::type_info;
 //@-<< Usings >>
 
+//! \defgroup Utilities Utilities
+//! @{
+
 //@+others
 //@+node:gcross.20110215135633.1864: ** Type aliases
+//! None type tag
 typedef boost::none_t None;
 //@+node:gcross.20110202200838.1710: ** Exceptions
 //@+node:gcross.20110125202132.2159: *3* Exception
@@ -94,11 +106,15 @@ struct Exception : public std::exception {
     virtual ~Exception() throw();
 };
 //@+node:gcross.20110202200838.1709: *3* BadProgrammerException
+//! Exception indicating a programmer error.
 struct BadProgrammerException : public Exception {
+    //! Constructs this exception with the given message.
     BadProgrammerException(string const& message) : Exception("BAD PROGRAMMER!!! --- " + message) {}
 };
 //@+node:gcross.20110206185121.1786: *3* BadLabelException
+//! Exception thrown when an generic symbol is accessed with an invalid type tag.
 struct BadLabelException : public BadProgrammerException {
+    //! Constructs this exception with the given symbol name and type tag.
     BadLabelException(string const& symbol, type_info const& type)
       : BadProgrammerException((
           format("Attempted to access templated symbol %1% with invalid type label %2%.")
@@ -108,11 +124,14 @@ struct BadLabelException : public BadProgrammerException {
     {}
 };
 //@+node:gcross.20110217175626.1943: *3* RequestedBandwidthDimensionTooLargeError
+//! This exception is thrown when the user requests a bandwidth dimension that is larger than the maximum possible given the physical dimension sequence.
 struct RequestedBandwidthDimensionTooLargeError : public Exception {
     unsigned int const
-          requested_bandwidth_dimension
-        , greatest_possible_bandwidth_dimension
+          requested_bandwidth_dimension //!< requested bandwidth dimension
+        , greatest_possible_bandwidth_dimension //!< greatest possible bandwidth dimension
         ;
+
+    //! Constructs this exception with the given requested and greatest possible bandwidth dimensions.
     RequestedBandwidthDimensionTooLargeError(
         unsigned int const requested_bandwidth_dimension
       , unsigned int const greatest_possible_bandwidth_dimension
@@ -127,70 +146,96 @@ struct RequestedBandwidthDimensionTooLargeError : public Exception {
 };
 //@+node:gcross.20110211120708.1791: ** Classes
 //@+node:gcross.20110211120708.1793: *3* ProductIterator
+//@+<< Description >>
+//@+node:gcross.20110429225820.2541: *4* << Description >>
+//! Iterator class which accumulates the product of the values of a nested iterator.
+/*!
+This class acts like a STL iterator and specifically implements the Boost ForwardTraversal iterator concept, but most of the iterator methods might not be visible in the documentation because they are inherited from \c iterator_facade (which generates the requisite boilerplate code from the methods listed in "Iterator implementation").
+*/
+//@-<< Description >>
 template<typename T> class ProductIterator
  : public iterator_facade<ProductIterator<T>,typename iterator_traits<T>::value_type const,forward_traversal_tag>
 {
-protected:
-    T nested_iterator;
-    typename iterator_traits<T>::value_type product;
-    mutable typename iterator_traits<T>::value_type cached_product;
-public:
+    //@+others
+    //@+node:gcross.20110429225820.2542: *4* Constructors
+    //! @name Constructor
+
+    //! @{
+
+    public:
+
+    //! Null constructor
     ProductIterator() {}
 
+    //! Constructs this class with the given nested iterator;  it first value will be the first value of the iterator.
     ProductIterator(T const nested_iterator)
       : nested_iterator(nested_iterator)
       , product(1)
     {}
 
+    //! @}
+    //@+node:gcross.20110429225820.2543: *4* Fields
+    protected:
+
+    //! The nested iterator
+    T nested_iterator;
+
+    //! The value of the accumulator divided by the current iterator element.
+    typename iterator_traits<T>::value_type product;
+
+    //! If current, the value of the accumulator.
+    /*! This field is present so that we can return a reference rather than a value. */
+    mutable typename iterator_traits<T>::value_type cached_product;
+    //@+node:gcross.20110429225820.2544: *4* Iterator implementation
+    //! @name Iterator implementation
+    /*!
+    These methods are not meant to be called by users directly, but rather are supplied to provide the implementation details of the iterator so that the \c iterator_facade superclass can construct an iterator facade that makes this class act like a STL iterator.
+    */
+
+    //! @{
+
+    public:
+
+    //! Returns the current value of the accumulator.
     typename iterator_traits<T>::value_type const& dereference() const {
         cached_product = product * (*nested_iterator);
         return cached_product;
     }
 
+    //! Returns if two ProductIterators are equal.
     bool equal(ProductIterator const other) const {
         return nested_iterator == other.nested_iterator;
     }
 
+    //! Advance this constructor.
     void increment() {
         product *= (*nested_iterator);
         ++nested_iterator;
     }
+
+    //! @}
+    //@-others
 };
 //@+node:gcross.20110127123226.2857: ** Functions
-unsigned long long choose(unsigned int n, unsigned int k);
+//@+others
+//@+node:gcross.20110429225820.2535: *3* Bandwidth dimensions
+/*!
+\defgroup BandwidthDimensionFunctions Bandwidth dimensions
 
+These functions provide useful functionality for computing bandwidth dimensions.
+*/
+
+//! @{
+
+//@+others
+//@+node:gcross.20110429225820.2537: *4* computeBandwidthDimensions
+//! Computes the bandwidth dimension sequence given the requested bandwidth dimension and the sequence of physical dimensions.
 vector<unsigned int> computeBandwidthDimensionSequence(
     unsigned int const requested_bandwidth_dimension
    ,vector<unsigned int> const& physical_dimensions
 );
-
-//@+others
-//@+node:gcross.20110211120708.1786: *3* c
-inline complex<double> c(double x, double y) { return complex<double>(x,y); }
-//@+node:gcross.20110211120708.1787: *3* copyAndReset
-template<typename T> inline T copyAndReset(T& x) {
-    T const old_x = x;
-    x = 0;
-    return old_x;
-}
-//@+node:gcross.20110211120708.1789: *3* dznrm2
-extern "C" double dznrm2_(uint32_t const* n, complex<double>* const x, uint32_t const* incx);
-inline double dznrm2(uint32_t const n, complex<double>* const x, uint32_t const incx=1) { return dznrm2_(&n,x,&incx); }
-//@+node:gcross.20110215135633.1856: *3* flatIndexToTensorIndex
-template<typename DimensionRange> vector<unsigned int> flatIndexToTensorIndex(DimensionRange const& dimensions, unsigned long long flat_index) {
-    vector<unsigned int> tensor_index;
-    tensor_index.reserve(dimensions.size());
-    BOOST_FOREACH(unsigned int const dimension, dimensions | reversed) {
-        tensor_index.push_back(flat_index % dimension);
-        flat_index /= dimension;
-    }
-    assert(flat_index == 0);
-    reverse(tensor_index);
-    return boost::move(tensor_index);
-}
-//@+node:gcross.20110211120708.1798: *3* makeProductIterator
-template<typename T> ProductIterator<T> makeProductIterator(T const x) { return ProductIterator<T>(x); }
-//@+node:gcross.20110217175626.1941: *3* maximumBandwidthDimension
+//@+node:gcross.20110429225820.2539: *4* maximumBandwidthDimension
+//! Computes the maximum bandwidth dimension attainable given the sequence of physical dimensions.
 template<typename PhysicalDimensionRange> unsigned int maximumBandwidthDimension(
     PhysicalDimensionRange const& physical_dimensions
 ) {
@@ -213,29 +258,35 @@ template<typename PhysicalDimensionRange> unsigned int maximumBandwidthDimension
         )
     );
 }
-//@+node:gcross.20110211120708.1788: *3* moveArrayToFrom
-template<typename T> inline void moveArrayToFrom(T*& to, T*& from) {
-    if(to) delete[] to;
-    to = copyAndReset(from);
-}
-//@+node:gcross.20110219083229.2603: *3* outsideTolerance
-template<typename A, typename B, typename C> bool outsideTolerance(A a, B b, C tolerance) {
-    return ((abs(a)+abs(b))/2 > tolerance) && (abs(a-b)/(abs(a)+abs(b)+tolerance) > tolerance);
-}
-//@+node:gcross.20110213233103.3637: *3* rethrow
-template<typename Exception> void rethrow(Exception& e) { throw e; }
-//@+node:gcross.20110215135633.1858: *3* tensorIndexToFlatIndex
-template<typename DimensionRange> unsigned long long tensorIndexToFlatIndex(DimensionRange const& dimensions, vector<unsigned int> const& tensor_index) {
-    assert(dimensions.size() == tensor_index.size());
-    unsigned long long flat_index = 0;
-    BOOST_FOREACH(unsigned int const i, irange(0u,(unsigned int)dimensions.size())) {
-        assert(tensor_index[i] < dimensions[i]);
-        flat_index *= dimensions[i];
-        flat_index += tensor_index[i];
-    }
-    return flat_index;
-}
-//@+node:gcross.20110215135633.1901: *3* zgemm
+//@-others
+
+//! @}
+//@+node:gcross.20110429225820.2534: *3* BLAS wrappers
+/*!
+\defgroup BLASWrappers BLAS wrappers
+
+These functions provide wrappers around some of the FORTRAN BLAS routines.
+*/
+
+//! @{
+
+//@+others
+//@+node:gcross.20110211120708.1789: *4* dznrm2
+//! \cond
+extern "C" double dznrm2_(uint32_t const* n, complex<double>* const x, uint32_t const* incx);
+//! \endcond
+
+//! Compute the 2-norm of a vector.
+/*!
+This function is just a convenience wrapper around the BLAS dznrm2 function.
+\param n the size of the vector
+\param x a pointer to the vector data
+\param incx the increment between vector entries (usually 1)
+\return the 2-norm of the vector --- that is, the sum of the absolute-square of the entries
+*/
+inline double dznrm2(uint32_t const n, complex<double>* const x, uint32_t const incx=1) { return dznrm2_(&n,x,&incx); }
+//@+node:gcross.20110215135633.1901: *4* zgemm
+//! \cond
 extern "C" void zgemm_(
     char const* transa, char const* transb,
     uint32_t const* m, uint32_t const* n, uint32_t const* k,
@@ -245,6 +296,9 @@ extern "C" void zgemm_(
     complex<double> const* beta,
     complex<double>* c, uint32_t const* ldc
 );
+//! \endcond
+
+//! Multiplies two matrices using the BLAS \c zgemm call.
 inline void zgemm(
     char const* transa, char const* transb,
     uint32_t const m, uint32_t const n, uint32_t const k,
@@ -264,7 +318,8 @@ inline void zgemm(
         c,&ldc
     );        
 }
-//@+node:gcross.20110215135633.1903: *3* zgemv
+//@+node:gcross.20110215135633.1903: *4* zgemv
+//! \cond
 extern "C" void zgemv_(
     char const* trans,
     uint32_t const* m, uint32_t const* n,
@@ -274,6 +329,9 @@ extern "C" void zgemv_(
     complex<double> const* beta,
     complex<double>* y, uint32_t const* incy
 );
+//! \endcond
+
+//! Multiplies a matrix by a vector using the BLAS \c zgemv call.
 inline void zgemv(
     char const* trans,
     uint32_t const m, uint32_t const n,
@@ -294,9 +352,111 @@ inline void zgemv(
     );        
 }
 //@-others
+
+//! @}
+//@+node:gcross.20110429225820.2532: *3* Index conversion
+/*!
+\defgroup IndexConversionFunctions Index conversion
+
+Often times it is useful to work with a multi-dimensional tensor in terms of its flattened one-dimensional representation.  The functions in this module assist in converting indices in the orignal multi-dimensional representation to and from the flat representation.
+*/
+
+//! @{
+
+//@+others
+//@+node:gcross.20110215135633.1856: *4* flatIndexToTensorIndex
+//! Converts and index into the (flattened) one-dimensional representation of a tensor to an index into the (original) multi-dimensional representation of a tensor.
+/*!
+\param dimensions the dimension of the tensor
+\param flat_index the index into the flattened tensor
+\return the multi-dimensional index referring to the same element in the original multi-dimensional tensor as \c flat_index had referred to in the flattened one-dimensional representation of that tensor.
+*/
+template<typename DimensionRange> vector<unsigned int> flatIndexToTensorIndex(DimensionRange const& dimensions, unsigned long long flat_index) {
+    vector<unsigned int> tensor_index;
+    tensor_index.reserve(dimensions.size());
+    BOOST_FOREACH(unsigned int const dimension, dimensions | reversed) {
+        tensor_index.push_back(flat_index % dimension);
+        flat_index /= dimension;
+    }
+    assert(flat_index == 0);
+    reverse(tensor_index);
+    return boost::move(tensor_index);
+}
+//@+node:gcross.20110215135633.1858: *4* tensorIndexToFlatIndex
+//! Converts and index into the (original) multi-dimensional representation of a tensor to an index into the (flattened) one-dimensional representation of a tensor.
+/*!
+\param dimensions the dimension of the tensor
+\param tensor_index the index into the flattened tensor
+\return the flat index referring to the same element in the flattened tensor as \c tensor_index had referred to in the original multi--dimensional representation of that tensor.
+*/
+template<typename DimensionRange> unsigned long long tensorIndexToFlatIndex(DimensionRange const& dimensions, vector<unsigned int> const& tensor_index) {
+    assert(dimensions.size() == tensor_index.size());
+    unsigned long long flat_index = 0;
+    BOOST_FOREACH(unsigned int const i, irange(0u,(unsigned int)dimensions.size())) {
+        assert(tensor_index[i] < dimensions[i]);
+        flat_index *= dimensions[i];
+        flat_index += tensor_index[i];
+    }
+    return flat_index;
+}
+//@-others
+
+//! @}
+//@+node:gcross.20110429225820.2540: *3* Miscellaneous
+//@+node:gcross.20110211120708.1786: *4* c
+//! Convenience function that constructs the complex number x + iy.
+inline complex<double> c(double x, double y) { return complex<double>(x,y); }
+//@+node:gcross.20110429225820.2536: *4* choose
+//! Implements the statistical combinatorics function n choose k.
+/*!
+Returns the number of ways to choose \c k elements from \c n elements.
+\param n the total number of elements
+\param k the number of elements to be chosen
+\return the number of ways to choose \c k elements from \c n elements.
+*/
+unsigned long long choose(unsigned int n, unsigned int k);
+//@+node:gcross.20110211120708.1798: *4* makeProductIterator
+//! Convenience function for constructing instance of ProductIterator.
+template<typename T> ProductIterator<T> makeProductIterator(T const x) { return ProductIterator<T>(x); }
+//@+node:gcross.20110219083229.2603: *4* outsideTolerance
+//! Returns whether \c a and \c b do not match within the specified relative \c tolerance.
+template<typename A, typename B, typename C> bool outsideTolerance(A a, B b, C tolerance) {
+    return ((abs(a)+abs(b))/2 > tolerance) && (abs(a-b)/(abs(a)+abs(b)+tolerance) > tolerance);
+}
+//@+node:gcross.20110213233103.3637: *4* rethrow
+//! Throws the argument passed to it; useful as part of a signal handler.
+template<typename Exception> void rethrow(Exception& e) { throw e; }
+//@+node:gcross.20110429225820.2533: *3* Move assistants
+/*!
+\defgroup MoveAssistantFunctions Move assistants
+
+The functions in this module assist in implementing move semantics.
+*/
+
+//! @{
+
+//@+others
+//@+node:gcross.20110211120708.1787: *4* copyAndReset
+//! Returns the value in \c x, and sets \c x to zero.
+template<typename T> inline T copyAndReset(T& x) {
+    T const old_x = x;
+    x = 0;
+    return old_x;
+}
+//@+node:gcross.20110211120708.1788: *4* moveArrayToFrom
+//! Deallocates the array at \c to (if \c to is non-null), copies the pointer from \c from to \c to, and then sets \c from to null.
+template<typename T> inline void moveArrayToFrom(T*& to, T*& from) {
+    if(to) delete[] to;
+    to = copyAndReset(from);
+}
+//@-others
+
+//! @}
+//@-others
 //@+node:gcross.20110219101843.2618: ** I/O
 //@+node:gcross.20110220093853.1990: *3* complex<T>
 //@+node:gcross.20110219101843.2619: *4* >>
+//! Reads a complex number from a YAML scalar (real part only) or sequence (real part then imaginary part).
 template<typename T> inline void operator>>(YAML::Node const& node,complex<T>& x) {
     switch(node.Type()) {
         case YAML::NodeType::Scalar:
@@ -312,6 +472,7 @@ template<typename T> inline void operator>>(YAML::Node const& node,complex<T>& x
     }
 }
 //@+node:gcross.20110219101843.2623: *4* <<
+//! Write a complex number to a YAML sequence of length 2 (i.e., real part then imaginary part).
 template<typename T> inline YAML::Emitter& operator<<(YAML::Emitter& out,complex<T> const& x) {
     if(x.imag() == 0) {
         return out << (format("%|.20|") % x.real()).str();
@@ -324,8 +485,11 @@ template<typename T> inline YAML::Emitter& operator<<(YAML::Emitter& out,complex
     }
 }
 //@+node:gcross.20110129220506.1652: ** Macros
+//! Repeats a statement or block \c n times.
 #define REPEAT(n) for(unsigned int _counter##__LINE__ = 0; _##counter##__LINE__ < n; ++_##counter##__LINE__)
 //@-others
+
+//! @}
 
 }
 

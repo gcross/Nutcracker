@@ -17,6 +17,14 @@
 //@@c
 //@-<< License >>
 
+//@+<< Documentation >>
+//@+node:gcross.20110429225820.2527: ** << Documentation >>
+/*!
+\file utilities.cpp
+\brief Utility classes and functions
+*/
+//@-<< Documentation >>
+
 //@+<< Includes >>
 //@+node:gcross.20110125202132.2161: ** << Includes >>
 #include <boost/range/numeric.hpp>
