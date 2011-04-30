@@ -17,6 +17,14 @@
 //@@c
 //@-<< License >>
 
+//@+<< Documentation >>
+//@+node:gcross.20110429225820.2531: ** << Documentation >>
+/*!
+\file optimizer.cpp
+\brief Classes and functions relating to the optimizer
+*/
+//@-<< Documentation >>
+
 //@+<< Includes >>
 //@+node:gcross.20110214155808.1885: ** << Includes >>
 #include "boundaries.hpp"
