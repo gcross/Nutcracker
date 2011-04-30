@@ -364,6 +364,10 @@ template<typename other_side> struct Other { };
 template<> struct Other<Left> { typedef Right value; };
 template<> struct Other<Right> { typedef Left value; };
 //@+node:gcross.20110124161335.2012: ** Tensors
+//! \defgroup Tensors Tensors
+//! @{
+
+//@+others
 //@+node:gcross.20110215235924.2007: *3* Base
 //@+node:gcross.20110126150230.1601: *4* BaseTensor
 //@+<< Description >>
@@ -1726,6 +1730,10 @@ class OperatorSite : public SiteBaseTensor {
     static OperatorSite const trivial;
     //@-others
 };
+//@-others
+
+//! @}
+//@+node:gcross.20110217014932.1927: ** Classes
 //@+node:gcross.20110220182654.2072: *3* ProjectorSite
 //@+<< Description >>
 //@+node:gcross.20110429225820.2559: *4* << Description >>
@@ -1819,7 +1827,6 @@ template<> inline OverlapSite<Left> const& ProjectorSite::get<Left>() const { re
 template<> inline OverlapSite<Middle> const& ProjectorSite::get<Middle>() const { return middle; }
 template<> inline OverlapSite<Right> const& ProjectorSite::get<Right>() const { return right; }
 //! \endcond
-//@+node:gcross.20110217014932.1927: ** Classes
 //@+node:gcross.20110220182654.2074: *3* Projector
 struct Projector : vector<ProjectorSite> {
 private:
