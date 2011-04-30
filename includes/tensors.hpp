@@ -267,7 +267,7 @@ DEFINE_TEMPLATIZED_PARAMETER(FillWithRange,fillWithRange)
 \fn template<typename U> FillWithRange::operator FillWithRange<U>() const
 \brief Performs a (possibly implicit) cast from FillWithRange<U> to FillWithRange<T> iff U can be cast to T.
 
-\fn template<typename T> FillWithRange<T> FillWithRange (T &data)
+\fn template<typename T> FillWithRange<T> fillWithRange (T &data)
 \brief A convenience function for wrapping values in FillWithRange.
 
 \fn template<typename T> FillWithRange<T const> fillWithRange (T const &data)
