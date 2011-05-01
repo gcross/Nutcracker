@@ -20,6 +20,7 @@
 //@+<< Includes >>
 //@+node:gcross.20110214155808.2017: ** << Includes >>
 #include <boost/assign/list_of.hpp>
+#include <complex>
 #include <illuminate.hpp>
 
 #include "operators.hpp"
@@ -32,6 +33,8 @@ using namespace Nutcracker;
 
 using boost::assign::list_of;
 using boost::none;
+
+using std::abs;
 //@-<< Includes >>
 
 //@+others
@@ -87,10 +90,10 @@ TEST_SUITE(one_site_under_external_field) {
             ASSERT_EQ(1,new_state_site.leftDimension(as_unsigned_integer));
             ASSERT_EQ(1,new_state_site.rightDimension(as_unsigned_integer));
             BOOST_FOREACH(unsigned int const i, irange(0u,physical_dimension-1)) {
-                ASSERT_NEAR(c(0,0),new_state_site[i],1e-15);
+                ASSERT_NEAR_REL(c(0,0),new_state_site[i],1e-15);
             }
-            ASSERT_NEAR(1,abs(new_state_site[physical_dimension-1]),1e-5);
-            ASSERT_NEAR(-1,optimizer_result.eigenvalue,1e-5);
+            ASSERT_NEAR_REL(1,abs(new_state_site[physical_dimension-1]),1e-5);
+            ASSERT_NEAR_REL(-1,optimizer_result.eigenvalue,1e-5);
             ASSERT_EQ(0,optimizer_result.number_of_iterations);
         }
     }

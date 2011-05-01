@@ -21,6 +21,7 @@
 //@+node:gcross.20110213233103.2812: ** << Includes >>
 #include <boost/assign/list_of.hpp>
 #include <boost/range/adaptor/indirected.hpp>
+#include <complex>
 #include <illuminate.hpp>
 
 #include "projectors.hpp"
@@ -31,6 +32,8 @@ using namespace Nutcracker;
 
 using boost::adaptors::indirected;
 using boost::assign::list_of;
+
+using std::abs;
 //@-<< Includes >>
 
 //@+others
@@ -83,20 +86,20 @@ TEST_CASE(projection_makes_overlap_vanish) {
                 ,projected_state_site
             );
 
-        ASSERT_EQ_QUOTED(
+        ASSERT_EQ(
              physical_dimension
             ,projected_state_site.physicalDimension(as_unsigned_integer)
         );
-        ASSERT_EQ_QUOTED(
+        ASSERT_EQ(
              left_dimension
             ,projected_state_site.leftDimension(as_unsigned_integer)
         );
-        ASSERT_EQ_QUOTED(
+        ASSERT_EQ(
              right_dimension
             ,projected_state_site.rightDimension(as_unsigned_integer)
         );
 
-        ASSERT_NEAR(0,overlap,1e-12);
+        ASSERT_NEAR_REL(0,overlap,1e-12);
 
     }
 
@@ -193,7 +196,7 @@ TEST_CASE(self_overlap_is_1) {
 
     REPEAT(10) {
         State state(random.randomState());
-        ASSERT_NEAR(
+        ASSERT_NEAR_REL(
              c(1,0)
             ,computeStateOverlap(state,state)
             ,1e-15
@@ -211,7 +214,7 @@ TEST_CASE(function_is_hermitian) {
         State const state_1(random.randomState(physical_dimensions))
                   , state_2(random.randomState(physical_dimensions))
                   ;
-        ASSERT_NEAR(
+        ASSERT_NEAR_REL(
              conj(computeStateOverlap(state_1,state_2))
             ,computeStateOverlap(state_2,state_1)
             ,1e-15
@@ -240,7 +243,7 @@ TEST_SUITE(single_site_orthogonal_overlap_is_zero) {
         }
         BOOST_FOREACH(unsigned int i, irange(0u,physical_dimension)) {
             BOOST_FOREACH(unsigned int j, irange(i+1,physical_dimension)) {
-                ASSERT_NEAR(
+                ASSERT_NEAR_REL(
                      c(0,0)
                     ,computeStateOverlap(states[i],states[j])
                     ,1e-15
@@ -268,7 +271,7 @@ TEST_CASE(self_overlap_is_1) {
 
     REPEAT(10) {
         State state(random.randomState());
-        ASSERT_NEAR(
+        ASSERT_NEAR_REL(
              c(1,0)
             ,computeProjectorOverlap(computeProjectorFromState(state),state)
             ,1e-15
@@ -296,7 +299,7 @@ TEST_CASE(overlaps) {
         complex<double> const state_overlap = computeStateOverlap(state_1,state_2);
         Projector projector = computeProjectorFromState(state_1);
         BOOST_FOREACH(unsigned int const active_site_number, irange(0u,(unsigned int)physical_dimensions.size())) {
-            ASSERT_NEAR(
+            ASSERT_NEAR_REL(
                  state_overlap
                 ,computeProjectorOverlap(projector,state_2,active_site_number)
                 ,1e-15
@@ -338,7 +341,7 @@ TEST_CASE(projector_matrix) {
                     ,list_of(&projector[i].get<Middle>()) | indirected
                 )
             );
-            ASSERT_NEAR(
+            ASSERT_NEAR_REL(
                  abs(overlap)
                 ,computeOverlapWithProjectors(projector_matrix,state[i])
                 ,1e-15

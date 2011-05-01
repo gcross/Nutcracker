@@ -31,6 +31,7 @@
 #include <boost/range/irange.hpp>
 #include <boost/range/numeric.hpp>
 #include <boost/smart_ptr/shared_ptr.hpp>
+#include <complex>
 #include <illuminate.hpp>
 #include <sstream>
 #include <functional>
@@ -88,12 +89,12 @@ TEST_CASE(correct_properties) {
                 ,physical_dimensions
             );
 
-        ASSERT_EQ_QUOTED(number_of_sites+1,bandwidth_dimensions.size());
-        ASSERT_EQ_QUOTED(requested_bandwidth_dimension,*max_element(bandwidth_dimensions));
+        ASSERT_EQ(number_of_sites+1,bandwidth_dimensions.size());
+        ASSERT_EQ(requested_bandwidth_dimension,*max_element(bandwidth_dimensions));
 
         BOOST_FOREACH(unsigned int const i, irange(0u,number_of_sites-1)) {
-            ASSERT_LE_QUOTED(bandwidth_dimensions[i+1], bandwidth_dimensions[i]*physical_dimensions[i]);
-            ASSERT_LE_QUOTED(bandwidth_dimensions[i], bandwidth_dimensions[i+1]*physical_dimensions[i]);
+            ASSERT_LE(bandwidth_dimensions[i+1], bandwidth_dimensions[i]*physical_dimensions[i]);
+            ASSERT_LE(bandwidth_dimensions[i], bandwidth_dimensions[i+1]*physical_dimensions[i]);
         }
     }
 }
@@ -117,7 +118,7 @@ TEST_CASE(complains_if_too_large) {
                 ,physical_dimensions
             );
         } catch(RequestedBandwidthDimensionTooLargeError const& e) {
-            ASSERT_EQ_QUOTED(requested_bandwidth_dimension,e.requested_bandwidth_dimension);
+            ASSERT_EQ(requested_bandwidth_dimension,e.requested_bandwidth_dimension);
             continue;
         }
         FATALLY_FAIL("Exception was not thrown!");
@@ -163,10 +164,10 @@ TEST_CASE(moveLeftAndRight) {
 
         #define VALIDATE_CHAIN_PROPERTIES \
             { \
-                ASSERT_NEAR(1,chain.computeStateNorm(),1e-14); \
+                ASSERT_NEAR_REL(1,chain.computeStateNorm(),1e-14); \
                 complex<double> const expectation_value = chain.computeExpectationValueAtCurrentSite(); \
-                ASSERT_NEAR(0,expectation_value.imag(),1e-10); \
-                ASSERT_NEAR_QUOTED(chain.getEnergy(),expectation_value.real(),1e-10); \
+                ASSERT_NEAR_REL(0,expectation_value.imag(),1e-10); \
+                ASSERT_NEAR_REL(chain.getEnergy(),expectation_value.real(),1e-10); \
             }
 
         REPEAT(number_of_operators-1) {
@@ -250,7 +251,7 @@ TEST_SUITE(performOptimizationSweep) {
                 );
                 chain.signalOptimizeSiteFailure.connect(rethrow<OptimizerFailure>);
                 chain.performOptimizationSweep();
-                ASSERT_NEAR_QUOTED(number_of_sites,-chain.getEnergy(),1e-7);
+                ASSERT_NEAR_REL(c(-(int)number_of_sites,0),chain.getEnergy(),1e-7);
             }
         }
     }
@@ -272,16 +273,16 @@ TEST_CASE(increaseBandwidthDimension) {
 
         #define VALIDATE_CHAIN_PROPERTIES \
             { \
-                ASSERT_NEAR(1,chain.computeStateNorm(),1e-9); \
+                ASSERT_NEAR_REL(1,chain.computeStateNorm(),1e-9); \
                 complex<double> const expectation_value = chain.computeExpectationValueAtCurrentSite(); \
-                ASSERT_NEAR(0,expectation_value.imag(),1e-9); \
-                ASSERT_NEAR_QUOTED(chain.getEnergy(),expectation_value.real(),1e-7); \
+                ASSERT_NEAR_REL(0,expectation_value.imag(),1e-9); \
+                ASSERT_NEAR_REL(chain.getEnergy(),expectation_value.real(),1e-7); \
             }
 
         BOOST_FOREACH(unsigned int const bandwidth_dimension, irange(1u,maximum_bandwidth_dimension)) {
             chain.increaseBandwidthDimension(bandwidth_dimension);
             State new_state = chain.makeCopyOfState();
-            ASSERT_NEAR(c(1,0),computeStateOverlap(old_state,new_state),1e-13);
+            ASSERT_NEAR_REL(c(1,0),computeStateOverlap(old_state,new_state),1e-13);
             REPEAT(number_of_operators-1) {
                 chain.move<Right>();
                 VALIDATE_CHAIN_PROPERTIES
@@ -307,7 +308,7 @@ TEST_SUITE(sweepUntilConverged) {
         Chain chain(constructTransverseIsingModelOperator(number_of_sites,coupling_strength),bandwidth_dimension);
         chain.signalOptimizeSiteFailure.connect(rethrow<OptimizerFailure>);
         chain.sweepUntilConverged();
-        ASSERT_NEAR(correct_energy,chain.getEnergy(),1e-7);
+        ASSERT_NEAR_REL(correct_energy,chain.getEnergy(),1e-7);
     }
 
     TEST_CASE(2_sites_0p1)  { runTest( 2,0.1,2,- 2.00249843); }
@@ -366,7 +367,7 @@ TEST_SUITE(external_field) {
                 chain.signalSweepPerformed.connect(++lambda::var(number_of_sweeps));
                 chain.optimizeChain();
                 ASSERT_TRUE(number_of_sweeps < 5);
-                ASSERT_NEAR_QUOTED(number_of_sites,-chain.getEnergy(),1e-7);
+                ASSERT_NEAR_REL(c(-(int)number_of_sites,0),chain.getEnergy(),1e-7);
             }
         }
     }
@@ -386,7 +387,7 @@ TEST_SUITE(transverse_Ising_model) {
         Chain chain(constructTransverseIsingModelOperator(number_of_sites,coupling_strength));
         chain.signalOptimizeSiteFailure.connect(rethrow<OptimizerFailure>);
         chain.optimizeChain();
-        ASSERT_NEAR(correct_energy,chain.getEnergy(),1e-10);
+        ASSERT_NEAR_REL(correct_energy,chain.getEnergy(),1e-10);
     }
 
     TEST_CASE(10_sites_0p1) { runTest(10,0.1,-10.0225109571); }
@@ -405,7 +406,7 @@ TEST_CASE(expectation_matches_computeExpectationValue) {
         Operator O = random.randomOperator(number_of_sites);
         Chain chain(O);
         State state = chain.makeCopyOfState();
-        ASSERT_NEAR_QUOTED(chain.getEnergy(),computeExpectationValue(state,O),1e-10);
+        ASSERT_NEAR_REL(chain.getEnergy(),computeExpectationValue(state,O),1e-10);
     }
 }
 //@+node:gcross.20110218150430.2590: *3* solveForMultipleLevels
@@ -426,7 +427,7 @@ void checkEnergies(
             (const bind)((&chain))
         )
     ) {
-        ASSERT_NEAR(0,chain.computeProjectorOverlapAtCurrentSite(),1e-12);
+        ASSERT_NEAR_REL(0,chain.computeProjectorOverlapAtCurrentSite(),1e-12);
     } BOOST_LOCAL_FUNCTION_END(checkOverlap)
     chain.signalOptimizeSiteSuccess.connect(checkOverlap);
     chain.signalChainReset.connect(checkOverlap);

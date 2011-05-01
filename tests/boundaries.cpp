@@ -21,6 +21,7 @@
 //@+node:gcross.20110127123226.2505: ** << Includes >>
 #include <boost/assign/list_of.hpp>
 #include <boost/range/algorithm/equal.hpp>
+#include <complex>
 #include <illuminate.hpp>
 
 #include "boundaries.hpp"
@@ -31,6 +32,8 @@ using namespace Nutcracker;
 
 using boost::assign::list_of;
 using boost::equal;
+
+using std::abs;
 //@-<< Includes >>
 
 //@+others
@@ -600,8 +603,8 @@ TEST_CASE(consistent) {
                     ,new_right_boundary
                 )
             ;
-        ASSERT_NEAR_QUOTED(result_from_computeExpectationValue,result_from_contractSOSLeft,1e-10);
-        ASSERT_NEAR_QUOTED(result_from_computeExpectationValue,result_from_contractSOSRight,1e-10);
+        ASSERT_NEAR_REL(result_from_computeExpectationValue,result_from_contractSOSLeft,1e-10);
+        ASSERT_NEAR_REL(result_from_computeExpectationValue,result_from_contractSOSRight,1e-10);
     }
 }
 //@-others

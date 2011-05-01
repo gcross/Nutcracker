@@ -37,6 +37,8 @@ using boost::none;
 using boost::normal_distribution;
 using boost::optional;
 using boost::uniform_smallint;
+
+using std::abs;
 //@-<< Includes >>
 
 //@+others

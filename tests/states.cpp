@@ -27,6 +27,7 @@
 #include <boost/range/algorithm/equal.hpp>
 #include <boost/range/irange.hpp>
 #include <boost/range/numeric.hpp>
+#include <complex>
 #include <illuminate.hpp>
 
 #include "states.hpp"
@@ -43,6 +44,8 @@ using boost::equal;
 using boost::inner_product;
 using boost::irange;
 using boost::numeric::ublas::norm_1;
+
+using std::abs;
 //@-<< Includes >>
 
 //@+others
@@ -67,7 +70,7 @@ TEST_CASE(single_site) {
             ,fillWithGenerator(random.randomComplexDouble)
         );
         StateVector state_vector = computeStateVector(vector<StateSiteAny const*>(1,&state_site) | indirected);
-        ASSERT_EQ_QUOTED(*physical_dimension,state_vector.size());
+        ASSERT_EQ(*physical_dimension,state_vector.size());
         ASSERT_TRUE(equal(state_site,state_vector));
     }
 }
@@ -90,7 +93,7 @@ TEST_CASE(single_site_squared) {
                 correct_state_vector[i*d+j] = (state_site.begin()[i]) * (state_site.begin()[j]);
             }
         }
-        ASSERT_EQ_QUOTED(correct_state_vector.size(),actual_state_vector.size());
+        ASSERT_EQ(correct_state_vector.size(),actual_state_vector.size());
         ASSERT_TRUE(equal(correct_state_vector,actual_state_vector));
     }
 }
@@ -116,7 +119,7 @@ TEST_CASE(two_trivial_sites) {
             ;
         StateVector state_vector = computeStateVector(list_of(&state_site_1)(&state_site_2) | indirected);
         ASSERT_EQ(1,state_vector.size());
-        ASSERT_NEAR(inner_product(state_site_1,state_site_2,c(0,0)),state_vector[0],1e-15);
+        ASSERT_NEAR_ABS(inner_product(state_site_1,state_site_2,c(0,0)),state_vector[0],1e-15);
     }
 }
 //@+node:gcross.20110213161858.1835: *4* W state
@@ -228,7 +231,7 @@ TEST_CASE(single_site) {
             ,fillWithGenerator(random.randomComplexDouble)
         );
         BOOST_FOREACH(unsigned int const i, irange(0u,state_site.physicalDimension(as_unsigned_integer))) {
-            ASSERT_EQ_QUOTED(state_site.begin()[i],computeStateVectorComponent(list_of(&state_site) | indirected,i));
+            ASSERT_EQ(state_site.begin()[i],computeStateVectorComponent(list_of(&state_site) | indirected,i));
         }
     }
 }
@@ -246,7 +249,7 @@ TEST_CASE(single_site_squared) {
         );
         BOOST_FOREACH(unsigned int i, irange(0u,d)) {
             BOOST_FOREACH(unsigned int j, irange(0u,d)) {
-                ASSERT_EQ_QUOTED(state_site.begin()[i]*state_site.begin()[j],computeStateVectorComponent(list_of(&state_site)(&state_site) | indirected,i*d+j));
+                ASSERT_EQ(state_site.begin()[i]*state_site.begin()[j],computeStateVectorComponent(list_of(&state_site)(&state_site) | indirected,i*d+j));
             }
         }
     }
@@ -272,7 +275,7 @@ TEST_CASE(two_trivial_sites) {
             ;
         BOOST_FOREACH(unsigned int const i, irange(0u,state_site_1.physicalDimension(as_unsigned_integer))) {
             BOOST_FOREACH(unsigned int const j, irange(0u,state_site_2.physicalDimension(as_unsigned_integer))) {
-                ASSERT_EQ_QUOTED(
+                ASSERT_EQ(
                      state_site_1.begin()[i]*state_site_2.begin()[j]
                     ,computeStateVectorComponent(
                          list_of(&state_site_1)(&state_site_2) | indirected
@@ -386,7 +389,7 @@ TEST_CASE(single_site) {
             ,LeftDimension(1)
             ,RightDimension(1)
         );
-        ASSERT_EQ_QUOTED(
+        ASSERT_EQ(
              state_site.physicalDimension(as_unsigned_integer)
             ,computeStateVectorLength(vector<StateSiteAny const*>(1,&state_site) | indirected)
         );
@@ -402,7 +405,7 @@ TEST_CASE(single_site_squared) {
             ,LeftDimension(1)
             ,RightDimension(1)
         );
-        ASSERT_EQ_QUOTED(
+        ASSERT_EQ(
              state_site.physicalDimension(as_unsigned_integer)*state_site.physicalDimension(as_unsigned_integer)
             ,computeStateVectorLength(vector<StateSiteAny const*>(2,&state_site) | indirected)
         );
@@ -428,7 +431,7 @@ TEST_CASE(two_trivial_sites) {
                 ,fillWithGenerator(random.randomComplexDouble)
                 )
             ;
-        ASSERT_EQ_QUOTED(
+        ASSERT_EQ(
              state_site_1.physicalDimension(as_unsigned_integer)*state_site_2.physicalDimension(as_unsigned_integer)
             ,computeStateVectorLength(list_of(&state_site_1)(&state_site_2) | indirected)
         );
@@ -450,7 +453,7 @@ TEST_CASE(computeStateVector_consistent_with_computeStateVectorComponent) {
         REPEAT(10) {
             unsigned long long const index = random(0,state_length-1);
             complex<double> const component = computeStateVectorComponent(state,index);
-            ASSERT_NEAR_QUOTED(component,state_vector[index],1e-13);
+            ASSERT_NEAR_REL(component,state_vector[index],1e-13);
         }
     }
 }

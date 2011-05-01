@@ -24,6 +24,7 @@
 #include <boost/format.hpp>
 #include <boost/range/algorithm/equal.hpp>
 #include <boost/range/algorithm/generate.hpp>
+#include <complex>
 #include <illuminate.hpp>
 #include <iostream>
 #include <sstream>
@@ -41,6 +42,7 @@ using boost::equal;
 using boost::format;
 using boost::generate;
 
+using std::abs;
 using std::cerr;
 using std::endl;
 using std::istringstream;

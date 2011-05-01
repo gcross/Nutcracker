@@ -24,6 +24,7 @@
 #include <boost/range/algorithm/equal.hpp>
 #include <boost/range/algorithm/generate.hpp>
 #include <boost/range/numeric.hpp>
+#include <complex>
 #include <functional>
 #include <illuminate.hpp>
 #include <iostream>
@@ -40,6 +41,7 @@ using boost::assign::list_of;
 using boost::equal;
 using boost::generate;
 
+using std::abs;
 using std::cerr;
 using std::endl;
 using std::generate;
@@ -65,7 +67,7 @@ TEST_CASE(flat_index_round_trip) {
     REPEAT(10) {
         vector<unsigned int> dimensions(random,0);  generate(dimensions,random.randomInteger);
         unsigned long long const flat_index = random(0,accumulate(dimensions,1,multiplies<unsigned int>())-1);
-        ASSERT_EQ_QUOTED(flat_index,tensorIndexToFlatIndex(dimensions,flatIndexToTensorIndex(dimensions,flat_index)));
+        ASSERT_EQ(flat_index,tensorIndexToFlatIndex(dimensions,flatIndexToTensorIndex(dimensions,flat_index)));
     }
 }
 //@+node:gcross.20110215135633.1853: *5* tensor index round trip
@@ -93,7 +95,7 @@ TEST_CASE(index_representation_equivalence) {
     REPEAT(10) {
         unsigned long long const flat_index = random(0,accumulate(dimensions,1,multiplies<unsigned int>()));
         vector<unsigned int> const tensor_index(flatIndexToTensorIndex(dimensions,flat_index));
-        ASSERT_EQ_QUOTED(flat_data[flat_index],tensor_data[tensor_index[0]][tensor_index[1]][tensor_index[2]][tensor_index[3]][tensor_index[4]]);
+        ASSERT_EQ(flat_data[flat_index],tensor_data[tensor_index[0]][tensor_index[1]][tensor_index[2]][tensor_index[3]][tensor_index[4]]);
     }
 
     REPEAT(10) {
@@ -102,7 +104,7 @@ TEST_CASE(index_representation_equivalence) {
             tensor_index.push_back(random(0,dimension-1));
         }
         unsigned long long const flat_index = tensorIndexToFlatIndex(dimensions,tensor_index);
-        ASSERT_EQ_QUOTED(flat_data[flat_index],tensor_data[tensor_index[0]][tensor_index[1]][tensor_index[2]][tensor_index[3]][tensor_index[4]]);
+        ASSERT_EQ(flat_data[flat_index],tensor_data[tensor_index[0]][tensor_index[1]][tensor_index[2]][tensor_index[3]][tensor_index[4]]);
     }
 }
 //@-others
@@ -205,7 +207,7 @@ TEST_CASE(encode_then_decode) {
         YAML::Parser parser(in);
         YAML::Node doc;
         parser.GetNextDocument(doc);
-        ASSERT_EQ(YAML::CT_SCALAR,doc.GetType());
+        ASSERT_EQ(YAML::NodeType::Scalar,doc.Type());
         doc >> y;
 
         ASSERT_EQ(x,y);
