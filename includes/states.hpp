@@ -209,6 +209,170 @@ public:
       , other_side_state_site(other_side_state_site)
     {}
 };
+//@+node:gcross.20110430223656.2179: *3* State
+//@+<< Description >>
+//@+node:gcross.20110430223656.2180: *4* << Description >>
+//! Matrix product state in canonical form.
+/*!
+Specifically, this class contains an immutable matrix product state such that the first site is unnormalized and all sites after it are right-normalized.
+
+\note This class is moveable but not copyable, and uses Boost.Move to implement these semantics.
+*/
+//@-<< Description >>
+struct State {
+    //@+others
+    //@+node:gcross.20110430223656.2181: *4* [Move support]
+    private:
+
+    BOOST_MOVABLE_BUT_NOT_COPYABLE(State)
+    //@+node:gcross.20110430223656.2182: *4* Assignment
+    public:
+
+    //! Moves the matrix product state contained in \c other to \c this and invalidates \c other.
+    void operator=(BOOST_RV_REF(State) other) {
+        first_site = boost::move(other.first_site);
+        rest_sites = boost::move(other.rest_sites);
+    }
+
+    //! Swaps the matrix product state contained in \c other and \c this.
+    void swap(State& other) {
+        first_site.swap(other.first_site);
+        rest_sites.swap(other.rest_sites);
+    }
+    //@+node:gcross.20110430223656.2183: *4* Constructors
+    //! @name Constructors
+
+    public:
+
+    //! Construct an invalid matrix product state (presumably into which you will eventually move data from elsewhere).
+    State() {}
+
+    //! Moves the matrix product state contained in \c other into \c this.
+    State(BOOST_RV_REF(State) other)
+      : first_site(boost::move(other.first_site))
+      , rest_sites(boost::move(other.rest_sites))
+    {}
+
+    //! Constructs \c this with the given sites.
+    /*!
+    \param first_site the left-most site in the matrix product state
+    \param rest_sites all the sites to the right of the left-most site in the matrix product state
+    */
+    State(
+          BOOST_RV_REF(StateSite<Middle>) first_site
+        , BOOST_RV_REF(vector<StateSite<Right> >) rest_sites
+    ) : first_site(first_site)
+      , rest_sites(rest_sites)
+    { }
+    //@+node:gcross.20110430223656.2184: *4* Fields
+    protected:
+
+    //! The left-most site in the matrix product state.
+    StateSite<Middle> first_site;
+
+    //! Vector of sites excluding the left-most site in the matrix product state.
+    vector<StateSite<Right> > rest_sites;
+    //@+node:gcross.20110430223656.2185: *4* Informational
+    //! @name Informational
+
+    //! @{
+
+    public:
+
+    //! Returns the number of sites in this matrix product state;
+    unsigned int numberOfSites() const { return 1+rest_sites.size(); }
+
+    //! @}
+    //@+node:gcross.20110430223656.2186: *4* Iteration support
+    /*! @name Iteration support
+    The State class supports iterating over the sites.  Since the sites have different normalizations, the iteration value type is the base class StateSiteAny.
+    */
+
+    //! @{
+
+    public:
+
+    //! Support class used for iteration over the sites in State.
+    /*!
+    \note The value type is StateSiteAny since the left-most site has a different normalization from the rest of the sites.
+    */
+    class const_iterator :
+        public iterator_facade<
+             const_iterator
+            ,StateSiteAny const
+            ,random_access_traversal_tag
+        >
+    {
+        //! Pointer to the state class.
+        State const* state;
+        //! Current location in the matrix product state.
+        unsigned int index;
+    public:
+        //! Construct a new iterator using the given state and index.
+        const_iterator(
+              State const* state
+            , unsigned int const index
+        ) : state(state)
+          , index(index)
+        {}
+
+        //! Access the site at the current index.
+        StateSiteAny const& dereference() const {
+            return (*state)[index];
+        }
+
+        //! Chech whether two iterators are equal.
+        bool equal(const_iterator const& other) const {
+            return (state == other.state) && (index == other.index);
+        }
+
+        //! Increment the iterator.
+        void increment() { ++index; }
+        //! Decrement the iterator.
+        void decrement() { --index; }
+
+        //! Advance the iterator by \c n sites.
+        void advance(size_t n) { index += n; }
+
+        //! Compute the distance in indices between \c other and \c this.
+        size_t distance_to(const_iterator const& other) const { return other.index - index; }
+    };
+
+    //! Returns an iterator at the first site in the matrix product state.
+    const_iterator begin() const { return const_iterator(this,0); }
+
+    //! Returns an iterator just past the last site in the matrix product state.
+    const_iterator end() const { return const_iterator(this,numberOfSites()); }
+
+    //! @}
+    //@+node:gcross.20110430223656.2187: *4* Site access
+    //! @name Site access
+
+    //! @{
+
+    public:
+
+    //! Returns the left-most site.
+    StateSite<Middle> const& getFirstSite() const { return first_site; }
+
+    //! Returns the vector of sites after the left-most site.
+    vector<StateSite<Right> > const& getRestSites() const { return rest_sites; }
+
+    //! Returns the site at index \c i \a after the left-most site.
+    StateSite<Right> const& getRestSite(unsigned int i) const { return rest_sites[i]; }
+
+    //! Returns the site at index \c i.
+    /*!
+    \note The return type is StateSiteAny since the left-most site has a different normalization from the rest of the sites.
+    */
+    StateSiteAny const& operator[](unsigned int i) const {
+        if(i == 0) return first_site;
+        else return rest_sites[i-1];
+    }
+
+    //! @}
+    //@-others
+};
 //@+node:gcross.20110213161858.1813: ** Functions
 StateVectorFragment extendStateVectorFragment(
       StateVectorFragment const& old_fragment
@@ -410,6 +574,13 @@ template<> struct moveSiteCursor<Right> {
 //@-others
 
 }
+
+//@+<< Outside namespace >>
+//@+node:gcross.20110430223656.2189: ** << Outside namespace >>
+namespace boost {
+    template<> struct range_iterator<Nutcracker::State const> { typedef Nutcracker::State::const_iterator type; };
+}
+//@-<< Outside namespace >>
 
 #endif
 //@-leo

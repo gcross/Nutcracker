@@ -29,6 +29,7 @@
 
 #include "boundaries.hpp"
 #include "core.hpp"
+#include "states.hpp"
 #include "tensors.hpp"
 //@-<< Includes >>
 
@@ -45,7 +46,81 @@ using std::make_pair;
 //@-<< Usings >>
 
 //@+others
-//@+node:gcross.20110214164734.1919: ** Tensors
+//@+node:gcross.20110214164734.1919: ** Classes
+//@+node:gcross.20110216193817.1917: *3* OverlapSitesFromStateSitesAndNormalizeResult
+class OverlapSitesFromStateSitesAndNormalizeResult {
+private:
+    BOOST_MOVABLE_BUT_NOT_COPYABLE(OverlapSitesFromStateSitesAndNormalizeResult)
+public:
+    OverlapSite<Left> left_overlap_site_from_middle_state_site;
+    OverlapSite<Middle> middle_overlap_site_from_middle_state_site;
+    StateSite<Middle> middle_state_site_from_right_state_site;
+    OverlapSite<Right> right_overlap_site_from_right_state_site;
+
+    OverlapSitesFromStateSitesAndNormalizeResult(
+          BOOST_RV_REF(OverlapSitesFromStateSitesAndNormalizeResult) other
+    ) : left_overlap_site_from_middle_state_site(boost::move(other.left_overlap_site_from_middle_state_site))
+      , middle_overlap_site_from_middle_state_site(boost::move(other.middle_overlap_site_from_middle_state_site))
+      , middle_state_site_from_right_state_site(boost::move(other.middle_state_site_from_right_state_site))
+      , right_overlap_site_from_right_state_site(boost::move(other.right_overlap_site_from_right_state_site))
+    {}
+
+    OverlapSitesFromStateSitesAndNormalizeResult(
+          BOOST_RV_REF(OverlapSite<Left>) left_overlap_site_from_middle_state_site
+        , BOOST_RV_REF(OverlapSite<Middle>) middle_overlap_site_from_middle_state_site
+        , BOOST_RV_REF(StateSite<Middle>) middle_state_site_from_right_state_site
+        , BOOST_RV_REF(OverlapSite<Right>) right_overlap_site_from_right_state_site
+    ) : left_overlap_site_from_middle_state_site(left_overlap_site_from_middle_state_site)
+      , middle_overlap_site_from_middle_state_site(middle_overlap_site_from_middle_state_site)
+      , middle_state_site_from_right_state_site(middle_state_site_from_right_state_site)
+      , right_overlap_site_from_right_state_site(right_overlap_site_from_right_state_site)
+    {}
+};
+//@+node:gcross.20110220182654.2074: *3* Projector
+//@+<< Description >>
+//@+node:gcross.20110429225820.3839: *4* << Description >>
+//! Vector of projector sites
+/*!
+This class subclasses boost::container::vector, so it implements move semantics but not copy semantics.
+*/
+//@-<< Description >>
+class ProjectorSite;
+struct Projector : vector<ProjectorSite> {
+    //@+others
+    //@+node:gcross.20110429225820.3841: *4* [Internal typedefs]
+    private:
+
+    typedef vector<ProjectorSite> Base;
+    //@+node:gcross.20110429225820.3840: *4* [Move support]
+    private:
+
+    BOOST_MOVABLE_BUT_NOT_COPYABLE(Projector)
+    //@+node:gcross.20110429225820.3842: *4* Assignment
+    public:
+
+    //! Moves the contents of \c other into \c this.  (\c other will be empty after this.)
+    Projector& operator=(BOOST_RV_REF(Projector) other) {
+        if(this == &other) return *this;
+        Base::operator=(boost::move(static_cast<Base&>(other)));
+        return *this;
+    }
+
+    //! Swaps the contents of \c other and \c this.
+    void swap(Projector& other) {
+        Base::swap(other);
+    }
+    //@+node:gcross.20110429225820.3838: *4* Constructors
+    public:
+
+    //! Construct an empty projector.
+    Projector() {}
+
+    //! Construct this projector by moving the contents of \c other into \c this.  (\c other will be empty after this.)
+    Projector(BOOST_RV_REF(Projector) other)
+      : Base(boost::move(static_cast<Base&>(other)))
+    {}
+    //@-others
+};
 //@+node:gcross.20110214164734.1921: *3* ProjectorMatrix
 class ProjectorMatrix {
 private:
@@ -156,36 +231,99 @@ public:
         );
     }
 };
-//@+node:gcross.20110213233103.2794: ** Classes
-//@+node:gcross.20110216193817.1917: *3* OverlapSitesFromStateSitesAndNormalizeResult
-class OverlapSitesFromStateSitesAndNormalizeResult {
-private:
-    BOOST_MOVABLE_BUT_NOT_COPYABLE(OverlapSitesFromStateSitesAndNormalizeResult)
-public:
-    OverlapSite<Left> left_overlap_site_from_middle_state_site;
-    OverlapSite<Middle> middle_overlap_site_from_middle_state_site;
-    StateSite<Middle> middle_state_site_from_right_state_site;
-    OverlapSite<Right> right_overlap_site_from_right_state_site;
+//@+node:gcross.20110220182654.2072: *3* ProjectorSite
+//@+<< Description >>
+//@+node:gcross.20110429225820.2559: *4* << Description >>
+//! A projector site contains a left-, middle-, and right- normalized version of the same overlap site.
+/*!
+This class is meant to be used when one is sweeping left and right through a chain, so that it makes sense to compute all normalizations of the overlap sites at once rather than to recompute tham at each sweep.
 
-    OverlapSitesFromStateSitesAndNormalizeResult(
-          BOOST_RV_REF(OverlapSitesFromStateSitesAndNormalizeResult) other
-    ) : left_overlap_site_from_middle_state_site(boost::move(other.left_overlap_site_from_middle_state_site))
-      , middle_overlap_site_from_middle_state_site(boost::move(other.middle_overlap_site_from_middle_state_site))
-      , middle_state_site_from_right_state_site(boost::move(other.middle_state_site_from_right_state_site))
-      , right_overlap_site_from_right_state_site(boost::move(other.right_overlap_site_from_right_state_site))
-    {}
+\note This class is moveable but not copyable, and uses Boost.Move to implement these semantics.
+*/
+//@-<< Description >>
+class ProjectorSite {
+    //@+others
+    //@+node:gcross.20110429225820.2560: *4* [Move support]
+    private:
 
-    OverlapSitesFromStateSitesAndNormalizeResult(
-          BOOST_RV_REF(OverlapSite<Left>) left_overlap_site_from_middle_state_site
-        , BOOST_RV_REF(OverlapSite<Middle>) middle_overlap_site_from_middle_state_site
-        , BOOST_RV_REF(StateSite<Middle>) middle_state_site_from_right_state_site
-        , BOOST_RV_REF(OverlapSite<Right>) right_overlap_site_from_right_state_site
-    ) : left_overlap_site_from_middle_state_site(left_overlap_site_from_middle_state_site)
-      , middle_overlap_site_from_middle_state_site(middle_overlap_site_from_middle_state_site)
-      , middle_state_site_from_right_state_site(middle_state_site_from_right_state_site)
-      , right_overlap_site_from_right_state_site(right_overlap_site_from_right_state_site)
-    {}
+    BOOST_MOVABLE_BUT_NOT_COPYABLE(ProjectorSite)
+    //@+node:gcross.20110429225820.2561: *4* Assignment
+    //! @name Assignment
+    //! @{
+
+    public:
+
+    //! Moves the overlap site tensors from \c other to \c this and invalidates \c other.
+    void operator=(BOOST_RV_REF(ProjectorSite) other) {
+        left = boost::move(other.left);
+        middle = boost::move(other.middle);
+        right = boost::move(other.right);
+    }
+
+    //! Swaps the overlap site tensors between \c this and \c other.
+    void swap(ProjectorSite& other) {
+        left.swap(other.left);
+        middle.swap(other.middle);
+        right.swap(other.right);
+    }
+
+    //! @}
+    //@+node:gcross.20110429225820.2562: *4* Constructors
+    //! @name Constructors
+
+    //! @{
+
+    public:
+
+    //! Construct an invalid projector site (presumably into which you will eventually move data from elsewhere).
+    ProjectorSite() {}
+
+    //! Move the overlap sites from \c other into \c this and invalidate \c other.
+    ProjectorSite(BOOST_RV_REF(ProjectorSite) other)
+      : left(boost::move(other.left))
+      , middle(boost::move(other.middle))
+      , right(boost::move(other.right))
+    { }
+
+    //! Construct this projector site from the given overlap sites.
+    ProjectorSite(
+          BOOST_RV_REF(OverlapSite<Left>) left
+        , BOOST_RV_REF(OverlapSite<Middle>) middle
+        , BOOST_RV_REF(OverlapSite<Right>) right
+    ) : left(left)
+      , middle(middle)
+      , right(right)
+    { }
+
+    //! @}
+    //@+node:gcross.20110429225820.2563: *4* Fields
+    private:
+
+    OverlapSite<Left> left;
+    OverlapSite<Middle> middle;
+    OverlapSite<Right> right;
+    //@+node:gcross.20110429225820.2564: *4* Miscellaneous
+    //! @name Overlap site retrieval
+
+    //! @{
+
+    public:
+
+    //! Retrives the overlap site tensor specified by the compile-time template (type tag) parameter \c side.
+    /*!
+    \tparam side a template argument specifying the normalization of the site tensor to fetch;  must be either \c Left, \c Middle, or \c Right, or \c BadLabelException is thrown
+    \return Calling get<side>() returns the \c side overlap site tensor, i.e. get<Left>() returns the left overlap site tensor
+    */
+    template<typename side> OverlapSite<side> const& get() const {
+        throw BadLabelException("OverlapSite::get",typeid(side));
+    }
+    //@-others
 };
+//! \cond
+template<> inline OverlapSite<Left> const& ProjectorSite::get<Left>() const { return left; }
+template<> inline OverlapSite<Middle> const& ProjectorSite::get<Middle>() const { return middle; }
+template<> inline OverlapSite<Right> const& ProjectorSite::get<Right>() const { return right; }
+//! \endcond
 //@+node:gcross.20110213233103.2786: ** Functions
 StateSite<Middle> applyProjectorMatrix(
       ProjectorMatrix const& projector_matrix
