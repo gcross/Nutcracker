@@ -29,6 +29,7 @@
 #include <numeric>
 
 #include "chain.hpp"
+#include "yaml.hpp"
 
 namespace po = boost::program_options;
 

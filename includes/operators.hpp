@@ -27,7 +27,6 @@
 #include <boost/numeric/ublas/matrix.hpp>
 #include <boost/range/algorithm/reverse_copy.hpp>
 #include <complex>
-#include <yaml-cpp/yaml.h>
 
 #include "tensors.hpp"
 #include "utilities.hpp"
@@ -90,9 +89,6 @@ struct OperatorLink {
         return *this;
     }
 };
-
-void operator >> (const YAML::Node& node, OperatorLink& link);
-YAML::Emitter& operator << (YAML::Emitter& emitter, OperatorLink const& link);
 //@+node:gcross.20110206185121.1771: ** Functions
 OperatorSite constructOperatorSite(
       PhysicalDimension const physical_dimension

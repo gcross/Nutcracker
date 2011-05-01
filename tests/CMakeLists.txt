@@ -11,6 +11,7 @@ set(test-SOURCES
     tensors
     utilities
     states
+    yaml
 
     test_utils
 )

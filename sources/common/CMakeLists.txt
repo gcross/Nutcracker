@@ -11,6 +11,7 @@ add_library(Nutcracker
     states
     tensors
     utilities
+    yaml
 )
 target_link_libraries(Nutcracker
     ${Boost_LIBRARIES}

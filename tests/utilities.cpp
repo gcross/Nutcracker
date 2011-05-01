@@ -51,16 +51,15 @@ using std::ostringstream;
 //@-<< Includes >>
 
 //@+others
-//@+node:gcross.20110220093853.1985: ** Tests
-//@+node:gcross.20110215135633.1850: *3* Utilities
+//@+node:gcross.20110215135633.1850: ** Tests
 TEST_SUITE(Utilities) {
 
 //@+others
-//@+node:gcross.20110220093853.1949: *4* index conversion
+//@+node:gcross.20110220093853.1949: *3* index conversion
 TEST_SUITE(index_conversion) {
 
 //@+others
-//@+node:gcross.20110215135633.1851: *5* flat index round trip
+//@+node:gcross.20110215135633.1851: *4* flat index round trip
 TEST_CASE(flat_index_round_trip) {
     RNG random;
 
@@ -70,7 +69,7 @@ TEST_CASE(flat_index_round_trip) {
         ASSERT_EQ(flat_index,tensorIndexToFlatIndex(dimensions,flatIndexToTensorIndex(dimensions,flat_index)));
     }
 }
-//@+node:gcross.20110215135633.1853: *5* tensor index round trip
+//@+node:gcross.20110215135633.1853: *4* tensor index round trip
 TEST_CASE(tensor_index_round_trip) {
     RNG random;
 
@@ -84,7 +83,7 @@ TEST_CASE(tensor_index_round_trip) {
         ASSERT_TRUE(equal(tensor_index,round_trip_tensor_index));
     }
 }
-//@+node:gcross.20110215135633.1854: *5* index representation equivalence
+//@+node:gcross.20110215135633.1854: *4* index representation equivalence
 TEST_CASE(index_representation_equivalence) {
     RNG random;
     unsigned int tensor_data[2][5][3][7][4], *flat_data = &tensor_data[0][0][0][0][0];
@@ -106,113 +105,6 @@ TEST_CASE(index_representation_equivalence) {
         unsigned long long const flat_index = tensorIndexToFlatIndex(dimensions,tensor_index);
         ASSERT_EQ(flat_data[flat_index],tensor_data[tensor_index[0]][tensor_index[1]][tensor_index[2]][tensor_index[3]][tensor_index[4]]);
     }
-}
-//@-others
-
-}
-//@-others
-
-}
-//@+node:gcross.20110220093853.1986: *3* I/O
-TEST_SUITE(IO) {
-
-//@+others
-//@+node:gcross.20110220093853.1950: *4* complex double
-TEST_SUITE(complex_double) {
-
-//@+others
-//@+node:gcross.20110220093853.1953: *5* decode
-TEST_CASE(decode) {
-
-    RNG random;
-
-    REPEAT(10) {
-        complex<double> x = random, y;
-
-        ostringstream out;
-        out << format("[%|.20|,%|.20|]") % x.real() % x.imag();
-        istringstream in(out.str());
-        YAML::Parser parser(in);
-        YAML::Node doc;
-        parser.GetNextDocument(doc);
-        doc >> y;
-
-        ASSERT_EQ(x,y);
-    }
-
-}
-//@+node:gcross.20110220093853.1951: *5* encode then decode
-TEST_CASE(encode_then_decode) {
-
-    RNG random;
-
-    REPEAT(10) {
-        complex<double> x = random, y;
-
-        YAML::Emitter out;
-        out << x;
-        string out_string(out.c_str());
-
-        istringstream in(out_string);
-        YAML::Parser parser(in);
-        YAML::Node doc;
-        parser.GetNextDocument(doc);
-        doc >> y;
-
-        ASSERT_EQ(x,y);
-    }
-
-}
-//@-others
-
-}
-//@+node:gcross.20110220141808.1982: *4* real complex double
-TEST_SUITE(real_complex_double) {
-
-//@+others
-//@+node:gcross.20110220141808.1983: *5* decode
-TEST_CASE(decode) {
-
-    RNG random;
-
-    REPEAT(10) {
-        double x = random.randomDouble();
-
-        ostringstream out;
-        out << format("%|.20|") % x;
-        istringstream in(out.str());
-        YAML::Parser parser(in);
-        YAML::Node doc;
-        parser.GetNextDocument(doc);
-        complex<double> y;
-        doc >> y;
-
-        ASSERT_EQ(c(x,0),y);
-    }
-
-}
-//@+node:gcross.20110220141808.1984: *5* encode then decode
-TEST_CASE(encode_then_decode) {
-
-    RNG random;
-
-    REPEAT(10) {
-        complex<double> x = c(random.randomDouble(),0), y;
-
-        YAML::Emitter out;
-        out << x;
-        string out_string(out.c_str());
-
-        istringstream in(out_string);
-        YAML::Parser parser(in);
-        YAML::Node doc;
-        parser.GetNextDocument(doc);
-        ASSERT_EQ(YAML::NodeType::Scalar,doc.Type());
-        doc >> y;
-
-        ASSERT_EQ(x,y);
-    }
-
 }
 //@-others
 
