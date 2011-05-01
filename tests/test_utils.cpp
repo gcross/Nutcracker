@@ -19,8 +19,6 @@
 
 //@+<< Includes >>
 //@+node:gcross.20110206092738.1737: ** << Includes >>
-#include <algorithm>
-#include <boost/range/algorithm/equal.hpp>
 #include <boost/range/algorithm/generate.hpp>
 #include <boost/range/irange.hpp>
 #include <boost/numeric/ublas/hermitian.hpp>
@@ -29,56 +27,14 @@
 
 #include "test_utils.hpp"
 
-using boost::equal;
 using boost::irange;
 using boost::generate;
 using boost::variate_generator;
-
-using std::cerr;
-using std::endl;
-using std::equal;
 //@-<< Includes >>
 
 //@+others
-//@+node:gcross.20110307093706.2466: ** Typedefs
+//@+node:gcross.20110206185121.1769: ** Typedefs
 typedef boost::numeric::ublas::hermitian_matrix<std::complex<double> > HermitianMatrix;
-//@+node:gcross.20110307093706.2455: ** Functions
-//@+node:gcross.20110307093706.2484: *3* assertFalse
-void assertFalse(char const* name, bool const value) {
-    if(value) {
-        cerr << "Failed assertion: !" << name << endl;
-        abort();
-    }
-}
-//@+node:gcross.20110307093706.2456: *3* assertOperatorSitesEqual
-void assertOperatorSitesEqual(OperatorSite const& operator_site_1,OperatorSite const& operator_site_2) {
-    ASSERT_EQUAL(operator_site_1.physicalDimension(),operator_site_2.physicalDimension());
-    ASSERT_EQUAL(operator_site_1.leftDimension(),operator_site_2.leftDimension());
-    ASSERT_EQUAL(operator_site_1.rightDimension(),operator_site_2.rightDimension());
-    ASSERT_EQUAL(operator_site_1.numberOfMatrices(),operator_site_2.numberOfMatrices());
-    ASSERT_TRUE(equal(operator_site_1,operator_site_2));
-    ASSERT_TRUE(equal((uint32_t const*)operator_site_1,((uint32_t const*)operator_site_1)+2*operator_site_1.numberOfMatrices(),(uint32_t const*)operator_site_2));
-}
-//@+node:gcross.20110307093706.2457: *3* assertOperatorsEqual
-void assertOperatorsEqual(Operator const& operator_1,Operator const& operator_2) {
-    ASSERT_EQUAL(operator_1.size(),operator_2.size());
-    BOOST_FOREACH(unsigned int const i, irange(0u,(unsigned int)operator_1.size())) {
-        assertOperatorSitesEqual(*operator_1[i],*operator_2[i]);
-    }
-}
-//@+node:gcross.20110307093706.2464: *3* assertTrue
-void assertTrue(char const* name, bool const value) {
-    if(!value) {
-        cerr << "Failed assertion: " << name << endl;
-        abort();
-    }
-}
-//@+node:gcross.20110307093706.3071: *3* fail
-void fail(string const& message) {
-    using namespace std;
-    cerr << message << endl;
-    exit(-1);
-}
 //@+node:gcross.20110206092738.1740: ** Generators
 //@+node:gcross.20110206092738.1741: *3* ComplexDoubleGenerator
 struct ComplexDoubleGenerator {

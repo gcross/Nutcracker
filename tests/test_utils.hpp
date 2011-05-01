@@ -25,9 +25,6 @@
 #include <boost/random/normal_distribution.hpp>
 #include <boost/random/uniform_smallint.hpp>
 #include <complex>
-#include <cstdlib>
-#include <iomanip>
-#include <iostream>
 
 #include "operators.hpp"
 #include "states.hpp"
@@ -43,65 +40,6 @@ using boost::uniform_smallint;
 //@-<< Includes >>
 
 //@+others
-//@+node:gcross.20110307093706.2458: ** Functions
-void assertFalse(char const* name, bool const value);
-void assertNear(char const* name, bool const value);
-void assertOperatorSitesEqual(OperatorSite const& operator_site_1,OperatorSite const& operator_site_2);
-void assertOperatorsEqual(Operator const& operator_1,Operator const& operator_2);
-void assertTrue(char const* name, bool const value);
-
-void fail(string const& message);
-//@+node:gcross.20110307093706.2460: *3* assertEqual
-template<typename T1, typename T2> void assertEqual(char const* name_1, T1 const& value_1, char const* name_2, T2 const& value_2) {
-    using namespace std;
-    if(value_1 != value_2) {
-        cerr << "Not equal:" << endl;
-        cerr << name_1 << " = " << setprecision(15) << value_1 << endl;
-        cerr << name_2 << " = " << setprecision(15) << value_2 << endl;
-        exit(-1);
-    }
-}
-
-template<typename T1, typename T2> void assertEqual(T1 const& expected_value, char const* actual_value_name, T2 const& actual_value) {
-    using namespace std;
-    if(expected_value != actual_value) {
-        cerr << actual_value_name << " = " << actual_value << " /= " << expected_value << endl;
-        exit(-1);
-    }
-}
-//@+node:gcross.20110307093706.3158: *3* assertLessOrEqual
-template<typename T1, typename T2> void assertLessOrEqual(char const* name_1, T1 const& value_1, char const* name_2, T2 const& value_2) {
-    using namespace std;
-    if(value_1 > value_2) {
-        cerr << name_1 << " > " << name_2 << endl;
-        cerr << name_1 << " = " << setprecision(15) << value_1 << endl;
-        cerr << name_2 << " = " << setprecision(15) << value_2 << endl;
-        exit(-1);
-    }
-}
-//@+node:gcross.20110307093706.2567: *3* assertNearRelative
-template<typename T1, typename T2, typename T3> void assertNearRelative(char const* name_1, T1 const& value_1, char const* name_2, T2 const& value_2, T3 const& relative_error) {
-    using namespace std;
-    if(((abs(value_1)+abs(value_2))/2 > relative_error) && (abs(value_1-value_2)/((abs(value_1)+abs(value_2))/2) > relative_error)) {
-        cerr << "Not equal within relative tolerance " << relative_error << ":" << endl;
-        cerr << name_1 << " = " << setprecision(15) << value_1 << endl;
-        cerr << name_2 << " = " << setprecision(15) << value_2 << endl;
-        cerr << "(abs(value_1)+abs(value_2))/2 = " << ((abs(value_1)+abs(value_2))/2) << endl;
-        cerr << "abs(value_1-value_2)/((abs(value_1)+abs(value_2))/2) = " << (abs(value_1-value_2)/((abs(value_1)+abs(value_2))/2)) << endl;
-        exit(-1);
-    }
-}
-
-template<typename T1, typename T2, typename T3> void assertNearRelative(T1 const& value_1, char const* name_2, T2 const& value_2, T3 const& relative_error) {
-    using namespace std;
-    if(((abs(value_1)+abs(value_2))/2 > relative_error) && (abs(value_1-value_2)/((abs(value_1)+abs(value_2))/2) > relative_error)) {
-        cerr << "Not equal within relative tolerance " << relative_error << ":" << endl;
-        cerr << name_2 << " = " << setprecision(15) << value_2 <<  " /= " << value_1 << endl;
-        cerr << "(abs(value_1)+abs(value_2))/2 = " << ((abs(value_1)+abs(value_2))/2) << endl;
-        cerr << "abs(value_1-value_2)/((abs(value_1)+abs(value_2))/2) = " << (abs(value_1-value_2)/((abs(value_1)+abs(value_2))/2)) << endl;
-        exit(-1);
-    }
-}
 //@+node:gcross.20110202223558.1714: ** struct RNG
 class RNG {
     friend class ComplexDoubleGenerator;
@@ -146,13 +84,5 @@ public:
     operator unsigned int() { return randomInteger(); }
     operator complex<double>() { return randomComplexDouble(); }
 };
-//@+node:gcross.20110307093706.2365: ** Macros
-#define ASSERT_EQUAL(A,B) assertEqual(#A,A,#B,B)
-#define ASSERT_LESS_OR_EQUAL(A,B) assertLessOrEqual(#A,A,#B,B)
-#define ASSERT_EQUAL_TO(A,B) assertEqual(A,#B,B)
-#define ASSERT_FALSE(A) assertFalse(#A,A)
-#define ASSERT_NEAR_RELATIVE(A,B,C) assertNearRelative(#A,A,#B,B,C)
-#define ASSERT_NEAR_RELATIVE_TO(A,B,C) assertNearRelative(A,#B,B,C)
-#define ASSERT_TRUE(A) assertTrue(#A,A)
 //@-others
 //@-leo

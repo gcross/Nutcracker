@@ -23,8 +23,6 @@ mark_as_advanced(
     )
 #@-<< Settings >>
 
-enable_testing()
-
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/CMakeModules/")
 
 #@+<< Platform-specific tweaks >>
