@@ -1170,7 +1170,9 @@ class StateSiteAny : public SiteBaseTensor {
 
 Each state site tensor is associated with a qudit,and has three ranks.  Two of the three ranks correspond to its connections to its neighbors (i.e., its "left" and "right" dimensions) and the last rank corresponds to the state space of the qudit at the site (i.e., its "physical" dimension).
 
-The type tag on the class uses the type system to embed information about the normalization of the tensor in the type, so that for example a left-normalized state site tensor cannot be used in the place of a right-normalized tensor.
+The type tag \c side on the class uses the type system to embed information about the normalization of the tensor in the type, so that for example a left-normalized state site tensor cannot be used in the place of a right-normalized tensor.
+
+\tparam side the normalization of this state site tensor
 
 \note
 See the documentation in BaseTensor for a description of the policy of how data ownership in tensors works.  (Short version: tensors own their data, which can be moved but not copied unless you explicitly ask for a copy to be made.)
@@ -1415,7 +1417,9 @@ class OverlapSiteAny : public SiteBaseTensor {
 
 An overlap site tensor is the mathematical dual of a state site tensor that is used when computing the overlap of two quantum states.  Like a state site tensor, it is associated with a qudit, and has three ranks.  Two of the three ranks correspond to its connections to its neighbors (i.e., its "left" and "right" dimensions) and the last rank corresponds to the state space of the qudit at the site (i.e., its "physical" dimension).
 
-The type tag on the class uses the type system to embed information about the normalization of the tensor in the type, so that for example a left-normalized state site tensor cannot be used in the place of a right-normalized tensor.
+The type tag \c side on the class uses the type system to embed information about the normalization of the tensor in the type, so that for example a left-normalized state site tensor cannot be used in the place of a right-normalized tensor.
+
+\tparam side the normalization of this state site tensor
 
 \note
 See the documentation in BaseTensor for a description of the policy of how data ownership in tensors works.  (Short version: tensors own their data, which can be moved but not copied unless you explicitly ask for a copy to be made.)
