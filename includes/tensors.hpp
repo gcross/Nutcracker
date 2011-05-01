@@ -1732,6 +1732,217 @@ class OperatorSite : public SiteBaseTensor {
 };
 //@-others
 
+//@+<< Connectors >>
+//@+node:gcross.20110430163445.2577: *3* << Connectors >>
+/*!
+\defgroup TensorConnectors Tensor connectors
+
+The tensor connectors provide a set of operator functions that allow one to determine the size of the connected dimension between two connectable tensors.  These functions include a sanity check that the two tensors agree on what this size should be;  an exception is thrown if they disagree.
+*/
+
+//! @{
+
+//@+others
+//@+node:gcross.20110430163445.2578: *4* ExpectationBoundary<Left> | OperatorSite
+//! Connects the operator dimension of a left expectation boundary to the left dimension of an operator site.
+inline unsigned int operator|(
+      Nutcracker::ExpectationBoundary<Left> const& expectation_boundary
+    , Nutcracker::OperatorSite const& operator_site
+) {
+    return connectDimensions(
+         "left expectation boundary state"
+        ,expectation_boundary.operatorDimension(as_unsigned_integer)
+        ,"operator site left"
+        ,operator_site.leftDimension(as_unsigned_integer)
+    );
+}
+//@+node:gcross.20110430163445.2579: *4* ExpectationBoundary<Left> | StateSiteAny
+//! Connects the operator dimension of a left expectation boundary to the left dimension of an state site.
+inline unsigned int operator|(
+      Nutcracker::ExpectationBoundary<Left> const& expectation_boundary
+    , Nutcracker::StateSiteAny const& state_site
+) {
+    return connectDimensions(
+         "left expectation boundary state"
+        ,expectation_boundary.stateDimension(as_unsigned_integer)
+        ,"state site left"
+        ,state_site.leftDimension(as_unsigned_integer)
+    );
+}
+//@+node:gcross.20110430163445.2580: *4* OperatorSite | ExpectationBoundary<Right>
+//! Connects the right dimension of an operator site to the operator dimension of a right expectation boundary.
+inline unsigned int operator|(
+      Nutcracker::OperatorSite const& operator_site
+    , Nutcracker::ExpectationBoundary<Right> const& expectation_boundary
+) {
+    return connectDimensions(
+         "operator site right"
+        ,operator_site.rightDimension(as_unsigned_integer)
+        ,"right expectation boundary state"
+        ,expectation_boundary.operatorDimension(as_unsigned_integer)
+    );
+}
+//@+node:gcross.20110430163445.2581: *4* OperatorSite | StateSiteAny
+//! Connects the physical dimension of an operator site to the physical dimension of a state site.
+inline unsigned int operator|(
+      Nutcracker::OperatorSite const& operator_site
+    , Nutcracker::StateSiteAny const& state_site
+) {
+    return connectDimensions(
+         "operator site physical"
+        ,operator_site.physicalDimension(as_unsigned_integer)
+        ,"middle state site physical"
+        ,state_site.physicalDimension(as_unsigned_integer)
+    );
+}
+//@+node:gcross.20110430163445.2582: *4* OverlapBoundary<Left> | OverlapSiteAny
+//! Connects the operator dimension of a left overlap boundary to the left dimension of an overlap site.
+inline unsigned int operator|(
+      Nutcracker::OverlapBoundary<Left> const& overlap_boundary
+    , Nutcracker::OverlapSiteAny const& overlap_site
+) {
+    return connectDimensions(
+         "left overlap boundary overlap"
+        ,overlap_boundary.overlapDimension(as_unsigned_integer)
+        ,"overlap site left"
+        ,overlap_site.leftDimension(as_unsigned_integer)
+    );
+}
+//@+node:gcross.20110430163445.2583: *4* OverlapBoundary<Left> | StateSiteAny
+//! Connects the operator dimension of a left overlap boundary to the left dimension of a state site.
+inline unsigned int operator|(
+      Nutcracker::OverlapBoundary<Left> const& overlap_boundary
+    , Nutcracker::StateSiteAny const& state_site
+) {
+    return connectDimensions(
+         "left overlap boundary state"
+        ,overlap_boundary.stateDimension(as_unsigned_integer)
+        ,"state site left"
+        ,state_site.leftDimension(as_unsigned_integer)
+    );
+}
+//@+node:gcross.20110430163445.2584: *4* OverlapSite<Middle> | OverlapBoundary<Right>
+//! Connects the right dimension of a middle overlap site to the overlap dimension of a right overlap boundary.
+inline unsigned int operator|(
+      Nutcracker::OverlapSite<Middle> const& overlap_site
+    , Nutcracker::OverlapBoundary<Right> const& overlap_boundary
+) {
+    return connectDimensions(
+         "middle overlap site right"
+        ,overlap_site.rightDimension(as_unsigned_integer)
+        ,"right overlap boundary overlap"
+        ,overlap_boundary.overlapDimension(as_unsigned_integer)
+    );
+}
+//@+node:gcross.20110430163445.2585: *4* OverlapSite<Right> | OverlapBoundary<Right>
+//! Connects the right dimension of a right overlap site to the overlap dimension of a right overlap boundary.
+inline unsigned int operator|(
+      Nutcracker::OverlapSite<Right> const& overlap_site
+    , Nutcracker::OverlapBoundary<Right> const& overlap_boundary
+) {
+    return connectDimensions(
+         "right overlap site right"
+        ,overlap_site.rightDimension(as_unsigned_integer)
+        ,"right overlap boundary overlap"
+        ,overlap_boundary.overlapDimension(as_unsigned_integer)
+    );
+}
+//@+node:gcross.20110430163445.2586: *4* OverlapSiteAny | StateSiteAny
+//! Connects the physical dimension of an overlap site to the physical dimension of a state site.
+inline unsigned int operator|(
+      Nutcracker::OverlapSiteAny const& overlap_site
+    , Nutcracker::StateSiteAny const& state_site
+) {
+    return connectDimensions(
+         "overlap site physical"
+        ,overlap_site.physicalDimension(as_unsigned_integer)
+        ,"state site physical"
+        ,state_site.physicalDimension(as_unsigned_integer)
+    );
+}
+//@+node:gcross.20110430163445.2587: *4* StateSite<Left> | StateSite<Middle>
+//! Connects the right dimension of a left state site to the left dimension of a middle state site.
+inline unsigned int operator|(
+      Nutcracker::StateSite<Left> const& state_site_1
+    , Nutcracker::StateSite<Middle> const& state_site_2
+) {
+    return connectDimensions(
+         "left state site right"
+        ,state_site_1.rightDimension(as_unsigned_integer)
+        ,"middle state site left"
+        ,state_site_2.leftDimension(as_unsigned_integer)
+    );
+}
+//@+node:gcross.20110430163445.2588: *4* StateSite<Middle> | ExpectationBoundary<Right>
+//! Connects the right dimension of a middle state site to the operator dimension of a right expectation boundary.
+inline unsigned int operator|(
+      Nutcracker::StateSite<Middle> const& state_site
+    , Nutcracker::ExpectationBoundary<Right> const& expectation_boundary
+) {
+    return connectDimensions(
+         "middle state site right"
+        ,state_site.rightDimension(as_unsigned_integer)
+        ,"right expectation boundary state"
+        ,expectation_boundary.stateDimension(as_unsigned_integer)
+    );
+}
+//@+node:gcross.20110430163445.2589: *4* StateSite<Middle> | OverlapBoundary<Right>
+//! Connects the right dimension of a middle state site to the operator dimension of a right overlap boundary.
+inline unsigned int operator|(
+      Nutcracker::StateSite<Middle> const& state_site
+    , Nutcracker::OverlapBoundary<Right> const& overlap_boundary
+) {
+    return connectDimensions(
+         "middle state site right"
+        ,state_site.rightDimension(as_unsigned_integer)
+        ,"right overlap boundary state"
+        ,overlap_boundary.stateDimension(as_unsigned_integer)
+    );
+}
+//@+node:gcross.20110430163445.2590: *4* StateSite<Middle> | StateSite<Right>
+//! Connects the right dimension of a middle state site to the left dimension of a right state site.
+inline unsigned int operator|(
+      Nutcracker::StateSite<Middle> const& state_site_1
+    , Nutcracker::StateSite<Right> const& state_site_2
+) {
+    return connectDimensions(
+         "middle state site right"
+        ,state_site_1.rightDimension(as_unsigned_integer)
+        ,"right state site left"
+        ,state_site_2.leftDimension(as_unsigned_integer)
+    );
+}
+//@+node:gcross.20110430163445.2591: *4* StateSite<Right> | ExpectationBoundary<Right>
+//! Connects the right dimension of a right state site to the operator dimension of a right expectation boundary.
+inline unsigned int operator|(
+      Nutcracker::StateSite<Right> const& state_site
+    , Nutcracker::ExpectationBoundary<Right> const& expectation_boundary
+) {
+    return connectDimensions(
+         "right state site right"
+        ,state_site.rightDimension(as_unsigned_integer)
+        ,"right overlap boundary state"
+        ,expectation_boundary.stateDimension(as_unsigned_integer)
+    );
+}
+//@+node:gcross.20110430163445.2592: *4* StateSite<Right> | OverlapBoundary<Right>
+//! Connects the right dimension of a right state site to the operator dimension of a right overlap boundary.
+inline unsigned int operator|(
+      Nutcracker::StateSite<Right> const& state_site
+    , Nutcracker::OverlapBoundary<Right> const& overlap_boundary
+) {
+    return connectDimensions(
+         "right state site right"
+        ,state_site.rightDimension(as_unsigned_integer)
+        ,"right overlap boundary state"
+        ,overlap_boundary.stateDimension(as_unsigned_integer)
+    );
+}
+//@-others
+
+//! @}
+//@-<< Connectors >>
+
 //! @}
 //@+node:gcross.20110217014932.1927: ** Classes
 //@+node:gcross.20110220182654.2072: *3* ProjectorSite
@@ -2035,187 +2246,6 @@ struct State {
     //! @}
     //@-others
 };
-//@+node:gcross.20110215235924.1956: ** Connectors
-//@+node:gcross.20110215235924.1957: *3* ExpectationBoundary<Left> | OperatorSite
-inline unsigned int operator|(
-      ExpectationBoundary<Left> const& expectation_boundary
-    , OperatorSite const& operator_site
-) {
-    return connectDimensions(
-         "left expectation boundary state"
-        ,expectation_boundary.operatorDimension(as_unsigned_integer)
-        ,"operator site left"
-        ,operator_site.leftDimension(as_unsigned_integer)
-    );
-}
-//@+node:gcross.20110215235924.1958: *3* ExpectationBoundary<Left> | StateSiteAny
-inline unsigned int operator|(
-      ExpectationBoundary<Left> const& expectation_boundary
-    , StateSiteAny const& state_site
-) {
-    return connectDimensions(
-         "left expectation boundary state"
-        ,expectation_boundary.stateDimension(as_unsigned_integer)
-        ,"state site left"
-        ,state_site.leftDimension(as_unsigned_integer)
-    );
-}
-//@+node:gcross.20110215235924.1960: *3* OperatorSite | ExpectationBoundary<Right>
-inline unsigned int operator|(
-      OperatorSite const& operator_site
-    , ExpectationBoundary<Right> const& expectation_boundary
-) {
-    return connectDimensions(
-         "operator site right"
-        ,operator_site.rightDimension(as_unsigned_integer)
-        ,"right expectation boundary state"
-        ,expectation_boundary.operatorDimension(as_unsigned_integer)
-    );
-}
-//@+node:gcross.20110215235924.1961: *3* OperatorSite | StateSite<Middle>
-inline unsigned int operator|(
-      OperatorSite const& operator_site
-    , StateSiteAny const& state_site
-) {
-    return connectDimensions(
-         "operator site physical"
-        ,operator_site.physicalDimension(as_unsigned_integer)
-        ,"middle state site physical"
-        ,state_site.physicalDimension(as_unsigned_integer)
-    );
-}
-//@+node:gcross.20110215235924.1962: *3* OverlapBoundary<Left> | OverlapSiteAny
-inline unsigned int operator|(
-      OverlapBoundary<Left> const& overlap_boundary
-    , OverlapSiteAny const& overlap_site
-) {
-    return connectDimensions(
-         "left overlap boundary overlap"
-        ,overlap_boundary.overlapDimension(as_unsigned_integer)
-        ,"overlap site left"
-        ,overlap_site.leftDimension(as_unsigned_integer)
-    );
-}
-//@+node:gcross.20110215235924.1964: *3* OverlapBoundary<Left> | StateSiteAny
-inline unsigned int operator|(
-      OverlapBoundary<Left> const& overlap_boundary
-    , StateSiteAny const& state_site
-) {
-    return connectDimensions(
-         "left overlap boundary state"
-        ,overlap_boundary.stateDimension(as_unsigned_integer)
-        ,"state site left"
-        ,state_site.leftDimension(as_unsigned_integer)
-    );
-}
-//@+node:gcross.20110215235924.1967: *3* OverlapSite<Middle> | OverlapBoundary<Right>
-inline unsigned int operator|(
-      OverlapSite<Middle> const& overlap_site
-    , OverlapBoundary<Right> const& overlap_boundary
-) {
-    return connectDimensions(
-         "middle overlap site right"
-        ,overlap_site.rightDimension(as_unsigned_integer)
-        ,"right overlap boundary overlap"
-        ,overlap_boundary.overlapDimension(as_unsigned_integer)
-    );
-}
-//@+node:gcross.20110215235924.1968: *3* OverlapSite<Right> | OverlapBoundary<Right>
-inline unsigned int operator|(
-      OverlapSite<Right> const& overlap_site
-    , OverlapBoundary<Right> const& overlap_boundary
-) {
-    return connectDimensions(
-         "right overlap site right"
-        ,overlap_site.rightDimension(as_unsigned_integer)
-        ,"right overlap boundary overlap"
-        ,overlap_boundary.overlapDimension(as_unsigned_integer)
-    );
-}
-//@+node:gcross.20110215235924.1966: *3* OverlapSiteAny | StateSiteAny
-inline unsigned int operator|(
-      OverlapSiteAny const& overlap_site
-    , StateSiteAny const& state_site
-) {
-    return connectDimensions(
-         "overlap site physical"
-        ,overlap_site.physicalDimension(as_unsigned_integer)
-        ,"state site physical"
-        ,state_site.physicalDimension(as_unsigned_integer)
-    );
-}
-//@+node:gcross.20110215235924.1970: *3* StateSite<Left> | StateSite<Middle>
-inline unsigned int operator|(
-      StateSite<Left> const& state_site_1
-    , StateSite<Middle> const& state_site_2
-) {
-    return connectDimensions(
-         "left state site right"
-        ,state_site_1.rightDimension(as_unsigned_integer)
-        ,"middle state site left"
-        ,state_site_2.leftDimension(as_unsigned_integer)
-    );
-}
-//@+node:gcross.20110215235924.1971: *3* StateSite<Middle> | ExpectationBoundary<Left>
-inline unsigned int operator|(
-      StateSite<Middle> const& state_site
-    , ExpectationBoundary<Right> const& expectation_boundary
-) {
-    return connectDimensions(
-         "middle state site right"
-        ,state_site.rightDimension(as_unsigned_integer)
-        ,"right expectation boundary state"
-        ,expectation_boundary.stateDimension(as_unsigned_integer)
-    );
-}
-//@+node:gcross.20110215235924.1972: *3* StateSite<Middle> | OverlapBoundary<Right>
-inline unsigned int operator|(
-      StateSite<Middle> const& state_site
-    , OverlapBoundary<Right> const& overlap_boundary
-) {
-    return connectDimensions(
-         "middle state site right"
-        ,state_site.rightDimension(as_unsigned_integer)
-        ,"right overlap boundary state"
-        ,overlap_boundary.stateDimension(as_unsigned_integer)
-    );
-}
-//@+node:gcross.20110215235924.1973: *3* StateSite<Middle> | StateSite<Right>
-inline unsigned int operator|(
-      StateSite<Middle> const& state_site_1
-    , StateSite<Right> const& state_site_2
-) {
-    return connectDimensions(
-         "middle state site right"
-        ,state_site_1.rightDimension(as_unsigned_integer)
-        ,"right state site left"
-        ,state_site_2.leftDimension(as_unsigned_integer)
-    );
-}
-//@+node:gcross.20110215235924.1974: *3* StateSite<Right> | ExpectationBoundary<Right>
-inline unsigned int operator|(
-      StateSite<Right> const& state_site
-    , ExpectationBoundary<Right> const& expectation_boundary
-) {
-    return connectDimensions(
-         "right state site right"
-        ,state_site.rightDimension(as_unsigned_integer)
-        ,"right overlap boundary state"
-        ,expectation_boundary.stateDimension(as_unsigned_integer)
-    );
-}
-//@+node:gcross.20110215235924.1975: *3* StateSite<Right> | OverlapBoundary<Right>
-inline unsigned int operator|(
-      StateSite<Right> const& state_site
-    , OverlapBoundary<Right> const& overlap_boundary
-) {
-    return connectDimensions(
-         "right state site right"
-        ,state_site.rightDimension(as_unsigned_integer)
-        ,"right overlap boundary state"
-        ,overlap_boundary.stateDimension(as_unsigned_integer)
-    );
-}
 //@+node:gcross.20110220093853.1976: ** I/O
 //@+node:gcross.20110220093853.1977: *3* Operator
 void operator >> (const YAML::Node& node, Operator& operator_site);
