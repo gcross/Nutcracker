@@ -17,6 +17,14 @@
 //@@c
 //@-<< License >>
 
+//@+<< Documentation >>
+//@+node:gcross.20110509141853.2170: ** << Documentation >>
+/*!
+\file boundaries.cpp
+\brief Boundary-related functions
+*/
+//@-<< Documentation >>
+
 //@+<< Includes >>
 //@+node:gcross.20110214155808.1863: ** << Includes >>
 #include "boundaries.hpp"
