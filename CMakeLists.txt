@@ -108,7 +108,7 @@ if(DOXYGEN_FOUND AND INKSCAPE)
 
     add_custom_target(doc
         COMMAND ${DOXYGEN_EXECUTABLE} ${CMAKE_BINARY_DIR}/Doxyfile
-        DEPENDS doc-images
+        DEPENDS ${doc-image-sources}
         WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
         COMMENT "Generating API documentation with Doxygen"
         VERBATIM
