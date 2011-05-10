@@ -77,11 +77,7 @@ message (STATUS "Build type is " ${CMAKE_BUILD_TYPE})
 #@+<< Configure documentation >>
 #@+node:gcross.20110427003658.2449: ** << Configure documentation >>
 find_package(Doxygen)
-find_program(
-    INKSCAPE
-    NAMES inkscape-bin inkscape
-    PATHS = /Applications/Inkscape.app/Contents/Resources/bin
-)
+find_program(INKSCAPE inkscape)
 
 if(DOXYGEN_FOUND AND INKSCAPE)
     configure_file(${CMAKE_SOURCE_DIR}/Doxyfile.in ${CMAKE_BINARY_DIR}/Doxyfile @ONLY)
