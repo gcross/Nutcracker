@@ -737,6 +737,9 @@ class SiteBaseTensor : public BaseTensor {
 //@+node:gcross.20110428160636.2519: *5* << Description >>
 /*! Boundaries for expectation tensor network chains.
 
+\image html expectation_boundary_tensors.png
+\image latex expectation_boundary_tensors.eps
+
 These tensors provide the left and right boundaries for the tensor network chains used to compute expectation values.  They have three ranks, two of which connect to the neighboring (i.e., left- or right-most) state site tensor and its complex conjugate (the "state" dimension), and one of which connects to the operator site tensor (the "operator" dimension).
 
 The type tag on this class should be Left or Right, corresponding to whether this is respectively the left or the right boundary of the chain.
@@ -881,6 +884,9 @@ template<typename side> ExpectationBoundary<side> const ExpectationBoundary<side
 //@+<< Description >>
 //@+node:gcross.20110428160636.2528: *5* << Description >>
 /*! Boundaries for overlap tensor network chains.
+
+\image html overlap_boundary_tensors.png
+\image latex overlap_boundary_tensors.eps
 
 These tensors provide the left and right boundaries for the tensor network chains used to compute overlaps between states.  They have two ranks, one of which connects to an overlap site tensor (the "ovelap" dimension) and one of which connects to a state site tensor (the "state" dimension).
 
@@ -1028,6 +1034,9 @@ template<typename side> OverlapBoundary<side> const OverlapBoundary<side>::trivi
 //@+node:gcross.20110428160636.2478: *5* << Description >>
 /*! Base class for state site tensors.
 
+\image html state_site_tensor.png
+\image latex state_site_tensor.eps
+
 Each state site tensor is associated with a qudit and has three ranks.  Two of the three ranks correspond to its connections to its neighbors (i.e., its "left" and "right" dimensions) and the last rank corresponds to the state space of the qudit at the site (i.e., its "physical" dimension).
 
 The \c Any suffix on the base class means that no assertion has been made about the normalization of this tensor.
@@ -1168,6 +1177,9 @@ class StateSiteAny : public SiteBaseTensor {
 //@+node:gcross.20110428160636.2485: *5* << Description >>
 /*! State site tensors.
 
+\image html state_site_tensor.png
+\image latex state_site_tensor.eps
+
 Each state site tensor is associated with a qudit,and has three ranks.  Two of the three ranks correspond to its connections to its neighbors (i.e., its "left" and "right" dimensions) and the last rank corresponds to the state space of the qudit at the site (i.e., its "physical" dimension).
 
 The type tag \c side on the class uses the type system to embed information about the normalization of the tensor in the type, so that for example a left-normalized state site tensor cannot be used in the place of a right-normalized tensor.
@@ -1298,6 +1310,9 @@ template<typename side> StateSite<side> const StateSite<side>::trivial(make_triv
 //@+node:gcross.20110428160636.2491: *5* << Description >>
 /*! Base class for overlap site tensors.
 
+\image html overlap_site_tensor.png
+\image latex overlap_site_tensor.eps
+
 An overlap site tensor is the mathematical dual of a state site tensor that is used when computing the overlap of two quantum states.  Like a state site tensor, it is associated with a qudit, and has three ranks.  Two of the three ranks correspond to its connections to its neighbors (i.e., its "left" and "right" dimensions) and the last rank corresponds to the state space of the qudit at the site (i.e., its "physical" dimension).
 
 The \c Any suffix on the base class means that no assertion has been made about the normalization of this tensor.
@@ -1414,6 +1429,9 @@ class OverlapSiteAny : public SiteBaseTensor {
 //@+<< Description >>
 //@+node:gcross.20110428160636.2493: *5* << Description >>
 /*! Overlap site tensors.
+
+\image html overlap_site_tensor.png
+\image latex overlap_site_tensor.eps
 
 An overlap site tensor is the mathematical dual of a state site tensor that is used when computing the overlap of two quantum states.  Like a state site tensor, it is associated with a qudit, and has three ranks.  Two of the three ranks correspond to its connections to its neighbors (i.e., its "left" and "right" dimensions) and the last rank corresponds to the state space of the qudit at the site (i.e., its "physical" dimension).
 
@@ -1540,6 +1558,9 @@ template<typename side> OverlapSite<side> const OverlapSite<side>::trivial(make_
 //@+<< Description >>
 //@+node:gcross.20110428160636.2507: *4* << Description >>
 /*! Operator site tensor.
+
+\image html operator_site_tensor.png
+\image latex operator_site_tensor.eps
 
 Each operator site tensor is associated with a qudit and has four ranks.  Two of the four ranks correspond to its connections to its neighbors (i.e., its "left" and "right" dimensions) and the last two ranks corresponds to the space of operators acting on the qudit at the site (i.e., its "physical" dimension);  of the last two ranks, one connects to a state site tensor, and the other connects to an overlap site tensor.
 
