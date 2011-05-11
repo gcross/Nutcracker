@@ -17,6 +17,14 @@
 //@@c
 //@-<< License >>
 
+//@+<< Documentation >>
+//@+node:gcross.20110509212455.3993: ** << Documentation >>
+/*!
+\file core.hpp
+\brief Core numeric kernels
+*/
+//@-<< Documentation >>
+
 #ifndef NUTCRACKER_CORE_HPP
 #define NUTCRACKER_CORE_HPP
 
@@ -45,7 +53,14 @@ using std::min;
 
 //@+others
 //@+node:gcross.20110213233103.2753: ** Functions
+
+//! Core numeric kernels
 namespace Core {
+
+//! \defgroup CoreKernels Core numeric kernels
+
+//! @{
+
 
 complex<double> compute_expectation(
     uint32_t const bl,
@@ -84,6 +99,23 @@ void contract_matrix_left(
   , complex<double>* new_left_environment
 );
 
+//! Contracts the state and operator site tensors into the left boundary.
+/*!
+\image html contract_sos_left.png
+\image latex contract_sos_left.eps
+
+\param bl the state site tensor left dimension
+\param br the state site tensor right dimension
+\param cl the operator site tensor left dimension
+\param br the operator site tensor right dimension
+\param d the state and operator site physical dimension
+\param left_environment read-only pointer to the left expectation boundary data
+\param number_of_matrices the number of operator transition matrices
+\param sparse_operator_indices read-only pointer to the operator transition index data
+\param sparse_operator_matrices read-only pointer the operator transition matrix data
+\param state_site_tensor read-only the state site tensor
+\param writable pointer to the new left expectation boundary tensor
+*/
 void contract_sos_left(
     uint32_t const bl,
     uint32_t const br,
@@ -254,6 +286,8 @@ uint32_t random_projector_matrix(
 );
 
 }
+
+//! @}
 //@-others
 
 }

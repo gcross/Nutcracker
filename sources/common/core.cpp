@@ -17,6 +17,14 @@
 //@@c
 //@-<< License >>
 
+//@+<< Documentation >>
+//@+node:gcross.20110509212455.3995: ** << Documentation >>
+/*!
+\file core.cpp
+\brief Core numeric kernels
+*/
+//@-<< Documentation >>
+
 //@+<< Includes >>
 //@+node:gcross.20110125120748.2118: ** << Includes >>
 #include "core.hpp"
