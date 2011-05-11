@@ -21,7 +21,7 @@
 //@+node:gcross.20110509141853.2168: ** << Documentation >>
 /*!
 \file boundaries.hpp
-\brief Boundary-related functions
+\brief Functions related to boundaries.
 */
 //@-<< Documentation >>
 
