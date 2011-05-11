@@ -55,6 +55,7 @@
 <v t="gcross.20110220141808.2711"><vh>@path programs</vh>
 <v t="gcross.20110220141808.2949"><vh>@file CMakeLists.txt</vh></v>
 <v t="gcross.20110220141808.2717"><vh>@file nutcracker.cpp</vh></v>
+<v t="gcross.20110511141322.2238"><vh>@file print-object-sizes.cpp</vh></v>
 </v>
 </v>
 <v t="gcross.20091106154604.1972"><vh>@path tests</vh>

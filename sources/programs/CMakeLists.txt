@@ -5,4 +5,9 @@ add_executable(nutcracker
 )
 target_link_libraries(nutcracker Nutcracker)
 install (TARGETS nutcracker RUNTIME DESTINATION bin)
+
+add_executable(print-object-sizes
+    print-object-sizes
+)
+target_link_libraries(print-object-sizes Nutcracker)
 #@-leo
