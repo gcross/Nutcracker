@@ -5,6 +5,7 @@ add_library(Nutcracker
     chain
     core.f95
     core.cpp
+    flat
     operators
     optimizer
     projectors

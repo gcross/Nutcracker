@@ -24,6 +24,7 @@
 #include <boost/foreach.hpp>
 #include <boost/lambda/lambda.hpp>
 #include <boost/range/adaptor/reversed.hpp>
+#include <boost/range/adaptor/transformed.hpp>
 #include <boost/range/algorithm/reverse_copy.hpp>
 #include <boost/range/numeric.hpp>
 #include <boost/range/irange.hpp>
@@ -44,6 +45,7 @@ namespace Nutcracker {
 //@+<< Usings >>
 //@+node:gcross.20110130170743.1676: ** << Usings >>
 using boost::accumulate;
+using boost::adaptors::transformed;
 using boost::adaptors::reversed;
 using boost::function;
 

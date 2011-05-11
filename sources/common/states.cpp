@@ -30,8 +30,6 @@ namespace Nutcracker {
 //@-<< Usings >>
 
 //@+others
-//@+node:gcross.20110214164734.2007: ** Values
-StateVectorFragment const StateVectorFragment::trivial(make_trivial);
 //@+node:gcross.20110214155808.1917: ** Exceptions
 //@+node:gcross.20110214155808.1918: *3* NormalizationError
 NormalizationError::NormalizationError(int info)
@@ -43,29 +41,6 @@ NormalizationError::NormalizationError(int info)
     , info(info)
 { }
 //@+node:gcross.20110213161858.1820: ** Functions
-//@+node:gcross.20110214155808.1984: *3* extendStateVectorFragment
-StateVectorFragment extendStateVectorFragment(
-      StateVectorFragment const& old_fragment
-    , StateSiteAny const& state_site
-) {
-    StateVectorFragment new_fragment
-        (PhysicalDimension(
-            old_fragment.physicalDimension(as_unsigned_integer)
-           *state_site.physicalDimension(as_unsigned_integer)
-         )
-        ,state_site.rightDimension()
-        );
-    Core::extend_state_vector_fragment(
-         old_fragment | state_site
-        ,state_site.rightDimension(as_unsigned_integer)
-        ,old_fragment.physicalDimension(as_unsigned_integer)
-        ,state_site.physicalDimension(as_unsigned_integer)
-        ,old_fragment
-        ,state_site
-        ,new_fragment
-    );
-    return boost::move(new_fragment);
-}
 //@+node:gcross.20110124175241.1649: *3* increaseDimensionBetweenXY
 IncreaseDimensionBetweenResult<Right,Right> increaseDimensionBetweenRightRight(
       unsigned int new_dimension

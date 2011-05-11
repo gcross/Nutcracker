@@ -5,12 +5,11 @@ include_directories(".")
 set(test-SOURCES
     boundaries
     chain
+    flat
     operators
     optimizer
     projectors
     tensors
-    utilities
-    states
     yaml
 
     test_utils

@@ -29,7 +29,6 @@
 #include <boost/format.hpp>
 #include <boost/iterator/iterator_facade.hpp>
 #include <boost/move/move.hpp>
-#include <boost/numeric/ublas/vector.hpp>
 #include <boost/range/algorithm/copy.hpp>
 #include <boost/range/concepts.hpp>
 #include <boost/range/irange.hpp>
@@ -58,8 +57,6 @@ using boost::shared_ptr;
 using std::copy;
 using std::fill_n;
 using std::ostream;
-
-typedef boost::numeric::ublas::vector<complex<double> > StateVector;
 //@-<< Usings >>
 
 //@+others

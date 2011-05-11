@@ -20,6 +20,7 @@
 //@+<< Includes >>
 //@+node:gcross.20110213233103.2777: ** << Includes >>
 #include <boost/lambda/lambda.hpp>
+#include <boost/numeric/ublas/vector.hpp>
 #include <boost/range/algorithm/for_each.hpp>
 
 #include "core.hpp"

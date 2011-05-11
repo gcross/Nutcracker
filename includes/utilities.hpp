@@ -353,54 +353,6 @@ inline void zgemv(
 //@-others
 
 //! @}
-//@+node:gcross.20110429225820.2532: *3* Index conversion
-/*!
-\defgroup IndexConversionFunctions Index conversion
-
-Often times it is useful to work with a multi-dimensional tensor in terms of its flattened one-dimensional representation.  The functions in this module assist in converting indices in the orignal multi-dimensional representation to and from the flat representation.
-*/
-
-//! @{
-
-//@+others
-//@+node:gcross.20110215135633.1856: *4* flatIndexToTensorIndex
-//! Converts and index into the (flattened) one-dimensional representation of a tensor to an index into the (original) multi-dimensional representation of a tensor.
-/*!
-\param dimensions the dimension of the tensor
-\param flat_index the index into the flattened tensor
-\return the multi-dimensional index referring to the same element in the original multi-dimensional tensor as \c flat_index had referred to in the flattened one-dimensional representation of that tensor.
-*/
-template<typename DimensionRange> vector<unsigned int> flatIndexToTensorIndex(DimensionRange const& dimensions, unsigned long long flat_index) {
-    vector<unsigned int> tensor_index;
-    tensor_index.reserve(dimensions.size());
-    BOOST_FOREACH(unsigned int const dimension, dimensions | reversed) {
-        tensor_index.push_back(flat_index % dimension);
-        flat_index /= dimension;
-    }
-    assert(flat_index == 0);
-    reverse(tensor_index);
-    return boost::move(tensor_index);
-}
-//@+node:gcross.20110215135633.1858: *4* tensorIndexToFlatIndex
-//! Converts and index into the (original) multi-dimensional representation of a tensor to an index into the (flattened) one-dimensional representation of a tensor.
-/*!
-\param dimensions the dimension of the tensor
-\param tensor_index the index into the flattened tensor
-\return the flat index referring to the same element in the flattened tensor as \c tensor_index had referred to in the original multi--dimensional representation of that tensor.
-*/
-template<typename DimensionRange> unsigned long long tensorIndexToFlatIndex(DimensionRange const& dimensions, vector<unsigned int> const& tensor_index) {
-    assert(dimensions.size() == tensor_index.size());
-    unsigned long long flat_index = 0;
-    BOOST_FOREACH(unsigned int const i, irange(0u,(unsigned int)dimensions.size())) {
-        assert(tensor_index[i] < dimensions[i]);
-        flat_index *= dimensions[i];
-        flat_index += tensor_index[i];
-    }
-    return flat_index;
-}
-//@-others
-
-//! @}
 //@+node:gcross.20110429225820.2540: *3* Miscellaneous
 //@+node:gcross.20110211120708.1786: *4* c
 //! Convenience function that constructs the complex number x + iy.
