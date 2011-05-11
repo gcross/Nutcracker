@@ -26,11 +26,11 @@
 #include <boost/container/vector.hpp>
 #include <boost/iterator/zip_iterator.hpp>
 #include <boost/range/concepts.hpp>
-#include <boost/smart_ptr/scoped_array.hpp>
 #include <boost/tuple/tuple.hpp>
 
 #include "boundaries.hpp"
 #include "core.hpp"
+#include "flat.hpp"
 #include "tensors.hpp"
 //@-<< Includes >>
 
@@ -41,7 +41,6 @@ namespace Nutcracker {
 using boost::container::vector;
 using boost::make_tuple;
 using boost::make_zip_iterator;
-using boost::scoped_array;
 using boost::SinglePassRangeConcept;
 using boost::tuple;
 //@-<< Usings >>
@@ -187,6 +186,54 @@ struct State {
 
     //! Vector of sites excluding the left-most site in the matrix product state.
     vector<StateSite<Right> > rest_sites;
+    //@+node:gcross.20110511112955.2212: *4* Flattening
+    /*! @name Flattening
+    Convenience functions for working with the flat vector representation of this state.
+    */
+
+    //! @{
+
+    public:
+
+    //! Computes the flat vector representation of this state.
+    /*!
+    \note Since this function necesarily has exponential running time, if you only need a few components of this vector then you should consider calling computeComponent().
+    */
+    StateVector computeVector() {
+        return computeStateVector(*this);
+    }
+
+    //! Computes the value of a single component of this state given the list of observed qudit values.
+    /*!
+    \note If you need the entire state vector then it is more efficient to call computeStateVector().
+
+    \param observed_values the observation value of each qudit in the matrix product state, which together specify the component of the quantum state whose value is to be computed
+    \returns the amplitude of the requested component
+    */
+    complex<double> computeVectorComponent(vector<unsigned int> const& observed_values) {
+        return computeStateVectorComponent(*this,observed_values);
+    }
+
+    //!  Computes the value of a single component of this state given the index of the component in the flat representation.
+    /*!
+    \note If you need the entire state vector then it is more efficient to call computeStateVector().
+
+    \param component the index of the desired component (in the flat vector representation of the state)
+    \returns the amplitude of the requested component
+    */
+    complex<double> computeVectorComponent(unsigned long long const component) {
+        return computeStateVectorComponent(*this,component);
+    }
+
+    //! Computes the number of components of the flat vector representation of this state.
+    /*!
+    \returns the number of components in the flat vector representation of the state
+    */
+    unsigned long long computeVectorLength() {
+        return computeStateVectorLength(*this);
+    }
+
+    //! @}
     //@+node:gcross.20110430223656.2185: *4* Informational
     //! @name Informational
 
@@ -340,36 +387,6 @@ template<typename StateSiteRange> complex<double> computeExpectationValue(
     }
     assert(i == operator_sites.size() && "the number of state sites is greater than the number of operator sites");
     assert(left_boundary.size() == 1);
-    return left_boundary[0];
-}
-//@+node:gcross.20110510004855.2267: *3* computeStateComponent
-template<typename StateSiteRange> complex<double> computeStateComponent(StateSiteRange const& state_sites, vector<unsigned int> const& observed_values) {
-    BOOST_CONCEPT_ASSERT((SinglePassRangeConcept<StateSiteRange const>));
-    scoped_array<complex<double> > left_boundary(new complex<double>[1]);  left_boundary[0] = c(1,0);
-    unsigned int left_dimension = 1;
-    unsigned int i = 0;
-    BOOST_FOREACH(StateSiteAny const& state_site, state_sites) {
-        assert(state_site.leftDimension(as_unsigned_integer)==left_dimension);
-        complex<double> const* const transition_matrix = state_site.transitionMatrixForObservation(observed_values[i]);
-        assert(transition_matrix >= state_site.begin());
-        assert(transition_matrix < state_site.end());
-        unsigned int const right_dimension = state_site.rightDimension(as_unsigned_integer);
-        scoped_array<complex<double> > new_left_boundary(new complex<double>[right_dimension]);
-        zgemv(
-            "N"
-            ,right_dimension,left_dimension
-            ,c(1,0)
-            ,transition_matrix,right_dimension
-            ,left_boundary.get(),1
-            ,c(0,0)
-            ,new_left_boundary.get(),1
-        );
-        left_dimension = right_dimension;
-        left_boundary.swap(new_left_boundary);
-        ++i;
-    }
-    assert(i == observed_values.size() && "observed_values vector is larger than the list of state sites");
-    assert(left_dimension == 1);
     return left_boundary[0];
 }
 //@+node:gcross.20110215235924.2015: *3* Unsafe

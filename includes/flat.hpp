@@ -35,6 +35,7 @@
 #include <boost/numeric/ublas/vector.hpp>
 #include <boost/range/adaptor/transformed.hpp>
 #include <boost/range/concepts.hpp>
+#include <boost/smart_ptr/scoped_array.hpp>
 
 #include "core.hpp"
 #include "tensors.hpp"
@@ -45,6 +46,7 @@ namespace Nutcracker {
 //@+<< Usings >>
 //@+node:gcross.20110510004855.2253: ** << Usings >>
 using boost::adaptors::transformed;
+using boost::scoped_array;
 using boost::SinglePassRangeConcept;
 //@-<< Usings >>
 
@@ -332,19 +334,57 @@ template<typename StateSiteRange> StateVector computeStateVector(StateSiteRange 
     }
     return current_fragment;
 }
-//@+node:gcross.20110510004855.2248: *3* computeStateVectorComponent
-//! Computes a single component of a quantum state.
+//@+node:gcross.20110510004855.2267: *3* computeStateVectorComponent
+//! Computes the value of a single component of a quantum state given the list of observed qudit values
 /*!
 \note If you need the entire state vector then it is more efficient to call computeStateVector().
 
-\tparam StateSiteRange the type of the list, which must satisfy the Boost single pass range concept with the value type \c StateSiteAny \c const.
+\tparam StateSiteRange the type of the list of state site tensors, which must satisfy the Boost single pass range concept with the value type \c StateSiteAny \c const.
+\param state_sites the list of state site tensors
+\param observed_values the observation value of each qudit in the matrix product state, which together specify the component of the quantum state whose value is to be computed
+\returns the amplitude of the requested component
+*/
+template<typename StateSiteRange> complex<double> computeStateVectorComponent(StateSiteRange const& state_sites, vector<unsigned int> const& observed_values) {
+    BOOST_CONCEPT_ASSERT((SinglePassRangeConcept<StateSiteRange const>));
+    scoped_array<complex<double> > left_boundary(new complex<double>[1]);  left_boundary[0] = c(1,0);
+    unsigned int left_dimension = 1;
+    unsigned int i = 0;
+    BOOST_FOREACH(StateSiteAny const& state_site, state_sites) {
+        assert(state_site.leftDimension(as_unsigned_integer)==left_dimension);
+        complex<double> const* const transition_matrix = state_site.transitionMatrixForObservation(observed_values[i]);
+        assert(transition_matrix >= state_site.begin());
+        assert(transition_matrix < state_site.end());
+        unsigned int const right_dimension = state_site.rightDimension(as_unsigned_integer);
+        scoped_array<complex<double> > new_left_boundary(new complex<double>[right_dimension]);
+        zgemv(
+            "N"
+            ,right_dimension,left_dimension
+            ,c(1,0)
+            ,transition_matrix,right_dimension
+            ,left_boundary.get(),1
+            ,c(0,0)
+            ,new_left_boundary.get(),1
+        );
+        left_dimension = right_dimension;
+        left_boundary.swap(new_left_boundary);
+        ++i;
+    }
+    assert(i == observed_values.size() && "observed_values vector is larger than the list of state sites");
+    assert(left_dimension == 1);
+    return left_boundary[0];
+}
+
+//! Computes the value of a single component of a quantum state given the index of the component in the flat representation.
+/*!
+\note If you need the entire state vector then it is more efficient to call computeStateVector().
+
+\tparam StateSiteRange the type of the list of state site tensors, which must satisfy the Boost single pass range concept with the value type \c StateSiteAny \c const.
 \param state_sites the list of state site tensors
 \param component the index of the desired component (in the flat vector representation of the state)
 \returns the amplitude of the requested component
 */
 template<typename StateSiteRange> complex<double> computeStateVectorComponent(StateSiteRange const& state_sites, unsigned long long const component) {
-    using namespace boost;
-    return computeStateComponent(state_sites,flatIndexToTensorIndex(state_sites | transformed(bind(&StateSiteAny::physicalDimension,_1,as_unsigned_integer)),component));
+    return computeStateVectorComponent(state_sites,flatIndexToTensorIndex(state_sites | transformed(bind(&StateSiteAny::physicalDimension,_1,as_unsigned_integer)),component));
 }
 //@+node:gcross.20110510004855.2247: *3* computeStateVectorLength
 //! Computes the number of components in the flat vector representation of the state.
