@@ -53,7 +53,6 @@ using std::min;
 
 //@+others
 //@+node:gcross.20110213233103.2753: ** Functions
-
 //! Core numeric kernels
 namespace Core {
 
