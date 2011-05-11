@@ -12,3 +12,4 @@ Testing
 CTestTestfile.cmake
 \#*
 build
+.DS_Store
