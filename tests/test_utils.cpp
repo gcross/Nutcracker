@@ -19,17 +19,23 @@
 
 //@+<< Includes >>
 //@+node:gcross.20110206092738.1737: ** << Includes >>
+#include <algorithm>
+#include <boost/range/algorithm/equal.hpp>
 #include <boost/range/algorithm/generate.hpp>
 #include <boost/range/irange.hpp>
 #include <boost/numeric/ublas/hermitian.hpp>
+#include <illuminate.hpp>
 
 #include "utilities.hpp"
 
 #include "test_utils.hpp"
 
+using boost::equal;
 using boost::irange;
 using boost::generate;
 using boost::variate_generator;
+
+using std::equal;
 //@-<< Includes >>
 
 //@+others
@@ -216,6 +222,23 @@ vector<unsigned int> RNG::randomUnsignedIntegerVector(unsigned int n, unsigned i
     vector<unsigned int> physical_dimensions(n);
     generate(physical_dimensions,generateRandomIntegers(lo,hi));
     return boost::move(physical_dimensions);
+}
+//@+node:gcross.20110430221653.2182: ** Functions
+//@+node:gcross.20110430221653.2184: *3* checkOperatorsEqual
+void checkOperatorsEqual(Operator const& operator_1,Operator const& operator_2) {
+    ASSERT_EQ(operator_1.size(),operator_2.size());
+    BOOST_FOREACH(unsigned int const i, irange(0u,(unsigned int)operator_1.size())) {
+        checkOperatorSitesEqual(*operator_1[i],*operator_2[i]);
+    }
+}
+//@+node:gcross.20110430221653.2183: *3* checkOperatorSitesEqual
+void checkOperatorSitesEqual(OperatorSite const& operator_site_1,OperatorSite const& operator_site_2) {
+    ASSERT_EQ(operator_site_1.physicalDimension(),operator_site_2.physicalDimension());
+    ASSERT_EQ(operator_site_1.leftDimension(),operator_site_2.leftDimension());
+    ASSERT_EQ(operator_site_1.rightDimension(),operator_site_2.rightDimension());
+    ASSERT_EQ(operator_site_1.numberOfMatrices(),operator_site_2.numberOfMatrices());
+    ASSERT_TRUE(equal(operator_site_1,operator_site_2));
+    ASSERT_TRUE(equal((uint32_t const*)operator_site_1,((uint32_t const*)operator_site_1)+2*operator_site_1.numberOfMatrices(),(uint32_t const*)operator_site_2));
 }
 //@-others
 //@-leo

@@ -20,7 +20,6 @@
 //@+<< Includes >>
 //@+node:gcross.20110430221653.2175: ** << Includes >>
 #include <algorithm>
-#include <boost/range/algorithm/equal.hpp>
 #include <boost/range/algorithm/generate.hpp>
 #include <illuminate.hpp>
 #include <iostream>
@@ -30,32 +29,13 @@
 #include "test_utils.hpp"
 
 using boost::generate;
-using boost::equal;
 
 using std::endl;
-using std::equal;
 using std::istringstream;
 using std::ostringstream;
 //@-<< Includes >>
 
 //@+others
-//@+node:gcross.20110430221653.2182: ** Functions
-//@+node:gcross.20110430221653.2183: *3* checkOperatorSitesEqual
-void checkOperatorSitesEqual(OperatorSite const& operator_site_1,OperatorSite const& operator_site_2) {
-    ASSERT_EQ(operator_site_1.physicalDimension(),operator_site_2.physicalDimension());
-    ASSERT_EQ(operator_site_1.leftDimension(),operator_site_2.leftDimension());
-    ASSERT_EQ(operator_site_1.rightDimension(),operator_site_2.rightDimension());
-    ASSERT_EQ(operator_site_1.numberOfMatrices(),operator_site_2.numberOfMatrices());
-    ASSERT_TRUE(equal(operator_site_1,operator_site_2));
-    ASSERT_TRUE(equal((uint32_t const*)operator_site_1,((uint32_t const*)operator_site_1)+2*operator_site_1.numberOfMatrices(),(uint32_t const*)operator_site_2));
-}
-//@+node:gcross.20110430221653.2184: *3* checkOperatorsEqual
-void checkOperatorsEqual(Operator const& operator_1,Operator const& operator_2) {
-    ASSERT_EQ(operator_1.size(),operator_2.size());
-    BOOST_FOREACH(unsigned int const i, irange(0u,(unsigned int)operator_1.size())) {
-        checkOperatorSitesEqual(*operator_1[i],*operator_2[i]);
-    }
-}
 //@+node:gcross.20110430221653.2176: ** Tests
 TEST_SUITE(YAML) {
 

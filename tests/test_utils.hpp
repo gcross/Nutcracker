@@ -86,5 +86,8 @@ public:
     operator unsigned int() { return randomInteger(); }
     operator complex<double>() { return randomComplexDouble(); }
 };
+//@+node:gcross.20110511190907.2324: ** Functions
+void checkOperatorsEqual(Operator const& operator_1,Operator const& operator_2);
+void checkOperatorSitesEqual(OperatorSite const& operator_site_1,OperatorSite const& operator_site_2);
 //@-others
 //@-leo
