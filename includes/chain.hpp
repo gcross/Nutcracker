@@ -26,7 +26,7 @@
 #include <boost/iterator/iterator_facade.hpp>
 #include <boost/lambda/lambda.hpp>
 #include <boost/move/move.hpp>
-#include <boost/signals2/signal.hpp>
+#include <boost/signal.hpp>
 
 #include "boundaries.hpp"
 #include "core.hpp"
@@ -46,7 +46,7 @@ using boost::irange;
 using boost::iterator_facade;
 using boost::none;
 using boost::random_access_traversal_tag;
-using boost::signals2::signal;
+using boost::signal;
 
 namespace lambda = boost::lambda;
 //@-<< Usings >>
