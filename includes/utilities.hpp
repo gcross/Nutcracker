@@ -144,6 +144,8 @@ struct RequestedBandwidthDimensionTooLargeError : public Exception {
     {}
 };
 //@+node:gcross.20110211120708.1791: ** Classes
+//@+node:gcross.20110511190907.3636: *3* Destructable
+struct Destructable { virtual ~Destructable() {} };
 //@+node:gcross.20110211120708.1793: *3* ProductIterator
 //@+<< Description >>
 //@+node:gcross.20110429225820.2541: *4* << Description >>
