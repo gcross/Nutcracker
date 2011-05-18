@@ -598,7 +598,7 @@ class SiteBaseTensor : public BaseTensor {
 
     //! Moves the data (and dimensions) from \c other to \c this and invalidates \c other.
     void operator=(BOOST_RV_REF(SiteBaseTensor) other) {
-        BaseTensor::operator=(boost::move(static_cast<BaseTensor&>(other)));
+        BaseTensor::operator=(static_cast<BOOST_RV_REF(BaseTensor)>(other));
         physical_dimension = boost::move(other.physical_dimension);
         left_dimension = boost::move(other.left_dimension);
         right_dimension = boost::move(other.right_dimension);
@@ -624,7 +624,7 @@ class SiteBaseTensor : public BaseTensor {
 
     //! Move the data (and dimensions) from \c other into \c this and invalidate \c other.
     SiteBaseTensor(BOOST_RV_REF(SiteBaseTensor) other)
-      : BaseTensor(boost::move(static_cast<BaseTensor&>(other)))
+      : BaseTensor(static_cast<BOOST_RV_REF(BaseTensor)>(other))
       , physical_dimension(boost::move(other.physical_dimension))
       , left_dimension(boost::move(other.left_dimension))
       , right_dimension(boost::move(other.right_dimension))
@@ -762,7 +762,7 @@ template<typename side> class ExpectationBoundary : public BaseTensor {
     //! Moves the data (and dimensions) from \c other to \c this and invalidates \c other.
     ExpectationBoundary& operator=(BOOST_RV_REF(ExpectationBoundary) other) {
         if(this == &other) return *this;
-        BaseTensor::operator=(boost::move(static_cast<BaseTensor&>(other)));
+        BaseTensor::operator=(static_cast<BOOST_RV_REF(BaseTensor)>(other));
         operator_dimension = boost::move(other.operator_dimension);
         state_dimension = boost::move(other.state_dimension);
         return *this;
@@ -788,7 +788,7 @@ template<typename side> class ExpectationBoundary : public BaseTensor {
 
     //! Move the data (and dimensions) from \c other into \c this and invalidate \c other.
     ExpectationBoundary(BOOST_RV_REF(ExpectationBoundary) other)
-      : BaseTensor(boost::move(static_cast<BaseTensor&>(other)))
+      : BaseTensor(static_cast<BOOST_RV_REF(BaseTensor)>(other))
       , operator_dimension(boost::move(other.operator_dimension))
       , state_dimension(boost::move(other.state_dimension))
     { }
@@ -910,7 +910,7 @@ template<typename side> class OverlapBoundary : public BaseTensor {
     //! Moves the data (and dimensions) from \c other to \c this and invalidates \c other.
     OverlapBoundary& operator=(BOOST_RV_REF(OverlapBoundary) other) {
         if(this == &other) return *this;
-        BaseTensor::operator=(boost::move(static_cast<BaseTensor&>(other)));
+        BaseTensor::operator=(static_cast<BOOST_RV_REF(BaseTensor)>(other));
         overlap_dimension = boost::move(other.overlap_dimension);
         state_dimension = boost::move(other.state_dimension);
         return *this;
@@ -936,7 +936,7 @@ template<typename side> class OverlapBoundary : public BaseTensor {
 
     //! Move the data (and dimensions) from \c other into \c this and invalidate \c other.
     OverlapBoundary(BOOST_RV_REF(OverlapBoundary) other)
-      : BaseTensor(boost::move(static_cast<BaseTensor&>(other)))
+      : BaseTensor(static_cast<BOOST_RV_REF(BaseTensor)>(other))
       , overlap_dimension(boost::move(other.overlap_dimension))
       , state_dimension(boost::move(other.state_dimension))
     { }
@@ -1058,7 +1058,7 @@ class StateSiteAny : public SiteBaseTensor {
 
     //! Moves the data (and dimensions) from \c other to \c this and invalidates \c other.
     void operator=(BOOST_RV_REF(StateSiteAny) other) {
-        SiteBaseTensor::operator=(boost::move(static_cast<SiteBaseTensor&>(other)));
+        SiteBaseTensor::operator=(static_cast<BOOST_RV_REF(SiteBaseTensor)>(other));
     }
 
     //! Swaps the data (and dimensions) in \c other and \c this.
@@ -1078,7 +1078,7 @@ class StateSiteAny : public SiteBaseTensor {
 
     //! Move the data (and dimensions) from \c other into \c this and invalidate \c other.
     StateSiteAny(BOOST_RV_REF(StateSiteAny) other)
-      : SiteBaseTensor(boost::move(static_cast<SiteBaseTensor&>(other)))
+      : SiteBaseTensor(static_cast<BOOST_RV_REF(SiteBaseTensor)>(other))
     { }
 
     //! Initialize the dimensions with the given values and allocate memory for an array of the appropriate size.
@@ -1204,7 +1204,7 @@ template<typename side> class StateSite : public StateSiteAny {
     //! Moves the data (and dimensions) from \c other to \c this and invalidates \c other.
     StateSite& operator=(BOOST_RV_REF(StateSite) other) {
         if(this == &other) return *this;
-        StateSiteAny::operator=(boost::move(static_cast<StateSiteAny&>(other)));
+        StateSiteAny::operator=(static_cast<BOOST_RV_REF(StateSiteAny)>(other));
         return *this;
     }
 
@@ -1226,7 +1226,7 @@ template<typename side> class StateSite : public StateSiteAny {
 
     //! Move the data (and dimensions) from \c other into \c this and invalidate \c other.
     StateSite(BOOST_RV_REF(StateSite) other)
-      : StateSiteAny(boost::move(static_cast<StateSiteAny&>(other)))
+      : StateSiteAny(static_cast<BOOST_RV_REF(StateSiteAny)>(other))
     { }
 
     //! Initialize the dimensions with the given values and allocate memory for an array of the appropriate size.
@@ -1334,7 +1334,7 @@ class OverlapSiteAny : public SiteBaseTensor {
 
     //! Moves the data (and dimensions) from \c other to \c this and invalidates \c other.
     void operator=(BOOST_RV_REF(OverlapSiteAny) other) {
-        SiteBaseTensor::operator=(boost::move(static_cast<SiteBaseTensor&>(other)));
+        SiteBaseTensor::operator=(static_cast<BOOST_RV_REF(SiteBaseTensor)>(other));
     }
 
     //! Swaps the data (and dimensions) in \c other and \c this.
@@ -1354,7 +1354,7 @@ class OverlapSiteAny : public SiteBaseTensor {
 
     //! Move the data (and dimensions) from \c other into \c this and invalidate \c other.
     OverlapSiteAny(BOOST_RV_REF(OverlapSiteAny) other)
-      : SiteBaseTensor(boost::move(static_cast<SiteBaseTensor&>(other)))
+      : SiteBaseTensor(static_cast<BOOST_RV_REF(SiteBaseTensor)>(other))
     { }
 
     //! Initialize the dimensions with the given values and allocate memory for an array of the appropriate size.
@@ -1457,7 +1457,7 @@ template<typename side> class OverlapSite : public OverlapSiteAny {
     //! Moves the data (and dimensions) from \c other to \c this and invalidates \c other.
     OverlapSite& operator=(BOOST_RV_REF(OverlapSite) other) {
         if(this == &other) return *this;
-        OverlapSiteAny::operator=(boost::move(static_cast<OverlapSiteAny&>(other)));
+        OverlapSiteAny::operator=(static_cast<BOOST_RV_REF(OverlapSiteAny)>(other));
         return *this;
     }
 
@@ -1479,7 +1479,7 @@ template<typename side> class OverlapSite : public OverlapSiteAny {
 
     //! Move the data (and dimensions) from \c other into \c this and invalidate \c other.
     OverlapSite(BOOST_RV_REF(OverlapSite) other)
-      : OverlapSiteAny(boost::move(static_cast<OverlapSiteAny&>(other)))
+      : OverlapSiteAny(static_cast<BOOST_RV_REF(OverlapSiteAny)>(other))
     { }
 
     //! Initialize the dimensions with the given values and allocate memory for an array of the appropriate size.
@@ -1584,7 +1584,7 @@ class OperatorSite : public SiteBaseTensor {
     //! Moves the data (and dimensions) from \c other to \c this and invalidates \c other.
     OperatorSite& operator=(BOOST_RV_REF(OperatorSite) other) {
         if(this == &other) return *this;
-        SiteBaseTensor::operator=(boost::move(static_cast<SiteBaseTensor&>(other)));
+        SiteBaseTensor::operator=(static_cast<BOOST_RV_REF(SiteBaseTensor)>(other));
         number_of_matrices = copyAndReset(other.number_of_matrices);
         moveArrayToFrom(index_data,other.index_data); 
         return *this;
