@@ -421,25 +421,21 @@ void checkEnergies(
 ) {
     unsigned int const number_of_levels = correct_energies.size();
     chain.signalOptimizeSiteFailure.connect(rethrow<OptimizerFailure>);
-    BOOST_LOCAL_FUNCTION(
-        (void)(checkOverlap)(
-            (unsigned int const)(number_of_iterations)(default)(0)
-            (const bind)((&chain))
-        )
+    void BOOST_LOCAL_FUNCTION_PARAMS(
+        unsigned int const number_of_iterations, default 0,
+        const bind& chain
     ) {
         ASSERT_NEAR_REL(0,chain.computeProjectorOverlapAtCurrentSite(),1e-12);
-    } BOOST_LOCAL_FUNCTION_END(checkOverlap)
+    } BOOST_LOCAL_FUNCTION_NAME(checkOverlap)
     chain.signalOptimizeSiteSuccess.connect(checkOverlap);
     chain.signalChainReset.connect(checkOverlap);
     vector<double> actual_energies; actual_energies.reserve(number_of_levels);
-    BOOST_LOCAL_FUNCTION(
-        (void)(postEnergy)(
-            (const bind)((&chain))
-            (bind)((&actual_energies))
-        )
+    void BOOST_LOCAL_FUNCTION_PARAMS(
+        const bind& chain,
+        bind& actual_energies
     ) {
         actual_energies.push_back(chain.getEnergy());
-    } BOOST_LOCAL_FUNCTION_END(postEnergy)
+    } BOOST_LOCAL_FUNCTION_NAME(postEnergy)
     chain.signalChainOptimized.connect(postEnergy);
     chain.solveForMultipleLevels(number_of_levels);
     BOOST_FOREACH(unsigned int const i, irange(0u,number_of_levels)) {

@@ -112,15 +112,15 @@ TEST_CASE(Output) {
         vector<double> levels;
         vector<State> states;
 
-        BOOST_LOCAL_FUNCTION(
-            (void)(postResult)(
-                (const bind)((&chain)(output_states))
-                (bind)((&levels)(&states))
-            )
+        void BOOST_LOCAL_FUNCTION_PARAMS(
+            const bind& chain,
+            const bind& output_states,
+            bind& levels,
+            bind& states
         ) {
             levels.push_back(chain.getEnergy());
             if(output_states) states.push_back(chain.makeCopyOfState());
-        } BOOST_LOCAL_FUNCTION_END(postResult)
+        } BOOST_LOCAL_FUNCTION_NAME(postResult)
 
         chain.signalChainOptimized.connect(postResult);
 
