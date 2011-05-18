@@ -47,6 +47,7 @@
 #include <exception>
 #include <functional>
 #include <iterator>
+#include <iostream>
 #include <numeric>
 #include <sstream>
 #include <stdint.h>
@@ -416,6 +417,12 @@ template<typename T> inline void moveArrayToFrom(T*& to, T*& from) {
 //! @}
 
 }
+
+//@+<< Outside namespace >>
+//@+node:gcross.20110511190907.3784: ** << Outside namespace >>
+inline std::istream& operator>> (std::istream& in, boost::none_t& _) { return in; }
+inline std::ostream& operator<< (std::ostream& out, const boost::none_t& _) { return out; }
+//@-<< Outside namespace >>
 
 #endif
 //@-leo
