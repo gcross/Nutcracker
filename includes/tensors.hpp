@@ -22,7 +22,6 @@
 
 //@+<< Includes >>
 //@+node:gcross.20110124161335.2010: ** << Includes >>
-#include <boost/assign/list_of.hpp>
 #include <boost/concept_check.hpp>
 #include <boost/container/vector.hpp>
 #include <boost/foreach.hpp>
@@ -50,6 +49,7 @@ namespace Nutcracker {
 using boost::container::vector;
 using boost::copy;
 using boost::Generator;
+using boost::format;
 using boost::iterator_facade;
 using boost::none;
 using boost::optional;
@@ -1165,6 +1165,23 @@ class StateSiteAny : public SiteBaseTensor {
     StateSiteAny(MakeTrivial const make_trivial) : SiteBaseTensor(make_trivial) {}
 
     //! @}
+    //@+node:gcross.20110510004855.3255: *5* Dimension information
+    //! \name Dimension information
+    //! @{
+
+    public:
+
+    //! Returns a vector with the dimensions of the data stored in this tensor in row-major order
+    vector<unsigned int> dataDimensions() const {
+        vector<unsigned int> dimensions;
+        dimensions.reserve(3);
+        dimensions.push_back(physicalDimension(as_unsigned_integer));
+        dimensions.push_back(leftDimension(as_unsigned_integer));
+        dimensions.push_back(rightDimension(as_unsigned_integer));
+        return boost::move(dimensions);
+    }
+
+    //! @}
     //@+node:gcross.20110428160636.2484: *5* Observation transition matrices
     //! \name Observation transition matrices
     //! @{
@@ -1744,6 +1761,32 @@ class OperatorSite : public SiteBaseTensor {
     //! An implicit cast to \c complex<double> that obtains a read-only pointer to the beginning of the transition data.
     operator uint32_t const*() const { return index_data; }
 
+
+    //! @}
+    //@+node:gcross.20110510004855.3261: *4* Dimension information
+    //! \name Dimension information
+    //! @{
+
+    public:
+
+    //! Returns a vector with the dimensions of the matrix data stored in this tensor in row-major order
+    vector<unsigned int> matrixDataDimensions() const {
+        vector<unsigned int> dimensions;
+        dimensions.reserve(3);
+        dimensions.push_back(numberOfMatrices());
+        dimensions.push_back(physicalDimension(as_unsigned_integer));
+        dimensions.push_back(physicalDimension(as_unsigned_integer));
+        return boost::move(dimensions);
+    }
+
+    //! Returns a vector with the dimensions of the matrix data stored in this tensor in row-major order
+    vector<unsigned int> indexDataDimensions() const {
+        vector<unsigned int> dimensions;
+        dimensions.reserve(2);
+        dimensions.push_back(numberOfMatrices());
+        dimensions.push_back(2);
+        return boost::move(dimensions);
+    }
 
     //! @}
     //@+node:gcross.20110428160636.2511: *4* Fields

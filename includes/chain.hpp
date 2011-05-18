@@ -227,6 +227,8 @@ public:
 
     const_iterator begin() const { return const_iterator(this,0); }
     const_iterator end() const { return const_iterator(this,number_of_sites); }
+
+    template<typename Outputter> void writeStateTo(Outputter& out) const;
 };
 
 template<> inline ExpectationBoundary<Left>& Chain::expectationBoundary<Left>() { return left_expectation_boundary; }
@@ -305,6 +307,14 @@ template<typename side> void Chain::move() {
     side_neighbors.pop_back();
 
     resetProjectorMatrix();
+}
+//@+node:gcross.20110511190907.3683: *4* writeStateTo
+template<typename Outputter> void Chain::writeStateTo(Outputter& out) const {
+    assert(current_site_number == 0);
+    out << state_site;
+    BOOST_FOREACH(Neighbor<Right> const& neighbor, right_neighbors | reversed) {
+        out << neighbor.state_site;
+    }
 }
 //@-others
 //@-others

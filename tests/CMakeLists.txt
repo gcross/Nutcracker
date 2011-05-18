@@ -5,7 +5,9 @@ include_directories(".")
 set(test-SOURCES
     boundaries
     chain
+    configuration
     flat
+    hdf
     operators
     optimizer
     projectors

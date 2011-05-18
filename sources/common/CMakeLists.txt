@@ -3,9 +3,12 @@
 add_library(Nutcracker
     boundaries
     chain
+    configuration
     core.f95
     core.cpp
     flat
+    hdf
+    io
     operators
     optimizer
     projectors
@@ -17,8 +20,9 @@ add_library(Nutcracker
 target_link_libraries(Nutcracker
     ${Boost_LIBRARIES}
     ${BLAS_LIBRARIES}
+    ${HDF5_LIBRARIES}
     ${LAPACK_LIBRARIES}
-    ${ARPACK_LIBRARIES}
+    ${ARPACK_LIBRARIES} # Note that ARPACK *MUST* come after LAPACK!
     ${YAMLCXX_LIBRARIES}
 )
 #@-leo

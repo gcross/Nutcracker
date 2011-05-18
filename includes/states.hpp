@@ -300,6 +300,8 @@ struct State {
         size_t distance_to(const_iterator const& other) const { return other.index - index; }
     };
 
+    typedef const_iterator iterator;
+
     //! Returns an iterator at the first site in the matrix product state.
     const_iterator begin() const { return const_iterator(this,0); }
 

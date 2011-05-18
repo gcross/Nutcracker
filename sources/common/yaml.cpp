@@ -27,9 +27,16 @@
 
 //@+<< Includes >>
 //@+node:gcross.20110430163445.2612: ** << Includes >>
-#include <map>
-#include <utility>
+#include <boost/assign/list_of.hpp>
+#include <boost/bind.hpp>
+#include <boost/filesystem.hpp>
+#include <boost/signals/trackable.hpp>
+#include <iomanip>
+#include <iostream>
+#include <fstream>
 
+#include "chain.hpp"
+#include "io.hpp"
 #include "yaml.hpp"
 //@-<< Includes >>
 
@@ -37,8 +44,16 @@ namespace Nutcracker {
 
 //@+<< Usings >>
 //@+node:gcross.20110430163445.2613: ** << Usings >>
-using std::map;
-using std::make_pair;
+using boost::assign::list_of;
+using boost::filesystem::exists;
+using boost::filesystem::path;
+using boost::signals::trackable;
+
+using std::endl;
+using std::ifstream;
+using std::ofstream;
+using std::ostream;
+using std::setprecision;
 
 using YAML::BeginMap;
 using YAML::BeginSeq;
@@ -49,6 +64,7 @@ using YAML::Flow;
 using YAML::Iterator;
 using YAML::Key;
 using YAML::Node;
+using YAML::Parser;
 using YAML::Value;
 //@-<< Usings >>
 
@@ -57,53 +73,29 @@ using YAML::Value;
 //@+node:gcross.20110430163445.2647: *3* Operator
 //@+node:gcross.20110430163445.2648: *4* >>
 void operator >> (Node const& node, Operator& operator_sites) {
-    Node const& sites = node["sites"];
-    vector<shared_ptr<OperatorSite const> > unique_operator_sites;
-    unique_operator_sites.reserve(sites.size());
-    {
-        Iterator site_iterator = sites.begin();
-        REPEAT(sites.size()) {
-            shared_ptr<OperatorSite> operator_site_ptr(new OperatorSite());
-            *site_iterator++ >> *operator_site_ptr;
-            unique_operator_sites.push_back(static_cast<shared_ptr<OperatorSite const> >(operator_site_ptr));
-        }
+    vector<shared_ptr<OperatorSite const> > unique_operator_sites(readUniqueOperatorSites(node["sites"]));
+
+    vector<unsigned int> sequence;
+    BOOST_FOREACH(Node const& node, node["sequence"]) {
+        unsigned int index;
+        node >> index;
+        sequence.push_back(index-1);
     }
-    Node const& sequence = node["sequence"];
-    operator_sites.clear();
-    operator_sites.reserve(sequence.size());
-    {
-        Iterator sequence_iterator = sequence.begin();
-        REPEAT(sequence.size()) {
-            unsigned int index;
-            *sequence_iterator++ >> index;
-            shared_ptr<OperatorSite const> operator_site_ptr = unique_operator_sites[index-1];
-            if(operator_sites.empty()) {
-                assert(operator_site_ptr->leftDimension(as_unsigned_integer) == 1);
-            } else {
-                assert(operator_site_ptr->leftDimension(as_unsigned_integer) == operator_sites.back()->rightDimension(as_unsigned_integer));
-            }
-            operator_sites.emplace_back(operator_site_ptr);
-        }
-    }
+
+    operator_sites = constructOperatorFrom(unique_operator_sites,sequence);
 }
 //@+node:gcross.20110430163445.2649: *4* <<
 Emitter& operator << (Emitter& out, Operator const& operator_sites) {
+    vector<shared_ptr<OperatorSite const> > unique_operator_sites;
+    vector<unsigned int> sequence;
+
+    deconstructOperatorTo(operator_sites,unique_operator_sites,sequence);
+
     out << BeginMap;
     out << Key << "sequence" << Value;
     out << Flow << BeginSeq;
-    typedef map<shared_ptr<OperatorSite const>,unsigned int> SequenceNumberMap;
-    SequenceNumberMap sequence_number_map;
-    vector<shared_ptr<OperatorSite const> > unique_operator_sites;
-    unsigned int next_sequence_number = 1;
-    BOOST_FOREACH(shared_ptr<OperatorSite const> const operator_site_ptr, operator_sites) {
-        SequenceNumberMap::iterator sequence_number_iterator = sequence_number_map.find(operator_site_ptr);
-        if(sequence_number_iterator == sequence_number_map.end()) {
-            out << next_sequence_number;
-            sequence_number_map.insert(make_pair(operator_site_ptr,next_sequence_number++));
-            unique_operator_sites.push_back(operator_site_ptr);
-        } else {
-            out << sequence_number_iterator->second;
-        }
+    BOOST_FOREACH(unsigned int index, sequence) {
+        out << index+1;
     }
     out << EndSeq;
     out << Key << "sites" << Value;
@@ -216,6 +208,102 @@ Emitter& operator << (Emitter& out, OperatorSite const& operator_site) {
     }
     out << EndMap;
     return out;
+}
+//@+node:gcross.20110511190907.3617: ** Formats
+//@+others
+//@+node:gcross.20110511190907.3637: *3* Input
+static Operator readOperator(optional<string> const& maybe_filename, optional<string> const& maybe_location) {
+    Node root;
+    if(maybe_filename) {
+        ifstream in(maybe_filename->c_str());
+        Parser parser(in);
+        parser.GetNextDocument(root);
+    } else {
+        Parser parser(std::cin);
+        parser.GetNextDocument(root);
+    }
+
+    Node const* node = &root;
+
+    if(maybe_location) {
+        string const& location = maybe_location.get();
+        BOOST_FOREACH(string const& name, LocationSlashTokenizer(location)) {
+            Node const* nested_node = node->FindValue(name.c_str());
+            if(nested_node == NULL) throw NoSuchLocationError(location);
+            node = nested_node;
+        }
+    }
+
+    Operator hamiltonian;
+    (*node) >> hamiltonian;
+    return boost::move(hamiltonian);
+}
+//@+node:gcross.20110511190907.3638: *3* Output
+struct YAMLOutputter : public Destructable, public trackable {
+    Chain const& chain;
+    ofstream file;
+    ostream& out;
+    unsigned const digits_of_precision;
+
+    YAMLOutputter(
+        optional<string> const& maybe_filename
+      , optional<string> const& maybe_location
+      , bool output_states
+      , bool overwrite
+      , Chain& chain
+    )
+      : chain(chain)
+      , out(maybe_filename ? file : std::cout)
+      , digits_of_precision(computeDigitsOfPrecision(chain.options.chain_convergence_threshold))
+    {
+        assert(!maybe_location);
+        assert(!output_states);
+
+        if(maybe_filename) {
+            const string& filename = *maybe_filename;
+            if(!overwrite && exists(path(filename))) throw OutputFileAlreadyExists(filename);
+            file.open(filename.c_str());
+        }
+
+        out
+            << "Configuration:" << endl
+            << "  site convergence tolerance: " << chain.options.site_convergence_threshold << endl
+            << "  sweep convergence tolerance: " << chain.options.sweep_convergence_threshold << endl
+            << "  chain convergence tolerance: " << chain.options.chain_convergence_threshold << endl
+            << "  sanity check threshold: " << chain.options.sanity_check_threshold << endl
+        ;
+
+        out << "Energy levels:" << endl;
+        out.flush();
+
+        chain.signalChainOptimized.connect(boost::bind(&YAMLOutputter::printChainEnergy,this));
+    }
+
+    virtual ~YAMLOutputter() {
+        out.flush();
+        if(file.is_open()) { file.close(); }
+    }
+
+    void printChainEnergy() {
+        out << "  - " << setprecision(digits_of_precision) << chain.getEnergy() << endl;
+        out.flush();
+    }
+};
+
+auto_ptr<Destructable const> connectToChain(
+    optional<string> const& maybe_filename
+  , optional<string> const& maybe_location
+  , bool output_states
+  , bool overwrite
+  , Chain& chain
+) {
+    return auto_ptr<Destructable const>(new YAMLOutputter(maybe_filename,maybe_location,output_states,overwrite,chain));
+}
+//@-others
+
+void installYAMLFormat() {
+    static InputFormat yaml_input_format("yaml","YAML format",true,true,list_of("yaml"),readOperator);
+    static OutputFormat yaml_output_format("yaml","YAML format",true,false,list_of("yaml"),false,connectToChain);
 }
 //@-others
 

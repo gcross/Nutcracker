@@ -119,5 +119,29 @@ YAML::Emitter& operator << (YAML::Emitter& emitter, Nutcracker::OperatorSite con
 
 }
 
+//@+<< Outside namespace >>
+//@+node:gcross.20110511190907.3542: ** << Outside namespace >>
+//@+others
+//@+node:gcross.20110511190907.3543: *3* Boost
+namespace boost {
+
+template<> struct range_iterator<YAML::Node> { typedef YAML::Iterator type; };
+template<> struct range_const_iterator<YAML::Node> { typedef YAML::Iterator type; };
+
+}
+//@+node:gcross.20110511190907.3544: *3* std
+namespace std {
+
+template<> struct iterator_traits<YAML::Iterator> {
+    typedef YAML::Node const value_type;
+    typedef value_type* pointer;
+    typedef value_type& reference;
+    typedef input_iterator_tag iterator_category;
+};
+
+}
+//@-others
+//@-<< Outside namespace >>
+
 #endif
 //@-leo
