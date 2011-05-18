@@ -50,8 +50,8 @@ find_package( BLAS REQUIRED )
 link_directories ( ${BLAS_LIBRARY_DIRS} )
 include_directories ( ${BLAS_INCLUDE_DIRS} )
 #@+node:gcross.20110426132142.2439: *3* Boost
-SET(Boost_ADDITIONAL_VERSIONS "1.43" "1.43.0" "1.44" "1.44.0" "1.45" "1.45.0")
-find_package( Boost 1.45 COMPONENTS filesystem signals system thread program_options REQUIRED )
+SET(Boost_ADDITIONAL_VERSIONS "1.43" "1.43.0" "1.44" "1.44.0" "1.45" "1.45.0" "1.46.0" "1.46.1")
+find_package( Boost 1.46 COMPONENTS filesystem signals system thread program_options REQUIRED )
 link_directories ( ${Boost_LIBRARY_DIRS} )
 include_directories ( ${Boost_INCLUDE_DIRS} )
 #@+node:gcross.20110511141322.2198: *3* HDF5
