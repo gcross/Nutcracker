@@ -20,6 +20,9 @@
 //@+<< Includes >>
 //@+node:gcross.20110206092738.1737: ** << Includes >>
 #include <algorithm>
+#include <boost/random/bernoulli_distribution.hpp>
+#include <boost/random/normal_distribution.hpp>
+#include <boost/random/uniform_smallint.hpp>
 #include <boost/range/algorithm/equal.hpp>
 #include <boost/range/algorithm/generate.hpp>
 #include <boost/range/irange.hpp>
@@ -30,9 +33,14 @@
 
 #include "test_utils.hpp"
 
+using boost::bernoulli_distribution;
 using boost::equal;
+using boost::filesystem::exists;
+using boost::filesystem::remove;
 using boost::irange;
 using boost::generate;
+using boost::normal_distribution;
+using boost::uniform_smallint;
 using boost::variate_generator;
 
 using std::equal;
@@ -109,35 +117,45 @@ struct IndexGenerator {
         return left ? left_index_generator() : right_index_generator();
     }
 };
-//@+node:gcross.20110206092738.1738: ** struct RNG
-//@+node:gcross.20110206092738.1739: *3* (constructors)
+//@+node:gcross.20110511190907.3793: ** Functions
+//@+node:gcross.20110511190907.3794: *3* makeVariateGenerator
+template<typename Engine, typename Distribution>
+variate_generator<Engine,Distribution>
+makeVariateGenerator(
+    Engine const& engine
+  , Distribution const& distribution
+)
+{ return variate_generator<Engine,Distribution>(engine,distribution); }
+//@+node:gcross.20110511190907.3825: ** Classes
+//@+node:gcross.20110206092738.1738: *3* RNG
+//@+node:gcross.20110206092738.1739: *4* (constructors)
 RNG::RNG()
-  : normal(0,1)
-  , smallint(1,10)
-  , randomDouble(variate_generator<taus88,normal_distribution<double> >(generator,normal))
-  , randomInteger(variate_generator<taus88,uniform_smallint<unsigned int> >(generator,smallint))
+  : randomBoolean(makeVariateGenerator(generator,bernoulli_distribution<double>()))
+  , randomDouble(makeVariateGenerator(generator,normal_distribution<double>(0,1)))
+  , randomInteger(makeVariateGenerator(generator,uniform_smallint<unsigned int>(1,10)))
   , randomComplexDouble(ComplexDoubleGenerator(*this))
+  , randomLowercaseLetter(makeVariateGenerator(generator,uniform_smallint<unsigned int>('a','z')))
 {}
-//@+node:gcross.20110206092738.1747: *3* operator()
+//@+node:gcross.20110206092738.1747: *4* operator()
 unsigned int RNG::operator()(unsigned int lo, unsigned int hi) {
     return generateRandomIntegers(lo,hi)();
 }
-//@+node:gcross.20110206092738.1745: *3* generateRandomIndices
+//@+node:gcross.20110206092738.1745: *4* generateRandomIndices
 function<uint32_t()> RNG::generateRandomIndices(
       LeftDimension const left_index_bound
     , RightDimension const right_index_bound
 ) {
     return IndexGenerator(*this,left_index_bound,right_index_bound);
 }
-//@+node:gcross.20110206092738.1743: *3* generateRandomIntegers
+//@+node:gcross.20110206092738.1743: *4* generateRandomIntegers
 function<unsigned int()> RNG::generateRandomIntegers(unsigned int lo, unsigned int hi) {
     return IntegerGenerator(*this,lo,hi);
 }
-//@+node:gcross.20110206092738.1751: *3* generateRandomHermitianMatrices
+//@+node:gcross.20110206092738.1751: *4* generateRandomHermitianMatrices
 function<complex<double>()> RNG::generateRandomHermitianMatrices(unsigned int const size) {
     return HermitianMatrixGenerator(*this,size);
 }
-//@+node:gcross.20110215135633.1866: *3* randomOperator
+//@+node:gcross.20110215135633.1866: *4* randomOperator
 Operator RNG::randomOperator(
       optional<unsigned int> maybe_number_of_sites
     , unsigned int const maximum_physical_dimension
@@ -164,7 +182,7 @@ Operator RNG::randomOperator(
     }
     return boost::move(operator_sites);
 }
-//@+node:gcross.20110206092738.1746: *3* randomOperatorSite
+//@+node:gcross.20110206092738.1746: *4* randomOperatorSite
 OperatorSite RNG::randomOperatorSite(
       PhysicalDimension const physical_dimension
     , LeftDimension const left_dimension
@@ -179,7 +197,14 @@ OperatorSite RNG::randomOperatorSite(
             ,fillWithGenerator(generateRandomHermitianMatrices(*physical_dimension))
     );
 }
-//@+node:gcross.20110215135633.1863: *3* randomState
+OperatorSite RNG::randomOperatorSite() {
+    return randomOperatorSite(
+        PhysicalDimension((*this)(1,5)),
+        LeftDimension((*this)(1,5)),
+        RightDimension((*this)(1,5))
+    );
+}
+//@+node:gcross.20110215135633.1863: *4* randomState
 State RNG::randomState() {
     return randomState((*this)(1,5));
 }
@@ -217,12 +242,36 @@ State RNG::randomState(vector<unsigned int> const& physical_dimensions) {
     }
     return State(boost::move(first_state_site),boost::move(rest_state_sites));
 }
-//@+node:gcross.20110217014932.1933: *3* randomUnsignedIntegerVector
+//@+node:gcross.20110511190907.3830: *4* randomTemporaryFilepath
+TemporaryFilepath RNG::randomTemporaryFilepath(string suffix) const {
+    string random_data(5,0);
+    generate(random_data,randomLowercaseLetter);
+    return TemporaryFilepath(random_data + suffix);
+}
+//@+node:gcross.20110217014932.1933: *4* randomUnsignedIntegerVector
 vector<unsigned int> RNG::randomUnsignedIntegerVector(unsigned int n, unsigned int lo,unsigned int hi) {
     vector<unsigned int> physical_dimensions(n);
     generate(physical_dimensions,generateRandomIntegers(lo,hi));
     return boost::move(physical_dimensions);
 }
+//@+node:gcross.20110511190907.3826: *3* TemporaryFilepath
+//@+node:gcross.20110511190907.3827: *4* (constructors)
+TemporaryFilepath::TemporaryFilepath() {}
+
+TemporaryFilepath::TemporaryFilepath(path const& filepath)
+  : filepath(filepath)
+{ if(exists(filepath)) remove(filepath); }
+
+TemporaryFilepath::TemporaryFilepath(BOOST_RV_REF(TemporaryFilepath) other) {
+    if(exists(filepath)) remove(filepath);
+    filepath = other.filepath;
+    other.filepath.clear();
+}
+//@+node:gcross.20110511190907.3828: *4* (destructors)
+TemporaryFilepath::~TemporaryFilepath() { if(exists(filepath)) remove(filepath); }
+//@+node:gcross.20110511190907.3829: *4* operator*/->
+path const& TemporaryFilepath::operator*() const { return filepath; }
+path const* TemporaryFilepath::operator->() const { return &filepath; }
 //@+node:gcross.20110430221653.2182: ** Functions
 //@+node:gcross.20110430221653.2184: *3* checkOperatorsEqual
 void checkOperatorsEqual(Operator const& operator_1,Operator const& operator_2) {
@@ -239,6 +288,23 @@ void checkOperatorSitesEqual(OperatorSite const& operator_site_1,OperatorSite co
     ASSERT_EQ(operator_site_1.numberOfMatrices(),operator_site_2.numberOfMatrices());
     ASSERT_TRUE(equal(operator_site_1,operator_site_2));
     ASSERT_TRUE(equal((uint32_t const*)operator_site_1,((uint32_t const*)operator_site_1)+2*operator_site_1.numberOfMatrices(),(uint32_t const*)operator_site_2));
+}
+//@+node:gcross.20110511190907.2330: *3* checkSiteTensorsEqual
+void checkSiteTensorsEqual(SiteBaseTensor const& site_1,SiteBaseTensor const& site_2) {
+    ASSERT_EQ(site_1.physicalDimension(),site_2.physicalDimension());
+    ASSERT_EQ(site_1.leftDimension(),site_2.leftDimension());
+    ASSERT_EQ(site_1.rightDimension(),site_2.rightDimension());
+    ASSERT_TRUE(equal(site_1,site_2));
+}
+//@+node:gcross.20110511190907.3527: *3* checkStatesEqual
+void checkStatesEqual(State const& state_1,State const& state_2) {
+    ASSERT_EQ(state_1.numberOfSites(),state_2.numberOfSites());
+    for(State::iterator
+            state_iter_1 = state_1.begin(),
+            state_iter_2 = state_1.begin();
+        state_iter_1 != state_1.end();
+        ++state_iter_1, ++state_iter_2
+    ) checkSiteTensorsEqual(*state_iter_1,*state_iter_2);
 }
 //@-others
 //@-leo

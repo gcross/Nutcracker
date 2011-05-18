@@ -19,11 +19,10 @@
 
 //@+<< Includes >>
 //@+node:gcross.20110202223558.1715: ** << Includes >>
+#include <boost/filesystem.hpp>
 #include <boost/function.hpp>
 #include <boost/optional.hpp>
 #include <boost/random.hpp>
-#include <boost/random/normal_distribution.hpp>
-#include <boost/random/uniform_smallint.hpp>
 #include <complex>
 
 #include "operators.hpp"
@@ -31,30 +30,45 @@
 
 using namespace Nutcracker;
 
+using boost::filesystem::path;
 using boost::function;
 using boost::taus88;
 using boost::none;
-using boost::normal_distribution;
 using boost::optional;
-using boost::uniform_smallint;
 
 using std::abs;
 //@-<< Includes >>
 
 //@+others
-//@+node:gcross.20110202223558.1714: ** struct RNG
+//@+node:gcross.20110511190907.3823: ** Classes
+//@+node:gcross.20110511190907.3824: *3* TemporaryFilepath
+class TemporaryFilepath {
+private:
+    BOOST_MOVABLE_BUT_NOT_COPYABLE(TemporaryFilepath)
+protected:
+    path filepath;
+public:
+    TemporaryFilepath();
+    TemporaryFilepath(path const& filepath);
+    TemporaryFilepath(BOOST_RV_REF(TemporaryFilepath) other);
+    ~TemporaryFilepath();
+
+    path const& operator*() const;
+    path const* operator->() const;
+};
+//@+node:gcross.20110202223558.1714: *3* RNG
 class RNG {
     friend class ComplexDoubleGenerator;
     friend class IndexGenerator;
     friend class IntegerGenerator;
 protected:
     taus88 generator;
-    normal_distribution<double> normal;
-    uniform_smallint<unsigned int> smallint;
 public:
+    function<bool()> const randomBoolean;
     function<double()> const randomDouble;
     function<unsigned int()> const randomInteger;
     function<complex<double>()> const randomComplexDouble;
+    function<char()> const randomLowercaseLetter;
 
     RNG();
 
@@ -64,6 +78,7 @@ public:
         , LeftDimension const left_dimension
         , RightDimension const right_dimension
     );
+    OperatorSite randomOperatorSite();
     Operator randomOperator(
           optional<unsigned int> maybe_number_of_sites=none
         , unsigned int const maximum_physical_dimension=10
@@ -75,6 +90,8 @@ public:
     State randomState();
     State randomState(unsigned int number_of_sites);
     State randomState(vector<unsigned int> const& physical_dimensions);
+
+    TemporaryFilepath randomTemporaryFilepath(string suffix) const;
 
     function<complex<double>()> generateRandomHermitianMatrices(unsigned int const size);
     function<unsigned int()> generateRandomIntegers(unsigned int lo, unsigned int hi);
@@ -89,5 +106,7 @@ public:
 //@+node:gcross.20110511190907.2324: ** Functions
 void checkOperatorsEqual(Operator const& operator_1,Operator const& operator_2);
 void checkOperatorSitesEqual(OperatorSite const& operator_site_1,OperatorSite const& operator_site_2);
+void checkSiteTensorsEqual(SiteBaseTensor const& site_1,SiteBaseTensor const& site_2);
+void checkStatesEqual(State const& state_1,State const& state_2);
 //@-others
 //@-leo
