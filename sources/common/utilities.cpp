@@ -42,6 +42,7 @@ namespace Nutcracker {
 using boost::accumulate;
 using boost::irange;
 
+using std::ceil;
 using std::multiplies;
 //@-<< Usings >>
 
@@ -114,6 +115,11 @@ vector<unsigned int> computeBandwidthDimensionSequence(
     );
 
     return boost::move(forward_bandwidth_dimensions);
+}
+//@+node:gcross.20110511190907.3644: *3* computeDigitsOfPrecision
+unsigned int computeDigitsOfPrecision(double const tolerance) {
+    double const estimated_precision = ceil(-log10(tolerance));
+    return estimated_precision > 0 ? (unsigned int)estimated_precision : 1;
 }
 //@-others
 

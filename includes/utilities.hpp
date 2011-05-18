@@ -368,6 +368,8 @@ Returns the number of ways to choose \c k elements from \c n elements.
 \return the number of ways to choose \c k elements from \c n elements.
 */
 unsigned long long choose(unsigned int n, unsigned int k);
+//@+node:gcross.20110511190907.3645: *4* computeDigitsOfPrecision
+unsigned int computeDigitsOfPrecision(double const tolerance);
 //@+node:gcross.20110211120708.1798: *4* makeProductIterator
 //! Convenience function for constructing instance of ProductIterator.
 template<typename T> ProductIterator<T> makeProductIterator(T const x) { return ProductIterator<T>(x); }
