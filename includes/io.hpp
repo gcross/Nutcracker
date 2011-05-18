@@ -135,7 +135,7 @@ struct NoSuchFormatError : public FormatException {
 struct NoSuchLocationError : public Exception {
     string const location;
     NoSuchLocationError(string const& location)
-      : Exception((format("No such location %1%.") % index).str())
+      : Exception((format("No such location %1%.") % location).str())
       , location(location)
     {}
     virtual ~NoSuchLocationError() throw() {}
