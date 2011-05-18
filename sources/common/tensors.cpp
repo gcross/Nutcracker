@@ -40,6 +40,11 @@ OperatorSite const OperatorSite::trivial(make_trivial);
 
 DEFINE_DUMMY_PARAMETER(MakeTrivial,make_trivial)
 DEFINE_DUMMY_PARAMETER(AsUnsignedInteger,as_unsigned_integer)
+
+optional<string> const normalizationOf<Left>::value("left");
+optional<string> const normalizationOf<Middle>::value("middle");
+optional<string> const normalizationOf<Right>::value("right");
+optional<string> const normalizationOf<None>::value(none);
 //@-others
 
 }

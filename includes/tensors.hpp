@@ -29,6 +29,7 @@
 #include <boost/format.hpp>
 #include <boost/iterator/iterator_facade.hpp>
 #include <boost/move/move.hpp>
+#include <boost/optional.hpp>
 #include <boost/range/algorithm/copy.hpp>
 #include <boost/range/concepts.hpp>
 #include <boost/range/irange.hpp>
@@ -50,6 +51,8 @@ using boost::container::vector;
 using boost::copy;
 using boost::Generator;
 using boost::iterator_facade;
+using boost::none;
+using boost::optional;
 using boost::RandomAccessRangeConcept;
 using boost::random_access_traversal_tag;
 using boost::shared_ptr;
@@ -96,6 +99,24 @@ class Overlap;
 class Physical;
 class Right;
 class State;
+//@+node:gcross.20110511190907.2252: ** Normalization traits
+template<typename Side> struct normalizationOf {};
+
+template<> struct normalizationOf<Left> {
+    static optional<string> const value;
+};
+
+template<> struct normalizationOf<Middle> {
+    static optional<string> const value;
+};
+
+template<> struct normalizationOf<Right> {
+    static optional<string> const value;
+};
+
+template<> struct normalizationOf<None> {
+    static optional<string> const value;
+};
 //@+node:gcross.20110127123226.2852: ** Constructor parameters wrappers
 /*! \defgroup ConstructorParameters Constructor parameter wrappers
 
