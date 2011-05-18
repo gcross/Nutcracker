@@ -205,7 +205,7 @@ int main(int argc, char** argv) {
         cerr << "Run Nutcracker with the --help-formats option for more informaton about supported formats." << endl;
         return -1;
     } catch (NoFormatTypeSpecifiedError const& e) {
-        cerr << "No " << e.format_type_name << " format type has not been specified." << endl;
+        cerr << "No " << e.format_type_name << " format type has been specified." << endl;
         cerr << endl;
         cerr << "The recognized " << e.format_type_name << " format types are:" << endl;
         vector<string> names(e.getAcceptedFormatNames());
