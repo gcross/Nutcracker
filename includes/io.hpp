@@ -412,11 +412,14 @@ template<typename SitesType> vector<shared_ptr<OperatorSite const> > readUniqueO
     return boost::move(unique_operator_sites);
 }
 //@+node:gcross.20110511190907.3800: *3* resolveAndCheckFormat
+void installFormats();
 template<typename FormatType> FormatType const& resolveAndCheckFormat(
     optional<string> const& maybe_format_name
   , optional<string> const& maybe_filename
   , optional<string> const& maybe_location
 ) {
+    installFormats();
+
     FormatType const* format = NULL;
     char const* const format_type_name = FormatType::type_name;
 
