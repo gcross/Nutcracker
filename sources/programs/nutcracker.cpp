@@ -61,13 +61,13 @@ class HelpOptions : public Options {
     public:
 
     HelpOptions(options_description const& all_options)
-      : Options("Simulation options")
+      : Options("Help options")
       , all_options(all_options)
     {
         options.add_options()
-            ("help", opts::value<none_t>()->zero_tokens()->notifier(bind(&HelpOptions::runPrintHelpMessageAndExit,this,_1)),
+            ("help", opts::bool_switch()->notifier(bind(&HelpOptions::runPrintHelpMessageAndExit,this,_1))->zero_tokens(),
                 "print help message and exit\n")
-            ("help-formats", opts::value<none_t>()->zero_tokens()->notifier(bind(&HelpOptions::runPrintHelpFormatsMessageAndExit,this,_1)),
+            ("help-formats", opts::bool_switch()->notifier(bind(&HelpOptions::runPrintHelpFormatsMessageAndExit,this,_1))->zero_tokens(),
                 "print the supported input and output formats and exit\n")
         ;
     }
@@ -76,8 +76,8 @@ class HelpOptions : public Options {
 
     options_description const& all_options;
 
-    void runPrintHelpMessageAndExit(none_t const& _) { printHelpMessageAndExit(); }
-    void runPrintHelpFormatsMessageAndExit(none_t const& _) { printHelpMessageAndExit(); }
+    void runPrintHelpMessageAndExit(bool const& run) { if(run) printHelpMessageAndExit(); }
+    void runPrintHelpFormatsMessageAndExit(bool const& run) { if(run) printHelpFormatsMessageAndExit(); }
 
     public:
 
@@ -95,6 +95,19 @@ class HelpOptions : public Options {
     }
 
     void printHelpFormatsMessageAndExit() {
+        cerr << "The recognized input format types are:" << endl;
+        vector<string> names(InputFormat::listNames());
+        BOOST_FOREACH(string const& name, names) {
+            cerr << "  - " << name << ": " << InputFormat::lookupName(name).description << endl;
+        }
+        cerr << endl;
+        cerr << "The recognized output format types are:" << endl;
+        names = OutputFormat::listNames();
+        BOOST_FOREACH(string const& name, names) {
+            cerr << "  - " << name << ": " << OutputFormat::lookupName(name).description << endl;
+        }
+        cerr << endl;
+        exit(1);
     }
     //@-others
 };
@@ -176,8 +189,14 @@ int main(int argc, char** argv) {
         ifstream config_file(config_filename.c_str());
         opts::store(opts::parse_config_file(config_file, options), vm);
         opts::notify(vm);
-    } catch(...) {
-        options.printHelpMessageAndExit();
+    } catch(std::exception const& e) {
+        cerr << "An error was encounted while parsing the options:" << endl
+             << endl
+             << e.what() << endl
+             << endl
+             << "Run Nutcracker with the --help option for a description of the available options." << endl
+        ;
+        return -1;
     }
 
     try {
