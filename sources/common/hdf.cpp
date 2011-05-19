@@ -410,15 +410,11 @@ Dataset writeTensorData(
 //@+node:gcross.20110511190907.2301: ** I/O Operators
 //@+node:gcross.20110511190907.3531: *3* Operator
 //@+node:gcross.20110511190907.3532: *4* >>
-Group operator >> (Location const& location, Operator& operator_sites) {
-    Group group(location);
-
+void operator >> (Location const& location, Operator& operator_sites) {
     operator_sites = constructOperatorFrom(
         readUniqueOperatorSites(Group(location / "sites")),
         Dataset(location / "sequence").readTensorData<unsigned int>()
     );
-
-    return boost::move(group);
 }
 //@+node:gcross.20110511190907.3533: *4* <<
 Group operator << (Location const& location, Operator const& operator_sites) {

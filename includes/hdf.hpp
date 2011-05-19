@@ -767,7 +767,7 @@ Group operator<<(Location const& location, State const& state);
 Group operator>>(Location const& location, State& state);
 //@+node:gcross.20110511190907.3573: *3* Operator
 Group operator<<(Location const& location, Operator const& operator_sites);
-Group operator>>(Location const& location, Operator& operator_sites);
+void operator>>(Location const& location, Operator& operator_sites);
 //@-others
 
 //! @}
