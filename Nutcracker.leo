@@ -33,9 +33,15 @@
 </v>
 <v t="gcross.20110220182654.1998"><vh>@path examples</vh>
 <v t="gcross.20110220182654.2000"><vh>@path generate</vh>
+<v t="gcross.20110518164918.2514"><vh>@path hdf</vh>
+<v t="gcross.20110518164918.2516"><vh>@file external-field.py</vh></v>
+<v t="gcross.20110518164918.2520"><vh>@file transverse-ising-model.py</vh></v>
+</v>
+<v t="gcross.20110518164918.2513"><vh>@path yaml</vh>
 <v t="gcross.20110220182654.1999"><vh>@file external-field.py</vh></v>
 <v t="gcross.20110220182654.2002"><vh>@file external-field-using-anchors.py</vh></v>
 <v t="gcross.20110220182654.2005"><vh>@file transverse-ising-model.py</vh></v>
+</v>
 </v>
 </v>
 <v t="gcross.20091106154604.9812"><vh>@path sources</vh>
@@ -166,5 +172,7 @@ Redistribution and use in source and binary forms, with or without modification,
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 @c</t>
 <t tx="gcross.20110501233304.2056"></t>
+<t tx="gcross.20110518164918.2513"></t>
+<t tx="gcross.20110518164918.2514"></t>
 </tnodes>
 </leo_file>
