@@ -346,8 +346,8 @@ hid_t datatypeOf<complex<double> >::get() {
         ConstructDatatype() {
             datatype = H5Tcreate(H5T_COMPOUND,sizeof(complex<double>));
             complex<double> c;
-            H5Tinsert(datatype,"real",0,H5T_NATIVE_DOUBLE);
-            H5Tinsert(datatype,"imag",sizeof(double),H5T_NATIVE_DOUBLE);
+            H5Tinsert(datatype,"r",0,H5T_NATIVE_DOUBLE);
+            H5Tinsert(datatype,"i",sizeof(double),H5T_NATIVE_DOUBLE);
         }
     } construct_datatype;
     return construct_datatype.datatype;
