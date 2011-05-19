@@ -30,6 +30,9 @@
 
 //@+<< Includes >>
 //@+node:gcross.20110214155808.1923: ** << Includes >>
+#include <boost/function.hpp>
+#include <map>
+
 #include "operators.hpp"
 #include "projectors.hpp"
 #include "states.hpp"
@@ -39,7 +42,10 @@ namespace Nutcracker {
 
 //@+<< Usings >>
 //@+node:gcross.20110214155808.1924: ** << Usings >>
+using boost::function;
+
 using std::abs;
+using std::map;
 //@-<< Usings >>
 
 //! \defgroup Optimizer
@@ -47,6 +53,12 @@ using std::abs;
 
 //@+others
 //@+node:gcross.20110214155808.1940: ** Exceptions
+//@+node:gcross.20110518200233.5038: *3* NoSuchOptimizerModeError
+struct NoSuchOptimizerModeError : public Exception {
+    string const name;
+    NoSuchOptimizerModeError(string const& name);
+    virtual ~NoSuchOptimizerModeError() throw() {}
+};
 //@+node:gcross.20110214155808.1943: *3* OptimizerFailure
 //! \defgroup OptimizerFailures Optimizer failures
 //! @{
@@ -124,16 +136,16 @@ struct OptimizerObtainedEigenvectorInProjectorSpace : public OptimizerFailure {
     OptimizerObtainedEigenvectorInProjectorSpace(double overlap);
 
 };
-//@+node:gcross.20110214155808.1947: *4* OptimizerObtainedGreaterEigenvalue
-//! Exception thrown when the optimizer has obtained a new solution with a greater eigenvalue than the old solution.
-struct OptimizerObtainedGreaterEigenvalue : public OptimizerFailure {
+//@+node:gcross.20110214155808.1947: *4* OptimizerObtainedRegressiveEigenvalue
+//! Exception thrown when the optimizer has obtained a new solution with an eigenvalue that has regressed from the old solution.
+struct OptimizerObtainedRegressiveEigenvalue : public OptimizerFailure {
 
     double const
         old_eigenvalue, //!< The eigenvalue of the old solution.
         new_eigenvalue; //!< The eigenvalue of the new solution.
 
     //! Construct this exception with the eigenvalues of the old and new solutions.
-    OptimizerObtainedGreaterEigenvalue(
+    OptimizerObtainedRegressiveEigenvalue(
           double const old_eigenvalue
         , double const new_eigenvalue
     );
@@ -175,6 +187,47 @@ struct OptimizerUnknownFailure : public OptimizerFailure {
 
 //! @}
 //@+node:gcross.20110214155808.1981: ** Classes
+//@+node:gcross.20110517202745.2516: *3* OptimizerMode
+class OptimizerMode {
+
+public:
+    typedef function<bool (double,double,double)> RegressionChecker;
+    typedef map<string,OptimizerMode> OptimizerModeRegistry;
+
+protected:
+    char const* name;
+    char const* which;
+    char const* description;
+    RegressionChecker regression_checker;
+
+    OptimizerMode(
+        char const* name
+      , char const* which
+      , char const* description
+      , RegressionChecker regression_checker
+    );
+
+public:
+    OptimizerMode() {}
+
+    bool operator ==(OptimizerMode const& other) const;
+
+    char const* getDescription() const;
+    char const* getName() const;
+    char const* getWhich() const;
+
+    bool checkForRegressionFromTo(double old_value, double new_value, double tolerance) const;
+
+    static map<string,OptimizerMode> const& getRegistry();
+    static OptimizerMode const& lookupName(string const& name);
+    static vector<string> listNames();
+
+    static OptimizerMode least_value, greatest_value, largest_magnitude;
+
+};
+
+std::istream& operator >>(std::istream& in, OptimizerMode& mode);
+std::ostream& operator <<(std::ostream& out, OptimizerMode const& mode);
 //@+node:gcross.20110214155808.1982: *3* OptimizerResult
 //@+<< Description >>
 //@+node:gcross.20110429225820.2521: *4* << Description >>
@@ -228,6 +281,11 @@ struct OptimizerResult {
     //@-others
 };
 //@+node:gcross.20110214155808.1926: ** Functions
+//@+node:gcross.20110518200233.5050: *3* checkFor
+bool checkForLargestMagnitudeRegressionFromTo(double from, double to, double tolerance);
+bool checkForLeastValueRegressionFromTo(double from, double to, double tolerance);
+bool checkForGreatestValueRegressionFromTo(double from, double to, double tolerance);
+//@+node:gcross.20110518200233.5051: *3* optimizeStateSite
 //! Optimizes a site and returns the result.
 /*!
 \param left_boundary the left boundary of the site environment
@@ -248,6 +306,7 @@ Nutcracker::OptimizerResult optimizeStateSite(
     , double const convergence_threshold
     , double const sanity_check_threshold
     , unsigned int const maximum_number_of_iterations
+    , OptimizerMode const& optimizer_mode = OptimizerMode::least_value
 );
 //@-others
 

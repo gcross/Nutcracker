@@ -71,8 +71,10 @@ Chain::Chain(
       Operator const& operator_sites
     , unsigned int const bandwidth_dimension
     , Options const& options
+    , OptimizerMode const& optimizer_mode
 ) : number_of_sites(operator_sites.size())
   , operator_sites(operator_sites)
+  , optimizer_mode(optimizer_mode)
   , current_site_number(0)
   , left_expectation_boundary(make_trivial)
   , right_expectation_boundary(make_trivial)
@@ -223,13 +225,16 @@ void Chain::optimizeSite() {
                 ,options.site_convergence_threshold
                 ,options.sanity_check_threshold
                 ,options.maximum_number_of_iterations
+                ,optimizer_mode
             )
         );
-        if(result.eigenvalue > energy && outsideTolerance(result.eigenvalue,energy,options.sanity_check_threshold)) {
-            throw OptimizerObtainedGreaterEigenvalue(energy,result.eigenvalue);
+        if(optimizer_mode.checkForRegressionFromTo(energy,result.eigenvalue,options.sanity_check_threshold)) {
+            throw OptimizerObtainedRegressiveEigenvalue(energy,result.eigenvalue);
         }
-        energy = result.eigenvalue;
-        state_site = boost::move(result.state_site);
+        if((energy >= 0 && result.eigenvalue >= 0) || (energy <= 0 && result.eigenvalue <= 0) || outsideTolerance(abs(energy),abs(result.eigenvalue),options.sanity_check_threshold)) {
+            energy = result.eigenvalue;
+            state_site = boost::move(result.state_site);
+        }
         signalOptimizeSiteSuccess(result.number_of_iterations);
     } catch(OptimizerFailure& failure) {
         signalOptimizeSiteFailure(failure);

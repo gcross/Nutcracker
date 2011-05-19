@@ -220,8 +220,122 @@ subroutine orthogonalize_matrix_in_place( &
   call compute_orthogonal_basis(m,n,n,matrix,rank,matrix)
 
 end subroutine
-!@+node:gcross.20100514235202.1743: *3* lapack_eigenvalue_minimizer
-subroutine lapack_eigenvalue_minimizer(n,matrix,eigenvalue,eigenvector)
+!@+node:gcross.20100514235202.1743: *3* lapack_eigenvalue_real_optimizer
+subroutine lapack_eigenvalue_real_optimizer(n,matrix,which,eigenvalue,eigenvector)
+  integer, intent(in) :: n
+  double complex, intent(in) :: matrix(n,n)
+  character, intent(in) :: which*2
+
+  double complex, intent(out) :: eigenvalue, eigenvector(n)
+
+  integer :: number_of_eigenvalues_found, lwork, lrwork, liwork(1), eigenvalue_index
+  double precision :: lrwork_as_double(1)
+  double complex :: lwork_as_complex(1), temp(n,n)
+  double complex, allocatable :: work(:)
+  double precision, allocatable :: rwork(:)
+  integer, allocatable :: iwork(:)
+
+  integer :: info, eigenvector_support(2)
+  double precision :: w(n)
+
+  character, parameter :: SR*2 = 'SR', LR*2 = 'LR'
+
+  interface
+    subroutine zheevr( &
+      jobz, range, uplo, &
+      n, &
+      a, lda, &
+      vl, vu, &
+      il, iu, &
+      abstol, &
+      m, w, &
+      z, ldz, isuppz, &
+      work, lwork, &
+      rwork, lrwork, &
+      iwork, liwork, &
+      info &
+    )
+      character, intent(in) :: jobz, range, uplo
+      integer, intent(in) :: il, info, iu, lda, ldz, liwork, lrwork, lwork, n
+      integer, intent(out) :: m
+      double precision, intent(in) :: abstol, vl, vu
+      integer, intent(inout) :: isuppz(2), iwork(liwork)
+      double precision, intent(inout) :: rwork(lrwork), w(n)
+      double complex, intent(inout) :: a(lda,n), work(lwork), z(ldz,1)
+    end subroutine
+  end interface
+
+  temp = matrix
+
+  if(which == SR) then
+    eigenvalue_index = 1
+  elseif(which == LR) then
+    eigenvalue_index = n
+  else
+    print *, "Invalid eigenvalue requested: ", which
+    stop
+  end if
+
+  call zheevr(&
+    'V', &
+    'I', &
+    'U', &
+    n, &
+    temp, n, &
+    0d0, 0d0, &
+    eigenvalue_index, eigenvalue_index, &
+    0d0, &
+    number_of_eigenvalues_found, &
+    w, &
+    eigenvector, n, eigenvector_support, &
+    lwork_as_complex, -1, &
+    lrwork_as_double, -1, &
+    liwork, -1, &
+    info &
+  )
+
+  if (info /= 0) then
+    print *, "Error computing eigenvalue (zheevr, workspace query); info =", info
+    print *, "n=",n
+    stop
+  end if
+
+  lwork = int(lwork_as_complex(1))
+  lrwork = int(lrwork_as_double(1))
+
+  allocate(work(lwork),rwork(lrwork),iwork(liwork(1)))
+
+  call zheevr(&
+    'V', &
+    'I', &
+    'U', &
+    n, &
+    temp, n, &
+    0d0, 0d0, &
+    eigenvalue_index, eigenvalue_index, &
+    0d0, &
+    number_of_eigenvalues_found, &
+    w, &
+    eigenvector, n, eigenvector_support, &
+    work, lwork, &
+    rwork, lrwork, &
+    iwork, liwork(1), &
+    info &
+  )
+
+  deallocate(work,rwork,iwork)
+
+  if (info /= 0) then
+    print *, "Error computing eigenvalue (zheevr); info =", info
+    print *, "n=",n
+    stop
+  end if
+
+  eigenvalue = w(1)*(1d0,0d0)
+
+end subroutine
+!@+node:gcross.20110518200233.5048: *3* lapack_eigenvalue_mag_maximizer
+subroutine lapack_eigenvalue_mag_maximizer(n,matrix,eigenvalue,eigenvector)
   integer, intent(in) :: n
   double complex, intent(in) :: matrix(n,n)
 
@@ -235,7 +349,9 @@ subroutine lapack_eigenvalue_minimizer(n,matrix,eigenvalue,eigenvector)
   integer, allocatable :: iwork(:)
 
   integer :: info, eigenvector_support(2)
-  double precision :: w(n)
+  double precision :: w(n), w1
+
+  double complex :: eigenvector2(n)
 
   interface
     subroutine zheevr( &
@@ -300,7 +416,7 @@ subroutine lapack_eigenvalue_minimizer(n,matrix,eigenvalue,eigenvector)
     n, &
     temp, n, &
     0d0, 0d0, &
-    1, 1, &
+    n, n, &
     0d0, &
     number_of_eigenvalues_found, &
     w, &
@@ -310,16 +426,47 @@ subroutine lapack_eigenvalue_minimizer(n,matrix,eigenvalue,eigenvector)
     iwork, liwork(1), &
     info &
   )
-
-  deallocate(work,rwork,iwork)
-
   if (info /= 0) then
     print *, "Error computing eigenvalue (zheevr); info =", info
     print *, "n=",n
     stop
   end if
 
-  eigenvalue = w(1)*(1d0,0d0)
+  w1 = w(1)
+
+  temp = matrix
+
+  call zheevr(&
+    'V', &
+    'I', &
+    'U', &
+    n, &
+    temp, n, &
+    0d0, 0d0, &
+    1, 1, &
+    0d0, &
+    number_of_eigenvalues_found, &
+    w, &
+    eigenvector2, n, eigenvector_support, &
+    work, lwork, &
+    rwork, lrwork, &
+    iwork, liwork(1), &
+    info &
+  )
+  if (info /= 0) then
+    print *, "Error computing eigenvalue (zheevr); info =", info
+    print *, "n=",n
+    stop
+  end if
+
+  deallocate(work,rwork,iwork)
+
+  if(abs(w1) > abs(w(1))) then
+    eigenvalue = w1*(1d0,0d0)
+  else
+    eigenvalue = w(1)*(1d0,0d0)
+    eigenvector = eigenvector2
+  end if
 
 end subroutine
 !@+node:gcross.20100527135859.1827: *3* swap_inplace
@@ -1910,6 +2057,8 @@ subroutine optimize_strategy_1( &
     optimization_matrix(orthogonal_subspace_dimension,orthogonal_subspace_dimension), &
     projected_eigenvector(orthogonal_subspace_dimension)
 
+  character, parameter :: SR*2 = 'SR', LR*2 = 'LR', LM*2 = 'LM'
+
   call compute_opt_matrix_all_cases( &
     bl, br, cl, cr, d, &
     left_environment, &
@@ -1919,7 +2068,22 @@ subroutine optimize_strategy_1( &
     optimization_matrix &
   )
 
-  call lapack_eigenvalue_minimizer(orthogonal_subspace_dimension,optimization_matrix,eigenvalue,projected_eigenvector)
+  if(which == SR .or. which == LR) then
+    call lapack_eigenvalue_real_optimizer( &
+      orthogonal_subspace_dimension, &
+      optimization_matrix, &
+      which, &
+      eigenvalue, &
+      projected_eigenvector &
+    )
+  elseif(which == LM) then
+    call lapack_eigenvalue_mag_maximizer( &
+      orthogonal_subspace_dimension, &
+      optimization_matrix, &
+      eigenvalue, &
+      projected_eigenvector &
+    )
+  end if
 
   call unproject_from_orthogonal_space( &
     br*bl*d, &

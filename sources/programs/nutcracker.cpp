@@ -69,6 +69,8 @@ class HelpOptions : public Options {
                 "print help message and exit\n")
             ("help-formats", opts::bool_switch()->notifier(bind(&HelpOptions::runPrintHelpFormatsMessageAndExit,this,_1))->zero_tokens(),
                 "print the supported input and output formats and exit\n")
+            ("help-modes", opts::bool_switch()->notifier(bind(&HelpOptions::runPrintHelpModesMessageAndExit,this,_1))->zero_tokens(),
+                "print the supported optimizer modes\n")
         ;
     }
     //@+node:gcross.20110511190907.3768: *4* Messages
@@ -78,6 +80,7 @@ class HelpOptions : public Options {
 
     void runPrintHelpMessageAndExit(bool const& run) { if(run) printHelpMessageAndExit(); }
     void runPrintHelpFormatsMessageAndExit(bool const& run) { if(run) printHelpFormatsMessageAndExit(); }
+    void runPrintHelpModesMessageAndExit(bool const& run) { if(run) printHelpModesMessageAndExit(); }
 
     public:
 
@@ -109,6 +112,16 @@ class HelpOptions : public Options {
         cerr << endl;
         exit(1);
     }
+
+    void printHelpModesMessageAndExit() {
+        cerr << "The recognized optimizer modes are:" << endl;
+        vector<string> names(OptimizerMode::listNames());
+        BOOST_FOREACH(string const& name, names) {
+            cerr << "  '" << name << "' - " << OptimizerMode::lookupName(name).getDescription() << endl;
+        }
+        cerr << endl;
+        exit(1);
+    }
     //@-others
 };
 //@+node:gcross.20110511190907.3760: *3* SimulationOptions
@@ -126,12 +139,19 @@ class SimulationOptions : public Options {
                 "------------------\n"
                 "If this option is specified then Nutcracker will read option values from it instead of from 'nutcracker.cfg'.\n"
             )
-            ("number-of-levels,n", opts::value<unsigned int>()->default_value(1)->notifier(bind(&SimulationOptions::setSimulationNumberOfLevels,this,_1)),
+            ("number-of-levels,n", opts::value<unsigned int>(&number_of_levels)->default_value(1),
                 "number of levels\n"
                 "----------------\n"
                 "This value specifies the number of energy levels that Nutcracker should find (including the ground state).\n"
                 "\n"
                 "If this options is not specified then it defaults to 1 (i.e., ground state only).\n"
+            )
+            ("optimizer-mode", opts::value<OptimizerMode>(&optimizer_mode)->default_value(OptimizerMode::least_value),
+                "optimizer-mode"
+                "--------------\n"
+                "This value specifies the mode of the optimizer;  this is the option you want to specify if you don't just want to find the solutions with the least eigenvalues.  Run Nutcracker with --help-modes to list the available modes.\n"
+                "\n"
+                "If this options is not specified then it defaults to '<v' (least value).\n"
             )
         ;
     }
@@ -139,12 +159,12 @@ class SimulationOptions : public Options {
     protected:
 
     unsigned int number_of_levels;
-
-    void setSimulationNumberOfLevels(unsigned int const& number_of_levels) { this->number_of_levels = number_of_levels; }
+    OptimizerMode optimizer_mode;
 
     public:
 
     unsigned int getSimulationNumberOfLevels() const { return number_of_levels; }
+    OptimizerMode const& getOptimizerMode() const { return optimizer_mode; }
     //@-others
 };
 //@+node:gcross.20110511190907.3776: *3* ProgramOptions
@@ -206,7 +226,12 @@ int main(int argc, char** argv) {
 
         Operator hamiltonian(options.readOperatorUsingInputFormat(input_format));
 
-        Chain chain(hamiltonian,1,options.getToleranceChainOptions());
+        Chain chain
+            (hamiltonian
+            ,1
+            ,options.getToleranceChainOptions()
+            ,options.getOptimizerMode()
+            );
 
         auto_ptr<Destructable const> outputter = options.connectToChainUsingOutputFormat(output_format,chain);
 

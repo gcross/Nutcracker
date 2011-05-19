@@ -27,6 +27,13 @@
 
 //@+<< Includes >>
 //@+node:gcross.20110214155808.1885: ** << Includes >>
+#include <boost/algorithm/string/case_conv.hpp>
+#include <boost/lambda/bind.hpp>
+#include <boost/lambda/lambda.hpp>
+#include <boost/range/adaptor/map.hpp>
+#include <boost/range/algorithm/copy.hpp>
+#include <cstring>
+
 #include "boundaries.hpp"
 #include "core.hpp"
 #include "optimizer.hpp"
@@ -37,6 +44,14 @@ namespace Nutcracker {
 
 //@+<< Usings >>
 //@+node:gcross.20110214155808.1886: ** << Usings >>
+namespace lam = boost::lambda;
+
+using boost::adaptors::map_keys;
+using boost::copy;
+using boost::to_lower;
+
+using std::istream;
+using std::ostream;
 //@-<< Usings >>
 
 //@+others
@@ -104,12 +119,12 @@ OptimizerObtainedEigenvectorInProjectorSpace::OptimizerObtainedEigenvectorInProj
     )
   , overlap(overlap)
 { }
-//@+node:gcross.20110214155808.1911: *4* OptimizerObtainedGreaterEigenvalue
-OptimizerObtainedGreaterEigenvalue::OptimizerObtainedGreaterEigenvalue(
+//@+node:gcross.20110214155808.1911: *4* OptimizerObtainedRegressiveEigenvalue
+OptimizerObtainedRegressiveEigenvalue::OptimizerObtainedRegressiveEigenvalue(
       double const old_eigenvalue
     , double const new_eigenvalue
 ) : OptimizerFailure(
-        (format("Optimizer obtained an eigenvalue that was greater than the old eigenvalue (%|.15| > %|.15|)")
+        (format("Optimizer obtained an eigenvalue that has regressed from the old eigenvalue (%|.15| vs %|.15|)")
             % new_eigenvalue
             % old_eigenvalue
         ).str()
@@ -147,7 +162,103 @@ OptimizerUnknownFailure::OptimizerUnknownFailure(
     )
   , error_code(error_code)
 { }
+//@+node:gcross.20110518200233.5040: *3* NoSuchOptimizerModeError
+NoSuchOptimizerModeError::NoSuchOptimizerModeError(string const& name)
+  : Exception((format("There is no such optimizer mode '%1%'.") % name).str())
+  , name(name)
+{}
+//@+node:gcross.20110518200233.5028: ** Classes
+//@+node:gcross.20110518200233.5030: *3* OptimizerMode
+//@+node:gcross.20110518200233.5033: *4* Constructors
+OptimizerMode::OptimizerMode(
+    char const* name
+  , char const* which
+  , char const* description
+  , RegressionChecker regression_checker
+)
+  : name(name)
+  , which(which)
+  , description(description)
+  , regression_checker(regression_checker)
+{}
+//@+node:gcross.20110518200233.5034: *4* Getters
+char const* OptimizerMode::getDescription() const { return description; }
+char const* OptimizerMode::getName() const { return name; }
+char const* OptimizerMode::getWhich() const { return which; }
+//@+node:gcross.20110518200233.5036: *4* I/O
+istream& operator >>(istream& in, OptimizerMode& mode) {
+    string name;
+    in >> name;
+    to_lower(name);
+    mode = OptimizerMode::lookupName(name);
+    return in;
+}
+
+ostream& operator <<(ostream& out, OptimizerMode const& mode) {
+    return out << mode.getName();
+}
+//@+node:gcross.20110518200233.5041: *4* Miscellaneous
+bool OptimizerMode::checkForRegressionFromTo(double old_value, double new_value, double tolerance) const {
+    return regression_checker(old_value,new_value,tolerance);
+}
+
+bool OptimizerMode::operator ==(OptimizerMode const& other) const {
+    return strcmp(name,other.getName()) == 0;
+}
+//@+node:gcross.20110518200233.5037: *4* Registry
+OptimizerMode::OptimizerModeRegistry const& OptimizerMode::getRegistry() {
+    static OptimizerModeRegistry modes;
+    if(modes.empty()) {
+        modes[least_value.name] = least_value;
+        modes[greatest_value.name] = greatest_value;
+        modes[largest_magnitude.name] = largest_magnitude;
+    }
+    return modes;
+}
+
+vector<string> OptimizerMode::listNames() {
+    vector<string> names;
+    copy(getRegistry() | map_keys,back_inserter(names));
+    return boost::move(names);
+}
+
+OptimizerMode const& OptimizerMode::lookupName(string const& name) {
+    OptimizerModeRegistry const& registry = getRegistry();
+    OptimizerModeRegistry::const_iterator iter = registry.find(name);
+    if(iter == registry.end()) throw NoSuchOptimizerModeError(name);
+    else return iter->second;
+}
+//@+node:gcross.20110518200233.5042: *4* Values
+OptimizerMode
+    OptimizerMode::least_value(
+        "<v","SR",
+        "least value",
+        checkForLeastValueRegressionFromTo
+    )
+  , OptimizerMode::greatest_value(
+        ">v","LR",
+        "greatest value",
+        checkForGreatestValueRegressionFromTo
+    )
+  , OptimizerMode::largest_magnitude(
+        ">m","LM",
+        "largest magnitude",
+        checkForLargestMagnitudeRegressionFromTo
+    )
+  ;
 //@+node:gcross.20110214155808.1889: ** Functions
+//@+node:gcross.20110518200233.5049: *3* checkFor
+bool checkForLargestMagnitudeRegressionFromTo(double from, double to, double tolerance) {
+    return abs(to) < abs(from) && outsideTolerance(abs(from),abs(to),tolerance);
+}
+
+bool checkForLeastValueRegressionFromTo(double from, double to, double tolerance) {
+    return to > from && outsideTolerance(from,to,tolerance);
+}
+
+bool checkForGreatestValueRegressionFromTo(double from, double to, double tolerance) {
+    return to < from && outsideTolerance(from,to,tolerance);
+}
 //@+node:gcross.20110214155808.1890: *3* optimizeStateSite
 OptimizerResult optimizeStateSite(
       ExpectationBoundary<Left> const& left_boundary
@@ -158,6 +269,7 @@ OptimizerResult optimizeStateSite(
     , double const convergence_threshold
     , double const sanity_check_threshold
     , unsigned int const maximum_number_of_iterations
+    , OptimizerMode const& optimizer_mode
 ) {
     uint32_t number_of_iterations = maximum_number_of_iterations;
     complex<double> eigenvalue;
@@ -181,7 +293,7 @@ OptimizerResult optimizeStateSite(
                 ,projector_matrix.reflectorData()
                 ,projector_matrix.coefficientData()
                 ,projector_matrix.swapData()
-                ,"SR"
+                ,optimizer_mode.getWhich()
                 ,convergence_threshold
                 ,number_of_iterations
                 ,current_state_site
@@ -204,7 +316,7 @@ OptimizerResult optimizeStateSite(
                 ,NULL
                 ,NULL
                 ,NULL
-                ,"SR"
+                ,optimizer_mode.getWhich()
                 ,convergence_threshold
                 ,number_of_iterations
                 ,current_state_site

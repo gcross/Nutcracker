@@ -101,6 +101,7 @@ public:
     unsigned int const number_of_sites;
 protected:
     Operator const operator_sites;
+    OptimizerMode const optimizer_mode;
     vector<Projector> projectors;
     unsigned int current_site_number;
     ExpectationBoundary<Left> left_expectation_boundary;
@@ -157,6 +158,7 @@ public:
       Operator const& operator_sites
     , unsigned int const initial_bandwidth = 1
     , Options const& options = defaults
+    , OptimizerMode const& optimizer_mode = OptimizerMode::least_value
     );
     void reset(unsigned int initial_bandwidth = 1);
 

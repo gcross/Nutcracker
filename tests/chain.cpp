@@ -338,6 +338,7 @@ TEST_SUITE(external_field) {
 
     void runTests(
           unsigned int const physical_dimension
+        , OptimizerMode const& optimizer_mode
     ) {
         Matrix matrix;
         {
@@ -361,20 +362,45 @@ TEST_SUITE(external_field) {
                         , matrix
                      )
                     ,initial_bandwidth_dimension
+                    ,Chain::defaults
+                    ,optimizer_mode
                 );
                 chain.signalOptimizeSiteFailure.connect(rethrow<OptimizerFailure>);
                 unsigned int number_of_sweeps = 0;
                 chain.signalSweepPerformed.connect(++lambda::var(number_of_sweeps));
                 chain.optimizeChain();
                 ASSERT_TRUE(number_of_sweeps < 5);
-                ASSERT_NEAR_REL(c(-(int)number_of_sites,0),chain.getEnergy(),1e-7);
+                if(optimizer_mode == OptimizerMode::least_value) {
+                    ASSERT_NEAR_REL(static_cast<double>(number_of_sites),-chain.getEnergy(),1e-7);
+                } else if(optimizer_mode == OptimizerMode::greatest_value) {
+                    ASSERT_NEAR_REL(static_cast<double>(number_of_sites),chain.getEnergy(),1e-7);
+                } else if(optimizer_mode == OptimizerMode::largest_magnitude) {
+                    ASSERT_NEAR_REL(static_cast<double>(number_of_sites),abs(chain.getEnergy()),1e-7);
+                } else {
+                    FATALLY_FAIL("Bad optimizer mode.");
+                }
             }
         }
     }
 
-    TEST_CASE(physical_dimension_2) { runTests(2); }
-    TEST_CASE(physical_dimension_3) { runTests(3); }
-    TEST_CASE(physical_dimension_4) { runTests(4); }
+    TEST_SUITE(least_value) {
+        OptimizerMode const& mode = OptimizerMode::least_value;
+        TEST_CASE(physical_dimension_2) { runTests(2,mode); }
+        TEST_CASE(physical_dimension_3) { runTests(3,mode); }
+        TEST_CASE(physical_dimension_4) { runTests(4,mode); }
+    }
+    TEST_SUITE(greatest_value) {
+        OptimizerMode const& mode = OptimizerMode::greatest_value;
+        TEST_CASE(physical_dimension_2) { runTests(2,mode); }
+        TEST_CASE(physical_dimension_3) { runTests(3,mode); }
+        TEST_CASE(physical_dimension_4) { runTests(4,mode); }
+    }
+    TEST_SUITE(largest_magnitude) {
+        OptimizerMode const& mode = OptimizerMode::largest_magnitude;
+        TEST_CASE(physical_dimension_2) { runTests(2,mode); }
+        TEST_CASE(physical_dimension_3) { runTests(3,mode); }
+        TEST_CASE(physical_dimension_4) { runTests(4,mode); }
+    }
 }
 //@+node:gcross.20110218150430.2592: *4* transverse Ising model
 TEST_SUITE(transverse_Ising_model) {
@@ -383,16 +409,42 @@ TEST_SUITE(transverse_Ising_model) {
           unsigned int const number_of_sites
         , double const coupling_strength
         , double const correct_energy
+        , OptimizerMode const& optimizer_mode
     ) {
-        Chain chain(constructTransverseIsingModelOperator(number_of_sites,coupling_strength));
+        Chain chain(
+            constructTransverseIsingModelOperator(number_of_sites,coupling_strength)
+          , 1
+          , Chain::defaults
+          , optimizer_mode
+        );
         chain.signalOptimizeSiteFailure.connect(rethrow<OptimizerFailure>);
         chain.optimizeChain();
-        ASSERT_NEAR_REL(correct_energy,chain.getEnergy(),1e-10);
+        if(optimizer_mode == OptimizerMode::least_value) {
+            ASSERT_NEAR_REL(correct_energy,-chain.getEnergy(),1e-10);
+        } else if(optimizer_mode == OptimizerMode::greatest_value) {
+            ASSERT_NEAR_REL(correct_energy,chain.getEnergy(),1e-10);
+        } else if(optimizer_mode == OptimizerMode::largest_magnitude) {
+            ASSERT_NEAR_REL(correct_energy,abs(chain.getEnergy()),1e-10);
+        } else {
+            FATALLY_FAIL("Bad optimizer mode.");
+        }
     }
 
-    TEST_CASE(10_sites_0p1) { runTest(10,0.1,-10.0225109571); }
-    TEST_CASE(10_sites_1p0) { runTest(10,1.0,-12.3814899997); }
-
+    TEST_SUITE(least_value) {
+        OptimizerMode const& mode = OptimizerMode::least_value;
+        TEST_CASE(10_sites_0p1) { runTest(10,0.1,10.0225109571,mode); }
+        TEST_CASE(10_sites_1p0) { runTest(10,1.0,12.3814899997,mode); }
+    }
+    TEST_SUITE(greatest_value) {
+        OptimizerMode const& mode = OptimizerMode::greatest_value;
+        TEST_CASE(10_sites_0p1) { runTest(10,0.1,10.0225109571,mode); }
+        TEST_CASE(10_sites_1p0) { runTest(10,1.0,12.3814899997,mode); }
+    }
+    TEST_SUITE(largest_magnitude) {
+        OptimizerMode const& mode = OptimizerMode::largest_magnitude;
+        TEST_CASE(10_sites_0p1) { runTest(10,0.1,10.0225109571,mode); }
+        TEST_CASE(10_sites_1p0) { runTest(10,1.0,12.3814899997,mode); }
+    }
 }
 //@-others
 
@@ -418,6 +470,7 @@ void checkEnergies(
      Chain& chain
     ,vector<double> const& correct_energies
     ,double tolerance
+    ,bool absolute = false
 ) {
     unsigned int const number_of_levels = correct_energies.size();
     chain.signalOptimizeSiteFailure.connect(rethrow<OptimizerFailure>);
@@ -432,16 +485,21 @@ void checkEnergies(
     vector<double> actual_energies; actual_energies.reserve(number_of_levels);
     void BOOST_LOCAL_FUNCTION_PARAMS(
         const bind& chain,
+        const bind absolute,
         bind& actual_energies
     ) {
-        actual_energies.push_back(chain.getEnergy());
+        if(absolute) {
+            actual_energies.push_back(abs(chain.getEnergy()));
+        } else {
+            actual_energies.push_back(chain.getEnergy());
+        }
     } BOOST_LOCAL_FUNCTION_NAME(postEnergy)
     chain.signalChainOptimized.connect(postEnergy);
     chain.solveForMultipleLevels(number_of_levels);
     BOOST_FOREACH(unsigned int const i, irange(0u,number_of_levels)) {
         if(abs(correct_energies[i]-actual_energies[i])>tolerance) {
             ostringstream message;
-            message << format("Wrong energies [#%||: %|.15| != %|.15|]: ") % i % correct_energies[i] % actual_energies[i];
+            message << format("Wrong energies [#%||: %|.15| != %|.15|]: ") % (i+1) % correct_energies[i] % actual_energies[i];
             BOOST_FOREACH(unsigned int const i, irange(0u,number_of_levels)) {
                 message << format("%1% (%2%); ") % actual_energies[i] % correct_energies[i];
             }
@@ -483,19 +541,108 @@ TEST_SUITE(transverse_Ising_model) {
     void runTest(
           unsigned int const number_of_sites
         , double coupling_strength
+        , OptimizerMode const& optimizer_mode
         , vector<double> const& correct_energies
+        , double sanity_check_threshold = Chain::defaults.sanity_check_threshold
     ) {
-        Chain chain(constructTransverseIsingModelOperator(number_of_sites,coupling_strength));
+        Chain chain(
+            constructTransverseIsingModelOperator(number_of_sites,coupling_strength),
+            1,
+            Chain::defaults,
+            optimizer_mode
+        );
         chain.options.site_convergence_threshold = 1e-10;
         chain.options.sweep_convergence_threshold = 1e-9;
         chain.options.chain_convergence_threshold = 1e-9;
-        checkEnergies(chain,correct_energies,1e-7);
+        chain.options.sanity_check_threshold = sanity_check_threshold;
+        checkEnergies(
+            chain,
+            correct_energies,
+            1e-7,
+            optimizer_mode == OptimizerMode::largest_magnitude
+        );
     }
 
-    TEST_CASE( 6_sites_0p1) { runTest( 6,0.1,list_of( -6.012504691)( -4.1912659256)(-4.13264494449)( -4.0501210912)); }
-    TEST_CASE(10_sites_0p1) { runTest(10,0.1,list_of(-10.022510957)( -8.2137057257)(-8.18819723717)( -8.1485537719)); }
-    TEST_CASE(10_sites_0p5) { runTest(10,0.5,list_of(-10.569659557)( -9.5030059614)(-9.32268792732)( -9.0714705801)); }
-    TEST_CASE(10_sites_2p0) { runTest(10,2.0,list_of(-19.531007915)(-19.5280782081)(-17.3076728844)(-17.3047431766)); }
+    TEST_SUITE(least_value) {
+        OptimizerMode const& mode = OptimizerMode::least_value;
+        TEST_CASE( 6_sites_0p1) { runTest( 6,0.1,mode,list_of
+            (-6.012504691)
+            (-4.1912659256)
+            (-4.13264494449)
+            (-4.0501210912)
+        ); }
+        TEST_CASE(10_sites_0p1) { runTest(10,0.1,mode,list_of
+            (-10.022510957)
+            (-8.2137057257)
+            (-8.18819723717)
+            (-8.1485537719)
+        ); }
+        TEST_CASE(10_sites_0p5) { runTest(10,0.5,mode,list_of
+            (-10.569659557)
+            (-9.5030059614)
+            (-9.32268792732)
+            (-9.0714705801)
+        ); }
+        TEST_CASE(10_sites_2p0) { runTest(10,2.0,mode,list_of
+            (-19.531007915)
+            (-19.5280782081)
+            (-17.3076728844)
+            (-17.3047431766)
+        ); }
+    }
+    TEST_SUITE(greatest_value) {
+        OptimizerMode const& mode = OptimizerMode::greatest_value;
+        TEST_CASE( 6_sites_0p1) { runTest( 6,0.1,mode,list_of
+            (6.012504691)
+            (4.1912659256)
+            (4.13264494449)
+            (4.0501210912)
+        ); }
+        TEST_CASE(10_sites_0p1) { runTest(10,0.1,mode,list_of
+            (10.022510957)
+            (8.2137057257)
+            (8.18819723717)
+            (8.1485537719)
+        ); }
+        TEST_CASE(10_sites_0p5) { runTest(10,0.5,mode,list_of
+            (10.569659557)
+            (9.5030059614)
+            (9.32268792732)
+            (9.0714705801)
+        ); }
+        TEST_CASE(10_sites_2p0) { runTest(10,2.0,mode,list_of
+            (19.531007915)
+            (19.5280782081)
+            (17.3076728844)
+            (17.3047431766)
+        ); }
+    }
+    TEST_SUITE(largest_magnitude) {
+        OptimizerMode const& mode = OptimizerMode::largest_magnitude;
+        TEST_CASE( 6_sites_0p1) { runTest( 6,0.1,mode,list_of
+            (6.012504691)
+            (6.012504691)
+            (4.1912659256)
+        ); }
+        TEST_CASE(10_sites_0p1) { runTest(10,0.1,mode,list_of
+            (10.022510957)
+            (10.022510957)
+            (8.2137057257)
+        ,   1e-10
+        ); }
+        TEST_CASE(10_sites_0p5) { runTest(10,0.5,mode,list_of
+            (10.569659557)
+            (10.569659557)
+            (9.5030059614)
+        ,   1e-10
+        ); }
+        TEST_CASE(10_sites_2p0) { runTest(10,2.0,mode,list_of
+            (19.531007915)
+            (19.531007915)
+            (19.5280782081)
+        ,   1e-10
+        ); }
+    }
 }
 //@-others
 
