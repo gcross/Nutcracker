@@ -29,6 +29,7 @@ namespace Nutcracker {
 //@+<< Usings >>
 //@+node:gcross.20110511190907.3712: ** << Usings >>
 using boost::bind;
+using boost::program_options::bool_switch;
 using boost::program_options::value;
 //@-<< Usings >>
 
@@ -113,14 +114,14 @@ OutputOptions::OutputOptions()
             "\n"
             "If this option is not specified, then the hamiltonian will be assumed to be located at the root of the file.\n"
         )
-        ("output-states", value<bool>()->default_value(false)->implicit_value(true)->notifier(bind(&OutputOptions::setOutputStates,this,_1)),
+        ("output-states", bool_switch(&output_states)->default_value(false)->implicit_value(true),
             "state output flag\n"
             "-----------------\n"
             "This flag indicates that states should be output in addition to the energy levels.\n"
             "\n"
             "If this option is not specified, then only the energy levels will be output.\n"
         )
-        ("output-overwrite", value<bool>()->default_value(false)->implicit_value(true)->notifier(bind(&OutputOptions::setOutputOverwrite,this,_1)),
+        ("output-overwrite", bool_switch(&output_overwrite)->default_value(false)->implicit_value(true),
             "overwrite output flag\n"
             "---------------------\n"
             "This flag indicates that any existing data at the output file and location should be overwritten.  If this flag is false (or omitted), then Nutcracker will exit if existing data is detected at the output file and location.  (Note that for some formats, such as hdf, is possible to output data to the same file at different locations, and in such cases this flag will be ignored.)\n"
@@ -133,8 +134,6 @@ OutputOptions::OutputOptions()
 void OutputOptions::setOutputFilepath(string const& output_filepath) { maybe_output_filepath = output_filepath; }
 void OutputOptions::setOutputFormat(string const& output_format) { maybe_output_format = output_format; }
 void OutputOptions::setOutputLocation(string const& output_location) { maybe_output_location = output_location; }
-void OutputOptions::setOutputStates(bool const& output_states) { this->output_states = output_states; }
-void OutputOptions::setOutputOverwrite(bool const& output_overwrite) { this->output_overwrite = output_overwrite; }
 
 optional<string> const& OutputOptions::getOutputMaybeFilepath() const { return maybe_output_filepath; }
 optional<string> const& OutputOptions::getOutputMaybeFormat() const { return maybe_output_format; }
@@ -173,7 +172,7 @@ ToleranceOptions::ToleranceOptions()
   , chain_options(Chain::defaults)
 {
     options.add_options()
-        ("site-tolerance", value<double>()->notifier(bind(&ToleranceOptions::setToleranceSite,this,_1)),(format(
+        ("site-tolerance", value<double>(&chain_options.site_convergence_threshold),(format(
             "site convergence tolerance\n"
             "--------------------------\n"
             "This value specifies the tolerance used when optimizing individual sites.  Specifically, the ARPACK eigenvalue solver (which is invoked to optimize each site in the chain) uses this value to decide how close it needs to get to the true minimum eigenvalue before declaring victory.\n"
@@ -181,7 +180,7 @@ ToleranceOptions::ToleranceOptions()
             "If this options is not specified then it defaults to %1%.\n"
          ) % Chain::defaults.site_convergence_threshold).str().c_str()
         )
-        ("sweep-tolerance", value<double>()->notifier(bind(&ToleranceOptions::setToleranceSweep,this,_1)),(format(
+        ("sweep-tolerance", value<double>(&chain_options.sweep_convergence_threshold),(format(
             "sweep convergence tolerance\n"
             "---------------------------\n"
             "This value specifies the tolerance used when performing optimization sweeps on the chain.  Specifically, Nutcracker will sweep back and forth through the state optimizing sites until the difference in energy between two successive sweeps is less than this threshold.\n"
@@ -189,7 +188,7 @@ ToleranceOptions::ToleranceOptions()
             "If this options is not specified then it defaults to %1%.\n"
          ) % Chain::defaults.sweep_convergence_threshold).str().c_str()
         )
-        ("chain-tolerance", value<double>()->notifier(bind(&ToleranceOptions::setToleranceChain,this,_1)),(format(
+        ("chain-tolerance", value<double>(&chain_options.chain_convergence_threshold),(format(
             "chain convergence tolerance\n"
             "---------------------------\n"
             "This value specifies the tolerance used when optimizing the chain.  Specifically, Nutcracker will keep increasing the bandwidth of the chain and performing optimization sweeps until the difference in energy between the current and previous bandwidth has fallen within this tolerance.\n"
@@ -197,7 +196,7 @@ ToleranceOptions::ToleranceOptions()
             "If this options is not specified then it defaults to %1%.\n"
          ) % Chain::defaults.chain_convergence_threshold).str().c_str()
         )
-        ("sanity-tolerance", value<double>()->notifier(bind(&ToleranceOptions::setToleranceSanity,this,_1)),(format(
+        ("sanity-tolerance", value<double>(&chain_options.sanity_check_threshold),(format(
             "sanity check tolerance\n"
             "----------------------\n"
             "This value specifies the tolerance used when performing sanity checks throughout the optimization run;  sanity checks include making sure that the state is always normalized, making sure that excited states are perpendicular to the ground state, making sure that the eigenvalue solver returns an eigenvalue that is less than the old eigenvalue and consistent with the contraction of the environment, etc.  If one of the sanity checks sees a divergence that exceeds this threshold then the optimization of the site fails.\n"
@@ -208,12 +207,6 @@ ToleranceOptions::ToleranceOptions()
     ;
 }
 //@+node:gcross.20110511190907.3753: *4* Fields
-void ToleranceOptions::setToleranceSite(double const& tolerance) { chain_options.site_convergence_threshold = tolerance; }
-void ToleranceOptions::setToleranceSweep(double const& tolerance) { chain_options.sweep_convergence_threshold = tolerance; }
-void ToleranceOptions::setToleranceChain(double const& tolerance) { chain_options.chain_convergence_threshold = tolerance; }
-void ToleranceOptions::setToleranceSanity(double const& tolerance) { chain_options.sanity_check_threshold = tolerance; }
-void ToleranceOptions::setToleranceIterations(unsigned int const& maximum_number_of_iterations) { chain_options.maximum_number_of_iterations = maximum_number_of_iterations; }
-
 double ToleranceOptions::getToleranceSite() const { return chain_options.site_convergence_threshold; }
 double ToleranceOptions::getToleranceSweep() const { return chain_options.sweep_convergence_threshold; }
 double ToleranceOptions::getToleranceChain() const { return chain_options.chain_convergence_threshold;}

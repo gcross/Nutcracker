@@ -108,8 +108,6 @@ class OutputOptions : public Options {
     void setOutputFilepath(string const& output_filepath);
     void setOutputFormat(string const& output_format);
     void setOutputLocation(string const& output_location);
-    void setOutputStates(bool const& output_states);
-    void setOutputOverwrite(bool const& output_overwrite);
 
     public:
 
@@ -137,12 +135,6 @@ class ToleranceOptions : public Options {
     protected:
 
     Chain::Options chain_options;
-
-    void setToleranceSite(double const& tolerance);
-    void setToleranceSweep(double const& tolerance);
-    void setToleranceChain(double const& tolerance);
-    void setToleranceSanity(double const& tolerance);
-    void setToleranceIterations(unsigned int const& iterations);
 
     public:
 
