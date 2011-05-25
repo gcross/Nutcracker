@@ -34,22 +34,38 @@
 #include "chain.hpp"
 #include "configuration.hpp"
 #include "io.hpp"
-#include "yaml.hpp"
 
 namespace opts = boost::program_options;
 
 using boost::bind;
 using boost::format;
-using boost::make_optional;
+using boost::lexical_cast;
 using boost::none;
 using boost::none_t;
 using boost::optional;
 
+using std::auto_ptr;
 using std::cerr;
 using std::endl;
 using std::ifstream;
+using std::string;
 
-using namespace Nutcracker;
+using Nutcracker::Chain;
+using Nutcracker::Destructable;
+using Nutcracker::FormatDoesNotSupportLocationsError;
+using Nutcracker::FormatDoesNotSupportPipeError;
+using Nutcracker::InputFormat;
+using Nutcracker::InputOptions;
+using Nutcracker::NoFormatTypeSpecifiedError;
+using Nutcracker::NoSuchFormatError;
+using Nutcracker::Operator;
+using Nutcracker::Options;
+using Nutcracker::OptimizerMode;
+using Nutcracker::OutputFormat;
+using Nutcracker::OutputFormatDoesNotSupportStatesError;
+using Nutcracker::OutputOptions;
+using Nutcracker::ToleranceOptions;
+using Nutcracker::vector;
 //@-<< Includes >>
 
 //@+others
@@ -60,7 +76,7 @@ class HelpOptions : public Options {
     //@+node:gcross.20110511190907.3767: *4* Constructors
     public:
 
-    HelpOptions(options_description const& all_options)
+    HelpOptions(opts::options_description const& all_options)
       : Options("Help options")
       , all_options(all_options)
     {
@@ -76,7 +92,7 @@ class HelpOptions : public Options {
     //@+node:gcross.20110511190907.3768: *4* Messages
     protected:
 
-    options_description const& all_options;
+    opts::options_description const& all_options;
 
     void runPrintHelpMessageAndExit(bool const& run) { if(run) printHelpMessageAndExit(); }
     void runPrintHelpFormatsMessageAndExit(bool const& run) { if(run) printHelpFormatsMessageAndExit(); }
@@ -176,7 +192,7 @@ class ProgramOptions
   , public ToleranceOptions
 {
 
-    options_description options;
+    opts::options_description options;
 
     public:
 
@@ -191,7 +207,7 @@ class ProgramOptions
         options.add(ToleranceOptions::options);
     }
 
-    operator options_description&() { return options; }
+    operator opts::options_description&() { return options; }
 };
 //@+node:gcross.20110220141808.2719: ** main
 int main(int argc, char** argv) {

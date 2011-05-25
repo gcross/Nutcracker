@@ -43,19 +43,26 @@ namespace Nutcracker {
 //@-<< Usings >>
 
 //@+others
-//@+node:gcross.20110430163445.2622: ** I/O Operators
+//@-others
+
+}
+
+//@+<< Outside namespace >>
+//@+node:gcross.20110511190907.3542: ** << Outside namespace >>
+//@+others
+//@+node:gcross.20110430163445.2622: *3* I/O Operators
 //! \defgroup YAMLSerializationOperators YAML serialization operators
 //! @{
 
 //@+others
-//@+node:gcross.20110430163445.2653: *3* Reading
+//@+node:gcross.20110430163445.2653: *4* Reading
 //! \defgroup YAMLSerializationOperatorsReading Reading
 //! @{
 
 //@+others
-//@+node:gcross.20110430163445.2629: *4* complex<T>
+//@+node:gcross.20110430163445.2629: *5* complex<T>
 //! Reads a complex number from a YAML scalar (real part only) or sequence (real part then imaginary part).
-template<typename T> inline void operator>>(YAML::Node const& node,complex<T>& x) {
+template<typename T> inline void operator>>(YAML::Node const& node,std::complex<T>& x) {
     switch(node.Type()) {
         case YAML::NodeType::Scalar:
             node >> x.real();
@@ -82,14 +89,15 @@ void operator >> (const YAML::Node& node, Nutcracker::OperatorSite& operator_sit
 
 
 //! @}
-//@+node:gcross.20110430163445.2654: *3* Writing
+//@+node:gcross.20110430163445.2654: *4* Writing
 //! \defgroup YAMLSerializationOperatorsWriting Writing
 //! @{
 
 //@+others
-//@+node:gcross.20110430163445.2630: *4* complex<T>
+//@+node:gcross.20110430163445.2630: *5* complex<T>
 //! Write a complex number to a YAML document.
-template<typename T> inline YAML::Emitter& operator<<(YAML::Emitter& out,complex<T> const& x) {
+template<typename T> inline YAML::Emitter& operator<<(YAML::Emitter& out,std::complex<T> const& x) {
+    using boost::format;
     if(x.imag() == 0) {
         return out << (format("%|.20|") % x.real()).str();
     } else {
@@ -115,13 +123,6 @@ YAML::Emitter& operator << (YAML::Emitter& emitter, Nutcracker::OperatorSite con
 //@-others
 
 //! @}
-//@-others
-
-}
-
-//@+<< Outside namespace >>
-//@+node:gcross.20110511190907.3542: ** << Outside namespace >>
-//@+others
 //@+node:gcross.20110511190907.3543: *3* Boost
 namespace boost {
 

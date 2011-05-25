@@ -23,11 +23,14 @@
 #include <cstdlib>
 #include <boost/foreach.hpp>
 #include <boost/local/function.hpp>
+#include <boost/range/adaptor/indirected.hpp>
 #include <boost/range/algorithm/equal.hpp>
 #include <boost/range/algorithm/generate.hpp>
 #include <boost/range/irange.hpp>
-#include <hdf5.h>
-#include <hdf5_hl.h>
+#include <hdf++/dataset.hpp>
+#include <hdf++/file.hpp>
+#include <hdf++/location_iterator.hpp>
+#include <hdf++/temporary_memory_file.hpp>
 #include <illuminate.hpp>
 
 #include "chain.hpp"
@@ -37,8 +40,10 @@
 
 #include "test_utils.hpp"
 
+using namespace ::HDF;
 using namespace Nutcracker::HDF;
 
+using boost::adaptors::indirected;
 using boost::equal;
 using boost::generate;
 using boost::irange;
@@ -47,21 +52,6 @@ using std::equal;
 //@-<< Includes >>
 
 //@+others
-//@+node:gcross.20110511190907.2333: ** Classes
-//@+node:gcross.20110511190907.2334: *3* MemoryFile
-struct MemoryFile : public File {
-    MemoryFile() {
-        Properties file_access_properties(H5P_FILE_ACCESS);
-        assertSuccess(
-            "setting file to use CORE (memory) driver",
-            H5Pset_fapl_core(file_access_properties.getId(),4096,0)
-        );
-        id = assertSuccess(
-            "opening memory file",
-            H5Fcreate("dummy",H5F_ACC_TRUNC,H5P_DEFAULT,file_access_properties.getId())
-        );
-    }
-};
 //@+node:gcross.20110511190907.2325: ** Tests
 TEST_SUITE(HDF) {
 
@@ -141,7 +131,7 @@ TEST_CASE(Output) {
 
         }
 
-        File file(temporary_filepath->native().c_str());
+        File file(temporary_filepath->native().c_str(),File::ReadOnly);
 
         {
             Group configuration(file / "configuration");
@@ -151,10 +141,10 @@ TEST_CASE(Output) {
             ASSERT_EQ(chain.options.sanity_check_threshold,static_cast<double>(configuration["sanity check tolerance"]));
         }
 
-        ASSERT_TRUE(equal(levels,Dataset(file / "levels").readTensorData<double>()));
+        ASSERT_TRUE(equal(levels,Dataset(file / "levels").readVector<double>()));
 
         if(output_states) {
-            Group output_states_group(file / "states");
+            GroupArray output_states_group(file / "states");
             ASSERT_EQ(number_of_levels,static_cast<unsigned int>(output_states_group["size"]));
             LocationIterator output_states = output_states_group.begin();
             BOOST_FOREACH(unsigned int i, irange(0u,number_of_levels)) {
@@ -180,14 +170,14 @@ TEST_CASE(encode) {
     REPEAT(10) {
         State state(random.randomState());
 
-        MemoryFile file;
+        TemporaryMemoryFile file;
         Location location(file / "location");
 
         location << state;
 
-        EXPECT_EQ(state.numberOfSites(),static_cast<unsigned int>(Group(location)["size"]));
+        EXPECT_EQ(state.numberOfSites(),static_cast<unsigned int>(Object(location)["size"]));
 
-        LocationIterator iter(location);
+        LocationIterator iter = GroupArray(location);
 
         BOOST_FOREACH(StateSiteAny const& state_site_tensor_1, state) {
             StateSite<Middle> state_site_tensor_2;
@@ -203,7 +193,7 @@ TEST_CASE(encode_then_decode) {
     REPEAT(10) {
         State state_1(random.randomState());
 
-        MemoryFile file;
+        TemporaryMemoryFile file;
         Location location(file / "location");
 
         location << state_1;
@@ -235,15 +225,15 @@ TEST_CASE(decode) {
         LeftDimension const left_dimension(random);
         RightDimension const right_dimension(random);
 
-        MemoryFile file;
+        TemporaryMemoryFile file;
         Location location(file / "location");
 
         vector<complex<double> > data((*physical_dimension)*(*left_dimension)*(*right_dimension));
         generate(data,random.randomComplexDouble);
 
-        writeTensorData(
-            location,
-            list_of(*physical_dimension)(*left_dimension)(*right_dimension),
+        Dataset(
+            createAt(location),
+            rangeOf(list_of(*physical_dimension)(*left_dimension)(*right_dimension)),
             &data.front()
         );
 
@@ -273,21 +263,21 @@ TEST_CASE(encode) {
             ,fillWithGenerator(random.randomComplexDouble)
             );
 
-        MemoryFile file;
+        TemporaryMemoryFile file;
         Location location(file / "location");
 
         location << state_site_tensor;
 
         Dataset dataset(location);
 
-        vector<hsize_t> dimensions(dataset.dimensions());
+        std::vector<hsize_t> dimensions(dataset.dimensions());
 
         EXPECT_EQ(3,dimensions.size());
         EXPECT_EQ(*physical_dimension,dimensions[0]);
         EXPECT_EQ(*left_dimension,dimensions[1]);
         EXPECT_EQ(*right_dimension,dimensions[2]);
 
-        vector<complex<double> > data = dataset.readTensorData<complex<double> >();
+        std::vector<complex<double> > data = dataset.readVector<complex<double> >();
 
         EXPECT_TRUE(equal(state_site_tensor,data));
     }
@@ -308,7 +298,7 @@ TEST_CASE(encode_then_decode) {
             ,fillWithGenerator(random.randomComplexDouble)
             );
 
-        MemoryFile file;
+        TemporaryMemoryFile file;
         Location location(file / "location");
 
         location << state_site_tensor_1;
@@ -329,7 +319,7 @@ TEST_SUITE(normalization) {
 //@+others
 //@+node:gcross.20110512151124.2487: *5* decode
 TEST_CASE(decode) {
-    MemoryFile file;
+    TemporaryMemoryFile file;
 
     complex<double> const one(1,1);
 
@@ -338,10 +328,10 @@ TEST_CASE(decode) {
     Location right_location(file / "right");
     Location none_location(file / "none");
 
-    writeTensorData(left_location,list_of(1)(1)(1),&one)["normalization"] = "left";
-    writeTensorData(middle_location,list_of(1)(1)(1),&one)["normalization"] = "middle";
-    writeTensorData(right_location,list_of(1)(1)(1),&one)["normalization"] = "right";
-    writeTensorData(none_location,list_of(1)(1)(1),&one);
+    Dataset(createAt(left_location),rangeOf(list_of(1)(1)(1)),&one)["normalization"] = "left";
+    Dataset(createAt(middle_location),rangeOf(list_of(1)(1)(1)),&one)["normalization"] = "middle";
+    Dataset(createAt(right_location),rangeOf(list_of(1)(1)(1)),&one)["normalization"] = "right";
+    Dataset(createAt(none_location),rangeOf(list_of(1)(1)(1)),&one);
 
     StateSite<Left> left_site;
     StateSite<Middle> middle_site;
@@ -403,7 +393,7 @@ TEST_CASE(decode) {
 }
 //@+node:gcross.20110512151124.2491: *5* encode
 TEST_CASE(encode) {
-    MemoryFile file;
+    TemporaryMemoryFile file;
 
     Location left_location(file / "left");
     Location middle_location(file / "middle");
@@ -449,7 +439,7 @@ TEST_CASE(decode) {
         LeftDimension const left_dimension(random);
         RightDimension const right_dimension(random);
 
-        MemoryFile file;
+        TemporaryMemoryFile file;
         Location location(file / "location");
 
         Group object(createAt(location));
@@ -462,15 +452,15 @@ TEST_CASE(decode) {
         vector<uint32_t> indices_data(2*number_of_matrices);
         generate(indices_data,random.randomInteger);
 
-        writeTensorData(
-            location / "matrices",
-            list_of(number_of_matrices)(*physical_dimension)(*physical_dimension),
+        Dataset(
+            createAt(location / "matrices"),
+            rangeOf(list_of(number_of_matrices)(*physical_dimension)(*physical_dimension)),
             &matrices_data.front()
         );
 
-        writeTensorData(
-            location / "indices",
-            list_of(number_of_matrices)(2),
+        Dataset(
+            createAt(location / "indices"),
+            rangeOf(list_of(number_of_matrices)(2)),
             &indices_data.front()
         );
 
@@ -494,7 +484,7 @@ TEST_CASE(encode) {
     REPEAT(10) {
         OperatorSite operator_site_tensor(random.randomOperatorSite());
 
-        MemoryFile file;
+        TemporaryMemoryFile file;
         Location location(file / "location");
 
         location << operator_site_tensor;
@@ -507,14 +497,14 @@ TEST_CASE(encode) {
         {
             Dataset dataset(location / "matrices");
 
-            vector<hsize_t> dimensions(dataset.dimensions());
+            std::vector<hsize_t> dimensions(dataset.dimensions());
 
             EXPECT_EQ(3,dimensions.size());
             EXPECT_EQ(operator_site_tensor.numberOfMatrices(),dimensions[0]);
             EXPECT_EQ(operator_site_tensor.physicalDimension(as_unsigned_integer),dimensions[1]);
             EXPECT_EQ(operator_site_tensor.physicalDimension(as_unsigned_integer),dimensions[2]);
 
-            vector<complex<double> > data = dataset.readTensorData<complex<double> >();
+            std::vector<complex<double> > data = dataset.readVector<complex<double> >();
 
             EXPECT_TRUE(equal(operator_site_tensor,data));
         }
@@ -522,16 +512,22 @@ TEST_CASE(encode) {
         {
             Dataset dataset(location / "indices");
 
-            vector<hsize_t> dimensions(dataset.dimensions());
+            std::vector<hsize_t> dimensions(dataset.dimensions());
 
             EXPECT_EQ(2,dimensions.size());
             EXPECT_EQ(operator_site_tensor.numberOfMatrices(),dimensions[0]);
             EXPECT_EQ(2,dimensions[1]);
 
-            vector<uint32_t> data = dataset.readTensorData<uint32_t>();
+            std::vector<uint32_t> data = dataset.readVector<uint32_t>();
 
 
-            EXPECT_TRUE(equal((uint32_t*)operator_site_tensor,((uint32_t*)operator_site_tensor)+operator_site_tensor.size(),data.begin()));
+            EXPECT_TRUE(
+                equal(
+                    static_cast<uint32_t*>(operator_site_tensor),
+                    static_cast<uint32_t*>(operator_site_tensor)+operator_site_tensor.size(),
+                    data.begin()
+                )
+            );
         }
 
     }
@@ -543,7 +539,7 @@ TEST_CASE(encode_then_decode) {
     REPEAT(10) {
         OperatorSite operator_site_tensor_1(random.randomOperatorSite());
 
-        MemoryFile file;
+        TemporaryMemoryFile file;
         Location location(file / "location");
 
         location << operator_site_tensor_1;
@@ -570,7 +566,7 @@ TEST_CASE(encode_then_decode) {
     REPEAT(10) {
         Operator operator_1 = random.randomOperator();
 
-        MemoryFile file;
+        TemporaryMemoryFile file;
         Location location(file / "location");
 
         location << operator_1;
@@ -601,14 +597,17 @@ TEST_CASE(external_field) {
                 ,Pauli::Z
             );
 
-        MemoryFile file;
+        TemporaryMemoryFile file;
         Location location(file / "location");
 
         Group(createAt(location));
 
-        writeRangeData(location / "sequence",list_of(0u).repeat(number_of_middle_sites,1u)(2u));
+        Dataset(
+            createAt(location / "sequence"),
+            rangeOf(list_of(0u).repeat(number_of_middle_sites,1u)(2u))
+        );
 
-        Group(createAt(location / "sites")) << rangeOf(list_of(operator_1.front())(operator_1[1])(operator_1.back()) | indirected);
+        GroupArray(createAt(location / "sites")) << rangeOf(list_of(operator_1.front())(operator_1[1])(operator_1.back()) | indirected);
 
         Operator operator_2;
 

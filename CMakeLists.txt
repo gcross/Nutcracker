@@ -54,10 +54,10 @@ SET(Boost_ADDITIONAL_VERSIONS "1.43" "1.43.0" "1.44" "1.44.0" "1.45" "1.45.0" "1
 find_package( Boost 1.46 COMPONENTS filesystem signals system thread program_options REQUIRED )
 link_directories ( ${Boost_LIBRARY_DIRS} )
 include_directories ( ${Boost_INCLUDE_DIRS} )
-#@+node:gcross.20110511141322.2198: *3* HDF5
-find_package( HDF5 REQUIRED )
-include_directories ( ${HDF5_INCLUDE_DIRS} )
-link_directories ( ${HDF5_LIBRARY_DIRS} )
+#@+node:gcross.20110524225044.2475: *3* HDF++
+find_package( HDF++ REQUIRED )
+include_directories ( ${HDF++_INCLUDE_DIRS} )
+link_directories ( ${HDF++_LIBRARY_DIRS} )
 #@+node:gcross.20110426132142.2441: *3* LAPACK
 find_package( LAPACK REQUIRED )
 link_directories ( ${LAPACK_LIBRARY_DIRS} )

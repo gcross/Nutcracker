@@ -20,9 +20,9 @@ add_library(Nutcracker
 target_link_libraries(Nutcracker
     ${Boost_LIBRARIES}
     ${BLAS_LIBRARIES}
-    ${HDF5_LIBRARIES}
     ${LAPACK_LIBRARIES}
     ${ARPACK_LIBRARIES} # Note that ARPACK *MUST* come after LAPACK!
     ${YAMLCXX_LIBRARIES}
+    HDF++
 )
 #@-leo

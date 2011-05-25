@@ -40,28 +40,6 @@ vector<string> FormatTypeException::getAcceptedFormatNames() const {
     return vector<string>();
 }
 //@+node:gcross.20110511190907.3554: ** Functions
-//@+node:gcross.20110511190907.3556: *3* constructOperatorFrom
-Operator constructOperatorFrom(
-    vector<shared_ptr<OperatorSite const> > unique_operator_sites
-  , vector<unsigned int> sequence
-) {
-    Operator operator_sites;
-    operator_sites.reserve(sequence.size());
-
-    BOOST_FOREACH(unsigned int index, sequence) {
-        if(index >= unique_operator_sites.size())
-            throw NoSuchOperatorSiteNumber(index);
-        shared_ptr<OperatorSite const> operator_site_ptr = unique_operator_sites[index];
-        if(operator_sites.empty()) {
-            assert(operator_site_ptr->leftDimension(as_unsigned_integer) == 1);
-        } else {
-            assert(operator_site_ptr->leftDimension(as_unsigned_integer) == operator_sites.back()->rightDimension(as_unsigned_integer));
-        }
-        operator_sites.emplace_back(operator_site_ptr);
-    }
-
-    return boost::move(operator_sites);
-}
 //@+node:gcross.20110511190907.3560: *3* deconstructOperatorTo
 void deconstructOperatorTo(
     Operator const& operator_sites

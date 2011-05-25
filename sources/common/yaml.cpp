@@ -40,8 +40,6 @@
 #include "yaml.hpp"
 //@-<< Includes >>
 
-namespace Nutcracker {
-
 //@+<< Usings >>
 //@+node:gcross.20110430163445.2613: ** << Usings >>
 using boost::assign::list_of;
@@ -68,147 +66,9 @@ using YAML::Parser;
 using YAML::Value;
 //@-<< Usings >>
 
+namespace Nutcracker {
+
 //@+others
-//@+node:gcross.20110430163445.2632: ** I/O Operators
-//@+node:gcross.20110430163445.2647: *3* Operator
-//@+node:gcross.20110430163445.2648: *4* >>
-void operator >> (Node const& node, Operator& operator_sites) {
-    vector<shared_ptr<OperatorSite const> > unique_operator_sites(readUniqueOperatorSites(node["sites"]));
-
-    vector<unsigned int> sequence;
-    BOOST_FOREACH(Node const& node, node["sequence"]) {
-        unsigned int index;
-        node >> index;
-        sequence.push_back(index-1);
-    }
-
-    operator_sites = constructOperatorFrom(unique_operator_sites,sequence);
-}
-//@+node:gcross.20110430163445.2649: *4* <<
-Emitter& operator << (Emitter& out, Operator const& operator_sites) {
-    vector<shared_ptr<OperatorSite const> > unique_operator_sites;
-    vector<unsigned int> sequence;
-
-    deconstructOperatorTo(operator_sites,unique_operator_sites,sequence);
-
-    out << BeginMap;
-    out << Key << "sequence" << Value;
-    out << Flow << BeginSeq;
-    BOOST_FOREACH(unsigned int index, sequence) {
-        out << index+1;
-    }
-    out << EndSeq;
-    out << Key << "sites" << Value;
-    out << BeginSeq;
-    BOOST_FOREACH(shared_ptr<OperatorSite const> const operator_site_ptr, unique_operator_sites) {
-        out << *operator_site_ptr;
-    }
-    out << EndSeq;
-    out << EndMap;
-    return out;
-}
-//@+node:gcross.20110430163445.2636: *3* OperatorLink
-//@+node:gcross.20110430163445.2637: *4* >>
-void operator >> (Node const& node, OperatorLink& link) {
-    node["from"] >> link.from;
-    node["to"] >> link.to;
-    Node const& data = node["data"];
-    unsigned int nsq = data.size(), n = (unsigned int)sqrt(nsq);
-    assert(n*n == nsq);
-    link.matrix.resize(n,n);
-    Iterator node_iter = data.begin();
-    Matrix::array_type::iterator matrix_iter = link.matrix.data().begin();
-    REPEAT(n*n) {
-        using namespace std;
-        using namespace YAML;
-        *node_iter++ >> *matrix_iter++;
-    }
-}
-//@+node:gcross.20110430163445.2638: *4* <<
-Emitter& operator << (Emitter& out, OperatorLink const& link) {
-    out << BeginMap;
-    out << Key << "from" << Value << link.from;
-    out << Key << "to" << Value << link.to;
-    out << Key << "data" << Value;
-    {
-        out << Flow << BeginSeq;
-        BOOST_FOREACH(complex<double> const x, link.matrix.data()) { out << x; }
-        out << EndSeq;
-    }
-    out << EndMap;
-    return out;
-}
-//@+node:gcross.20110430163445.2650: *3* OperatorSite
-//@+node:gcross.20110430163445.2651: *4* >>
-void operator >> (Node const& node, OperatorSite& output_operator_site) {
-    unsigned int physical_dimension, left_dimension, right_dimension;
-    node["physical dimension"] >> physical_dimension;
-    node["left dimension"] >> left_dimension;
-    node["right dimension"] >> right_dimension;
-    Node const& matrices = node["matrices"];
-    unsigned int const number_of_matrices = matrices.size();
-
-    OperatorSite operator_site
-        (number_of_matrices
-        ,PhysicalDimension(physical_dimension)
-        ,LeftDimension(left_dimension)
-        ,RightDimension(right_dimension)
-        );
-
-    unsigned int const matrix_length = physical_dimension*physical_dimension;
-    complex<double>* matrix_data = operator_site;
-    uint32_t* index_data = operator_site;
-    Iterator matrix_iterator = matrices.begin();
-    REPEAT(number_of_matrices) {
-        Node const& matrix = *matrix_iterator++;
-        unsigned int from, to;
-        matrix["from"] >> from;
-        matrix["to"] >> to;
-        assert(from >= 1);
-        assert(from <= left_dimension);
-        assert(to >= 1);
-        assert(to <= right_dimension);
-        *index_data++ = from;
-        *index_data++ = to;
-        Node const& data = matrix["data"];
-        assert(data.size() == matrix_length);
-        Iterator data_iterator = data.begin();
-        REPEAT(matrix_length) { *data_iterator++ >> *matrix_data++; }
-    }
-
-    output_operator_site = boost::move(operator_site);
-}
-//@+node:gcross.20110430163445.2652: *4* <<
-Emitter& operator << (Emitter& out, OperatorSite const& operator_site) {
-    out << BeginMap;
-    out << Key << "physical dimension" << Value << operator_site.physicalDimension(as_unsigned_integer);
-    out << Key << "left dimension" << Value << operator_site.leftDimension(as_unsigned_integer);
-    out << Key << "right dimension" << Value << operator_site.rightDimension(as_unsigned_integer);
-    out << Key << "matrices" << Value;
-    {
-        out << BeginSeq;
-        unsigned int n = operator_site.physicalDimension(as_unsigned_integer), nsq = n*n;
-        complex<double> const* matrix_data = operator_site;
-        uint32_t const* index_data = operator_site;
-        REPEAT(operator_site.numberOfMatrices()) {
-            out << BeginMap;
-            out << Key << "from" << Value << *index_data++;
-            out << Key << "to" << Value << *index_data++;
-            out << Key << "data" << Value;
-            {
-                out << Flow << BeginSeq;
-                REPEAT(nsq) {
-                    out << *matrix_data++;
-                }
-                out << EndSeq;
-            }
-            out << EndMap;
-        }
-        out << EndSeq;
-    }
-    out << EndMap;
-    return out;
-}
 //@+node:gcross.20110511190907.3617: ** Formats
 //@+others
 //@+node:gcross.20110511190907.3637: *3* Input
@@ -308,4 +168,153 @@ void installYAMLFormat() {
 //@-others
 
 }
+
+//@+<< Outside namespace >>
+//@+node:gcross.20110524225044.2435: ** << Outside namespace >>
+using namespace Nutcracker;
+using namespace std;
+
+//@+others
+//@+node:gcross.20110430163445.2632: *3* I/O Operators
+//@+node:gcross.20110430163445.2647: *4* Operator
+//@+node:gcross.20110430163445.2648: *5* >>
+void operator >> (Node const& node, Operator& operator_sites) {
+    Nutcracker::vector<shared_ptr<OperatorSite const> > unique_operator_sites(readUniqueOperatorSites(node["sites"]));
+
+    Nutcracker::vector<unsigned int> sequence;
+    BOOST_FOREACH(Node const& node, node["sequence"]) {
+        unsigned int index;
+        node >> index;
+        sequence.push_back(index-1);
+    }
+
+    operator_sites = constructOperatorFrom(unique_operator_sites,sequence);
+}
+//@+node:gcross.20110430163445.2649: *5* <<
+Emitter& operator << (Emitter& out, Operator const& operator_sites) {
+    Nutcracker::vector<shared_ptr<OperatorSite const> > unique_operator_sites;
+    Nutcracker::vector<unsigned int> sequence;
+
+    deconstructOperatorTo(operator_sites,unique_operator_sites,sequence);
+
+    out << BeginMap;
+    out << Key << "sequence" << Value;
+    out << Flow << BeginSeq;
+    BOOST_FOREACH(unsigned int index, sequence) {
+        out << index+1;
+    }
+    out << EndSeq;
+    out << Key << "sites" << Value;
+    out << BeginSeq;
+    BOOST_FOREACH(shared_ptr<OperatorSite const> const operator_site_ptr, unique_operator_sites) {
+        out << *operator_site_ptr;
+    }
+    out << EndSeq;
+    out << EndMap;
+    return out;
+}
+//@+node:gcross.20110430163445.2636: *4* OperatorLink
+//@+node:gcross.20110430163445.2637: *5* >>
+void operator >> (Node const& node, OperatorLink& link) {
+    node["from"] >> link.from;
+    node["to"] >> link.to;
+    Node const& data = node["data"];
+    unsigned int nsq = data.size(), n = (unsigned int)sqrt(nsq);
+    assert(n*n == nsq);
+    link.matrix.resize(n,n);
+    Iterator node_iter = data.begin();
+    Matrix::array_type::iterator matrix_iter = link.matrix.data().begin();
+    REPEAT(n*n) {
+        using namespace std;
+        using namespace YAML;
+        *node_iter++ >> *matrix_iter++;
+    }
+}
+//@+node:gcross.20110430163445.2638: *5* <<
+Emitter& operator << (Emitter& out, OperatorLink const& link) {
+    out << BeginMap;
+    out << Key << "from" << Value << link.from;
+    out << Key << "to" << Value << link.to;
+    out << Key << "data" << Value;
+    {
+        out << Flow << BeginSeq;
+        BOOST_FOREACH(complex<double> const x, link.matrix.data()) { out << x; }
+        out << EndSeq;
+    }
+    out << EndMap;
+    return out;
+}
+//@+node:gcross.20110430163445.2650: *4* OperatorSite
+//@+node:gcross.20110430163445.2651: *5* >>
+void operator >> (Node const& node, OperatorSite& output_operator_site) {
+    unsigned int physical_dimension, left_dimension, right_dimension;
+    node["physical dimension"] >> physical_dimension;
+    node["left dimension"] >> left_dimension;
+    node["right dimension"] >> right_dimension;
+    Node const& matrices = node["matrices"];
+    unsigned int const number_of_matrices = matrices.size();
+
+    OperatorSite operator_site
+        (number_of_matrices
+        ,PhysicalDimension(physical_dimension)
+        ,LeftDimension(left_dimension)
+        ,RightDimension(right_dimension)
+        );
+
+    unsigned int const matrix_length = physical_dimension*physical_dimension;
+    complex<double>* matrix_data = operator_site;
+    uint32_t* index_data = operator_site;
+    Iterator matrix_iterator = matrices.begin();
+    REPEAT(number_of_matrices) {
+        Node const& matrix = *matrix_iterator++;
+        unsigned int from, to;
+        matrix["from"] >> from;
+        matrix["to"] >> to;
+        assert(from >= 1);
+        assert(from <= left_dimension);
+        assert(to >= 1);
+        assert(to <= right_dimension);
+        *index_data++ = from;
+        *index_data++ = to;
+        Node const& data = matrix["data"];
+        assert(data.size() == matrix_length);
+        Iterator data_iterator = data.begin();
+        REPEAT(matrix_length) { *data_iterator++ >> *matrix_data++; }
+    }
+
+    output_operator_site = boost::move(operator_site);
+}
+//@+node:gcross.20110430163445.2652: *5* <<
+Emitter& operator << (Emitter& out, OperatorSite const& operator_site) {
+    out << BeginMap;
+    out << Key << "physical dimension" << Value << operator_site.physicalDimension(as_unsigned_integer);
+    out << Key << "left dimension" << Value << operator_site.leftDimension(as_unsigned_integer);
+    out << Key << "right dimension" << Value << operator_site.rightDimension(as_unsigned_integer);
+    out << Key << "matrices" << Value;
+    {
+        out << BeginSeq;
+        unsigned int n = operator_site.physicalDimension(as_unsigned_integer), nsq = n*n;
+        complex<double> const* matrix_data = operator_site;
+        uint32_t const* index_data = operator_site;
+        REPEAT(operator_site.numberOfMatrices()) {
+            out << BeginMap;
+            out << Key << "from" << Value << *index_data++;
+            out << Key << "to" << Value << *index_data++;
+            out << Key << "data" << Value;
+            {
+                out << Flow << BeginSeq;
+                REPEAT(nsq) {
+                    out << *matrix_data++;
+                }
+                out << EndSeq;
+            }
+            out << EndMap;
+        }
+        out << EndSeq;
+    }
+    out << EndMap;
+    return out;
+}
+//@-others
+//@-<< Outside namespace >>
 //@-leo

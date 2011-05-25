@@ -384,10 +384,27 @@ struct LocationSlashTokenizer : public boost::tokenizer<boost::char_separator<ch
 };
 //@+node:gcross.20110511190907.3540: ** Functions
 //@+node:gcross.20110511190907.3558: *3* constructOperatorFrom
-Operator constructOperatorFrom(
+template<typename SequenceType> Operator constructOperatorFrom(
     vector<shared_ptr<OperatorSite const> > unique_operator_sites
-  , vector<unsigned int> sequence
-);
+  , SequenceType sequence
+) {
+    Operator operator_sites;
+    operator_sites.reserve(sequence.size());
+
+    BOOST_FOREACH(unsigned int index, sequence) {
+        if(index >= unique_operator_sites.size())
+            throw NoSuchOperatorSiteNumber(index);
+        shared_ptr<OperatorSite const> operator_site_ptr = unique_operator_sites[index];
+        if(operator_sites.empty()) {
+            assert(operator_site_ptr->leftDimension(as_unsigned_integer) == 1);
+        } else {
+            assert(operator_site_ptr->leftDimension(as_unsigned_integer) == operator_sites.back()->rightDimension(as_unsigned_integer));
+        }
+        operator_sites.emplace_back(operator_site_ptr);
+    }
+
+    return boost::move(operator_sites);
+}
 //@+node:gcross.20110511190907.3546: *3* deconstructOperatorTo
 void deconstructOperatorTo(
     Operator const& operator_sites

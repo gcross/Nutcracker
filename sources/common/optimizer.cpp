@@ -40,8 +40,6 @@
 #include "projectors.hpp"
 //@-<< Includes >>
 
-namespace Nutcracker {
-
 //@+<< Usings >>
 //@+node:gcross.20110214155808.1886: ** << Usings >>
 namespace lam = boost::lambda;
@@ -52,7 +50,10 @@ using boost::to_lower;
 
 using std::istream;
 using std::ostream;
+using std::string;
 //@-<< Usings >>
+
+namespace Nutcracker {
 
 //@+others
 //@+node:gcross.20110214155808.1903: ** Exceptions
@@ -185,18 +186,6 @@ OptimizerMode::OptimizerMode(
 char const* OptimizerMode::getDescription() const { return description; }
 char const* OptimizerMode::getName() const { return name; }
 char const* OptimizerMode::getWhich() const { return which; }
-//@+node:gcross.20110518200233.5036: *4* I/O
-istream& operator >>(istream& in, OptimizerMode& mode) {
-    string name;
-    in >> name;
-    to_lower(name);
-    mode = OptimizerMode::lookupName(name);
-    return in;
-}
-
-ostream& operator <<(ostream& out, OptimizerMode const& mode) {
-    return out << mode.getName();
-}
 //@+node:gcross.20110518200233.5041: *4* Miscellaneous
 bool OptimizerMode::checkForRegressionFromTo(double old_value, double new_value, double tolerance) const {
     return regression_checker(old_value,new_value,tolerance);
@@ -378,4 +367,26 @@ OptimizerResult optimizeStateSite(
 //@-others
 
 }
+
+//@+<< Outside namespace >>
+//@+node:gcross.20110518200233.5036: ** << Outside namespace >>
+//@+others
+//@+node:gcross.20110524225044.2437: *3* std
+namespace std {
+
+istream& operator >>(istream& in, Nutcracker::OptimizerMode& mode) {
+    string name;
+    in >> name;
+    boost::to_lower(name);
+    mode = Nutcracker::OptimizerMode::lookupName(name);
+    return in;
+}
+
+ostream& operator <<(ostream& out, Nutcracker::OptimizerMode const& mode) {
+    return out << mode.getName();
+}
+
+}
+//@-others
+//@-<< Outside namespace >>
 //@-leo

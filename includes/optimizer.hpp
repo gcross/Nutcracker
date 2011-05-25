@@ -225,9 +225,6 @@ public:
     static OptimizerMode least_value, greatest_value, largest_magnitude;
 
 };
-
-std::istream& operator >>(std::istream& in, OptimizerMode& mode);
-std::ostream& operator <<(std::ostream& out, OptimizerMode const& mode);
 //@+node:gcross.20110214155808.1982: *3* OptimizerResult
 //@+<< Description >>
 //@+node:gcross.20110429225820.2521: *4* << Description >>
@@ -313,6 +310,19 @@ Nutcracker::OptimizerResult optimizeStateSite(
 //! @}
 
 }
+
+//@+<< Outside namespace >>
+//@+node:gcross.20110524225044.2433: ** << Outside namespace >>
+//@+others
+//@+node:gcross.20110524225044.2436: *3* std
+namespace std {
+
+istream& operator >>(istream& in, Nutcracker::OptimizerMode& mode);
+ostream& operator <<(ostream& out, Nutcracker::OptimizerMode const& mode);
+
+}
+//@-others
+//@-<< Outside namespace >>
 
 #endif
 //@-leo
