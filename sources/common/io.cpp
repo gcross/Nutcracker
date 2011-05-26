@@ -32,6 +32,18 @@ namespace Nutcracker {
 //@+node:gcross.20110511190907.3615: ** Values
 const char* input_format_type_name = "input";
 const char* output_format_type_name = "output";
+
+FormatInstaller const FormatInstaller::_;
+//@+node:gcross.20110525201928.2448: ** Format installation
+namespace HDF { void installFormat(); }
+void installYAMLFormat();
+
+FormatInstaller::FormatInstaller() {
+    HDF::installFormat();
+    installYAMLFormat();
+    InputFormat::default_format = &InputFormat::lookupName("yaml");
+    OutputFormat::default_format = &OutputFormat::lookupName("yaml");
+}
 //@+node:gcross.20110511190907.3818: ** Exceptions
 //@+node:gcross.20110511190907.3819: *3* FormatTypeException
 vector<string> FormatTypeException::getAcceptedFormatNames() const {
@@ -64,19 +76,6 @@ void deconstructOperatorTo(
             sequence.push_back(sequence_number_iterator->second);
         }
     }
-}
-//@+node:gcross.20110511190907.3759: *3* installFormats
-namespace HDF { void installFormat(); }
-void installYAMLFormat();
-
-void installFormats() {
-    static bool called = false;
-    if(called) return;
-    called = true;
-    HDF::installFormat();
-    installYAMLFormat();
-    InputFormat::default_format = &InputFormat::lookupName("yaml");
-    OutputFormat::default_format = &OutputFormat::lookupName("yaml");
 }
 //@-others
 

@@ -168,7 +168,6 @@ struct OutputLocationAlreadyExists : public Exception {
 };
 //@+node:gcross.20110511190907.3591: ** Classes
 //@+node:gcross.20110511190907.3607: *3* Format
-void installFormats();
 template<typename FormatType, char const*& format_type_name> struct Format {
     //@+others
     //@+node:gcross.20110511190907.3608: *4* Associated types
@@ -252,14 +251,12 @@ template<typename FormatType, char const*& format_type_name> struct Format {
     public:
 
     static vector<string> listNames() {
-        installFormats();
         vector<string> names;
         copy(getNameRegistry() | map_keys,back_inserter(names));
         return boost::move(names);
     }
 
     static FormatType const& lookupName(string const& name) {
-        installFormats();
         NameRegistry const& registry = getNameRegistry();
         typename NameRegistry::const_iterator existing_iter = registry.find(name);
         if(existing_iter == registry.end())
@@ -269,7 +266,6 @@ template<typename FormatType, char const*& format_type_name> struct Format {
     }
 
     static FormatType const* lookupExtension(string const& name) {
-        installFormats();
         ExtensionRegistry const& registry = getExtensionRegistry();
         typename ExtensionRegistry::const_iterator existing_iter = registry.find(name);
         if(existing_iter == registry.end())
@@ -286,6 +282,11 @@ template<typename FormatType, char const*& format_type_name> struct Format {
 };
 template<typename FormatType, char const*& format_type_name> char const* Format<FormatType,format_type_name>::type_name = format_type_name;
 template<typename FormatType, char const*& format_type_name> FormatType const* Format<FormatType,format_type_name>::default_format = NULL;
+//@+node:gcross.20110525201928.2447: *3* FormatInstaller
+class FormatInstaller {
+    FormatInstaller();
+    static FormatInstaller const _;
+};
 //@+node:gcross.20110511190907.3592: *3* InputFormat
 extern const char* input_format_type_name;
 struct InputFormat;
@@ -411,8 +412,6 @@ void deconstructOperatorTo(
   , vector<shared_ptr<OperatorSite const> >& unique_operator_sites
   , vector<unsigned int>& sequence
 );
-//@+node:gcross.20110511190907.3757: *3* installFormats
-void installFormats();
 //@+node:gcross.20110511190907.3541: *3* readUniqueOperatorSites
 template<typename SitesType> vector<shared_ptr<OperatorSite const> > readUniqueOperatorSites(SitesType const& sites) {
     vector<shared_ptr<OperatorSite const> > unique_operator_sites;
@@ -429,14 +428,11 @@ template<typename SitesType> vector<shared_ptr<OperatorSite const> > readUniqueO
     return boost::move(unique_operator_sites);
 }
 //@+node:gcross.20110511190907.3800: *3* resolveAndCheckFormat
-void installFormats();
 template<typename FormatType> FormatType const& resolveAndCheckFormat(
     optional<string> const& maybe_format_name
   , optional<string> const& maybe_filename
   , optional<string> const& maybe_location
 ) {
-    installFormats();
-
     FormatType const* format = NULL;
     char const* const format_type_name = FormatType::type_name;
 
