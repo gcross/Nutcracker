@@ -69,6 +69,7 @@ using HDF::Container;
 using HDF::datatypeOf;
 using HDF::Dataspace;
 using HDF::File;
+using HDF::LinkCreationProperties;
 using HDF::Location;
 using HDF::LocationIterator;
 using HDF::rangeOf;
@@ -130,7 +131,7 @@ struct Outputter : public Destructable, public trackable {
             location /= *maybe_location;
         }
 
-        Container group(createAt(location));
+        Container group(createAt(location),LinkCreationProperties().createMissingIntermediateGroups());
 
         Location
             configuration_location = location / "configuration",
