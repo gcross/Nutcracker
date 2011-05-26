@@ -446,7 +446,7 @@ template<typename FormatType> FormatType const& resolveAndCheckFormat(
     } else if(maybe_filename) {
         path const filename(maybe_filename.get());
         if(filename.has_extension()) {
-            format = FormatType::lookupExtension(filename.extension().native());
+            format = FormatType::lookupExtension(filename.extension().native().substr(1));
         }
     }
 
