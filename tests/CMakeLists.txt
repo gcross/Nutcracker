@@ -8,6 +8,7 @@ set(test-SOURCES
     configuration
     flat
     hdf
+    io
     operators
     optimizer
     projectors
