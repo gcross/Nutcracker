@@ -131,7 +131,7 @@ TEST_CASE(Output) {
 
         }
 
-        File file(temporary_filepath->native().c_str(),File::ReadOnly);
+        File file(temporary_filepath->native().c_str(),OpenReadOnly);
 
         {
             Group configuration(file / "configuration");

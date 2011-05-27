@@ -55,7 +55,7 @@ find_package( Boost 1.46 COMPONENTS filesystem signals system thread program_opt
 link_directories ( ${Boost_LIBRARY_DIRS} )
 include_directories ( ${Boost_INCLUDE_DIRS} )
 #@+node:gcross.20110524225044.2475: *3* HDF++
-find_package( HDF++ REQUIRED )
+find_package( HDF++ 0.2 REQUIRED )
 include_directories ( ${HDF++_INCLUDE_DIRS} )
 link_directories ( ${HDF++_LIBRARY_DIRS} )
 #@+node:gcross.20110426132142.2441: *3* LAPACK

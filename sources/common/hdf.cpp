@@ -66,12 +66,16 @@ using std::setw;
 
 using HDF::assertSuccess;
 using HDF::Container;
-using HDF::datatypeOf;
+using HDF::DatasetCreationProperties;
 using HDF::Dataspace;
+using HDF::datatypeOf;
+using HDF::FailIfFileExisting;
 using HDF::File;
 using HDF::LinkCreationProperties;
 using HDF::Location;
 using HDF::LocationIterator;
+using HDF::OpenReadOnly;
+using HDF::OpenReadWrite;
 using HDF::rangeOf;
 //@-<< Usings >>
 
@@ -83,7 +87,7 @@ namespace Nutcracker { namespace HDF {
 //@+node:gcross.20110511190907.3650: *3* Input
 static Operator readOperator(optional<string> const& maybe_filename, optional<string> const& maybe_location) {
     assert(maybe_filename);
-    File file(maybe_filename->c_str(),File::ReadOnly);
+    File file(maybe_filename->c_str(),OpenReadOnly);
 
     Location location = file.getLocation();
 
@@ -121,9 +125,9 @@ struct Outputter : public Destructable, public trackable {
         const string& filename = *maybe_filename;
 
         if(exists(path(filename))) {
-            file = File(filename.c_str(),File::ReadWrite);
+            file = File(filename.c_str(),OpenReadWrite);
         } else {
-            file = File(filename.c_str(),File::FailIfExisting);
+            file = File(filename.c_str(),FailIfFileExisting);
         }
 
         Location location = file.getLocation();
@@ -163,7 +167,7 @@ struct Outputter : public Destructable, public trackable {
                 datatypeOf<double>::get(),
                 Dataspace(0,H5S_UNLIMITED),
                 none,
-                Dataset::CreationProperties().setChunk(16)
+                DatasetCreationProperties().setChunk(16)
             );
         }
 
