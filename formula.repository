@@ -1,0 +1,7 @@
+\form#0:$\mathbb{C}^M$
+\form#1:$N$
+\form#2:$\bigotimes_{i=1}^N \mathbb{C}^{m_i}$
+\form#3:$\prod_{i=1}^N} m_i = M$
+\form#4:$\mathbf{C}^M$
+\form#5:$\bigotimes_{i=1}^N \mathbf{C}^{m_i}$
+\form#6:$x^2+20 + e^{2\pi i}f_2(x) + \int_1^2 x\,dx$
