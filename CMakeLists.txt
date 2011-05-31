@@ -5,6 +5,8 @@ project (Nutcracker C CXX Fortran)
 
 #@+<< Settings >>
 #@+node:gcross.20110426132142.2444: ** << Settings >>
+#@+others
+#@+node:gcross.20110531152523.3452: *3* Output paths
 set (LIBRARY_OUTPUT_PATH
     ${PROJECT_BINARY_DIR}/lib
     CACHE PATH
@@ -21,6 +23,19 @@ mark_as_advanced(
     LIBRARY_OUTPUT_PATH
     EXECUTABLE_OUTPUT_PATH
     )
+#@+node:gcross.20110531152523.3453: *3* Offline HTML+
+set (OFFLINE_HTML
+    NO
+    CACHE BOOL
+    "If true, then ensures that HTML documentation can be viewed offline."
+    )
+
+if(${OFFLINE_HTML})
+    set(USE_MATHJAX NO)
+else(${OFFLINE_HTML})
+    set(USE_MATHJAX YES)
+endif(${OFFLINE_HTML})
+#@-others
 #@-<< Settings >>
 
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/CMakeModules/")
