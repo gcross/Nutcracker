@@ -73,9 +73,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div>
 <div class="header">
   <div class="summary">
-<a href="#pub-methods">Public Member Functions</a> &#124;
-<a href="#pub-static-attribs">Static Public Attributes</a> &#124;
-<a href="#pro-methods">Protected Member Functions</a>  </div>
+<a href="#pub-static-attribs">Static Public Attributes</a>  </div>
   <div class="headertitle">
 <h1>Nutcracker::StateVectorFragment Class Reference<div class="ingroups"><a class="el" href="group__Flat.html">Flat representations</a></div></h1>  </div>
 </div>
@@ -100,8 +98,6 @@ Inheritance diagram for Nutcracker::StateVectorFragment:</div>
 <table class="memberdecls">
 <tr><td colspan="2"><h2><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">unsigned int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classNutcracker_1_1Fragment.html#afd550223ecdbd9c55016d655834824a5">operator|</a> (<a class="el" href="classNutcracker_1_1StateSiteAny.html">StateSiteAny</a> const &amp;state_site) const </td></tr>
-<tr><td class="mdescLeft">&#160;</td><td class="mdescRight">Connects this tensor's right dimension of to the left dimension of <code>state_site</code>.  <a href="#afd550223ecdbd9c55016d655834824a5"></a><br/></td></tr>
 <tr><td colspan="2"><div class="groupHeader">Assignment</div></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a3972b6e4a9d314462815bc59755b45d8"></a><!-- doxytag: member="Nutcracker::StateVectorFragment::operator=" ref="a3972b6e4a9d314462815bc59755b45d8" args="(BOOST_RV_REF(StateVectorFragment) other)" -->
 <a class="el" href="classNutcracker_1_1StateVectorFragment.html">StateVectorFragment</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classNutcracker_1_1StateVectorFragment.html#a3972b6e4a9d314462815bc59755b45d8">operator=</a> (BOOST_RV_REF(<a class="el" href="classNutcracker_1_1StateVectorFragment.html">StateVectorFragment</a>) other)</td></tr>
@@ -129,80 +125,11 @@ Public Member Functions</h2></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ab3c378eb354b3b701f8719db92e36e47"></a><!-- doxytag: member="Nutcracker::StateVectorFragment::operator StateVector" ref="ab3c378eb354b3b701f8719db92e36e47" args="() const " -->
 &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classNutcracker_1_1StateVectorFragment.html#ab3c378eb354b3b701f8719db92e36e47">operator StateVector</a> () const </td></tr>
 <tr><td class="mdescLeft">&#160;</td><td class="mdescRight">Casts this tensor to a flat StateVector as long as the right dimension is 1. <br/></td></tr>
-<tr><td colspan="2"><div class="groupHeader">Dimension information</div></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a97671d7d1eb09e93416d7e1bf4c33821"></a><!-- doxytag: member="Nutcracker::StateVectorFragment::physicalDimension" ref="a97671d7d1eb09e93416d7e1bf4c33821" args="() const " -->
-<a class="el" href="classNutcracker_1_1Dimension.html">PhysicalDimension</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classNutcracker_1_1Fragment.html#a97671d7d1eb09e93416d7e1bf4c33821">physicalDimension</a> () const </td></tr>
-<tr><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the physical dimension of this tensor. <br/></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aa03c3b932628cbeeb1d50ddc53b54269"></a><!-- doxytag: member="Nutcracker::StateVectorFragment::physicalDimension" ref="aa03c3b932628cbeeb1d50ddc53b54269" args="(AsUnsignedInteger _) const " -->
-unsigned int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classNutcracker_1_1Fragment.html#aa03c3b932628cbeeb1d50ddc53b54269">physicalDimension</a> (<a class="el" href="structNutcracker_1_1AsUnsignedInteger.html">AsUnsignedInteger</a> _) const </td></tr>
-<tr><td class="mdescLeft">&#160;</td><td class="mdescRight">Unwraps the physical dimension of this tensor and directly returns an unsigned integer. <br/></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ae5f1be64e1f99c542ac04ebd7b95a61c"></a><!-- doxytag: member="Nutcracker::StateVectorFragment::rightDimension" ref="ae5f1be64e1f99c542ac04ebd7b95a61c" args="() const " -->
-<a class="el" href="classNutcracker_1_1Dimension.html">RightDimension</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classNutcracker_1_1Fragment.html#ae5f1be64e1f99c542ac04ebd7b95a61c">rightDimension</a> () const </td></tr>
-<tr><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the right dimension of this tensor. <br/></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aa9d05aba72f7874cc33943eaca33e4b6"></a><!-- doxytag: member="Nutcracker::StateVectorFragment::rightDimension" ref="aa9d05aba72f7874cc33943eaca33e4b6" args="(AsUnsignedInteger _) const " -->
-unsigned int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classNutcracker_1_1Fragment.html#aa9d05aba72f7874cc33943eaca33e4b6">rightDimension</a> (<a class="el" href="structNutcracker_1_1AsUnsignedInteger.html">AsUnsignedInteger</a> _) const </td></tr>
-<tr><td class="mdescLeft">&#160;</td><td class="mdescRight">Unwraps the right dimension of this tensor and directly returns an unsigned integer. <br/></td></tr>
-<tr><td colspan="2"><div class="groupHeader">Data access</div></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classNutcracker_1_1BaseTensor.html#a4ab463de80069d31181171521ccafc34">operator complex&lt; double &gt; *</a> ()</td></tr>
-<tr><td class="mdescLeft">&#160;</td><td class="mdescRight">An implicit cast to <code>complex&lt;double&gt;</code> that obtains a direct pointer to the beginning of the data.  <a href="#a4ab463de80069d31181171521ccafc34"></a><br/></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a32a2f52ced7f70530fdff68e84180f59"></a><!-- doxytag: member="Nutcracker::StateVectorFragment::operator complex&lt; double &gt; const *" ref="a32a2f52ced7f70530fdff68e84180f59" args="() const " -->
-&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classNutcracker_1_1BaseTensor.html#a32a2f52ced7f70530fdff68e84180f59">operator complex&lt; double &gt; const *</a> () const </td></tr>
-<tr><td class="mdescLeft">&#160;</td><td class="mdescRight">An implicit cast to <code>complex&lt;double&gt;</code> that obtains a read-only pointer to the beginning of the data. <br/></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aac6b1f143bc4db36c207190ab2a579df"></a><!-- doxytag: member="Nutcracker::StateVectorFragment::operator[]" ref="aac6b1f143bc4db36c207190ab2a579df" args="(unsigned int const index)" -->
-complex&lt; double &gt; &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classNutcracker_1_1BaseTensor.html#aac6b1f143bc4db36c207190ab2a579df">operator[]</a> (unsigned int const index)</td></tr>
-<tr><td class="mdescLeft">&#160;</td><td class="mdescRight">Array-style direct access to an individual component of the data. <br/></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a2da738251a71d2a8b166dc99c8096d1e"></a><!-- doxytag: member="Nutcracker::StateVectorFragment::operator[]" ref="a2da738251a71d2a8b166dc99c8096d1e" args="(unsigned int const index) const " -->
-complex&lt; double &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classNutcracker_1_1BaseTensor.html#a2da738251a71d2a8b166dc99c8096d1e">operator[]</a> (unsigned int const index) const </td></tr>
-<tr><td class="mdescLeft">&#160;</td><td class="mdescRight">Array-style read-only access to an individual component of the data. <br/></td></tr>
-<tr><td colspan="2"><div class="groupHeader">Informational</div></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ac358a04f7073bb01ca5401324974b254"></a><!-- doxytag: member="Nutcracker::StateVectorFragment::size" ref="ac358a04f7073bb01ca5401324974b254" args="() const " -->
-unsigned int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classNutcracker_1_1BaseTensor.html#ac358a04f7073bb01ca5401324974b254">size</a> () const </td></tr>
-<tr><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the size of the data. <br/></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a0a351e9e44951b583b81d899caf46b29"></a><!-- doxytag: member="Nutcracker::StateVectorFragment::valid" ref="a0a351e9e44951b583b81d899caf46b29" args="() const " -->
-bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classNutcracker_1_1BaseTensor.html#a0a351e9e44951b583b81d899caf46b29">valid</a> () const </td></tr>
-<tr><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns true iff this tensor is valid. <br/></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aa18ab849e9a2bb2ecc7b030bea052464"></a><!-- doxytag: member="Nutcracker::StateVectorFragment::invalid" ref="aa18ab849e9a2bb2ecc7b030bea052464" args="() const " -->
-bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classNutcracker_1_1BaseTensor.html#aa18ab849e9a2bb2ecc7b030bea052464">invalid</a> () const </td></tr>
-<tr><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns true iff this tensor is invalid. <br/></td></tr>
 <tr><td colspan="2"><h2><a name="pub-static-attribs"></a>
 Static Public Attributes</h2></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ae93f9f43de5d97e87f2286432fb790a8"></a><!-- doxytag: member="Nutcracker::StateVectorFragment::trivial" ref="ae93f9f43de5d97e87f2286432fb790a8" args="" -->
 static <a class="el" href="classNutcracker_1_1StateVectorFragment.html">StateVectorFragment</a> const&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classNutcracker_1_1StateVectorFragment.html#ae93f9f43de5d97e87f2286432fb790a8">trivial</a></td></tr>
 <tr><td class="mdescLeft">&#160;</td><td class="mdescRight">The trivial state vector fragment tensor with all dimensions one and containing the single value 1. <br/></td></tr>
-<tr><td colspan="2"><h2><a name="pro-methods"></a>
-Protected Member Functions</h2></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ae2e475b30d7aa6cb89aa778333065796"></a><!-- doxytag: member="Nutcracker::StateVectorFragment::norm" ref="ae2e475b30d7aa6cb89aa778333065796" args="() const " -->
-double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classNutcracker_1_1BaseTensor.html#ae2e475b30d7aa6cb89aa778333065796">norm</a> () const </td></tr>
-<tr><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the Frobenius 2-norm of this tensor --- i.e., the sum of the absolute value squared of all components. <br/></td></tr>
-<tr><td colspan="2"><div class="groupHeader">Assignment</div></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aec0df9b720e69eb3b79c50a2d01a9561"></a><!-- doxytag: member="Nutcracker::StateVectorFragment::swap" ref="aec0df9b720e69eb3b79c50a2d01a9561" args="(BaseTensor &amp;other)" -->
-void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classNutcracker_1_1BaseTensor.html#aec0df9b720e69eb3b79c50a2d01a9561">swap</a> (<a class="el" href="classNutcracker_1_1BaseTensor.html">BaseTensor</a> &amp;other)</td></tr>
-<tr><td class="mdescLeft">&#160;</td><td class="mdescRight">Swaps the data in <code>other</code> and <code>this</code>. <br/></td></tr>
-<tr><td colspan="2"><h2><a name="member-group"></a>
-Iteration support</h2></td></tr>
-<tr><td colspan="2"><a class="anchor" id="amgrp19ac9195f59414047baf3c4517dfbd73"></a> The following public methods and associated types are provided in order to make it easier to apply STL-style generic algorithms to the contained data. <br/></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a1aaa03c13bb09360b6424a7fa722a5fb"></a><!-- doxytag: member="Nutcracker::StateVectorFragment::begin" ref="a1aaa03c13bb09360b6424a7fa722a5fb" args="()" -->
-complex&lt; double &gt; *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classNutcracker_1_1BaseTensor.html#a1aaa03c13bb09360b6424a7fa722a5fb">begin</a> ()</td></tr>
-<tr><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns a pointer to the beginning of the data. <br/></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a7577ba0fedb2135e2856f72eacfef78a"></a><!-- doxytag: member="Nutcracker::StateVectorFragment::begin" ref="a7577ba0fedb2135e2856f72eacfef78a" args="() const " -->
-complex&lt; double &gt; const *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classNutcracker_1_1BaseTensor.html#a7577ba0fedb2135e2856f72eacfef78a">begin</a> () const </td></tr>
-<tr><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns a read-only pointer to the beginning of the data. <br/></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ae3350c874ec3c43658ff08c39985a2e0"></a><!-- doxytag: member="Nutcracker::StateVectorFragment::end" ref="ae3350c874ec3c43658ff08c39985a2e0" args="()" -->
-complex&lt; double &gt; *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classNutcracker_1_1BaseTensor.html#ae3350c874ec3c43658ff08c39985a2e0">end</a> ()</td></tr>
-<tr><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns a pointer just after the end of the data. <br/></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ac565a437cd22882e271a67d4c4f37447"></a><!-- doxytag: member="Nutcracker::StateVectorFragment::end" ref="ac565a437cd22882e271a67d4c4f37447" args="() const " -->
-complex&lt; double &gt; const *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classNutcracker_1_1BaseTensor.html#ac565a437cd22882e271a67d4c4f37447">end</a> () const </td></tr>
-<tr><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns a read-only pointer just after the end of the data. <br/></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a81737f5decac90f3ad0a0c3cef673593"></a><!-- doxytag: member="Nutcracker::StateVectorFragment::value_type" ref="a81737f5decac90f3ad0a0c3cef673593" args="" -->
-typedef complex&lt; double &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>value_type</b></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aa912fd84db5b82b23e3031b3a52f5124"></a><!-- doxytag: member="Nutcracker::StateVectorFragment::iterator" ref="aa912fd84db5b82b23e3031b3a52f5124" args="" -->
-typedef value_type *&#160;</td><td class="memItemRight" valign="bottom"><b>iterator</b></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="acfecbc627786144a9f2c913829068a25"></a><!-- doxytag: member="Nutcracker::StateVectorFragment::const_iterator" ref="acfecbc627786144a9f2c913829068a25" args="" -->
-typedef value_type const *&#160;</td><td class="memItemRight" valign="bottom"><b>const_iterator</b></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a53af8df92d3b6314bbea3eba66da6375"></a><!-- doxytag: member="Nutcracker::StateVectorFragment::reference" ref="a53af8df92d3b6314bbea3eba66da6375" args="" -->
-typedef value_type &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>reference</b></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a6031f8b3d6f606d94e7c51b3dbf8a3db"></a><!-- doxytag: member="Nutcracker::StateVectorFragment::const_reference" ref="a6031f8b3d6f606d94e7c51b3dbf8a3db" args="" -->
-typedef value_type const &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>const_reference</b></td></tr>
 </table>
 <hr/><a name="_details"></a><h2>Detailed Description</h2>
 <div class="textblock"><p>An intermediate result of constructing a flat state vector from a matrix product state. </p>
@@ -290,50 +217,6 @@ template&lt;typename Range &gt; </div>
 
 </div>
 </div>
-<hr/><h2>Member Function Documentation</h2>
-<a class="anchor" id="a4ab463de80069d31181171521ccafc34"></a><!-- doxytag: member="Nutcracker::StateVectorFragment::operator complex&lt; double &gt; *" ref="a4ab463de80069d31181171521ccafc34" args="()" -->
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">Nutcracker::BaseTensor::operator complex&lt; double &gt; * </td>
-          <td>(</td>
-          <td class="paramname"></td><td>)</td>
-          <td><code> [inline, inherited]</code></td>
-        </tr>
-      </table>
-</div>
-<div class="memdoc">
-
-<p>An implicit cast to <code>complex&lt;double&gt;</code> that obtains a direct pointer to the beginning of the data. </p>
-<dl class="note"><dt><b>Note:</b></dt><dd>These methods <em>assume</em> that the tensor is valid. If it is not, then the result of using them is undefined. </dd></dl>
-
-<p>Definition at line <a class="el" href="tensors_8hpp_source.html#l00523">523</a> of file <a class="el" href="tensors_8hpp_source.html">tensors.hpp</a>.</p>
-
-</div>
-</div>
-<a class="anchor" id="afd550223ecdbd9c55016d655834824a5"></a><!-- doxytag: member="Nutcracker::StateVectorFragment::operator|" ref="afd550223ecdbd9c55016d655834824a5" args="(StateSiteAny const &amp;state_site) const " -->
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">unsigned int Nutcracker::Fragment::operator| </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="classNutcracker_1_1StateSiteAny.html">StateSiteAny</a> const &amp;&#160;</td>
-          <td class="paramname"><em>state_site</em></td><td>)</td>
-          <td> const<code> [inline, inherited]</code></td>
-        </tr>
-      </table>
-</div>
-<div class="memdoc">
-
-<p>Connects this tensor's right dimension of to the left dimension of <code>state_site</code>. </p>
-<dl class="see"><dt><b>See also:</b></dt><dd><a class="el" href="group__TensorConnectors.html">Tensor connectors</a> </dd></dl>
-
-<p>Definition at line <a class="el" href="flat_8hpp_source.html#l00187">187</a> of file <a class="el" href="flat_8hpp_source.html">flat.hpp</a>.</p>
-
-</div>
-</div>
 <hr/>The documentation for this class was generated from the following files:<ul>
 <li><a class="el" href="flat_8hpp_source.html">flat.hpp</a></li>
 <li><a class="el" href="flat_8cpp_source.html">flat.cpp</a></li>
@@ -353,7 +236,7 @@ template&lt;typename Range &gt; </div>
 </iframe>
 </div>
 
-<hr class="footer"/><address class="footer"><small>Generated on Tue May 31 2011 16:30:08 for Nutcracker by&#160;
+<hr class="footer"/><address class="footer"><small>Generated on Tue May 31 2011 17:02:22 for Nutcracker by&#160;
 <a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.7.3 </small></address>
 </body>

@@ -75,10 +75,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
   <div class="summary">
 <a href="#pub-types">Public Types</a> &#124;
 <a href="#pub-methods">Public Member Functions</a> &#124;
-<a href="#pub-static-methods">Static Public Member Functions</a> &#124;
 <a href="#pub-attribs">Public Attributes</a> &#124;
-<a href="#pub-static-attribs">Static Public Attributes</a> &#124;
-<a href="#pro-static-methods">Static Protected Member Functions</a> &#124;
 <a href="#pro-attribs">Protected Attributes</a>  </div>
   <div class="headertitle">
 <h1>Nutcracker::OutputFormat Struct Reference</h1>  </div>
@@ -107,56 +104,16 @@ typedef function&lt; auto_ptr<br class="typebreak"/>
 &amp;maybe_location, bool <br class="typebreak"/>
 output_states, bool overwrite, <br class="typebreak"/>
 <a class="el" href="classNutcracker_1_1Chain.html">Chain</a> &amp;chain) &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>ChainConnector</b></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ac18731aa330af5c2df7647018485e098"></a><!-- doxytag: member="Nutcracker::OutputFormat::ExtensionRegistry" ref="ac18731aa330af5c2df7647018485e098" args="" -->
-typedef map&lt; string const, <br class="typebreak"/>
-FormatType const * &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>ExtensionRegistry</b></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ad9cdcced39d8dd064970992facc57fcd"></a><!-- doxytag: member="Nutcracker::OutputFormat::NameRegistry" ref="ad9cdcced39d8dd064970992facc57fcd" args="" -->
-typedef map&lt; string const, <br class="typebreak"/>
-FormatType const * &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>NameRegistry</b></td></tr>
 <tr><td colspan="2"><h2><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a3aeb6b363c654f73782a6ee5b5fce4f2"></a><!-- doxytag: member="Nutcracker::OutputFormat::OutputFormat" ref="a3aeb6b363c654f73782a6ee5b5fce4f2" args="(string const &amp;name, string const &amp;description, bool const supports_stdin, bool const supports_location, set&lt; string &gt; const supported_extensions, bool const supports_states, ChainConnector connectToChain)" -->
 &#160;</td><td class="memItemRight" valign="bottom"><b>OutputFormat</b> (string const &amp;name, string const &amp;description, bool const supports_stdin, bool const supports_location, set&lt; string &gt; const supported_extensions, bool const supports_states, ChainConnector connectToChain)</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="af4956397c94ca4390ea14d43368eba4e"></a><!-- doxytag: member="Nutcracker::OutputFormat::operator()" ref="af4956397c94ca4390ea14d43368eba4e" args="(optional&lt; string &gt; const &amp;maybe_filename, optional&lt; string &gt; const &amp;maybe_location, bool output_states, bool overwrite, Chain &amp;chain) const " -->
 auto_ptr&lt; <a class="el" href="structNutcracker_1_1Destructable.html">Destructable</a> const  &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>operator()</b> (optional&lt; string &gt; const &amp;maybe_filename, optional&lt; string &gt; const &amp;maybe_location, bool output_states, bool overwrite, <a class="el" href="classNutcracker_1_1Chain.html">Chain</a> &amp;chain) const </td></tr>
-<tr><td colspan="2"><h2><a name="pub-static-methods"></a>
-Static Public Member Functions</h2></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a254594cd7bd686042db206fbe3108bca"></a><!-- doxytag: member="Nutcracker::OutputFormat::listNames" ref="a254594cd7bd686042db206fbe3108bca" args="()" -->
-static vector&lt; string &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>listNames</b> ()</td></tr>
-<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a4e215338d4de348c79c507a4ada73078"></a><!-- doxytag: member="Nutcracker::OutputFormat::lookupName" ref="a4e215338d4de348c79c507a4ada73078" args="(string const &amp;name)" -->
-static FormatType const &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>lookupName</b> (string const &amp;name)</td></tr>
-<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ad3ecb2a392b9b9f07662f2fe48128f42"></a><!-- doxytag: member="Nutcracker::OutputFormat::lookupExtension" ref="ad3ecb2a392b9b9f07662f2fe48128f42" args="(string const &amp;name)" -->
-static FormatType const *&#160;</td><td class="memItemRight" valign="bottom"><b>lookupExtension</b> (string const &amp;name)</td></tr>
 <tr><td colspan="2"><h2><a name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a98ae66d99210bd0a0508850e7a06cef0"></a><!-- doxytag: member="Nutcracker::OutputFormat::supports_states" ref="a98ae66d99210bd0a0508850e7a06cef0" args="" -->
 bool&#160;</td><td class="memItemRight" valign="bottom"><b>supports_states</b></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a42b22ce8e8a2155c41fd0d4c03052706"></a><!-- doxytag: member="Nutcracker::OutputFormat::name" ref="a42b22ce8e8a2155c41fd0d4c03052706" args="" -->
-string&#160;</td><td class="memItemRight" valign="bottom"><b>name</b></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a5473260fc69709f13bc51eea9a7242e4"></a><!-- doxytag: member="Nutcracker::OutputFormat::description" ref="a5473260fc69709f13bc51eea9a7242e4" args="" -->
-string&#160;</td><td class="memItemRight" valign="bottom"><b>description</b></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ab47f09075900cf90578980f28955de6b"></a><!-- doxytag: member="Nutcracker::OutputFormat::supports_pipe" ref="ab47f09075900cf90578980f28955de6b" args="" -->
-bool&#160;</td><td class="memItemRight" valign="bottom"><b>supports_pipe</b></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a3ba699eb03a928b2e4789625fa2bd1bc"></a><!-- doxytag: member="Nutcracker::OutputFormat::supports_location" ref="a3ba699eb03a928b2e4789625fa2bd1bc" args="" -->
-bool&#160;</td><td class="memItemRight" valign="bottom"><b>supports_location</b></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ab526177788374ead95655e6615369e3c"></a><!-- doxytag: member="Nutcracker::OutputFormat::recognized_extensions" ref="ab526177788374ead95655e6615369e3c" args="" -->
-set&lt; string &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>recognized_extensions</b></td></tr>
-<tr><td colspan="2"><h2><a name="pub-static-attribs"></a>
-Static Public Attributes</h2></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a2ada4135cca0ef57b11b75adf0854726"></a><!-- doxytag: member="Nutcracker::OutputFormat::type_name" ref="a2ada4135cca0ef57b11b75adf0854726" args="" -->
-static char const *&#160;</td><td class="memItemRight" valign="bottom"><b>type_name</b> = format_type_name</td></tr>
-<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a0885539e122bb56a0c9f82828635cdd0"></a><!-- doxytag: member="Nutcracker::OutputFormat::default_format" ref="a0885539e122bb56a0c9f82828635cdd0" args="" -->
-static FormatType const *&#160;</td><td class="memItemRight" valign="bottom"><b>default_format</b> = NULL</td></tr>
-<tr><td colspan="2"><h2><a name="pro-static-methods"></a>
-Static Protected Member Functions</h2></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aaefd1ecf1fe445f8474f1bbc99369216"></a><!-- doxytag: member="Nutcracker::OutputFormat::getExtensionRegistry" ref="aaefd1ecf1fe445f8474f1bbc99369216" args="()" -->
-static ExtensionRegistry &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>getExtensionRegistry</b> ()</td></tr>
-<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a932b2cca002e36f2d6de4e4615ca067d"></a><!-- doxytag: member="Nutcracker::OutputFormat::getNameRegistry" ref="a932b2cca002e36f2d6de4e4615ca067d" args="()" -->
-static NameRegistry &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>getNameRegistry</b> ()</td></tr>
-<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a94a705fa7a2fd7f34764593d83fa0652"></a><!-- doxytag: member="Nutcracker::OutputFormat::registerFormat" ref="a94a705fa7a2fd7f34764593d83fa0652" args="(FormatType const *format)" -->
-static void&#160;</td><td class="memItemRight" valign="bottom"><b>registerFormat</b> (FormatType const *format)</td></tr>
-<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a2e274e3bb6db5793ea5361c6cf67f137"></a><!-- doxytag: member="Nutcracker::OutputFormat::unregisterFormat" ref="a2e274e3bb6db5793ea5361c6cf67f137" args="(string const &amp;name)" -->
-static void&#160;</td><td class="memItemRight" valign="bottom"><b>unregisterFormat</b> (string const &amp;name)</td></tr>
 <tr><td colspan="2"><h2><a name="pro-attribs"></a>
 Protected Attributes</h2></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aae3474f464df7de13519240cf0ee2794"></a><!-- doxytag: member="Nutcracker::OutputFormat::connectToChain" ref="aae3474f464df7de13519240cf0ee2794" args="" -->
@@ -183,7 +140,7 @@ ChainConnector&#160;</td><td class="memItemRight" valign="bottom"><b>connectToCh
 </iframe>
 </div>
 
-<hr class="footer"/><address class="footer"><small>Generated on Tue May 31 2011 16:30:12 for Nutcracker by&#160;
+<hr class="footer"/><address class="footer"><small>Generated on Tue May 31 2011 17:02:26 for Nutcracker by&#160;
 <a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.7.3 </small></address>
 </body>
