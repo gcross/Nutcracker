@@ -66,7 +66,7 @@ link_directories ( ${BLAS_LIBRARY_DIRS} )
 include_directories ( ${BLAS_INCLUDE_DIRS} )
 #@+node:gcross.20110426132142.2439: *3* Boost
 SET(Boost_ADDITIONAL_VERSIONS "1.43" "1.43.0" "1.44" "1.44.0" "1.45" "1.45.0" "1.46.0" "1.46.1")
-find_package( Boost 1.46 COMPONENTS filesystem signals system thread program_options REQUIRED )
+find_package( Boost 1.46 COMPONENTS filesystem signals system program_options REQUIRED )
 link_directories ( ${Boost_LIBRARY_DIRS} )
 include_directories ( ${Boost_INCLUDE_DIRS} )
 #@+node:gcross.20110524225044.2475: *3* HDF++
@@ -139,5 +139,17 @@ endif(DOXYGEN_FOUND AND INKSCAPE)
 include_directories ("includes")
 
 add_subdirectory ("sources")
-add_subdirectory ("tests")
+
+#@+<< Configure tests >>
+#@+node:gcross.20110624000550.2294: ** << Configure tests >>
+find_package( Illuminate )
+
+if(${Illuminate_FOUND})
+    add_subdirectory ("tests")
+else(${Illuminate_FOUND})
+    add_custom_target(test
+        COMMAND ${CMAKE_COMMAND} -E echo "The Illuminate library is required to build the tests."
+    )
+endif(${Illuminate_FOUND})
+#@-<< Configure tests >>
 #@-leo

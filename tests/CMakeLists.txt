@@ -1,6 +1,8 @@
 #@+leo-ver=5-thin
 #@+node:gcross.20110125120748.2426: * @file CMakeLists.txt
 include_directories(".")
+include_directories ( ${Illuminate_INCLUDE_DIRS} )
+link_directories ( ${Illuminate_LIBRARY_DIRS} )
 
 set(test-SOURCES
     boundaries
