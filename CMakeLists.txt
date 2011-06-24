@@ -78,7 +78,7 @@ find_package( LAPACK REQUIRED )
 link_directories ( ${LAPACK_LIBRARY_DIRS} )
 include_directories ( ${LAPACK_INCLUDE_DIRS} )
 #@+node:gcross.20110426132142.2443: *3* YamlCXX
-find_package( YamlCXX REQUIRED )
+find_package( YamlCXX 0.2.6 REQUIRED )
 link_directories ( ${YAMLCXX_LIBRARY_DIRS} )
 include_directories ( ${YAMLCXX_INCLUDE_DIRS} )
 #@-others
