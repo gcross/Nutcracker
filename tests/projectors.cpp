@@ -135,10 +135,10 @@ TEST_CASE(trivial) {
             ,list_of(&OverlapSite<Middle>::trivial) | indirected
         )
     );
-    ASSERT_EQ(1,projector_matrix.numberOfProjectors());
-    ASSERT_EQ(1,projector_matrix.projectorLength());
-    ASSERT_EQ(1,projector_matrix.numberOfReflectors());
-    ASSERT_EQ(0,projector_matrix.orthogonalSubspaceDimension());
+    ASSERT_EQ(1u,projector_matrix.numberOfProjectors());
+    ASSERT_EQ(1u,projector_matrix.projectorLength());
+    ASSERT_EQ(1u,projector_matrix.numberOfReflectors());
+    ASSERT_EQ(0u,projector_matrix.orthogonalSubspaceDimension());
 }
 //@+node:gcross.20110213233103.2823: *4* physical dimension 4, one projector
 TEST_CASE(physical_dimension_4_with_one_projector) {
@@ -149,10 +149,10 @@ TEST_CASE(physical_dimension_4_with_one_projector) {
             ,list_of(&test_overlap_site_1) | indirected
         )
     );
-    ASSERT_EQ(1,projector_matrix.numberOfProjectors());
-    ASSERT_EQ(4,projector_matrix.projectorLength());
-    ASSERT_EQ(1,projector_matrix.numberOfReflectors());
-    ASSERT_EQ(3,projector_matrix.orthogonalSubspaceDimension());
+    ASSERT_EQ(1u,projector_matrix.numberOfProjectors());
+    ASSERT_EQ(4u,projector_matrix.projectorLength());
+    ASSERT_EQ(1u,projector_matrix.numberOfReflectors());
+    ASSERT_EQ(3u,projector_matrix.orthogonalSubspaceDimension());
 }
 //@+node:gcross.20110213233103.2824: *4* physical dimension 4, two projectors
 TEST_CASE(physical_dimension_4_with_two_projectors) {
@@ -163,10 +163,10 @@ TEST_CASE(physical_dimension_4_with_two_projectors) {
             ,list_of(&test_overlap_site_1)(&test_overlap_site_2) | indirected
         )
     );
-    ASSERT_EQ(2,projector_matrix.numberOfProjectors());
-    ASSERT_EQ(4,projector_matrix.projectorLength());
-    ASSERT_EQ(2,projector_matrix.numberOfReflectors());
-    ASSERT_EQ(2,projector_matrix.orthogonalSubspaceDimension());
+    ASSERT_EQ(2u,projector_matrix.numberOfProjectors());
+    ASSERT_EQ(4u,projector_matrix.projectorLength());
+    ASSERT_EQ(2u,projector_matrix.numberOfReflectors());
+    ASSERT_EQ(2u,projector_matrix.orthogonalSubspaceDimension());
 }
 //@+node:gcross.20110213233103.2825: *4* physical dimension 4, three projectors
 TEST_CASE(physical_dimension_4_with_three_projectors) {
@@ -177,10 +177,10 @@ TEST_CASE(physical_dimension_4_with_three_projectors) {
             ,list_of(&test_overlap_site_1)(&test_overlap_site_2)(&test_overlap_site_3) | indirected
         )
     );
-    ASSERT_EQ(3,projector_matrix.numberOfProjectors());
-    ASSERT_EQ(4,projector_matrix.projectorLength());
-    ASSERT_EQ(3,projector_matrix.numberOfReflectors());
-    ASSERT_EQ(1,projector_matrix.orthogonalSubspaceDimension());
+    ASSERT_EQ(3u,projector_matrix.numberOfProjectors());
+    ASSERT_EQ(4u,projector_matrix.projectorLength());
+    ASSERT_EQ(3u,projector_matrix.numberOfReflectors());
+    ASSERT_EQ(1u,projector_matrix.orthogonalSubspaceDimension());
 }
 //@-others
 

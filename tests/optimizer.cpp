@@ -87,14 +87,14 @@ TEST_SUITE(one_site_under_external_field) {
             StateSite<Middle> const& new_state_site = optimizer_result.state_site;
 
             ASSERT_EQ(physical_dimension,new_state_site.physicalDimension(as_unsigned_integer));
-            ASSERT_EQ(1,new_state_site.leftDimension(as_unsigned_integer));
-            ASSERT_EQ(1,new_state_site.rightDimension(as_unsigned_integer));
+            ASSERT_EQ(1u,new_state_site.leftDimension(as_unsigned_integer));
+            ASSERT_EQ(1u,new_state_site.rightDimension(as_unsigned_integer));
             BOOST_FOREACH(unsigned int const i, irange(0u,physical_dimension-1)) {
                 ASSERT_NEAR_REL(c(0,0),new_state_site[i],1e-15);
             }
             ASSERT_NEAR_REL(1,abs(new_state_site[physical_dimension-1]),1e-5);
             ASSERT_NEAR_REL(-1,optimizer_result.eigenvalue,1e-5);
-            ASSERT_EQ(0,optimizer_result.number_of_iterations);
+            ASSERT_EQ(0u,optimizer_result.number_of_iterations);
         }
     }
 
@@ -154,7 +154,7 @@ TEST_SUITE(optimizer_modes) {
             ASSERT_NEAR_REL(0,abs(new_state_site[2]),1e-15);
             ASSERT_NEAR_REL(1,abs(new_state_site[3]),1e-5);
             ASSERT_NEAR_REL(v,optimizer_result.eigenvalue,1e-5);
-            ASSERT_EQ(0,optimizer_result.number_of_iterations);
+            ASSERT_EQ(0u,optimizer_result.number_of_iterations);
         }
     }
 

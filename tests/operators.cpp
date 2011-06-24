@@ -61,8 +61,8 @@ TEST_SUITE(Pauli) {
 
     #define TEST_PAULI(Pauli,_00,_01,_10,_11) \
         TEST_CASE(Pauli) { \
-            EXPECT_EQ(2,Pauli.size1()); \
-            EXPECT_EQ(2,Pauli.size2()); \
+            EXPECT_EQ(2u,Pauli.size1()); \
+            EXPECT_EQ(2u,Pauli.size2()); \
             EXPECT_EQ(_00,Pauli(0,0)); \
             EXPECT_EQ(_01,Pauli(0,1)); \
             EXPECT_EQ(_10,Pauli(1,0)); \

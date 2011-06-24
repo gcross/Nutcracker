@@ -118,7 +118,7 @@ TEST_CASE(two_trivial_sites) {
                 )
             ;
         StateVector state_vector = computeStateVector(list_of(&state_site_1)(&state_site_2) | indirected);
-        ASSERT_EQ(1,state_vector.size());
+        ASSERT_EQ(1u,state_vector.size());
         ASSERT_NEAR_ABS(inner_product(state_site_1,state_site_2,c(0,0)),state_vector[0],1e-15);
     }
 }
@@ -153,7 +153,7 @@ TEST_CASE(two_sites) {
             )
         ;
     StateVector actual_state_vector = computeStateVector(list_of(&state_site_1)(&state_site_2) | indirected);
-    ASSERT_EQ(4,actual_state_vector.size());
+    ASSERT_EQ(4u,actual_state_vector.size());
     complex<double> correct_state_vector[] = {0,1,-1,0};
     ASSERT_TRUE(equal(correct_state_vector,actual_state_vector));
 }
@@ -195,7 +195,7 @@ TEST_CASE(three_sites) {
             )
         ;
     StateVector actual_state_vector = computeStateVector(list_of(&state_site_1)(&state_site_2)(&state_site_3) | indirected);
-    ASSERT_EQ(8,actual_state_vector.size());
+    ASSERT_EQ(8u,actual_state_vector.size());
     complex<double> correct_state_vector[] =
         {0  // 000
         ,2  // 001

@@ -272,7 +272,7 @@ TEST_CASE(encode) {
 
         std::vector<hsize_t> dimensions(dataset.dimensions());
 
-        EXPECT_EQ(3,dimensions.size());
+        EXPECT_EQ(3u,dimensions.size());
         EXPECT_EQ(*physical_dimension,dimensions[0]);
         EXPECT_EQ(*left_dimension,dimensions[1]);
         EXPECT_EQ(*right_dimension,dimensions[2]);
@@ -499,7 +499,7 @@ TEST_CASE(encode) {
 
             std::vector<hsize_t> dimensions(dataset.dimensions());
 
-            EXPECT_EQ(3,dimensions.size());
+            EXPECT_EQ(3u,dimensions.size());
             EXPECT_EQ(operator_site_tensor.numberOfMatrices(),dimensions[0]);
             EXPECT_EQ(operator_site_tensor.physicalDimension(as_unsigned_integer),dimensions[1]);
             EXPECT_EQ(operator_site_tensor.physicalDimension(as_unsigned_integer),dimensions[2]);
@@ -514,9 +514,9 @@ TEST_CASE(encode) {
 
             std::vector<hsize_t> dimensions(dataset.dimensions());
 
-            EXPECT_EQ(2,dimensions.size());
+            EXPECT_EQ(2u,dimensions.size());
             EXPECT_EQ(operator_site_tensor.numberOfMatrices(),dimensions[0]);
-            EXPECT_EQ(2,dimensions[1]);
+            EXPECT_EQ(2u,dimensions[1]);
 
             std::vector<uint32_t> data = dataset.readVector<uint32_t>();
 
