@@ -62,11 +62,11 @@ MoveSiteCursorResult<Left> moveSiteCursorLeft(
     StateSite<Right> new_state_site_2(dimensionsOf(old_state_site_2));
     unsigned int const info =
     Core::norm_denorm_going_left(
-         old_state_site_1.leftDimension(as_unsigned_integer)
+         old_state_site_1.leftDimension()
         ,old_state_site_1 | old_state_site_2
-        ,old_state_site_2.rightDimension(as_unsigned_integer)
-        ,old_state_site_1.physicalDimension(as_unsigned_integer)
-        ,old_state_site_2.physicalDimension(as_unsigned_integer)
+        ,old_state_site_2.rightDimension()
+        ,old_state_site_1.physicalDimension()
+        ,old_state_site_2.physicalDimension()
         ,old_state_site_1
         ,old_state_site_2
         ,new_state_site_1
@@ -87,11 +87,11 @@ MoveSiteCursorResult<Right> moveSiteCursorRight(
     StateSite<Middle> new_state_site_2(dimensionsOf(old_state_site_2));
     unsigned int const info =
     Core::norm_denorm_going_right(
-         old_state_site_1.leftDimension(as_unsigned_integer)
+         old_state_site_1.leftDimension()
         ,old_state_site_1 | old_state_site_2
-        ,old_state_site_2.rightDimension(as_unsigned_integer)
-        ,old_state_site_1.physicalDimension(as_unsigned_integer)
-        ,old_state_site_2.physicalDimension(as_unsigned_integer)
+        ,old_state_site_2.rightDimension()
+        ,old_state_site_1.physicalDimension()
+        ,old_state_site_2.physicalDimension()
         ,old_state_site_1
         ,old_state_site_2
         ,new_state_site_1

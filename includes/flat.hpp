@@ -88,8 +88,8 @@ class Fragment : public BaseTensor {
     //! Moves the data (and dimensions) from \c other to \c this and invalidates \c other.
     void operator=(BOOST_RV_REF(Fragment) other) {
         BaseTensor::operator=(boost::move(static_cast<BaseTensor&>(other)));
-        physical_dimension = boost::move(other.physical_dimension);
-        right_dimension = boost::move(other.right_dimension);
+        physical_dimension = copyAndReset(other.physical_dimension);
+        right_dimension = copyAndReset(other.right_dimension);
     }
 
     //! @}
@@ -100,13 +100,16 @@ class Fragment : public BaseTensor {
     public:
 
     //! Construct an invalid tensor (presumably into which you will eventually move data from elsewhere).
-    Fragment() {}
+    Fragment()
+      : physical_dimension(0u)
+      , right_dimension(0u)
+    {}
 
     //! Move the data (and dimensions) from \c other into \c this and invalidate \c other.
     Fragment(BOOST_RV_REF(Fragment) other)
       : BaseTensor(boost::move(static_cast<BaseTensor&>(other)))
-      , physical_dimension(boost::move(other.physical_dimension))
-      , right_dimension(boost::move(other.right_dimension))
+      , physical_dimension(copyAndReset(other.physical_dimension))
+      , right_dimension(copyAndReset(other.right_dimension))
     { }
 
     //! Initialize the dimensions with the given values and allocate memory for an array of the appropriate size.
@@ -115,8 +118,8 @@ class Fragment : public BaseTensor {
         , RightDimension const right_dimension
         , unsigned int const size
     ) : BaseTensor(size)
-      , physical_dimension(physical_dimension)
-      , right_dimension(right_dimension)
+      , physical_dimension(*physical_dimension)
+      , right_dimension(*right_dimension)
     { }
 
     //! Constructs a tensor using data supplied from a generator.
@@ -127,8 +130,8 @@ class Fragment : public BaseTensor {
         , unsigned int const size
         , FillWithGenerator<G> const generator
     ) : BaseTensor(size,generator)
-      , physical_dimension(physical_dimension)
-      , right_dimension(right_dimension)
+      , physical_dimension(*physical_dimension)
+      , right_dimension(*right_dimension)
     { }
 
     //! Constructs a tensor using data supplied from a range.
@@ -141,8 +144,8 @@ class Fragment : public BaseTensor {
         , RightDimension const right_dimension
         , FillWithRange<Range> const init
     ) : BaseTensor(init)
-      , physical_dimension(physical_dimension)
-      , right_dimension(right_dimension)
+      , physical_dimension(*physical_dimension)
+      , right_dimension(*right_dimension)
     { }
 
     //! Sets all dimensions to 1, and then allocates an array of size one and fills it with the value 1.
@@ -161,24 +164,25 @@ class Fragment : public BaseTensor {
     public:
 
     //! Returns the physical dimension of this tensor.
-    PhysicalDimension physicalDimension() const { return physical_dimension; }
-    //! Unwraps the physical dimension of this tensor and directly returns an unsigned integer.
-    unsigned int physicalDimension(AsUnsignedInteger _) const { return *physical_dimension; }
+    unsigned int physicalDimension() const { return physical_dimension; }
+    //! Returns the physical dimension of this tensor wrapped in an instance of PhysicalDimension.
+    PhysicalDimension physicalDimension(AsDimension const _) const { return PhysicalDimension(physical_dimension); }
 
     //! Returns the right dimension of this tensor.
-    RightDimension rightDimension() const { return right_dimension; }
-    //! Unwraps the right dimension of this tensor and directly returns an unsigned integer.
-    unsigned int rightDimension(AsUnsignedInteger _) const { return *right_dimension; }
+    unsigned int rightDimension() const { return right_dimension; }
+    //! Returns the right dimension of this tensor wrapped in an instance of RightDimension.
+    RightDimension rightDimension(AsDimension const _) const { return RightDimension(right_dimension); }
+
 
     //! @}
     //@+node:gcross.20110510004855.2293: *4* Fields
     private:
 
     //! The physical dimension of the site (which corresponds to the state space of the qubits that have been flattened).
-    PhysicalDimension physical_dimension;
+    unsigned int physical_dimension;
 
     //! The right dimension of this site.
-    RightDimension right_dimension;
+    unsigned int right_dimension;
     //@+node:gcross.20110510004855.2294: *4* Miscellaneous
     public:
 
@@ -187,9 +191,9 @@ class Fragment : public BaseTensor {
     unsigned int operator|(StateSiteAny const& state_site) const {
         return connectDimensions(
              "fragment right"
-            ,rightDimension(as_unsigned_integer)
+            ,rightDimension()
             ,"state site left"
-            ,state_site.leftDimension(as_unsigned_integer)
+            ,state_site.leftDimension()
         );
     }
     //@-others
@@ -287,7 +291,7 @@ class StateVectorFragment : public Fragment {
 
     //! Casts this tensor to a flat StateVector as long as the right dimension is 1.
     operator StateVector() const {
-        assert(rightDimension(as_unsigned_integer) == 1);
+        assert(rightDimension() == 1);
         StateVector v(size());
         copy(*this,v.data().begin());
         return v;
@@ -350,11 +354,11 @@ template<typename StateSiteRange> complex<double> computeStateVectorComponent(St
     unsigned int left_dimension = 1;
     unsigned int i = 0;
     BOOST_FOREACH(StateSiteAny const& state_site, state_sites) {
-        assert(state_site.leftDimension(as_unsigned_integer)==left_dimension);
+        assert(state_site.leftDimension()==left_dimension);
         complex<double> const* const transition_matrix = state_site.transitionMatrixForObservation(observed_values[i]);
         assert(transition_matrix >= state_site.begin());
         assert(transition_matrix < state_site.end());
-        unsigned int const right_dimension = state_site.rightDimension(as_unsigned_integer);
+        unsigned int const right_dimension = state_site.rightDimension();
         scoped_array<complex<double> > new_left_boundary(new complex<double>[right_dimension]);
         zgemv(
             "N"
@@ -384,7 +388,7 @@ template<typename StateSiteRange> complex<double> computeStateVectorComponent(St
 \returns the amplitude of the requested component
 */
 template<typename StateSiteRange> complex<double> computeStateVectorComponent(StateSiteRange const& state_sites, unsigned long long const component) {
-    return computeStateVectorComponent(state_sites,flatIndexToTensorIndex(state_sites | transformed(bind(&StateSiteAny::physicalDimension,_1,as_unsigned_integer)),component));
+    return computeStateVectorComponent(state_sites,flatIndexToTensorIndex(state_sites | transformed(bind(&StateSiteAny::physicalDimension,_1)),component));
 }
 //@+node:gcross.20110510004855.2247: *3* computeStateVectorLength
 //! Computes the number of components in the flat vector representation of the state.
@@ -397,7 +401,7 @@ template<typename StateSiteRange> unsigned long long computeStateVectorLength(St
     BOOST_CONCEPT_ASSERT((SinglePassRangeConcept<StateSiteRange const>));
     unsigned long long length = 1;
     BOOST_FOREACH(StateSiteAny const& state_site, state_sites) {
-        length *= state_site.physicalDimension(as_unsigned_integer);
+        length *= state_site.physicalDimension();
     }
     return length;
 }

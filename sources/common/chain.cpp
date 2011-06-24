@@ -277,7 +277,7 @@ void Chain::reset(unsigned int bandwidth_dimension) {
     ) {
         absorb<Right>(
              randomStateSiteRight(
-                 operator_sites[operator_number]->physicalDimension()
+                 operator_sites[operator_number]->physicalDimension(as_dimension)
                 ,LeftDimension(*(left_dimension++))
                 ,RightDimension(*(right_dimension++))
              )
@@ -287,7 +287,7 @@ void Chain::reset(unsigned int bandwidth_dimension) {
 
     state_site =
         randomStateSiteMiddle(
-             operator_sites[0]->physicalDimension()
+             operator_sites[0]->physicalDimension(as_dimension)
             ,LeftDimension(initial_bandwidth_dimensions[0])
             ,RightDimension(initial_bandwidth_dimensions[1])
         );

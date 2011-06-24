@@ -84,18 +84,18 @@ struct OptimizerGivenTooManyProjectors : public OptimizerFailure {
     //! The number of projectors
     unsigned int const number_of_projectors;
     //! The physical dimension of the site.
-    PhysicalDimension const physical_dimension;
+    unsigned int const physical_dimension;
     //! The left dimension of the site.
-    LeftDimension const left_dimension;
+    unsigned int const left_dimension;
     //! The right dimension of the site.
-    RightDimension const right_dimension;
+    unsigned int const right_dimension;
 
     //! Constructs this exception given the number of projectors and site dimensions.
     OptimizerGivenTooManyProjectors(
           unsigned int number_of_projectors
-        , PhysicalDimension physical_dimension
-        , LeftDimension left_dimension
-        , RightDimension right_dimension
+        , unsigned int physical_dimension
+        , unsigned int left_dimension
+        , unsigned int right_dimension
     );
 
 };

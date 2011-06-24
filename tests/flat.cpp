@@ -230,7 +230,7 @@ TEST_CASE(single_site) {
             ,RightDimension(1)
             ,fillWithGenerator(random.randomComplexDouble)
         );
-        BOOST_FOREACH(unsigned int const i, irange(0u,state_site.physicalDimension(as_unsigned_integer))) {
+        BOOST_FOREACH(unsigned int const i, irange(0u,state_site.physicalDimension())) {
             ASSERT_EQ(state_site.begin()[i],computeStateVectorComponent(list_of(&state_site) | indirected,i));
         }
     }
@@ -273,13 +273,13 @@ TEST_CASE(two_trivial_sites) {
                 ,fillWithGenerator(random.randomComplexDouble)
                 )
             ;
-        BOOST_FOREACH(unsigned int const i, irange(0u,state_site_1.physicalDimension(as_unsigned_integer))) {
-            BOOST_FOREACH(unsigned int const j, irange(0u,state_site_2.physicalDimension(as_unsigned_integer))) {
+        BOOST_FOREACH(unsigned int const i, irange(0u,state_site_1.physicalDimension())) {
+            BOOST_FOREACH(unsigned int const j, irange(0u,state_site_2.physicalDimension())) {
                 ASSERT_EQ(
                      state_site_1.begin()[i]*state_site_2.begin()[j]
                     ,computeStateVectorComponent(
                          list_of(&state_site_1)(&state_site_2) | indirected
-                        ,i*state_site_2.physicalDimension(as_unsigned_integer)+j
+                        ,i*state_site_2.physicalDimension()+j
                      )
                 );
             }
@@ -390,7 +390,7 @@ TEST_CASE(single_site) {
             ,RightDimension(1)
         );
         ASSERT_EQ(
-             state_site.physicalDimension(as_unsigned_integer)
+             state_site.physicalDimension()
             ,computeStateVectorLength(vector<StateSiteAny const*>(1,&state_site) | indirected)
         );
     }
@@ -406,7 +406,7 @@ TEST_CASE(single_site_squared) {
             ,RightDimension(1)
         );
         ASSERT_EQ(
-             state_site.physicalDimension(as_unsigned_integer)*state_site.physicalDimension(as_unsigned_integer)
+             state_site.physicalDimension()*state_site.physicalDimension()
             ,computeStateVectorLength(vector<StateSiteAny const*>(2,&state_site) | indirected)
         );
     }
@@ -432,7 +432,7 @@ TEST_CASE(two_trivial_sites) {
                 )
             ;
         ASSERT_EQ(
-             state_site_1.physicalDimension(as_unsigned_integer)*state_site_2.physicalDimension(as_unsigned_integer)
+             state_site_1.physicalDimension()*state_site_2.physicalDimension()
             ,computeStateVectorLength(list_of(&state_site_1)(&state_site_2) | indirected)
         );
     }

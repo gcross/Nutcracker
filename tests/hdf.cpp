@@ -221,19 +221,20 @@ TEST_CASE(decode) {
     RNG random;
 
     REPEAT(10) {
-        PhysicalDimension const physical_dimension(random);
-        LeftDimension const left_dimension(random);
-        RightDimension const right_dimension(random);
+        unsigned int const
+            physical_dimension = random,
+            left_dimension     = random,
+            right_dimension    = random;
 
         TemporaryMemoryFile file;
         Location location(file / "location");
 
-        vector<complex<double> > data((*physical_dimension)*(*left_dimension)*(*right_dimension));
+        vector<complex<double> > data(physical_dimension*left_dimension*right_dimension);
         generate(data,random.randomComplexDouble);
 
         Dataset(
             createAt(location),
-            rangeOf(list_of(*physical_dimension)(*left_dimension)(*right_dimension)),
+            rangeOf(list_of(physical_dimension)(left_dimension)(right_dimension)),
             &data.front()
         );
 
@@ -272,7 +273,7 @@ TEST_CASE(encode) {
 
         std::vector<hsize_t> dimensions(dataset.dimensions());
 
-        EXPECT_EQ(3u,dimensions.size());
+        EXPECT_EQ_VAL(dimensions.size(),3u);
         EXPECT_EQ(*physical_dimension,dimensions[0]);
         EXPECT_EQ(*left_dimension,dimensions[1]);
         EXPECT_EQ(*right_dimension,dimensions[2]);
@@ -434,19 +435,20 @@ TEST_CASE(decode) {
     RNG random;
 
     REPEAT(10) {
-        unsigned int const number_of_matrices = random;
-        PhysicalDimension const physical_dimension(random);
-        LeftDimension const left_dimension(random);
-        RightDimension const right_dimension(random);
+        unsigned int const
+            number_of_matrices = random,
+            physical_dimension = random,
+            left_dimension     = random,
+            right_dimension    = random;
 
         TemporaryMemoryFile file;
         Location location(file / "location");
 
         Group object(createAt(location));
-        object["left dimension"] = *left_dimension;
-        object["right dimension"] = *right_dimension;
+        object["left dimension"] = left_dimension;
+        object["right dimension"] = right_dimension;
 
-        vector<complex<double> > matrices_data(number_of_matrices*(*physical_dimension)*(*physical_dimension));
+        vector<complex<double> > matrices_data(number_of_matrices*physical_dimension*physical_dimension);
         generate(matrices_data,random.randomComplexDouble);
 
         vector<uint32_t> indices_data(2*number_of_matrices);
@@ -454,7 +456,7 @@ TEST_CASE(decode) {
 
         Dataset(
             createAt(location / "matrices"),
-            rangeOf(list_of(number_of_matrices)(*physical_dimension)(*physical_dimension)),
+            rangeOf(list_of(number_of_matrices)(physical_dimension)(physical_dimension)),
             &matrices_data.front()
         );
 
@@ -491,8 +493,8 @@ TEST_CASE(encode) {
 
         Group object(location);
 
-        EXPECT_EQ(operator_site_tensor.leftDimension(as_unsigned_integer),static_cast<unsigned int>(object["left dimension"]));
-        EXPECT_EQ(operator_site_tensor.rightDimension(as_unsigned_integer),static_cast<unsigned int>(object["right dimension"]));
+        EXPECT_EQ(operator_site_tensor.leftDimension(),static_cast<unsigned int>(object["left dimension"]));
+        EXPECT_EQ(operator_site_tensor.rightDimension(),static_cast<unsigned int>(object["right dimension"]));
 
         {
             Dataset dataset(location / "matrices");
@@ -501,8 +503,8 @@ TEST_CASE(encode) {
 
             EXPECT_EQ(3u,dimensions.size());
             EXPECT_EQ(operator_site_tensor.numberOfMatrices(),dimensions[0]);
-            EXPECT_EQ(operator_site_tensor.physicalDimension(as_unsigned_integer),dimensions[1]);
-            EXPECT_EQ(operator_site_tensor.physicalDimension(as_unsigned_integer),dimensions[2]);
+            EXPECT_EQ(operator_site_tensor.physicalDimension(),dimensions[1]);
+            EXPECT_EQ(operator_site_tensor.physicalDimension(),dimensions[2]);
 
             std::vector<complex<double> > data = dataset.readVector<complex<double> >();
 

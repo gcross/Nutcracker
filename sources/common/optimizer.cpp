@@ -70,16 +70,16 @@ OptimizerGivenGuessInProjectorSpace::OptimizerGivenGuessInProjectorSpace()
 //@+node:gcross.20110214155808.1907: *4* OptimizerGivenTooManyProjectors
 OptimizerGivenTooManyProjectors::OptimizerGivenTooManyProjectors(
       unsigned int const number_of_projectors
-    , PhysicalDimension const physical_dimension
-    , LeftDimension const left_dimension
-    , RightDimension const right_dimension
+    , unsigned int const physical_dimension
+    , unsigned int const left_dimension
+    , unsigned int const right_dimension
 ) : OptimizerFailure(
         (format("Optimizer was given too many projectors (%1% >= %2%*%3%*%4% = %5%)") 
             % number_of_projectors
-            % *physical_dimension
-            % *left_dimension
-            % *right_dimension
-            % ((*physical_dimension)*(*left_dimension)*(*right_dimension))
+            % physical_dimension
+            % left_dimension
+            % right_dimension
+            % (physical_dimension*left_dimension*right_dimension)
         ).str()
     )
   , number_of_projectors(number_of_projectors)

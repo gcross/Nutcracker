@@ -47,16 +47,16 @@ StateVectorFragment extendStateVectorFragment(
 ) {
     StateVectorFragment new_fragment
         (PhysicalDimension(
-            old_fragment.physicalDimension(as_unsigned_integer)
-           *state_site.physicalDimension(as_unsigned_integer)
+            old_fragment.physicalDimension()
+           *state_site.physicalDimension()
          )
-        ,state_site.rightDimension()
+        ,state_site.rightDimension(as_dimension)
         );
     Core::extend_state_vector_fragment(
          old_fragment | state_site
-        ,state_site.rightDimension(as_unsigned_integer)
-        ,old_fragment.physicalDimension(as_unsigned_integer)
-        ,state_site.physicalDimension(as_unsigned_integer)
+        ,state_site.rightDimension()
+        ,old_fragment.physicalDimension()
+        ,state_site.physicalDimension()
         ,old_fragment
         ,state_site
         ,new_fragment

@@ -360,11 +360,11 @@ The classes in these groups are trivial (i.e., empty) structs that exist solely 
 //@-<< Macros >>
 
 //@+others
-//@+node:gcross.20110428160636.2470: *3* AsUnsignedInteger
-//! Dummy class used to specify that the integer inside a dimension wrapper class should be unwrapped and returned directly.
-/*! Its associated singleton is as_unsigned_integer.*/
-DECLARE_DUMMY_PARAMETER(AsUnsignedInteger,as_unsigned_integer)
-//!< The singleton instance of AsUnsignedInteger.
+//@+node:gcross.20110624000550.2626: *3* AsDimension
+//! Dummy class used to specify that the return value should be wrapped inside the appropriate dimension wrapper class.
+/*! Its associated singleton is as_dimension.*/
+DECLARE_DUMMY_PARAMETER(AsDimension,as_dimension)
+//!< The singleton instance of AsDimension.
 //@+node:gcross.20110428160636.2469: *3* MakeTrivial
 //! Dummy class used to specify that a tensor should be constructed as the "trivial" tensor.
 /*!
@@ -620,9 +620,9 @@ class SiteBaseTensor : public BaseTensor {
     //! Moves the data (and dimensions) from \c other to \c this and invalidates \c other.
     void operator=(BOOST_RV_REF(SiteBaseTensor) other) {
         BaseTensor::operator=(static_cast<BOOST_RV_REF(BaseTensor)>(other));
-        physical_dimension = boost::move(other.physical_dimension);
-        left_dimension = boost::move(other.left_dimension);
-        right_dimension = boost::move(other.right_dimension);
+        physical_dimension = copyAndReset(other.physical_dimension);
+        left_dimension = copyAndReset(other.left_dimension);
+        right_dimension = copyAndReset(other.right_dimension);
     }
 
     //! Swaps the data (and dimensions) in \c other and \c this.
@@ -641,14 +641,18 @@ class SiteBaseTensor : public BaseTensor {
     protected:
 
     //! Construct an invalid tensor (presumably into which you will eventually move data from elsewhere).
-    SiteBaseTensor() {}
+    SiteBaseTensor()
+      : physical_dimension(0u)
+      , left_dimension(0u)
+      , right_dimension(0u)
+    {}
 
     //! Move the data (and dimensions) from \c other into \c this and invalidate \c other.
     SiteBaseTensor(BOOST_RV_REF(SiteBaseTensor) other)
       : BaseTensor(static_cast<BOOST_RV_REF(BaseTensor)>(other))
-      , physical_dimension(boost::move(other.physical_dimension))
-      , left_dimension(boost::move(other.left_dimension))
-      , right_dimension(boost::move(other.right_dimension))
+      , physical_dimension(copyAndReset(other.physical_dimension))
+      , left_dimension(copyAndReset(other.left_dimension))
+      , right_dimension(copyAndReset(other.right_dimension))
     { }
 
     //! Initialize the dimensions with the given values and allocate memory for an array of size \c size.
@@ -658,9 +662,9 @@ class SiteBaseTensor : public BaseTensor {
         , RightDimension const right_dimension
         , unsigned int const size
     ) : BaseTensor(size)
-      , physical_dimension(physical_dimension)
-      , left_dimension(left_dimension)
-      , right_dimension(right_dimension)
+      , physical_dimension(*physical_dimension)
+      , left_dimension(*left_dimension)
+      , right_dimension(*right_dimension)
     { }
 
     //! Construct \c this by making a copy of \c other.
@@ -689,9 +693,9 @@ class SiteBaseTensor : public BaseTensor {
         , unsigned int const size
         , FillWithGenerator<G> const generator
     ) : BaseTensor(size,generator)
-      , physical_dimension(physical_dimension)
-      , left_dimension(left_dimension)
-      , right_dimension(right_dimension)
+      , physical_dimension(*physical_dimension)
+      , left_dimension(*left_dimension)
+      , right_dimension(*right_dimension)
     { }
 
     //! Constructs a tensor using data supplied from a range.
@@ -702,9 +706,9 @@ class SiteBaseTensor : public BaseTensor {
         , RightDimension const right_dimension
         , FillWithRange<Range> const init
     ) : BaseTensor(init)
-      , physical_dimension(physical_dimension)
-      , left_dimension(left_dimension)
-      , right_dimension(right_dimension)
+      , physical_dimension(*physical_dimension)
+      , left_dimension(*left_dimension)
+      , right_dimension(*right_dimension)
     { }
 
     //! Sets all dimensions to 1, and then allocates an array of size one and fills it with the value 1.
@@ -723,30 +727,30 @@ class SiteBaseTensor : public BaseTensor {
     public:
 
     //! Returns the physical dimension of this tensor.
-    PhysicalDimension physicalDimension() const { return physical_dimension; }
-    //! Unwraps the physical dimension of this tensor and directly returns an unsigned integer.
-    unsigned int physicalDimension(AsUnsignedInteger _) const { return *physical_dimension; }
+    unsigned int physicalDimension() const { return physical_dimension; }
+    //! Returns the physical dimension of this tensor wrapped in an instance of PhysicalDimension.
+    PhysicalDimension physicalDimension(AsDimension const _) const { return PhysicalDimension(physical_dimension); }
 
     //! Returns the left dimension of this tensor.
-    LeftDimension leftDimension() const { return left_dimension; }
-    //! Unwraps the left dimension of this tensor and directly returns an unsigned integer.
-    unsigned int leftDimension(AsUnsignedInteger _) const { return *left_dimension; }
+    unsigned int leftDimension() const { return left_dimension; }
+    //! Returns the left dimension of this tensor wrapped in an instance of LeftDimension.
+    LeftDimension leftDimension(AsDimension const _) const { return LeftDimension(left_dimension); }
 
     //! Returns the right dimension of this tensor.
-    RightDimension rightDimension() const { return right_dimension; }
-    //! Unwraps the right dimension of this tensor and directly returns an unsigned integer.
-    unsigned int rightDimension(AsUnsignedInteger _) const { return *right_dimension; }
+    unsigned int rightDimension() const { return right_dimension; }
+    //! Returns the right dimension of this tensor wrapped in an instance of RightDimension.
+    RightDimension rightDimension(AsDimension const _) const { return RightDimension(right_dimension); }
 
     //! @}
     //@+node:gcross.20110428160636.2472: *5* Fields
     private:
 
     //! The physical dimension of the site.
-    PhysicalDimension physical_dimension;
+    unsigned int physical_dimension;
     //! The left dimension of the site.
-    LeftDimension left_dimension;
+    unsigned int left_dimension;
     //! The right dimension of the site.
-    RightDimension right_dimension;
+    unsigned int right_dimension;
     //@-others
 };
 //@+node:gcross.20110215235924.2004: *3* Boundary
@@ -784,8 +788,8 @@ template<typename side> class ExpectationBoundary : public BaseTensor {
     ExpectationBoundary& operator=(BOOST_RV_REF(ExpectationBoundary) other) {
         if(this == &other) return *this;
         BaseTensor::operator=(static_cast<BOOST_RV_REF(BaseTensor)>(other));
-        operator_dimension = boost::move(other.operator_dimension);
-        state_dimension = boost::move(other.state_dimension);
+        operator_dimension = copyAndReset(other.operator_dimension);
+        state_dimension = copyAndReset(other.state_dimension);
         return *this;
     }
 
@@ -805,13 +809,16 @@ template<typename side> class ExpectationBoundary : public BaseTensor {
     public:
 
     //! Construct an invalid tensor (presumably into which you will eventually move data from elsewhere).
-    ExpectationBoundary() {}
+    ExpectationBoundary()
+      : operator_dimension(0u)
+      , state_dimension(0u)
+    {}
 
     //! Move the data (and dimensions) from \c other into \c this and invalidate \c other.
     ExpectationBoundary(BOOST_RV_REF(ExpectationBoundary) other)
       : BaseTensor(static_cast<BOOST_RV_REF(BaseTensor)>(other))
-      , operator_dimension(boost::move(other.operator_dimension))
-      , state_dimension(boost::move(other.state_dimension))
+      , operator_dimension(copyAndReset(other.operator_dimension))
+      , state_dimension(copyAndReset(other.state_dimension))
     { }
 
     //! Initialize the dimensions with the given values and allocate memory for an array of the appropriate size.
@@ -819,8 +826,8 @@ template<typename side> class ExpectationBoundary : public BaseTensor {
           OperatorDimension const operator_dimension
         , StateDimension const state_dimension
     ) : BaseTensor((*operator_dimension)*(*state_dimension)*(*state_dimension))
-      , operator_dimension(operator_dimension)
-      , state_dimension(state_dimension)
+      , operator_dimension(*operator_dimension)
+      , state_dimension(*state_dimension)
     { }
 
     //! Construct \c this by making a copy of \c other.
@@ -839,8 +846,8 @@ template<typename side> class ExpectationBoundary : public BaseTensor {
         , StateDimension const state_dimension
         , FillWithGenerator<G> const generator
     ) : BaseTensor((*operator_dimension)*(*state_dimension)*(*state_dimension),generator)
-      , operator_dimension(operator_dimension)
-      , state_dimension(state_dimension)
+      , operator_dimension(*operator_dimension)
+      , state_dimension(*state_dimension)
     { }
 
     //! Constructs a tensor using data supplied from a range.
@@ -852,7 +859,7 @@ template<typename side> class ExpectationBoundary : public BaseTensor {
           OperatorDimension const operator_dimension
         , FillWithRange<Range> const init
     ) : BaseTensor(init)
-      , operator_dimension(operator_dimension)
+      , operator_dimension(*operator_dimension)
       , state_dimension((unsigned int)sqrt(size()/(*operator_dimension)))
     { }
 
@@ -872,23 +879,23 @@ template<typename side> class ExpectationBoundary : public BaseTensor {
     public:
 
     //! Returns the operator dimension of this tensor.
-    OperatorDimension operatorDimension() const { return operator_dimension; }
-    //! Unwraps the operator dimension of this tensor and directly returns an unsigned integer.
-    unsigned int operatorDimension(AsUnsignedInteger _) const { return *operator_dimension; }
+    unsigned int operatorDimension() const { return operator_dimension; }
+    //! Returns the operator dimension of this tensor wrapped in an instance of OperatorDimension.
+    OperatorDimension operatorDimension(AsDimension const _) const { return OperatorDimension(operator_dimension); }
 
     //! Returns the state dimension of this tensor.
-    StateDimension stateDimension() const { return state_dimension; }
-    //! Unwraps the state dimension of this tensor and directly returns an unsigned integer.
-    unsigned int stateDimension(AsUnsignedInteger _) const { return *state_dimension; }
+    unsigned int stateDimension() const { return state_dimension; }
+    //! Returns the state dimension of this tensor wrapped in an instance of StateDimension.
+    StateDimension stateDimension(AsDimension const _) const { return StateDimension(state_dimension); }
 
     //! @}
     //@+node:gcross.20110428160636.2522: *5* Fields
     private:
 
     //! The operator dimension.
-    OperatorDimension operator_dimension;
+    unsigned int operator_dimension;
     //! The state dimension.
-    StateDimension state_dimension;
+    unsigned int state_dimension;
     //@+node:gcross.20110428160636.2525: *5* Miscellaneous
     public:
 
@@ -932,8 +939,8 @@ template<typename side> class OverlapBoundary : public BaseTensor {
     OverlapBoundary& operator=(BOOST_RV_REF(OverlapBoundary) other) {
         if(this == &other) return *this;
         BaseTensor::operator=(static_cast<BOOST_RV_REF(BaseTensor)>(other));
-        overlap_dimension = boost::move(other.overlap_dimension);
-        state_dimension = boost::move(other.state_dimension);
+        overlap_dimension = copyAndReset(other.overlap_dimension);
+        state_dimension = copyAndReset(other.state_dimension);
         return *this;
     }
 
@@ -953,13 +960,16 @@ template<typename side> class OverlapBoundary : public BaseTensor {
     public:
 
     //! Construct an invalid tensor (presumably into which you will eventually move data from elsewhere).
-    OverlapBoundary() {}
+    OverlapBoundary()
+      : overlap_dimension(0u)
+      , state_dimension(0u)
+    {}
 
     //! Move the data (and dimensions) from \c other into \c this and invalidate \c other.
     OverlapBoundary(BOOST_RV_REF(OverlapBoundary) other)
       : BaseTensor(static_cast<BOOST_RV_REF(BaseTensor)>(other))
-      , overlap_dimension(boost::move(other.overlap_dimension))
-      , state_dimension(boost::move(other.state_dimension))
+      , overlap_dimension(copyAndReset(other.overlap_dimension))
+      , state_dimension(copyAndReset(other.state_dimension))
     { }
 
     //! Initialize the dimensions with the given values and allocate memory for an array of the appropriate size.
@@ -967,8 +977,8 @@ template<typename side> class OverlapBoundary : public BaseTensor {
           OverlapDimension const overlap_dimension
         , StateDimension const state_dimension
     ) : BaseTensor((*overlap_dimension)*(*state_dimension))
-      , overlap_dimension(overlap_dimension)
-      , state_dimension(state_dimension)
+      , overlap_dimension(*overlap_dimension)
+      , state_dimension(*state_dimension)
     { }
 
     //! Construct \c this by making a copy of \c other.
@@ -987,8 +997,8 @@ template<typename side> class OverlapBoundary : public BaseTensor {
         , StateDimension const state_dimension
         , FillWithGenerator<G> const generator
     ) : BaseTensor((*overlap_dimension)*(*state_dimension),generator)
-      , overlap_dimension(overlap_dimension)
-      , state_dimension(state_dimension)
+      , overlap_dimension(*overlap_dimension)
+      , state_dimension(*state_dimension)
     { }
 
     //! Constructs a tensor using data supplied from a range.
@@ -1000,7 +1010,7 @@ template<typename side> class OverlapBoundary : public BaseTensor {
           OverlapDimension const overlap_dimension
         , FillWithRange<Range> const init
     ) : BaseTensor(init)
-      , overlap_dimension(overlap_dimension)
+      , overlap_dimension(*overlap_dimension)
       , state_dimension(size()/(*overlap_dimension))
     { }
 
@@ -1020,23 +1030,23 @@ template<typename side> class OverlapBoundary : public BaseTensor {
     public:
 
     //! Returns the overlap dimension of this tensor.
-    OverlapDimension overlapDimension() const { return overlap_dimension; }
-    //! Unwraps the overlap dimension of this tensor and directly returns an unsigned integer.
-    unsigned int overlapDimension(AsUnsignedInteger _) const { return *overlap_dimension; }
+    unsigned int overlapDimension() const { return overlap_dimension; }
+    //! Returns the overlap dimension of this tensor wrapped in an instance of OverlapDimension.
+    OverlapDimension overlapDimension(AsDimension const _) const { return OverlapDimension(overlap_dimension); }
 
     //! Returns the state dimension of this tensor.
-    StateDimension stateDimension() const { return state_dimension; }
-    //! Unwraps the state dimension of this tensor and directly returns an unsigned integer.
-    unsigned int stateDimension(AsUnsignedInteger _) const { return *state_dimension; }
+    unsigned int stateDimension() const { return state_dimension; }
+    //! Returns the state dimension of this tensor wrapped in an instance of StateDimension.
+    StateDimension stateDimension(AsDimension const _) const { return StateDimension(state_dimension); }
 
     //! @}
     //@+node:gcross.20110428160636.2530: *5* Fields
     private:
 
     //! The overlap dimension.
-    OverlapDimension overlap_dimension;
+    unsigned int overlap_dimension;
     //! The state dimension.
-    StateDimension state_dimension;
+    unsigned int state_dimension;
     //@+node:gcross.20110428160636.2534: *5* Miscellaneous
     public:
 
@@ -1175,9 +1185,9 @@ class StateSiteAny : public SiteBaseTensor {
     vector<unsigned int> dataDimensions() const {
         vector<unsigned int> dimensions;
         dimensions.reserve(3);
-        dimensions.push_back(physicalDimension(as_unsigned_integer));
-        dimensions.push_back(leftDimension(as_unsigned_integer));
-        dimensions.push_back(rightDimension(as_unsigned_integer));
+        dimensions.push_back(physicalDimension());
+        dimensions.push_back(leftDimension());
+        dimensions.push_back(rightDimension());
         return boost::move(dimensions);
     }
 
@@ -1190,8 +1200,8 @@ class StateSiteAny : public SiteBaseTensor {
 
     //! Computes the offset into the data array of the transition matrix corresponding to the given observation value.
     unsigned int observationValueOffset(unsigned int const observation_value) const {
-        assert(observation_value < physicalDimension(as_unsigned_integer));
-        return observation_value*leftDimension(as_unsigned_integer)*rightDimension(as_unsigned_integer);
+        assert(observation_value < physicalDimension());
+        return observation_value*leftDimension()*rightDimension();
     }
 
     //! Returns a pointer to the transition matrix for the given observation value.
@@ -1708,8 +1718,8 @@ class OperatorSite : public SiteBaseTensor {
             uint32_t left_index = (*index_generator)()
                    , right_index = (*index_generator)()
                    ;
-            assert(left_index >= 1 && left_index <= *leftDimension());
-            assert(right_index >= 1 && right_index <= *rightDimension());
+            assert(left_index >= 1 && left_index <= leftDimension());
+            assert(right_index >= 1 && right_index <= rightDimension());
             *index++ = left_index;
             *index++ = right_index;
         }
@@ -1774,8 +1784,8 @@ class OperatorSite : public SiteBaseTensor {
         vector<unsigned int> dimensions;
         dimensions.reserve(3);
         dimensions.push_back(numberOfMatrices());
-        dimensions.push_back(physicalDimension(as_unsigned_integer));
-        dimensions.push_back(physicalDimension(as_unsigned_integer));
+        dimensions.push_back(physicalDimension());
+        dimensions.push_back(physicalDimension());
         return boost::move(dimensions);
     }
 
@@ -1837,9 +1847,9 @@ inline unsigned int operator|(
 ) {
     return connectDimensions(
          "left expectation boundary state"
-        ,expectation_boundary.operatorDimension(as_unsigned_integer)
+        ,expectation_boundary.operatorDimension()
         ,"operator site left"
-        ,operator_site.leftDimension(as_unsigned_integer)
+        ,operator_site.leftDimension()
     );
 }
 //@+node:gcross.20110430163445.2579: *4* ExpectationBoundary<Left> | StateSiteAny
@@ -1850,9 +1860,9 @@ inline unsigned int operator|(
 ) {
     return connectDimensions(
          "left expectation boundary state"
-        ,expectation_boundary.stateDimension(as_unsigned_integer)
+        ,expectation_boundary.stateDimension()
         ,"state site left"
-        ,state_site.leftDimension(as_unsigned_integer)
+        ,state_site.leftDimension()
     );
 }
 //@+node:gcross.20110430163445.2580: *4* OperatorSite | ExpectationBoundary<Right>
@@ -1863,9 +1873,9 @@ inline unsigned int operator|(
 ) {
     return connectDimensions(
          "operator site right"
-        ,operator_site.rightDimension(as_unsigned_integer)
+        ,operator_site.rightDimension()
         ,"right expectation boundary state"
-        ,expectation_boundary.operatorDimension(as_unsigned_integer)
+        ,expectation_boundary.operatorDimension()
     );
 }
 //@+node:gcross.20110430163445.2581: *4* OperatorSite | StateSiteAny
@@ -1876,9 +1886,9 @@ inline unsigned int operator|(
 ) {
     return connectDimensions(
          "operator site physical"
-        ,operator_site.physicalDimension(as_unsigned_integer)
+        ,operator_site.physicalDimension()
         ,"middle state site physical"
-        ,state_site.physicalDimension(as_unsigned_integer)
+        ,state_site.physicalDimension()
     );
 }
 //@+node:gcross.20110430163445.2582: *4* OverlapBoundary<Left> | OverlapSiteAny
@@ -1889,9 +1899,9 @@ inline unsigned int operator|(
 ) {
     return connectDimensions(
          "left overlap boundary overlap"
-        ,overlap_boundary.overlapDimension(as_unsigned_integer)
+        ,overlap_boundary.overlapDimension()
         ,"overlap site left"
-        ,overlap_site.leftDimension(as_unsigned_integer)
+        ,overlap_site.leftDimension()
     );
 }
 //@+node:gcross.20110430163445.2583: *4* OverlapBoundary<Left> | StateSiteAny
@@ -1902,9 +1912,9 @@ inline unsigned int operator|(
 ) {
     return connectDimensions(
          "left overlap boundary state"
-        ,overlap_boundary.stateDimension(as_unsigned_integer)
+        ,overlap_boundary.stateDimension()
         ,"state site left"
-        ,state_site.leftDimension(as_unsigned_integer)
+        ,state_site.leftDimension()
     );
 }
 //@+node:gcross.20110430163445.2584: *4* OverlapSite<Middle> | OverlapBoundary<Right>
@@ -1915,9 +1925,9 @@ inline unsigned int operator|(
 ) {
     return connectDimensions(
          "middle overlap site right"
-        ,overlap_site.rightDimension(as_unsigned_integer)
+        ,overlap_site.rightDimension()
         ,"right overlap boundary overlap"
-        ,overlap_boundary.overlapDimension(as_unsigned_integer)
+        ,overlap_boundary.overlapDimension()
     );
 }
 //@+node:gcross.20110430163445.2585: *4* OverlapSite<Right> | OverlapBoundary<Right>
@@ -1928,9 +1938,9 @@ inline unsigned int operator|(
 ) {
     return connectDimensions(
          "right overlap site right"
-        ,overlap_site.rightDimension(as_unsigned_integer)
+        ,overlap_site.rightDimension()
         ,"right overlap boundary overlap"
-        ,overlap_boundary.overlapDimension(as_unsigned_integer)
+        ,overlap_boundary.overlapDimension()
     );
 }
 //@+node:gcross.20110430163445.2586: *4* OverlapSiteAny | StateSiteAny
@@ -1941,9 +1951,9 @@ inline unsigned int operator|(
 ) {
     return connectDimensions(
          "overlap site physical"
-        ,overlap_site.physicalDimension(as_unsigned_integer)
+        ,overlap_site.physicalDimension()
         ,"state site physical"
-        ,state_site.physicalDimension(as_unsigned_integer)
+        ,state_site.physicalDimension()
     );
 }
 //@+node:gcross.20110430163445.2587: *4* StateSite<Left> | StateSite<Middle>
@@ -1954,9 +1964,9 @@ inline unsigned int operator|(
 ) {
     return connectDimensions(
          "left state site right"
-        ,state_site_1.rightDimension(as_unsigned_integer)
+        ,state_site_1.rightDimension()
         ,"middle state site left"
-        ,state_site_2.leftDimension(as_unsigned_integer)
+        ,state_site_2.leftDimension()
     );
 }
 //@+node:gcross.20110430163445.2588: *4* StateSite<Middle> | ExpectationBoundary<Right>
@@ -1967,9 +1977,9 @@ inline unsigned int operator|(
 ) {
     return connectDimensions(
          "middle state site right"
-        ,state_site.rightDimension(as_unsigned_integer)
+        ,state_site.rightDimension()
         ,"right expectation boundary state"
-        ,expectation_boundary.stateDimension(as_unsigned_integer)
+        ,expectation_boundary.stateDimension()
     );
 }
 //@+node:gcross.20110430163445.2589: *4* StateSite<Middle> | OverlapBoundary<Right>
@@ -1980,9 +1990,9 @@ inline unsigned int operator|(
 ) {
     return connectDimensions(
          "middle state site right"
-        ,state_site.rightDimension(as_unsigned_integer)
+        ,state_site.rightDimension()
         ,"right overlap boundary state"
-        ,overlap_boundary.stateDimension(as_unsigned_integer)
+        ,overlap_boundary.stateDimension()
     );
 }
 //@+node:gcross.20110430163445.2590: *4* StateSite<Middle> | StateSite<Right>
@@ -1993,9 +2003,9 @@ inline unsigned int operator|(
 ) {
     return connectDimensions(
          "middle state site right"
-        ,state_site_1.rightDimension(as_unsigned_integer)
+        ,state_site_1.rightDimension()
         ,"right state site left"
-        ,state_site_2.leftDimension(as_unsigned_integer)
+        ,state_site_2.leftDimension()
     );
 }
 //@+node:gcross.20110430163445.2591: *4* StateSite<Right> | ExpectationBoundary<Right>
@@ -2006,9 +2016,9 @@ inline unsigned int operator|(
 ) {
     return connectDimensions(
          "right state site right"
-        ,state_site.rightDimension(as_unsigned_integer)
+        ,state_site.rightDimension()
         ,"right overlap boundary state"
-        ,expectation_boundary.stateDimension(as_unsigned_integer)
+        ,expectation_boundary.stateDimension()
     );
 }
 //@+node:gcross.20110430163445.2592: *4* StateSite<Right> | OverlapBoundary<Right>
@@ -2019,9 +2029,9 @@ inline unsigned int operator|(
 ) {
     return connectDimensions(
          "right state site right"
-        ,state_site.rightDimension(as_unsigned_integer)
+        ,state_site.rightDimension()
         ,"right overlap boundary state"
-        ,overlap_boundary.stateDimension(as_unsigned_integer)
+        ,overlap_boundary.stateDimension()
     );
 }
 //@-others

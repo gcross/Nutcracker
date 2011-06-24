@@ -38,8 +38,8 @@ using std::map;
 //@+node:gcross.20110215235924.2000: ** Values
 OperatorSite const OperatorSite::trivial(make_trivial);
 
+DEFINE_DUMMY_PARAMETER(AsDimension,as_dimension)
 DEFINE_DUMMY_PARAMETER(MakeTrivial,make_trivial)
-DEFINE_DUMMY_PARAMETER(AsUnsignedInteger,as_unsigned_integer)
 
 optional<string> const normalizationOf<Left>::value("left");
 optional<string> const normalizationOf<Middle>::value("middle");

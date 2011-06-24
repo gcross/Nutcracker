@@ -86,9 +86,9 @@ TEST_SUITE(one_site_under_external_field) {
 
             StateSite<Middle> const& new_state_site = optimizer_result.state_site;
 
-            ASSERT_EQ(physical_dimension,new_state_site.physicalDimension(as_unsigned_integer));
-            ASSERT_EQ(1u,new_state_site.leftDimension(as_unsigned_integer));
-            ASSERT_EQ(1u,new_state_site.rightDimension(as_unsigned_integer));
+            ASSERT_EQ(physical_dimension,new_state_site.physicalDimension());
+            ASSERT_EQ(1u,new_state_site.leftDimension());
+            ASSERT_EQ(1u,new_state_site.rightDimension());
             BOOST_FOREACH(unsigned int const i, irange(0u,physical_dimension-1)) {
                 ASSERT_NEAR_REL(c(0,0),new_state_site[i],1e-15);
             }

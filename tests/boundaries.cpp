@@ -1,5 +1,5 @@
 //@+leo-ver=5-thin
-//@+node:gcross.20110127123226.2504: * @file boundaries.cpp
+//@+node:gcross.20110215235924.1881: * @file boundaries.cpp
 //@@language cplusplus
 
 //@+<< License >>
@@ -178,9 +178,9 @@ TEST_SUITE(computeSOSLeft) {
                 ,OperatorSite::trivial
             )
         );
-        ASSERT_EQ(OperatorDimension(1),new_boundary.operatorDimension());
-        ASSERT_EQ(StateDimension(1),new_boundary.stateDimension());
-        ASSERT_TRUE(equal(list_of(complex<double>(1)),new_boundary));
+        EXPECT_EQ_VAL(new_boundary.operatorDimension(),1u);
+        EXPECT_EQ_VAL(new_boundary.stateDimension(),1u);
+        EXPECT_TRUE(equal(list_of(complex<double>(1)),new_boundary));
     }
     //@+node:gcross.20110127123226.2827: *4* trivial, c = 2
     TEST_CASE(trivial_with_operator_dimension_2) {
@@ -197,9 +197,9 @@ TEST_SUITE(computeSOSLeft) {
                 ,operator_site
             )
         );
-        ASSERT_EQ(OperatorDimension(2),new_boundary.operatorDimension());
-        ASSERT_EQ(StateDimension(1),new_boundary.stateDimension());
-        ASSERT_TRUE(equal(list_of(complex<double>(0))(complex<double>(0,1)),new_boundary));
+        EXPECT_EQ_VAL(new_boundary.operatorDimension(),2u);
+        EXPECT_EQ_VAL(new_boundary.stateDimension(),1u);
+        EXPECT_TRUE(equal(list_of(complex<double>(0))(complex<double>(0,1)),new_boundary));
     }
     //@+node:gcross.20110127123226.2875: *4* non-trivial
     TEST_CASE(non_trivial) {
@@ -235,8 +235,8 @@ TEST_SUITE(computeSOSLeft) {
                 ,operator_site
             )
         );
-        ASSERT_EQ(OperatorDimension(2),actual_boundary.operatorDimension());
-        ASSERT_EQ(StateDimension(4),actual_boundary.stateDimension());
+        ASSERT_EQ_VAL(actual_boundary.operatorDimension(),2u);
+        ASSERT_EQ_VAL(actual_boundary.stateDimension(),4u);
         complex<double> const expected_boundary[] =
             {c(-8.0,1.0),c(4.0,5.0),c(-10.0,-7.0),c(6.0,0.0)
             ,c(-4.0,5.0),c(8.0,1.0),c(-14.0,1.0),c(6.0,0.0)
@@ -270,9 +270,9 @@ TEST_SUITE(computeSOSRight) {
                 ,OperatorSite::trivial
             )
         );
-        ASSERT_EQ(OperatorDimension(1),new_boundary.operatorDimension());
-        ASSERT_EQ(StateDimension(1),new_boundary.stateDimension());
-        ASSERT_TRUE(equal(list_of(complex<double>(1)),new_boundary));
+        EXPECT_EQ_VAL(new_boundary.operatorDimension(),1u);
+        EXPECT_EQ_VAL(new_boundary.stateDimension(),1u);
+        EXPECT_TRUE(equal(list_of(complex<double>(1)),new_boundary));
     }
     //@+node:gcross.20110127123226.2833: *4* trivial, c = 2
     TEST_CASE(trivial_with_operator_dimension_2) {
@@ -289,9 +289,9 @@ TEST_SUITE(computeSOSRight) {
                 ,operator_site
             )
         );
-        ASSERT_EQ(OperatorDimension(2),new_boundary.operatorDimension());
-        ASSERT_EQ(StateDimension(1),new_boundary.stateDimension());
-        ASSERT_TRUE(equal(list_of(complex<double>(0))(complex<double>(0,1)),new_boundary));
+        EXPECT_EQ_VAL(new_boundary.operatorDimension(),2u);
+        EXPECT_EQ_VAL(new_boundary.stateDimension(),1u);
+        EXPECT_TRUE(equal(list_of(complex<double>(0))(complex<double>(0,1)),new_boundary));
     }
     //@+node:gcross.20110127123226.2873: *4* non-trivial
     TEST_CASE(non_trivial) {
@@ -329,8 +329,8 @@ TEST_SUITE(computeSOSRight) {
                 ,operator_site
             )
         );
-        ASSERT_EQ(OperatorDimension(2),actual_boundary.operatorDimension());
-        ASSERT_EQ(StateDimension(4),actual_boundary.stateDimension());
+        ASSERT_EQ_VAL(actual_boundary.operatorDimension(),2u);
+        ASSERT_EQ_VAL(actual_boundary.stateDimension(),4u);
         complex<double> const expected_boundary[] =
             {c(-8.0,1.0),c(4.0,5.0),c(-10.0,-7.0),c(18.0,8.0)
             ,c(-4.0,5.0),c(8.0,1.0),c(-14.0,1.0),c(18.0,-8.0)
@@ -364,9 +364,9 @@ TEST_SUITE(computeSSLeft) {
                 ,StateSite<Left>::trivial
             )
         );
-        ASSERT_EQ(OverlapDimension(1),new_boundary.overlapDimension());
-        ASSERT_EQ(StateDimension(1),new_boundary.stateDimension());
-        ASSERT_TRUE(equal(list_of(complex<double>(1)),new_boundary));
+        EXPECT_EQ_VAL(new_boundary.overlapDimension(),1u);
+        EXPECT_EQ_VAL(new_boundary.stateDimension(),1u);
+        EXPECT_TRUE(equal(list_of(complex<double>(1)),new_boundary));
     }
     //@+node:gcross.20110127123226.2849: *4* trivial, physical dimension 2
     TEST_CASE(trivial_with_physical_dimension_2) {
@@ -387,9 +387,9 @@ TEST_SUITE(computeSSLeft) {
                 ,state_site
             )
         );
-        ASSERT_EQ(OverlapDimension(1),new_boundary.overlapDimension());
-        ASSERT_EQ(StateDimension(1),new_boundary.stateDimension());
-        ASSERT_TRUE(equal(list_of(complex<double>(4)),new_boundary));
+        EXPECT_EQ_VAL(new_boundary.overlapDimension(),1u);
+        EXPECT_EQ_VAL(new_boundary.stateDimension(),1u);
+        EXPECT_TRUE(equal(list_of(complex<double>(4)),new_boundary));
     }
     //@+node:gcross.20110127123226.2851: *4* non-trivial
     TEST_CASE(non_trivial) {
@@ -421,8 +421,8 @@ TEST_SUITE(computeSSLeft) {
                 ,state_site
             )
         );
-        ASSERT_EQ(OverlapDimension(2),actual_boundary.overlapDimension());
-        ASSERT_EQ(StateDimension(5),actual_boundary.stateDimension());
+        ASSERT_EQ_VAL(actual_boundary.overlapDimension(),2u);
+        ASSERT_EQ_VAL(actual_boundary.stateDimension(),5u);
         complex<double> const expected_boundary[] =
             {c(0,10),c(-6,0),c(4,-6),c(5,4),c(-4,6)
             ,c(15,15),c(-15,9),c(-9,-21),c(21,0),c(9,21)
@@ -450,9 +450,9 @@ TEST_SUITE(computeSSRight) {
                 ,StateSite<Right>::trivial
             )
         );
-        ASSERT_EQ(OverlapDimension(1),new_boundary.overlapDimension());
-        ASSERT_EQ(StateDimension(1),new_boundary.stateDimension());
-        ASSERT_TRUE(equal(list_of(complex<double>(1)),new_boundary));
+        EXPECT_EQ_VAL(new_boundary.overlapDimension(),1u);
+        EXPECT_EQ_VAL(new_boundary.stateDimension(),1u);
+        EXPECT_TRUE(equal(list_of(complex<double>(1)),new_boundary));
     }
     //@+node:gcross.20110127123226.2864: *4* trivial, physical dimension 2
     TEST_CASE(trivial_with_physical_dimension_2) {
@@ -473,9 +473,9 @@ TEST_SUITE(computeSSRight) {
                 ,state_site
             )
         );
-        ASSERT_EQ(OverlapDimension(1),new_boundary.overlapDimension());
-        ASSERT_EQ(StateDimension(1),new_boundary.stateDimension());
-        ASSERT_TRUE(equal(list_of(complex<double>(4)),new_boundary));
+        EXPECT_EQ_VAL(new_boundary.overlapDimension(),1u);
+        EXPECT_EQ_VAL(new_boundary.stateDimension(),1u);
+        EXPECT_TRUE(equal(list_of(complex<double>(4)),new_boundary));
     }
     //@+node:gcross.20110127123226.2865: *4* non-trivial
     TEST_CASE(non_trivial) {
@@ -509,8 +509,8 @@ TEST_SUITE(computeSSRight) {
                 ,state_site
             )
         );
-        ASSERT_EQ(OverlapDimension(3),actual_boundary.overlapDimension());
-        ASSERT_EQ(StateDimension(2),actual_boundary.stateDimension());
+        ASSERT_EQ_VAL(actual_boundary.overlapDimension(),3u);
+        ASSERT_EQ_VAL(actual_boundary.stateDimension(),2u);
         complex<double> const expected_boundary[] =
             {c(5,-2),c(-3,-4),c(4,5)
             ,c(26,5),c(22,-15),c(-11,-2)

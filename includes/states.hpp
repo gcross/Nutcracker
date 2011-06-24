@@ -404,31 +404,31 @@ IncreaseDimensionBetweenResult<side1,side2> increaseDimensionBetween(
 ) {
     unsigned int const old_dimension = connectDimensions(
          "state site 1 right"
-        ,old_site_1.rightDimension(as_unsigned_integer)
+        ,old_site_1.rightDimension()
         ,"state site 2 left"
-        ,old_site_2.leftDimension(as_unsigned_integer)
+        ,old_site_2.leftDimension()
     );
     assert(new_dimension >= old_dimension);
 
     StateSite<side1> new_site_1(
-         old_site_1.physicalDimension()
-        ,old_site_1.leftDimension()
+         old_site_1.physicalDimension(as_dimension)
+        ,old_site_1.leftDimension(as_dimension)
         ,RightDimension(new_dimension)
     );
     StateSite<side2> new_site_2(
-         old_site_2.physicalDimension()
+         old_site_2.physicalDimension(as_dimension)
         ,LeftDimension(new_dimension)
-        ,old_site_2.rightDimension()
+        ,old_site_2.rightDimension(as_dimension)
     );
 
     int const info =
         new_dimension > old_dimension
             ? Core::increase_bandwidth_between(
-                 old_site_1.leftDimension(as_unsigned_integer)
+                 old_site_1.leftDimension()
                 ,old_dimension
-                ,old_site_2.rightDimension(as_unsigned_integer)
-                ,old_site_1.physicalDimension(as_unsigned_integer)
-                ,old_site_2.physicalDimension(as_unsigned_integer)
+                ,old_site_2.rightDimension()
+                ,old_site_1.physicalDimension()
+                ,old_site_2.physicalDimension()
                 ,new_dimension
                 ,old_site_1
                 ,old_site_2
@@ -436,11 +436,11 @@ IncreaseDimensionBetweenResult<side1,side2> increaseDimensionBetween(
                 ,new_site_2
               )
             : Core::norm_denorm_going_left(
-                 old_site_1.leftDimension(as_unsigned_integer)
+                 old_site_1.leftDimension()
                 ,old_dimension
-                ,old_site_2.rightDimension(as_unsigned_integer)
-                ,old_site_1.physicalDimension(as_unsigned_integer)
-                ,old_site_2.physicalDimension(as_unsigned_integer)
+                ,old_site_2.rightDimension()
+                ,old_site_1.physicalDimension()
+                ,old_site_2.physicalDimension()
                 ,old_site_1
                 ,old_site_2
                 ,new_site_1

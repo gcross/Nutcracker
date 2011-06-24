@@ -192,7 +192,7 @@ vector<unsigned int> extractPhysicalDimensions(Operator const& operator_sites) {
     vector<unsigned int> physical_dimensions;
     physical_dimensions.reserve(operator_sites.size()+1);
     BOOST_FOREACH(shared_ptr<OperatorSite const> const& operator_site, operator_sites) {
-        physical_dimensions.push_back(operator_site->physicalDimension(as_unsigned_integer));
+        physical_dimensions.push_back(operator_site->physicalDimension());
     }
     return boost::move(physical_dimensions);
 }

@@ -397,9 +397,9 @@ template<typename SequenceType> Operator constructOperatorFrom(
             throw NoSuchOperatorSiteNumber(index);
         shared_ptr<OperatorSite const> operator_site_ptr = unique_operator_sites[index];
         if(operator_sites.empty()) {
-            assert(operator_site_ptr->leftDimension(as_unsigned_integer) == 1);
+            assert(operator_site_ptr->leftDimension() == 1);
         } else {
-            assert(operator_site_ptr->leftDimension(as_unsigned_integer) == operator_sites.back()->rightDimension(as_unsigned_integer));
+            assert(operator_site_ptr->leftDimension() == operator_sites.back()->rightDimension());
         }
         operator_sites.emplace_back(operator_site_ptr);
     }

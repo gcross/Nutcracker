@@ -369,9 +369,9 @@ TEST_CASE(decode) {
         OperatorSite operator_site;
         doc >> operator_site;
 
-        ASSERT_EQ(physical_dimension,operator_site.physicalDimension(as_unsigned_integer));
-        ASSERT_EQ(left_dimension,operator_site.leftDimension(as_unsigned_integer));
-        ASSERT_EQ(right_dimension,operator_site.rightDimension(as_unsigned_integer));
+        ASSERT_EQ(physical_dimension,operator_site.physicalDimension());
+        ASSERT_EQ(left_dimension,operator_site.leftDimension());
+        ASSERT_EQ(right_dimension,operator_site.rightDimension());
         ASSERT_EQ(links.size(),operator_site.numberOfMatrices());
 
         uint32_t const* index_data = operator_site;

@@ -485,9 +485,9 @@ template<
     unsigned int const number_of_projectors = left_boundaries.size();
     if(number_of_projectors == 0u) return ProjectorMatrix();
     unsigned int const
-         state_physical_dimension = overlap_sites.begin()->physicalDimension(as_unsigned_integer)
-        ,state_left_dimension = left_boundaries.begin()->stateDimension(as_unsigned_integer)
-        ,state_right_dimension = right_boundaries.begin()->stateDimension(as_unsigned_integer)
+         state_physical_dimension = overlap_sites.begin()->physicalDimension()
+        ,state_left_dimension = left_boundaries.begin()->stateDimension()
+        ,state_right_dimension = right_boundaries.begin()->stateDimension()
         ,overlap_vector_length = state_physical_dimension*state_left_dimension*state_right_dimension
         ,number_of_reflectors = min(overlap_vector_length,number_of_projectors)
         ;
@@ -517,8 +517,8 @@ template<
         OverlapBoundary<Left> const& left_boundary = overlap_vector_triplet.get<0>();
         OverlapBoundary<Right> const& right_boundary = overlap_vector_triplet.get<1>();
         OverlapSite<Middle> const& overlap_site = overlap_vector_triplet.get<2>();
-        assert(left_boundary.stateDimension(as_unsigned_integer) == state_left_dimension);
-        assert(right_boundary.stateDimension(as_unsigned_integer) == state_right_dimension);
+        assert(left_boundary.stateDimension() == state_left_dimension);
+        assert(right_boundary.stateDimension() == state_right_dimension);
         Core::form_overlap_vector(
              left_boundary | overlap_site
             ,overlap_site  | right_boundary

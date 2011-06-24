@@ -65,9 +65,9 @@ template<typename side>
 static OverlapSite<side> implComputeOverlapSiteFromStateSite(StateSiteAny const& state_site) {
     OverlapSite<side> overlap_site(dimensionsOf(state_site));
     Core::form_overlap_site_tensor(
-         state_site.rightDimension(as_unsigned_integer)
-        ,state_site.leftDimension(as_unsigned_integer)
-        ,state_site.physicalDimension(as_unsigned_integer)
+         state_site.rightDimension()
+        ,state_site.leftDimension()
+        ,state_site.physicalDimension()
         ,state_site
         ,overlap_site
     );
@@ -91,11 +91,11 @@ OverlapSitesFromStateSitesAndNormalizeResult computeOverlapSitesFromStateSitesAn
     StateSite<Middle> middle_state_site_from_right_state_site(dimensionsOf(right_state_site));
     OverlapSite<Right> right_overlap_site_from_right_state_site(dimensionsOf(right_state_site));
     Core::form_norm_overlap_tensors(
-         middle_state_site.leftDimension(as_unsigned_integer)
+         middle_state_site.leftDimension()
         ,middle_state_site | right_state_site
-        ,right_state_site.rightDimension(as_unsigned_integer)
-        ,middle_state_site.physicalDimension(as_unsigned_integer)
-        ,right_state_site.physicalDimension(as_unsigned_integer)
+        ,right_state_site.rightDimension()
+        ,middle_state_site.physicalDimension()
+        ,right_state_site.physicalDimension()
         ,middle_state_site
         ,right_state_site
         ,left_overlap_site_from_middle_state_site

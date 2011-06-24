@@ -289,8 +289,8 @@ Container operator << (Location const& location, Operator const& operator_sites)
 //@+node:gcross.20110511190907.2304: *5* <<
 Group operator<<(Location const& location, OperatorSite const& operator_site_tensor) {
     Group object(createAt(location));
-    object["left dimension"] = operator_site_tensor.leftDimension(as_unsigned_integer);
-    object["right dimension"] = operator_site_tensor.rightDimension(as_unsigned_integer);
+    object["left dimension"] = operator_site_tensor.leftDimension();
+    object["right dimension"] = operator_site_tensor.rightDimension();
     Dataset(
         createAt(location / "matrices"),
         rangeOf(operator_site_tensor.matrixDataDimensions()),

@@ -287,13 +287,13 @@ void operator >> (Node const& node, OperatorSite& output_operator_site) {
 //@+node:gcross.20110430163445.2652: *5* <<
 Emitter& operator << (Emitter& out, OperatorSite const& operator_site) {
     out << BeginMap;
-    out << Key << "physical dimension" << Value << operator_site.physicalDimension(as_unsigned_integer);
-    out << Key << "left dimension" << Value << operator_site.leftDimension(as_unsigned_integer);
-    out << Key << "right dimension" << Value << operator_site.rightDimension(as_unsigned_integer);
+    out << Key << "physical dimension" << Value << operator_site.physicalDimension();
+    out << Key << "left dimension" << Value << operator_site.leftDimension();
+    out << Key << "right dimension" << Value << operator_site.rightDimension();
     out << Key << "matrices" << Value;
     {
         out << BeginSeq;
-        unsigned int n = operator_site.physicalDimension(as_unsigned_integer), nsq = n*n;
+        unsigned int n = operator_site.physicalDimension(), nsq = n*n;
         complex<double> const* matrix_data = operator_site;
         uint32_t const* index_data = operator_site;
         REPEAT(operator_site.numberOfMatrices()) {

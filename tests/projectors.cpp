@@ -88,15 +88,15 @@ TEST_CASE(projection_makes_overlap_vanish) {
 
         ASSERT_EQ(
              physical_dimension
-            ,projected_state_site.physicalDimension(as_unsigned_integer)
+            ,projected_state_site.physicalDimension()
         );
         ASSERT_EQ(
              left_dimension
-            ,projected_state_site.leftDimension(as_unsigned_integer)
+            ,projected_state_site.leftDimension()
         );
         ASSERT_EQ(
              right_dimension
-            ,projected_state_site.rightDimension(as_unsigned_integer)
+            ,projected_state_site.rightDimension()
         );
 
         ASSERT_NEAR_REL(0,overlap,1e-12);
