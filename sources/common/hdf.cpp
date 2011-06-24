@@ -135,7 +135,10 @@ struct Outputter : public Destructable, public trackable {
             location /= *maybe_location;
         }
 
-        Container group(createAt(location),LinkCreationProperties().createMissingIntermediateGroups());
+        Container group =
+            location.exists()
+                ? Container(location)
+                : Container(createAt(location),LinkCreationProperties().createMissingIntermediateGroups());
 
         Location
             configuration_location = location / "configuration",
@@ -167,7 +170,7 @@ struct Outputter : public Destructable, public trackable {
                 datatypeOf<double>::get(),
                 Dataspace(0,H5S_UNLIMITED),
                 none,
-                DatasetCreationProperties().setChunk(16)
+                DatasetCreationProperties().setChunkSize(16)
             );
         }
 
