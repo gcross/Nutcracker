@@ -400,9 +400,9 @@ a = boost::move(b);
 \endcode
 moves the data from \c b to \c a and then invalidates b.  Of course, this "move" only involves moving the data pointer and size fields and not the data itself, so it is a very cheap operation.  The \c boost::move function (part of the Boost.Move library) does some magic that you don't have to know about, so you can just think about it as being required to confirm that you know that you are moving the data out of \c b and so \c b will be invalid after this statement.
 
-In many cases a function will return a value that is an instance of \c BaseTensor.  The Boost.Move library does magic behind the scenes so that if \c f is a function returning an \c OperatorTensor then you can write
+In many cases a function will return a value that is an instance of \c BaseTensor.  The Boost.Move library does magic behind the scenes so that if \c f is a function returning an \c OperatorSite then you can write
 \code
-OperatorTensor a(f(...));
+Nutcracker::OperatorSite a(f(...));
 \endcode
 to indicate that the result of \c f should be \a moved into \c a.
 
