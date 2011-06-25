@@ -219,7 +219,7 @@ void operator >> (Node const& node, OperatorLink& link) {
     node["from"] >> link.from;
     node["to"] >> link.to;
     Node const& data = node["data"];
-    unsigned int nsq = data.size(), n = (unsigned int)sqrt(nsq);
+    unsigned int const nsq = data.size(), n = (unsigned int)sqrt(nsq);
     assert(n*n == nsq);
     link.matrix.resize(n,n);
     Iterator node_iter = data.begin();
