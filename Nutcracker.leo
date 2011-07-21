@@ -73,8 +73,8 @@
 <v t="gcross.20091106154604.1972"><vh>@path tests</vh>
 <v t="gcross.20110125120748.2426"><vh>@file CMakeLists.txt</vh></v>
 <v t="gcross.20110215235924.1881"><vh>@file boundaries.cpp</vh></v>
-<v t="gcross.20110511190907.3785"><vh>@file configuration.cpp</vh></v>
 <v t="gcross.20110130170743.1679"><vh>@file chain.cpp</vh></v>
+<v t="gcross.20110511190907.3785"><vh>@file configuration.cpp</vh></v>
 <v t="gcross.20110213161858.1822"><vh>@file flat.cpp</vh></v>
 <v t="gcross.20110511190907.2319"><vh>@file hdf.cpp</vh></v>
 <v t="gcross.20110525201928.2433"><vh>@file io.cpp</vh></v>
