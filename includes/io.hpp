@@ -190,6 +190,12 @@ struct MismatchedSiteDimensionsError: public Exception {
     {}
     virtual ~MismatchedSiteDimensionsError() throw () {}
 };
+//@+node:gcross.20110726215559.2347: *3* NoSitesError
+struct NoSitesError: public Exception {
+    NoSitesError()
+      : Exception("No operator sites were specified.")
+    {}
+};
 //@+node:gcross.20110511190907.3591: ** Classes
 //@+node:gcross.20110511190907.3607: *3* Format
 template<typename FormatType, char const*& format_type_name> struct Format {
@@ -413,6 +419,7 @@ template<typename SequenceType> Operator constructOperatorFrom(
     vector<shared_ptr<OperatorSite const> > unique_operator_sites
   , SequenceType const& sequence
 ) {
+    if(sequence.size() == 0) throw NoSitesError();
     Operator operator_sites;
     operator_sites.reserve(sequence.size());
 

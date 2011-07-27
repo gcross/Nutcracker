@@ -140,6 +140,16 @@ TEST_CASE(mismatched_site_dimensions_error) {
         EXPECT_EQ_VAL(e.right_dimension,2u)
     }
 }
+//@+node:gcross.20110726215559.2348: *4* no sites
+TEST_CASE(no_sites) {
+    try {
+        constructOperatorFrom(
+            vector<shared_ptr<OperatorSite const> >(0),
+            vector<unsigned int>(0)
+        );
+        FAIL("Exception was not thrown.")
+    } catch(NoSitesError const& e) {}
+}
 //@-others
 
 }
