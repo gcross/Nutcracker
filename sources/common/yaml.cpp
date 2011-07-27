@@ -69,6 +69,40 @@ using YAML::Value;
 namespace Nutcracker {
 
 //@+others
+//@+node:gcross.20110726215559.2301: ** Exceptions
+//@+node:gcross.20110726215559.2303: *3* YAMLInputError
+YAMLInputError::YAMLInputError(YAML::Mark const& mark, string const& message)
+  : Exception((format("Error in input line %1% column %2%:\n%3%") % mark.line % mark.column % message).str())
+  , mark(mark)
+{}
+//@+node:gcross.20110726215559.2305: *3* NonSquareMatrixYAMLInputError
+NonSquareMatrixYAMLInputError::NonSquareMatrixYAMLInputError(YAML::Mark const& mark, unsigned int const length)
+  : YAMLInputError(mark,(format("Matrix data length %1% is not a square.") % length).str())
+  , length(length)
+{}
+//@+node:gcross.20110726215559.2311: *3* IndexTooLowYAMLInputError
+IndexTooLowYAMLInputError::IndexTooLowYAMLInputError(YAML::Mark const& mark, string const& name, int const index)
+  : YAMLInputError(mark,(format("The '%1%' index is too low. (%2% < 1)") % name % index).str())
+  , name(name)
+  , index(index)
+{}
+
+IndexTooLowYAMLInputError::~IndexTooLowYAMLInputError() throw () {}
+//@+node:gcross.20110726215559.2315: *3* IndexTooHighYAMLInputError
+IndexTooHighYAMLInputError::IndexTooHighYAMLInputError(YAML::Mark const& mark, string const& name, unsigned int const index, unsigned int const dimension)
+  : YAMLInputError(mark,(format("The '%1%' index is too high. (%2% > %3%)") % name % index % dimension).str())
+  , name(name)
+  , index(index)
+  , dimension(dimension)
+{}
+
+IndexTooHighYAMLInputError::~IndexTooHighYAMLInputError() throw () {}
+//@+node:gcross.20110726215559.2331: *3* WrongDataLengthYAMLInputError
+WrongDataLengthYAMLInputError::WrongDataLengthYAMLInputError(YAML::Mark const& mark, unsigned int const length, unsigned int const correct_length)
+  : YAMLInputError(mark,(format("The length of the data (%1%) does not match the correct length (%2%).") % length % correct_length).str())
+  , length(length)
+  , correct_length(correct_length)
+{}
 //@+node:gcross.20110511190907.3617: ** Formats
 //@+others
 //@+node:gcross.20110511190907.3637: *3* Input
@@ -220,7 +254,7 @@ void operator >> (Node const& node, OperatorLink& link) {
     node["to"] >> link.to;
     Node const& data = node["data"];
     unsigned int const nsq = data.size(), n = (unsigned int)sqrt(nsq);
-    assert(n*n == nsq);
+    if(n*n != nsq) throw NonSquareMatrixYAMLInputError(data.GetMark(),nsq);
     link.matrix.resize(n,n);
     Iterator node_iter = data.begin();
     Matrix::array_type::iterator matrix_iter = link.matrix.data().begin();
@@ -269,15 +303,15 @@ void operator >> (Node const& node, OperatorSite& output_operator_site) {
         Node const& matrix = *matrix_iterator++;
         unsigned int from, to;
         matrix["from"] >> from;
+        if(from < 1) throw IndexTooLowYAMLInputError(matrix["from"].GetMark(),"from",from);
+        if(from > left_dimension) throw IndexTooHighYAMLInputError(matrix["from"].GetMark(),"from",from,left_dimension);
         matrix["to"] >> to;
-        assert(from >= 1);
-        assert(from <= left_dimension);
-        assert(to >= 1);
-        assert(to <= right_dimension);
+        if(to < 1) throw IndexTooLowYAMLInputError(matrix["to"].GetMark(),"to",to);
+        if(to > right_dimension) throw IndexTooHighYAMLInputError(matrix["to"].GetMark(),"to",to,right_dimension);
         *index_data++ = from;
         *index_data++ = to;
         Node const& data = matrix["data"];
-        assert(data.size() == matrix_length);
+        if(data.size() != matrix_length) throw WrongDataLengthYAMLInputError(data.GetMark(),data.size(),matrix_length);
         Iterator data_iterator = data.begin();
         REPEAT(matrix_length) { *data_iterator++ >> *matrix_data++; }
     }

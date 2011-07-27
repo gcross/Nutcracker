@@ -30,6 +30,7 @@
 
 //@+<< Includes >>
 //@+node:gcross.20110430163445.2598: ** << Includes >>
+#include <boost/format.hpp>
 #include <complex>
 #include <yaml-cpp/yaml.h>
 
@@ -40,9 +41,42 @@ namespace Nutcracker {
 
 //@+<< Usings >>
 //@+node:gcross.20110430163445.2599: ** << Usings >>
+using boost::format;
+
+using std::string;
 //@-<< Usings >>
 
 //@+others
+//@+node:gcross.20110726215559.2294: ** Exceptions
+//@+node:gcross.20110726215559.2295: *3* YAMLInputError
+struct YAMLInputError: public Exception {
+    YAML::Mark mark;
+    YAMLInputError(YAML::Mark const& mark, string const& message);
+};
+//@+node:gcross.20110726215559.2296: *3* NonSquareMatrixYAMLInputError
+struct NonSquareMatrixYAMLInputError: public YAMLInputError {
+    unsigned int length;
+    NonSquareMatrixYAMLInputError(YAML::Mark const& mark, unsigned int const length);
+};
+//@+node:gcross.20110726215559.2307: *3* IndexTooLowYAMLInputError
+struct IndexTooLowYAMLInputError: public YAMLInputError {
+    string name;
+    unsigned int index;
+    IndexTooLowYAMLInputError(YAML::Mark const& mark, string const& name, int const index);
+    virtual ~IndexTooLowYAMLInputError() throw ();
+};
+//@+node:gcross.20110726215559.2313: *3* IndexTooHighYAMLInputError
+struct IndexTooHighYAMLInputError: public YAMLInputError {
+    string name;
+    unsigned int index, dimension;
+    IndexTooHighYAMLInputError(YAML::Mark const& mark, string const& name, unsigned int const index, unsigned int const dimension);
+    virtual ~IndexTooHighYAMLInputError() throw ();
+};
+//@+node:gcross.20110726215559.2329: *3* WrongDataLengthYAMLInputError
+struct WrongDataLengthYAMLInputError: public YAMLInputError {
+    unsigned int length, correct_length;
+    WrongDataLengthYAMLInputError(YAML::Mark const& mark, unsigned int const length, unsigned int const correct_length);
+};
 //@-others
 
 }

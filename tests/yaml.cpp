@@ -30,12 +30,22 @@
 
 using boost::generate;
 
+using std::auto_ptr;
 using std::endl;
 using std::istringstream;
 using std::ostringstream;
 //@-<< Includes >>
 
 //@+others
+//@+node:gcross.20110726215559.2299: ** Functions
+//@+node:gcross.20110726215559.2300: *3* parseYAMLString
+auto_ptr<YAML::Node> parseYAMLString(string const& s) {
+    auto_ptr<YAML::Node> result(new YAML::Node);
+    istringstream in(s);
+    YAML::Parser parser(in);
+    parser.GetNextDocument(*result);
+    return result;
+}
 //@+node:gcross.20110430221653.2176: ** Tests
 TEST_SUITE(YAML) {
 
@@ -322,6 +332,31 @@ TEST_CASE(encode_then_decode) {
     }
 
 }
+//@+node:gcross.20110726215559.2297: *4* error handling
+TEST_SUITE(error_handling) {
+
+//@+others
+//@+node:gcross.20110726215559.2298: *5* non-square matrix
+TEST_CASE(non_square_matrix) {
+    auto_ptr<YAML::Node> result = parseYAMLString(
+        "---\n"
+        "from: 1\n"
+        "to: 1\n"
+        "data: [1,2,3]\n"
+    );
+    OperatorLink link;
+    try {
+        *result >> link;
+        FAIL("No exception was thrown.")
+    } catch(NonSquareMatrixYAMLInputError const& e) {
+        EXPECT_EQ_VAL(e.mark.line,3)
+        EXPECT_EQ_VAL(e.mark.column,6)
+        EXPECT_EQ_VAL(e.length,3u)
+    }
+}
+//@-others
+
+}
 //@-others
 
 }
@@ -413,6 +448,130 @@ TEST_CASE(encode_then_decode) {
 
         checkOperatorSitesEqual(operator_site_1,operator_site_2);
     }
+
+}
+//@+node:gcross.20110726215559.2320: *4* error handling
+TEST_SUITE(error_handling) {
+
+//@+others
+//@+node:gcross.20110726215559.2321: *5* from index too low
+TEST_CASE(from_index_too_low) {
+    auto_ptr<YAML::Node> result = parseYAMLString(
+        "---\n"
+        "physical dimension: 2\n"
+        "left dimension: 2\n"
+        "right dimension: 2\n"
+        "matrices:\n"
+        "  - from: 0\n"
+        "    to: 1\n"
+        "    data: [1,2,3,4]\n"
+    );
+    OperatorSite site;
+    try {
+        *result >> site;
+        FAIL("No exception was thrown.")
+    } catch(IndexTooLowYAMLInputError const& e) {
+        EXPECT_EQ_VAL(e.mark.line,5)
+        EXPECT_EQ_VAL(e.mark.column,10)
+        EXPECT_EQ_VAL(e.name,"from")
+        EXPECT_EQ_VAL(e.index,0u)
+    }
+}
+//@+node:gcross.20110726215559.2323: *5* from index too high
+TEST_CASE(from_index_too_high) {
+    auto_ptr<YAML::Node> result = parseYAMLString(
+        "---\n"
+        "physical dimension: 2\n"
+        "left dimension: 2\n"
+        "right dimension: 2\n"
+        "matrices:\n"
+        "  - from: 3\n"
+        "    to: 1\n"
+        "    data: [1,2,3,4]\n"
+    );
+    OperatorSite site;
+    try {
+        *result >> site;
+        FAIL("No exception was thrown.")
+    } catch(IndexTooHighYAMLInputError const& e) {
+        EXPECT_EQ_VAL(e.mark.line,5)
+        EXPECT_EQ_VAL(e.mark.column,10)
+        EXPECT_EQ_VAL(e.name,"from")
+        EXPECT_EQ_VAL(e.index,3u)
+        EXPECT_EQ_VAL(e.dimension,2u)
+    }
+}
+//@+node:gcross.20110726215559.2325: *5* to index too low
+TEST_CASE(to_index_too_low) {
+    auto_ptr<YAML::Node> result = parseYAMLString(
+        "---\n"
+        "physical dimension: 2\n"
+        "left dimension: 2\n"
+        "right dimension: 2\n"
+        "matrices:\n"
+        "  - from: 1\n"
+        "    to: 0\n"
+        "    data: [1,2,3,4]\n"
+    );
+    OperatorSite site;
+    try {
+        *result >> site;
+        FAIL("No exception was thrown.")
+    } catch(IndexTooLowYAMLInputError const& e) {
+        EXPECT_EQ_VAL(e.mark.line,6)
+        EXPECT_EQ_VAL(e.mark.column,8)
+        EXPECT_EQ_VAL(e.name,"to")
+        EXPECT_EQ_VAL(e.index,0u)
+    }
+}
+//@+node:gcross.20110726215559.2327: *5* to index too high
+TEST_CASE(to_index_too_high) {
+    auto_ptr<YAML::Node> result = parseYAMLString(
+        "---\n"
+        "physical dimension: 2\n"
+        "left dimension: 2\n"
+        "right dimension: 2\n"
+        "matrices:\n"
+        "  - from: 1\n"
+        "    to: 3\n"
+        "    data: [1,2,3,4]\n"
+    );
+    OperatorSite site;
+    try {
+        *result >> site;
+        FAIL("No exception was thrown.")
+    } catch(IndexTooHighYAMLInputError const& e) {
+        EXPECT_EQ_VAL(e.mark.line,6)
+        EXPECT_EQ_VAL(e.mark.column,8)
+        EXPECT_EQ_VAL(e.name,"to")
+        EXPECT_EQ_VAL(e.index,3u)
+        EXPECT_EQ_VAL(e.dimension,2u)
+    }
+}
+//@+node:gcross.20110726215559.2333: *5* wrong data length
+TEST_CASE(wrong_data_length) {
+    auto_ptr<YAML::Node> result = parseYAMLString(
+        "---\n"
+        "physical dimension: 2\n"
+        "left dimension: 2\n"
+        "right dimension: 2\n"
+        "matrices:\n"
+        "  - from: 1\n"
+        "    to: 1\n"
+        "    data: [1,2,3]\n"
+    );
+    OperatorSite site;
+    try {
+        *result >> site;
+        FAIL("No exception was thrown.")
+    } catch(WrongDataLengthYAMLInputError const& e) {
+        EXPECT_EQ_VAL(e.mark.line,7)
+        EXPECT_EQ_VAL(e.mark.column,10)
+        EXPECT_EQ_VAL(e.length,3u)
+        EXPECT_EQ_VAL(e.correct_length,4u)
+    }
+}
+//@-others
 
 }
 //@-others
