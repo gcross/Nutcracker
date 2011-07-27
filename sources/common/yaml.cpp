@@ -222,7 +222,12 @@ void operator >> (Node const& node, Operator& operator_sites) {
         sequence.push_back(index-1);
     }
 
-    operator_sites = constructOperatorFrom(unique_operator_sites,sequence);
+    try {
+        operator_sites = constructOperatorFrom(unique_operator_sites,sequence);
+    } catch(NoSuchOperatorSiteNumberError& e) {
+        ++e.index;
+        throw e;
+    }
 }
 //@+node:gcross.20110430163445.2649: *5* <<
 Emitter& operator << (Emitter& out, Operator const& operator_sites) {

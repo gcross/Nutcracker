@@ -24,6 +24,7 @@
 #include <illuminate.hpp>
 #include <iostream>
 
+#include "io.hpp"
 #include "yaml.hpp"
 
 #include "test_utils.hpp"
@@ -258,6 +259,28 @@ TEST_CASE(external_field) {
         checkOperatorsEqual(operator_1,operator_2);
     }
 
+}
+//@-others
+
+}
+//@+node:gcross.20110726215559.2345: *4* error handling
+TEST_SUITE(error_handling) {
+
+//@+others
+//@+node:gcross.20110726215559.2346: *5* no such operator site number
+TEST_CASE(no_such_operator_site_number) {
+    auto_ptr<YAML::Node> result = parseYAMLString(
+        "---\n"
+        "sites:\n"
+        "sequence: [1]\n"
+    );
+    Operator o;
+    try {
+        *result >> o;
+        FAIL("No exception was thrown.")
+    } catch(NoSuchOperatorSiteNumberError const& e) {
+        EXPECT_EQ_VAL(e.index,1u)
+    }
 }
 //@-others
 
