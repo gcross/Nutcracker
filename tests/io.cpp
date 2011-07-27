@@ -26,11 +26,11 @@
 
 #include "io.hpp"
 
-using Nutcracker::InputFormat;
-using Nutcracker::OutputFormat;
+using namespace Nutcracker;
 
 using boost::assign::list_of;
 using boost::equal;
+using boost::shared_ptr;
 //@-<< Includes >>
 
 //@+others
@@ -76,6 +76,69 @@ TEST_CASE(hdf5) { ASSERT_EQ(OutputFormat::lookupExtension("hdf5"),&OutputFormat:
 
 TEST_CASE(yaml) { ASSERT_EQ(OutputFormat::lookupExtension("yaml"),&OutputFormat::lookupName("yaml")); }
 
+}
+//@-others
+
+}
+//@+node:gcross.20110726215559.2337: *3* error handling
+TEST_SUITE(error_handling) {
+
+//@+others
+//@+node:gcross.20110726215559.2342: *4* no such operator site number
+TEST_CASE(no_such_operator_site_number) {
+    try {
+        constructOperatorFrom(
+            list_of(shared_ptr<OperatorSite const>(new OperatorSite(0,PhysicalDimension(1),LeftDimension(1),RightDimension(1)))),
+            vector<unsigned int>(1,1)
+        );
+        FAIL("Exception was not thrown.")
+    } catch(NoSuchOperatorSiteNumberError const& e) {
+        EXPECT_EQ_VAL(e.index,1u)
+    }
+}
+//@+node:gcross.20110726215559.2338: *4* left dimension must be one
+TEST_CASE(left_dimension_must_be_one) {
+    try {
+        constructOperatorFrom(
+            list_of(shared_ptr<OperatorSite const>(new OperatorSite(0,PhysicalDimension(1),LeftDimension(2),RightDimension(1)))),
+            vector<unsigned int>(1,0)
+        );
+        FAIL("Exception was not thrown.")
+    } catch(BoundaryDimensionNotOneError const& e) {
+        EXPECT_EQ_VAL(e.boundary_name,"left")
+        EXPECT_EQ_VAL(e.boundary_dimension,2u)
+    }
+}
+//@+node:gcross.20110726215559.2340: *4* right dimension must be one
+TEST_CASE(right_dimension_must_be_one) {
+    try {
+        constructOperatorFrom(
+            list_of(shared_ptr<OperatorSite const>(new OperatorSite(0,PhysicalDimension(1),LeftDimension(1),RightDimension(2)))),
+            vector<unsigned int>(1,0)
+        );
+        FAIL("Exception was not thrown.")
+    } catch(BoundaryDimensionNotOneError const& e) {
+        EXPECT_EQ_VAL(e.boundary_name,"right")
+        EXPECT_EQ_VAL(e.boundary_dimension,2u)
+    }
+}
+//@+node:gcross.20110726215559.2344: *4* mismatched site dimensions
+TEST_CASE(mismatched_site_dimensions_error) {
+    try {
+        vector<unsigned int> sequence = list_of(0)(1);
+        constructOperatorFrom(
+            list_of
+                (shared_ptr<OperatorSite const>(new OperatorSite(0,PhysicalDimension(1),LeftDimension(1),RightDimension(2))))
+                (shared_ptr<OperatorSite const>(new OperatorSite(0,PhysicalDimension(1),LeftDimension(3),RightDimension(1))))
+            ,
+            sequence
+        );
+        FAIL("Exception was not thrown.")
+    } catch(MismatchedSiteDimensionsError const& e) {
+        EXPECT_EQ_VAL(e.site_number,1u)
+        EXPECT_EQ_VAL(e.left_dimension,3u)
+        EXPECT_EQ_VAL(e.right_dimension,2u)
+    }
 }
 //@-others
 

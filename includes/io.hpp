@@ -140,10 +140,12 @@ struct NoSuchLocationError : public Exception {
     {}
     virtual ~NoSuchLocationError() throw() {}
 };
-//@+node:gcross.20110511190907.3566: *3* NoSuchOperatorSiteNumber
-struct NoSuchOperatorSiteNumber : public Exception {
-    NoSuchOperatorSiteNumber(unsigned int index)
-      : Exception((format("When reading in an operator, a reference to non-existent operator site number %1% appeared in the sequence.") % index).str())
+//@+node:gcross.20110511190907.3566: *3* NoSuchOperatorSiteNumberError
+struct NoSuchOperatorSiteNumberError : public Exception {
+    unsigned int index;
+    NoSuchOperatorSiteNumberError(unsigned int index)
+      : Exception((format("When reading in an operator, a reference to the non-existent operator site number %1% appeared in the sequence.") % index).str())
+      , index(index)
     {}
 };
 //@+node:gcross.20110511190907.3676: *3* OutputFileAlreadyExistsError
@@ -165,6 +167,28 @@ struct OutputLocationAlreadyExists : public Exception {
       , location(location)
     {}
     virtual ~OutputLocationAlreadyExists() throw() {}
+};
+//@+node:gcross.20110726215559.2334: *3* BoundaryDimensionNotOneError
+struct BoundaryDimensionNotOneError: public Exception {
+    string boundary_name;
+    unsigned int boundary_dimension;
+    BoundaryDimensionNotOneError(string const& boundary_name, unsigned int boundary_dimension)
+      : Exception((format("The %1% dimension of the %1%-most site must be one but instead is %2%.") % boundary_name % boundary_dimension).str())
+      , boundary_name(boundary_name)
+      , boundary_dimension(boundary_dimension)
+    {}
+    virtual ~BoundaryDimensionNotOneError() throw () {}
+};
+//@+node:gcross.20110726215559.2336: *3* MismatchedSiteDimensionsError
+struct MismatchedSiteDimensionsError: public Exception {
+    unsigned int site_number, left_dimension, right_dimension;
+    MismatchedSiteDimensionsError(unsigned int const site_number, unsigned int const left_dimension, unsigned int const right_dimension)
+      : Exception((format("The left dimension (%2%) of site %1% does not match the right dimension (%4%) of site %3%.  (%2% != %4%)") % (site_number-1) % left_dimension % site_number % right_dimension).str())
+      , site_number(site_number)
+      , left_dimension(left_dimension)
+      , right_dimension(right_dimension)
+    {}
+    virtual ~MismatchedSiteDimensionsError() throw () {}
 };
 //@+node:gcross.20110511190907.3591: ** Classes
 //@+node:gcross.20110511190907.3607: *3* Format
@@ -387,22 +411,23 @@ struct LocationSlashTokenizer : public boost::tokenizer<boost::char_separator<ch
 //@+node:gcross.20110511190907.3558: *3* constructOperatorFrom
 template<typename SequenceType> Operator constructOperatorFrom(
     vector<shared_ptr<OperatorSite const> > unique_operator_sites
-  , SequenceType sequence
+  , SequenceType const& sequence
 ) {
     Operator operator_sites;
     operator_sites.reserve(sequence.size());
 
-    BOOST_FOREACH(unsigned int index, sequence) {
+    BOOST_FOREACH(unsigned int const index, sequence) {
         if(index >= unique_operator_sites.size())
-            throw NoSuchOperatorSiteNumber(index);
+            throw NoSuchOperatorSiteNumberError(index);
         shared_ptr<OperatorSite const> operator_site_ptr = unique_operator_sites[index];
         if(operator_sites.empty()) {
-            assert(operator_site_ptr->leftDimension() == 1);
+            if(operator_site_ptr->leftDimension() != 1) throw BoundaryDimensionNotOneError("left",operator_site_ptr->leftDimension());
         } else {
-            assert(operator_site_ptr->leftDimension() == operator_sites.back()->rightDimension());
+            if(operator_site_ptr->leftDimension() != operator_sites.back()->rightDimension()) throw MismatchedSiteDimensionsError(operator_sites.size(),operator_site_ptr->leftDimension(),operator_sites.back()->rightDimension());
         }
         operator_sites.emplace_back(operator_site_ptr);
     }
+    if(operator_sites.back()->rightDimension() != 1) throw BoundaryDimensionNotOneError("right",operator_sites.back()->rightDimension());
 
     return boost::move(operator_sites);
 }
