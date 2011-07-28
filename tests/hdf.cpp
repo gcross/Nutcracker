@@ -179,10 +179,18 @@ TEST_CASE(encode) {
 
         LocationIterator iter = GroupArray(location);
 
+        bool first = true;
         BOOST_FOREACH(StateSiteAny const& state_site_tensor_1, state) {
-            StateSite<Middle> state_site_tensor_2;
-            iter >> state_site_tensor_2;
-            checkSiteTensorsEqual(state_site_tensor_1,state_site_tensor_2);
+            if(first) {
+                StateSite<Middle> state_site_tensor_2;
+                iter >> state_site_tensor_2;
+                checkSiteTensorsEqual(state_site_tensor_1,state_site_tensor_2);
+                first = false;
+            } else {
+                StateSite<Right> state_site_tensor_2;
+                iter >> state_site_tensor_2;
+                checkSiteTensorsEqual(state_site_tensor_1,state_site_tensor_2);
+            }
         }
     }
 }
