@@ -44,6 +44,7 @@ using boost::uniform_smallint;
 using boost::variate_generator;
 
 using std::equal;
+using std::max;
 //@-<< Includes >>
 
 //@+others
@@ -226,14 +227,18 @@ State RNG::randomState(vector<unsigned int> const& physical_dimensions) {
     );
     vector<StateSite<Right> > rest_state_sites;
     BOOST_FOREACH(unsigned int const site_number, irange(1u,number_of_sites)) {
+        unsigned int const physical_dimension = physical_dimensions[site_number];
         unsigned int const right_dimension
             = site_number == number_of_sites-1
                 ? 1
-                : randomInteger()
+                : (*this)(
+                    left_dimension/physical_dimension+(left_dimension%physical_dimension==0 ? 0 : 1),
+                    min(10u,left_dimension*physical_dimension)
+                  )
                 ;
         rest_state_sites.push_back(
             randomStateSiteRight(
-                 PhysicalDimension(physical_dimensions[site_number])
+                 PhysicalDimension(physical_dimension)
                 ,LeftDimension(left_dimension)
                 ,RightDimension(right_dimension)
             )
