@@ -119,7 +119,7 @@ TEST_CASE(two_trivial_sites) {
             ;
         StateVector state_vector = computeStateVector(list_of(&state_site_1)(&state_site_2) | indirected);
         ASSERT_EQ(1u,state_vector.size());
-        ASSERT_NEAR_ABS(inner_product(state_site_1,state_site_2,c(0,0)),state_vector[0],1e-15);
+        ASSERT_NEAR_REL(inner_product(state_site_1,state_site_2,c(0,0)),state_vector[0],1e-15);
     }
 }
 //@+node:gcross.20110213161858.1835: *4* W state

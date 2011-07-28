@@ -217,7 +217,7 @@ TEST_CASE(function_is_hermitian) {
         ASSERT_NEAR_REL(
              conj(computeStateOverlap(state_1,state_2))
             ,computeStateOverlap(state_2,state_1)
-            ,1e-15
+            ,1e-14
         )
     }
 
@@ -274,7 +274,7 @@ TEST_CASE(self_overlap_is_1) {
         ASSERT_NEAR_REL(
              c(1,0)
             ,computeProjectorOverlap(computeProjectorFromState(state),state)
-            ,1e-15
+            ,1e-14
         )
     }
 
@@ -302,7 +302,7 @@ TEST_CASE(overlaps) {
             ASSERT_NEAR_REL(
                  state_overlap
                 ,computeProjectorOverlap(projector,state_2,active_site_number)
-                ,1e-15
+                ,1e-14
             )
         }
     }
@@ -344,7 +344,7 @@ TEST_CASE(projector_matrix) {
             ASSERT_NEAR_REL(
                  abs(overlap)
                 ,computeOverlapWithProjectors(projector_matrix,state[i])
-                ,1e-15
+                ,1e-14
             );
             if(i > 0) {
                 left_boundary =
