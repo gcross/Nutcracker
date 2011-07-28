@@ -86,6 +86,7 @@ OverlapSitesFromStateSitesAndNormalizeResult computeOverlapSitesFromStateSitesAn
       StateSite<Middle> const& middle_state_site
      ,StateSite<Right> const& right_state_site
 ) {
+    middle_state_site.assertCanBeRightNormalized();
     OverlapSite<Left> left_overlap_site_from_middle_state_site(dimensionsOf(middle_state_site));
     OverlapSite<Middle> middle_overlap_site_from_middle_state_site(dimensionsOf(middle_state_site));
     StateSite<Middle> middle_state_site_from_right_state_site(dimensionsOf(right_state_site));

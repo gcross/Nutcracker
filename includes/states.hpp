@@ -52,35 +52,6 @@ struct NormalizationError : public Exception {
     int const info;
     NormalizationError(int info);
 };
-//@+node:gcross.20110214155808.1968: *3* NotEnoughDegreesOfFreedomToNormalizeError
-struct NotEnoughDegreesOfFreedomToNormalizeError : public Exception {
-    string n1, n2, n3;
-    unsigned int d1, d2, d3;
-    NotEnoughDegreesOfFreedomToNormalizeError(
-         string const& n1
-        ,unsigned int const d1
-        ,string const& n2
-        ,unsigned int const d2
-        ,string const& n3
-        ,unsigned int const d3
-    ) : Exception((
-            format("Not enough degrees of freedom to normalize (%1% (%2%) > %3% (%4%) * %5% (%6%))")
-                % n1
-                % d1
-                % n2
-                % d2
-                % n3
-                % d3
-        ).str())
-      , n1(n1)
-      , n2(n2)
-      , n3(n3)
-      , d1(d1)
-      , d2(d2)
-      , d3(d3)
-    { }
-    virtual ~NotEnoughDegreesOfFreedomToNormalizeError() throw() {}
-};
 //@+node:gcross.20110213233103.2762: ** Classes
 //@+node:gcross.20110213233103.2763: *3* IncreaseDimensionBetweenResult
 template<typename side1,typename side2> class IncreaseDimensionBetweenResult {

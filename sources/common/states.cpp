@@ -58,6 +58,7 @@ MoveSiteCursorResult<Left> moveSiteCursorLeft(
       StateSite<Middle> const& old_state_site_2
     , StateSite<Left> const& old_state_site_1
 ) {
+    old_state_site_2.assertCanBeLeftNormalized();
     StateSite<Middle> new_state_site_1(dimensionsOf(old_state_site_1));
     StateSite<Right> new_state_site_2(dimensionsOf(old_state_site_2));
     unsigned int const info =
@@ -83,6 +84,7 @@ MoveSiteCursorResult<Right> moveSiteCursorRight(
       StateSite<Middle> const& old_state_site_1
     , StateSite<Right> const& old_state_site_2
 ) {
+    old_state_site_1.assertCanBeRightNormalized();
     StateSite<Left> new_state_site_1(dimensionsOf(old_state_site_1));
     StateSite<Middle> new_state_site_2(dimensionsOf(old_state_site_2));
     unsigned int const info =
@@ -114,6 +116,7 @@ StateSite<Middle> randomStateSiteMiddle(
         ,left_dimension
         ,right_dimension
         );
+    state_site.assertCanBeNormalized();
     Core::rand_unnorm_state_site_tensor(
          *right_dimension
         ,*left_dimension
@@ -128,31 +131,12 @@ StateSite<Right> randomStateSiteRight(
     , const LeftDimension left_dimension
     , const RightDimension right_dimension
 ) {
-    if((*right_dimension) > (*physical_dimension)*(*left_dimension)) {
-        throw NotEnoughDegreesOfFreedomToNormalizeError(
-                 "right"
-                ,*right_dimension
-                ,"physical"
-                ,*physical_dimension
-                ,"left"
-                ,*left_dimension
-        );
-    }
-    if((*left_dimension) > (*physical_dimension)*(*right_dimension)) {
-        throw NotEnoughDegreesOfFreedomToNormalizeError(
-                 "left"
-                ,*left_dimension
-                ,"physical"
-                ,*physical_dimension
-                ,"right"
-                ,*right_dimension
-        );
-    }
     StateSite<Right> state_site
         (physical_dimension
         ,left_dimension
         ,right_dimension
         );
+    state_site.assertCanBeNormalized();
     Core::rand_norm_state_site_tensor(
          *right_dimension
         ,*left_dimension

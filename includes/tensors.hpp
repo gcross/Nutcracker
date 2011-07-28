@@ -78,6 +78,35 @@ struct DimensionMismatch : public Exception {
 struct InvalidTensorException : public Exception {
     InvalidTensorException() : Exception("Attempt to dereference an invalid tensor") {}
 };
+//@+node:gcross.20110726215559.2351: *3* NotEnoughDegreesOfFreedomToNormalizeError
+struct NotEnoughDegreesOfFreedomToNormalizeError : public Exception {
+    string n1, n2, n3;
+    unsigned int d1, d2, d3;
+    NotEnoughDegreesOfFreedomToNormalizeError(
+         string const& n1
+        ,unsigned int const d1
+        ,string const& n2
+        ,unsigned int const d2
+        ,string const& n3
+        ,unsigned int const d3
+    ) : Exception((
+            format("Not enough degrees of freedom to normalize (%1% (%2%) > %3% (%4%) * %5% (%6%))")
+                % n1
+                % d1
+                % n2
+                % d2
+                % n3
+                % d3
+        ).str())
+      , n1(n1)
+      , n2(n2)
+      , n3(n3)
+      , d1(d1)
+      , d2(d2)
+      , d3(d3)
+    { }
+    virtual ~NotEnoughDegreesOfFreedomToNormalizeError() throw() {}
+};
 //@+node:gcross.20110215235924.1980: ** Functions
 //@+node:gcross.20110215235924.1982: *3* function connectDimensions
 inline unsigned int connectDimensions(
@@ -1175,6 +1204,33 @@ class StateSiteAny : public SiteBaseTensor {
     StateSiteAny(MakeTrivial const make_trivial) : SiteBaseTensor(make_trivial) {}
 
     //! @}
+    //@+node:gcross.20110726215559.2349: *5* Dimension assertions
+    public:
+
+    void assertCanBeRightNormalized() const {
+        if(rightDimension() > physicalDimension() * leftDimension())
+            throw
+                NotEnoughDegreesOfFreedomToNormalizeError(
+                    "right", rightDimension(),
+                    "physical", physicalDimension(),
+                    "left", leftDimension()
+                );
+    }
+
+    void assertCanBeLeftNormalized() const {
+        if(leftDimension() > physicalDimension() * rightDimension())
+            throw
+                NotEnoughDegreesOfFreedomToNormalizeError(
+                    "left", leftDimension(),
+                    "physical", physicalDimension(),
+                    "right", rightDimension()
+                );
+    }
+
+    void assertCanBeNormalized() const {
+        assertCanBeLeftNormalized();
+        assertCanBeRightNormalized();
+    }
     //@+node:gcross.20110510004855.3255: *5* Dimension information
     //! \name Dimension information
     //! @{
