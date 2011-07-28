@@ -217,7 +217,7 @@ State RNG::randomState(unsigned int const number_of_sites) {
 
 State RNG::randomState(vector<unsigned int> const& physical_dimensions) {
     unsigned int const number_of_sites = physical_dimensions.size();
-    unsigned int left_dimension = number_of_sites == 1 ? 1 : (*this);
+    unsigned int left_dimension = number_of_sites == 1 ? 1 : (*this)(1,physical_dimensions[0]);
     StateSite<Middle> first_state_site(
         randomStateSiteMiddle(
              PhysicalDimension(physical_dimensions[0])
