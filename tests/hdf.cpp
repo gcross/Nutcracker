@@ -533,9 +533,9 @@ TEST_CASE(encode) {
 
             EXPECT_TRUE(
                 equal(
-                    static_cast<uint32_t*>(operator_site_tensor),
-                    static_cast<uint32_t*>(operator_site_tensor)+operator_site_tensor.size(),
-                    data.begin()
+                    data.begin(),
+                    data.end(),
+                    static_cast<uint32_t*>(operator_site_tensor)
                 )
             );
         }
