@@ -346,7 +346,7 @@ TEST_CASE(projector_matrix) {
                 ,computeOverlapWithProjectors(projector_matrix,state[i])
                 ,1e-14
             );
-            if(i > 0) {
+            if(i < number_of_sites-1) {
                 left_boundary =
                     Unsafe::contractSSLeft(
                          left_boundary
