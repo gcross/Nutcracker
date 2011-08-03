@@ -66,6 +66,8 @@
 </v>
 <v t="gcross.20110220141808.2711"><vh>@path programs</vh>
 <v t="gcross.20110220141808.2949"><vh>@file CMakeLists.txt</vh></v>
+<v t="gcross.20110521115623.3151"><vh>@file FixBundle.cmake.in</vh></v>
+<v t="gcross.20110802140615.2338"><vh>@file GetPrerequisitesOverrides.cmake.in</vh></v>
 <v t="gcross.20110220141808.2717"><vh>@file nutcracker.cpp</vh></v>
 <v t="gcross.20110511141322.2238"><vh>@file print-object-sizes.cpp</vh></v>
 </v>

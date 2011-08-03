@@ -3,9 +3,17 @@
 cmake_minimum_required (VERSION 2.8)
 project (Nutcracker C CXX Fortran)
 
+set(VERSION 1.0)
+
 #@+<< Settings >>
 #@+node:gcross.20110426132142.2444: ** << Settings >>
 #@+others
+#@+node:gcross.20110802111539.2331: *3* Bundle required shared libraries
+set (BUNDLE_REQUIRED_SHARED_LIBRARIES
+    NO
+    CACHE BOOL
+    "If true, then required shared libraries are bundled with the package."
+    )
 #@+node:gcross.20110531152523.3452: *3* Output paths
 set (LIBRARY_OUTPUT_PATH
     ${PROJECT_BINARY_DIR}/lib

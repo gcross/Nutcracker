@@ -1,0 +1,22 @@
+#@+leo-ver=5-thin
+#@+node:gcross.20110802140615.2338: * @file GetPrerequisitesOverrides.cmake.in
+#@@tabwidth -2
+
+#@+others
+#@+node:gcross.20110802140615.2339: ** gp_resolved_file_type_override
+function(gp_resolved_file_type_override resolved_file type_var)
+  if(UNIX AND NOT APPLE AND (${type_var} EQUAL "system"))
+    if(NOT (resolved_file MATCHES "^(/lib/|/lib32/|/lib64/)"))
+      set(${type_var} "local" PARENT_SCOPE)
+    endif()
+  endif()
+endfunction()
+#@+node:gcross.20110802140615.2340: ** gp_item_default_embedded_path_override
+# This needs to be on a separate line so that the @ substition isn't confused by @executable_path
+set(library_destination "../share/nutcracker-@VERSION@/lib")
+
+function(gp_item_default_embedded_path item default_embedded_path_var)
+  set(${default_embedded_path_var} "@executable_path/${library_destination}" PARENT_SCOPE)
+endfunction(gp_item_default_embedded_path)
+#@-others
+#@-leo
