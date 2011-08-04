@@ -665,8 +665,10 @@ function(fixup_bundle app libs dirs)
     message(STATUS "fixup_bundle: cleaning up...")
     clear_bundle_keys(keys)
 
-    message(STATUS "fixup_bundle: verifying...")
-    verify_app("${app}")
+#    WORKAROUND TO MAKE WORK ON LINUX
+#
+#    message(STATUS "fixup_bundle: verifying...")
+#    verify_app("${app}")
   else(valid)
     message(SEND_ERROR "error: fixup_bundle: not a valid bundle")
   endif(valid)

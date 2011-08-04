@@ -5,7 +5,7 @@
 #@+others
 #@+node:gcross.20110802140615.2339: ** gp_resolved_file_type_override
 function(gp_resolved_file_type_override resolved_file type_var)
-  if(UNIX AND NOT APPLE AND (${type_var} EQUAL "system"))
+  if(UNIX AND NOT APPLE AND (${${type_var}} STREQUAL "system"))
     if(NOT (resolved_file MATCHES "^(/lib/|/lib32/|/lib64/)"))
       set(${type_var} "local" PARENT_SCOPE)
     endif()
