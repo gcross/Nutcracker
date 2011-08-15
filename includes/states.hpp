@@ -48,7 +48,7 @@ using boost::tuple;
 //@+others
 //@+node:gcross.20110214155808.1966: ** Exceptions
 //@+node:gcross.20110214155808.1967: *3* NormalizationError
-struct NormalizationError : public Exception {
+struct NormalizationError : public std::runtime_error {
     int const info;
     NormalizationError(int info);
 };

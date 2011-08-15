@@ -49,7 +49,7 @@ using std::string;
 //@+others
 //@+node:gcross.20110726215559.2294: ** Exceptions
 //@+node:gcross.20110726215559.2295: *3* YAMLInputError
-struct YAMLInputError: public Exception {
+struct YAMLInputError: public std::runtime_error {
     YAML::Mark mark;
     YAMLInputError(YAML::Mark const& mark, string const& message);
 };

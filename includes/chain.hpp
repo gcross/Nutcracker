@@ -54,10 +54,10 @@ namespace lambda = boost::lambda;
 //@+others
 //@+node:gcross.20110130193548.1684: ** Exceptions
 //@+node:gcross.20110202200838.1712: *3* InitialChainEnergyNotRealError
-struct InitialChainEnergyNotRealError : public Exception {
+struct InitialChainEnergyNotRealError : public std::runtime_error {
     complex<double> const energy;
     InitialChainEnergyNotRealError(complex<double> const energy)
-      : Exception((
+      : std::runtime_error((
             format("The initial chain energy is not real (energy = %|.15|).")
                 % energy
         ).str())

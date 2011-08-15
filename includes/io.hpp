@@ -64,10 +64,10 @@ using std::set;
 //@+others
 //@+node:gcross.20110511190907.3565: ** Exceptions
 //@+node:gcross.20110511190907.3803: *3* FormatTypeException
-struct FormatTypeException : public Exception {
+struct FormatTypeException : public std::runtime_error {
     string const format_type_name;
     FormatTypeException(string const& message, string const& format_type_name)
-      : Exception(message)
+      : std::runtime_error(message)
       , format_type_name(format_type_name)
     {}
     virtual ~FormatTypeException() throw() {}
@@ -132,58 +132,58 @@ struct NoSuchFormatError : public FormatException {
     {}
 };
 //@+node:gcross.20110511190907.3619: *3* NoSuchLocationError
-struct NoSuchLocationError : public Exception {
+struct NoSuchLocationError : public std::runtime_error {
     string const location;
     NoSuchLocationError(string const& location)
-      : Exception((format("No such location %1%.") % location).str())
+      : std::runtime_error((format("No such location %1%.") % location).str())
       , location(location)
     {}
     virtual ~NoSuchLocationError() throw() {}
 };
 //@+node:gcross.20110511190907.3566: *3* NoSuchOperatorSiteNumberError
-struct NoSuchOperatorSiteNumberError : public Exception {
+struct NoSuchOperatorSiteNumberError : public std::runtime_error {
     unsigned int index;
     NoSuchOperatorSiteNumberError(unsigned int index)
-      : Exception((format("When reading in an operator, a reference to the non-existent operator site number %1% appeared in the sequence.") % index).str())
+      : std::runtime_error((format("When reading in an operator, a reference to the non-existent operator site number %1% appeared in the sequence.") % index).str())
       , index(index)
     {}
 };
 //@+node:gcross.20110511190907.3676: *3* OutputFileAlreadyExistsError
-struct OutputFileAlreadyExists : public Exception {
+struct OutputFileAlreadyExists : public std::runtime_error {
     string const filename;
     OutputFileAlreadyExists(string const& filename)
-      : Exception((format("The output filename %1% already exists.") % filename).str())
+      : std::runtime_error((format("The output filename %1% already exists.") % filename).str())
       , filename(filename)
     {}
     virtual ~OutputFileAlreadyExists() throw() {}
 };
 //@+node:gcross.20110511190907.3678: *3* OutputLocationAlreadyExistsError
-struct OutputLocationAlreadyExists : public Exception {
+struct OutputLocationAlreadyExists : public std::runtime_error {
     string const filename;
     string const location;
     OutputLocationAlreadyExists(string const& filename, string const& location)
-      : Exception((format("The output location %1% in file %2% already exists.") % location % filename).str())
+      : std::runtime_error((format("The output location %1% in file %2% already exists.") % location % filename).str())
       , filename(filename)
       , location(location)
     {}
     virtual ~OutputLocationAlreadyExists() throw() {}
 };
 //@+node:gcross.20110726215559.2334: *3* BoundaryDimensionNotOneError
-struct BoundaryDimensionNotOneError: public Exception {
+struct BoundaryDimensionNotOneError: public std::runtime_error {
     string boundary_name;
     unsigned int boundary_dimension;
     BoundaryDimensionNotOneError(string const& boundary_name, unsigned int boundary_dimension)
-      : Exception((format("The %1% dimension of the %1%-most site must be one but instead is %2%.") % boundary_name % boundary_dimension).str())
+      : std::runtime_error((format("The %1% dimension of the %1%-most site must be one but instead is %2%.") % boundary_name % boundary_dimension).str())
       , boundary_name(boundary_name)
       , boundary_dimension(boundary_dimension)
     {}
     virtual ~BoundaryDimensionNotOneError() throw () {}
 };
 //@+node:gcross.20110726215559.2336: *3* MismatchedSiteDimensionsError
-struct MismatchedSiteDimensionsError: public Exception {
+struct MismatchedSiteDimensionsError: public std::runtime_error {
     unsigned int site_number, left_dimension, right_dimension;
     MismatchedSiteDimensionsError(unsigned int const site_number, unsigned int const left_dimension, unsigned int const right_dimension)
-      : Exception((format("The left dimension (%2%) of site %1% does not match the right dimension (%4%) of site %3%.  (%2% != %4%)") % (site_number-1) % left_dimension % site_number % right_dimension).str())
+      : std::runtime_error((format("The left dimension (%2%) of site %1% does not match the right dimension (%4%) of site %3%.  (%2% != %4%)") % (site_number-1) % left_dimension % site_number % right_dimension).str())
       , site_number(site_number)
       , left_dimension(left_dimension)
       , right_dimension(right_dimension)
@@ -191,9 +191,9 @@ struct MismatchedSiteDimensionsError: public Exception {
     virtual ~MismatchedSiteDimensionsError() throw () {}
 };
 //@+node:gcross.20110726215559.2347: *3* NoSitesError
-struct NoSitesError: public Exception {
+struct NoSitesError: public std::runtime_error {
     NoSitesError()
-      : Exception("No operator sites were specified.")
+      : std::runtime_error("No operator sites were specified.")
     {}
 };
 //@+node:gcross.20110511190907.3591: ** Classes
@@ -228,10 +228,10 @@ template<typename FormatType, char const*& format_type_name> struct Format {
         unregisterFormat(name);
     }
     //@+node:gcross.20110511190907.3613: *4* Exceptions
-    struct FormatAlreadyRegisteredException : public Exception {
+    struct FormatAlreadyRegisteredException : public std::logic_error {
         FormatType const& format;
         FormatAlreadyRegisteredException(FormatType const& format)
-          : Exception((boost::format("An %1% format named %2% has already been registered.") % format_type_name % format.name).str())
+          : std::logic_error((boost::format("An %1% format named %2% has already been registered.") % format_type_name % format.name).str())
           , format(format)
         {}
     };

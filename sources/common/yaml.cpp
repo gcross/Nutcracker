@@ -72,7 +72,7 @@ namespace Nutcracker {
 //@+node:gcross.20110726215559.2301: ** Exceptions
 //@+node:gcross.20110726215559.2303: *3* YAMLInputError
 YAMLInputError::YAMLInputError(YAML::Mark const& mark, string const& message)
-  : Exception((format("Error in input line %1% column %2%:\n%3%") % mark.line % mark.column % message).str())
+  : std::runtime_error((format("Error in input line %1% column %2%:\n%3%") % mark.line % mark.column % message).str())
   , mark(mark)
 {}
 //@+node:gcross.20110726215559.2305: *3* NonSquareMatrixYAMLInputError

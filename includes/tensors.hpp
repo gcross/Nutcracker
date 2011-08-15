@@ -65,21 +65,21 @@ using std::ostream;
 //@+others
 //@+node:gcross.20110214164734.1918: ** Exceptions
 //@+node:gcross.20110215235924.1979: *3* DimensionMismatch
-struct DimensionMismatch : public Exception {
+struct DimensionMismatch : public std::logic_error {
     DimensionMismatch(
           const char* n1
         , unsigned int const d1
         , const char* n2
         , unsigned int const d2
-    ) : Exception((format("%1% dimension (%2%) does not match %3% dimension (%4%)") % n1 % d1 % n2 % d2).str())
+    ) : std::logic_error((format("%1% dimension (%2%) does not match %3% dimension (%4%)") % n1 % d1 % n2 % d2).str())
     { }
 };
 //@+node:gcross.20110202172517.1694: *3* InvalidTensorException
-struct InvalidTensorException : public Exception {
-    InvalidTensorException() : Exception("Attempt to dereference an invalid tensor") {}
+struct InvalidTensorException : public std::logic_error {
+    InvalidTensorException() : std::logic_error("Attempt to dereference an invalid tensor") {}
 };
 //@+node:gcross.20110726215559.2351: *3* NotEnoughDegreesOfFreedomToNormalizeError
-struct NotEnoughDegreesOfFreedomToNormalizeError : public Exception {
+struct NotEnoughDegreesOfFreedomToNormalizeError : public std::logic_error {
     string n1, n2, n3;
     unsigned int d1, d2, d3;
     NotEnoughDegreesOfFreedomToNormalizeError(
@@ -89,7 +89,7 @@ struct NotEnoughDegreesOfFreedomToNormalizeError : public Exception {
         ,unsigned int const d2
         ,string const& n3
         ,unsigned int const d3
-    ) : Exception((
+    ) : std::logic_error((
             format("Not enough degrees of freedom to normalize (%1% (%2%) > %3% (%4%) * %5% (%6%))")
                 % n1
                 % d1

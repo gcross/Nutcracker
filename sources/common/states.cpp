@@ -33,7 +33,7 @@ namespace Nutcracker {
 //@+node:gcross.20110214155808.1917: ** Exceptions
 //@+node:gcross.20110214155808.1918: *3* NormalizationError
 NormalizationError::NormalizationError(int info)
-    : Exception(
+    : std::runtime_error(
         (format("Numerical error encountered when normalizing a state site (info = %1%)")
             % info
         ).str()

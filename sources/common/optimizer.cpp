@@ -59,7 +59,7 @@ namespace Nutcracker {
 //@+node:gcross.20110214155808.1903: ** Exceptions
 //@+node:gcross.20110214155808.1905: *3* OptimizerFailure
 OptimizerFailure::OptimizerFailure(string const& message)
-    : Exception(message)
+    : std::runtime_error(message)
 { }
 //@+node:gcross.20110214155808.1906: *4* OptimizerGivenGuessInProjectorSpace
 OptimizerGivenGuessInProjectorSpace::OptimizerGivenGuessInProjectorSpace()
@@ -165,7 +165,7 @@ OptimizerUnknownFailure::OptimizerUnknownFailure(
 { }
 //@+node:gcross.20110518200233.5040: *3* NoSuchOptimizerModeError
 NoSuchOptimizerModeError::NoSuchOptimizerModeError(string const& name)
-  : Exception((format("There is no such optimizer mode '%1%'.") % name).str())
+  : std::logic_error((format("There is no such optimizer mode '%1%'.") % name).str())
   , name(name)
 {}
 //@+node:gcross.20110518200233.5028: ** Classes

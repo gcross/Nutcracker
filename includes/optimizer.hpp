@@ -54,7 +54,7 @@ using std::map;
 //@+others
 //@+node:gcross.20110214155808.1940: ** Exceptions
 //@+node:gcross.20110518200233.5038: *3* NoSuchOptimizerModeError
-struct NoSuchOptimizerModeError : public Exception {
+struct NoSuchOptimizerModeError : public std::logic_error {
     string const name;
     NoSuchOptimizerModeError(string const& name);
     virtual ~NoSuchOptimizerModeError() throw() {}
@@ -64,7 +64,7 @@ struct NoSuchOptimizerModeError : public Exception {
 //! @{
 
 //! Base class for exceptions thrown when the optimizer fails to produce a valid solution.
-struct OptimizerFailure : public Exception {
+struct OptimizerFailure : public std::runtime_error {
 protected:
     //! Constructs the exception with the given message.
     OptimizerFailure(string const& message);

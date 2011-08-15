@@ -50,6 +50,7 @@
 #include <iostream>
 #include <numeric>
 #include <sstream>
+#include <stdexcept>
 #include <stdint.h>
 #include <string>
 #include <typeinfo>
@@ -90,26 +91,11 @@ using std::type_info;
 //! None type tag
 typedef boost::none_t None;
 //@+node:gcross.20110202200838.1710: ** Exceptions
-//@+node:gcross.20110125202132.2159: *3* Exception
-//! A convenient base class for exceptions.
-/*!
-The feature that this class provides over std::exception is that rather than making you override the what() method yourself its constructor takes a string message that it then returns when the user calls what(), saving you from having to write some boilerplate code.
-*/
-struct Exception : public std::exception {
-    //! The user-supplied message.
-    string const message;
-    //! The message to be stored in this exception.
-    Exception(string const& message);
-    //! Get a read-only pointer to the character string of this message.
-    virtual char const* what() const throw();
-    //! Destroy this message.
-    virtual ~Exception() throw();
-};
 //@+node:gcross.20110202200838.1709: *3* BadProgrammerException
 //! Exception indicating a programmer error.
-struct BadProgrammerException : public Exception {
+struct BadProgrammerException : public std::logic_error {
     //! Constructs this exception with the given message.
-    BadProgrammerException(string const& message) : Exception("BAD PROGRAMMER!!! --- " + message) {}
+    BadProgrammerException(string const& message) : std::logic_error("BAD PROGRAMMER!!! --- " + message) {}
 };
 //@+node:gcross.20110206185121.1786: *3* BadLabelException
 //! Exception thrown when an generic symbol is accessed with an invalid type tag.
@@ -125,7 +111,7 @@ struct BadLabelException : public BadProgrammerException {
 };
 //@+node:gcross.20110217175626.1943: *3* RequestedBandwidthDimensionTooLargeError
 //! This exception is thrown when the user requests a bandwidth dimension that is larger than the maximum possible given the physical dimension sequence.
-struct RequestedBandwidthDimensionTooLargeError : public Exception {
+struct RequestedBandwidthDimensionTooLargeError : public std::logic_error {
     unsigned int const
           requested_bandwidth_dimension //!< requested bandwidth dimension
         , greatest_possible_bandwidth_dimension //!< greatest possible bandwidth dimension
@@ -135,7 +121,7 @@ struct RequestedBandwidthDimensionTooLargeError : public Exception {
     RequestedBandwidthDimensionTooLargeError(
         unsigned int const requested_bandwidth_dimension
       , unsigned int const greatest_possible_bandwidth_dimension
-    ) : Exception((
+    ) : std::logic_error((
             format("Requested bandwidth dimension %1% is too large;  the highest possible with the given physical dimensions is %2%.")
                 % requested_bandwidth_dimension
                 % greatest_possible_bandwidth_dimension

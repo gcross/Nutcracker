@@ -47,12 +47,6 @@ using std::multiplies;
 //@-<< Usings >>
 
 //@+others
-//@+node:gcross.20110125202132.2163: ** struct Exception
-Exception::Exception(string const& message) : message(message) { }
-
-const char* Exception::what() const throw() { return message.c_str(); }
-
-Exception::~Exception() throw() { }
 //@+node:gcross.20110217175626.1937: ** Functions
 //@+node:gcross.20110219101843.1939: *3* choose
 unsigned long long choose(unsigned int const n, unsigned int const k) {

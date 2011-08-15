@@ -58,13 +58,13 @@ using ::HDF::Location;
 //@+others
 //@+node:gcross.20110511150727.2222: ** Exceptions
 //@+node:gcross.20110511190907.2313: *3* InconsistentTensorDimensions
-struct InconsistentTensorDimensions : public Exception {
-    InconsistentTensorDimensions() : Exception("The tensor dimensions are inconsistent.") {}
+struct InconsistentTensorDimensions : public std::runtime_error {
+    InconsistentTensorDimensions() : std::runtime_error("The tensor dimensions are inconsistent.") {}
 };
 //@+node:gcross.20110511190907.2310: *3* WrongTensorNormalizationException
-struct WrongTensorNormalizationException : public Exception {
+struct WrongTensorNormalizationException : public std::runtime_error {
     WrongTensorNormalizationException(optional<string> const& expected_normalization, optional<string> const& actual_normalization)
-        : Exception(
+        : std::runtime_error(
             (format("Expected a tensor with %1% normalization but encountered a tensor with %2% normalization.")
                 % (expected_normalization ? *expected_normalization : "unspecified")
                 % (actual_normalization   ? *actual_normalization    : "unspecified")
@@ -72,9 +72,9 @@ struct WrongTensorNormalizationException : public Exception {
     {}
 };
 //@+node:gcross.20110511190907.2271: *3* WrongTensorRankException
-struct WrongTensorRankException : public Exception {
+struct WrongTensorRankException : public std::runtime_error {
     WrongTensorRankException(unsigned int const expected_rank, unsigned int const actual_rank)
-        : Exception((format("Expected a tensor with rank %1% but encountered a tensor with rank %2%.") % expected_rank % actual_rank).str())
+        : std::runtime_error((format("Expected a tensor with rank %1% but encountered a tensor with rank %2%.") % expected_rank % actual_rank).str())
     {}
 };
 //@-others
