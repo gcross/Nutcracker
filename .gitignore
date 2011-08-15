@@ -11,5 +11,5 @@ core
 Testing
 CTestTestfile.cmake
 \#*
-build
+build*
 .DS_Store
