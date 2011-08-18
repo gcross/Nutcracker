@@ -20,6 +20,7 @@
 //@+<< Includes >>
 //@+node:gcross.20110206185121.1778: ** << Includes >>
 #include <boost/iterator/zip_iterator.hpp>
+#include <boost/make_shared.hpp>
 #include <boost/range/algorithm/copy.hpp>
 #include <boost/tuple/tuple.hpp>
 #include <complex>
@@ -35,6 +36,7 @@ namespace Nutcracker {
 //@+<< Usings >>
 //@+node:gcross.20110206185121.1779: ** << Usings >>
 using boost::irange;
+using boost::make_shared;
 using boost::make_tuple;
 using boost::make_zip_iterator;
 using boost::tuple;
@@ -48,11 +50,11 @@ using std::ostream_iterator;
 //@+node:gcross.20110207115918.1781: *3* constructExternalFieldOperator
 Operator constructExternalFieldOperator(
       unsigned int const number_of_sites
-    , Matrix const& matrix
+    , MatrixConstPtr const& matrix
 ) {
     assert(number_of_sites > 0);
-    PhysicalDimension const physical_dimension(matrix.size1());
-    assert(*physical_dimension == matrix.size2());
+    PhysicalDimension const physical_dimension(matrix->size1());
+    assert(*physical_dimension == matrix->size2());
     Operator operator_sites;
     operator_sites.reserve(number_of_sites);
     if(number_of_sites == 1) {
@@ -65,7 +67,7 @@ Operator constructExternalFieldOperator(
             )
         ));
     } else {
-        Matrix I = identityMatrix(*physical_dimension);
+        MatrixConstPtr I = identityMatrix(*physical_dimension);
         operator_sites.emplace_back(new OperatorSite(
             constructOperatorSite(
                  physical_dimension
@@ -127,9 +129,9 @@ OperatorSite constructOperatorSite(
     ) {
         *index_data++ = link.from;
         *index_data++ = link.to;
-        assert(link.matrix.size1() == *physical_dimension);
-        assert(link.matrix.size2() == *physical_dimension);
-        matrix_data = copy(link.matrix.data(),matrix_data);
+        assert(link.matrix->size1() == *physical_dimension);
+        assert(link.matrix->size2() == *physical_dimension);
+        matrix_data = copy(link.matrix->data(),matrix_data);
     }
 
     return boost::move(operator_site);
@@ -141,9 +143,9 @@ Operator constructTransverseIsingModelOperator(
 ) {
     using namespace Pauli;
     assert(number_of_sites > 1);
-    Matrix const
+    MatrixConstPtr const
           &X1 = X
-        ,  X2 = spin_coupling_strength*X
+        ,  X2 = make_shared<Matrix const>(spin_coupling_strength*(*X))
         ;
     Operator operator_sites;
     operator_sites.reserve(number_of_sites);
@@ -195,15 +197,6 @@ vector<unsigned int> extractPhysicalDimensions(Operator const& operator_sites) {
         physical_dimensions.push_back(operator_site->physicalDimension());
     }
     return boost::move(physical_dimensions);
-}
-//@+node:gcross.20110207120702.1780: *3* identityMatrix
-Matrix identityMatrix(unsigned int const n) {
-    Matrix I(n,n);
-    I.clear();
-    BOOST_FOREACH(unsigned int const i, irange(0u,n)) {
-        I(i,i) = 1;
-    }
-    return I;
 }
 //@-others
 

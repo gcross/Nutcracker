@@ -32,6 +32,7 @@
 #include <numeric>
 #include <string>
 
+#include "operators.hpp"
 #include "utilities.hpp"
 //@-<< Includes >>
 
@@ -114,6 +115,29 @@ vector<unsigned int> computeBandwidthDimensionSequence(
 unsigned int computeDigitsOfPrecision(double const tolerance) {
     double const estimated_precision = ceil(-log10(tolerance));
     return estimated_precision > 0 ? (unsigned int)estimated_precision : 1;
+}
+//@+node:gcross.20110817110920.2488: *3* identityMatrix
+MatrixPtr identityMatrix(unsigned int const n) {
+    Matrix* I = new Matrix(n,n,c(0,0));
+    BOOST_FOREACH(unsigned int const i, irange(0u,n)) {
+        (*I)(i,i) = 1;
+    }
+    return MatrixPtr(I);
+}
+//@+node:gcross.20110815001337.2453: ** Values
+namespace Pauli {
+    MatrixConstPtr const
+         I = identityMatrix(2)
+        ,X = squareMatrix(list_of
+                (0)(1)
+                (1)(0)
+             )
+        ,Y = squareMatrix(list_of
+                (c(0,0))(c(0,-1))
+                (c(0,1))(c(0,0))
+             )
+        ,Z = diagonalMatrix(list_of(1)(-1))
+        ;
 }
 //@-others
 

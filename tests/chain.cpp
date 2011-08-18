@@ -226,7 +226,7 @@ TEST_SUITE(performOptimizationSweep) {
     void runTests(
           unsigned int const physical_dimension
     ) {
-        Matrix matrix;
+        MatrixConstPtr matrix;
         {
             vector<complex<double> > diagonal(physical_dimension,1); diagonal[0] = -1;
             matrix = diagonalMatrix(diagonal);
@@ -340,7 +340,7 @@ TEST_SUITE(external_field) {
           unsigned int const physical_dimension
         , OptimizerMode const& optimizer_mode
     ) {
-        Matrix matrix;
+        MatrixConstPtr matrix;
         {
             vector<complex<double> > diagonal(physical_dimension,1); diagonal[0] = -1;
             matrix = diagonalMatrix(diagonal);

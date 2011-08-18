@@ -319,7 +319,7 @@ TEST_CASE(decode) {
         ASSERT_EQ(from,link.from);
         ASSERT_EQ(to,link.to);
         BOOST_FOREACH(unsigned int const i, irange(0u,n*n)) {
-            ASSERT_EQ(data[i],link.matrix.data()[i]);
+            ASSERT_EQ(data[i],link.matrix->data()[i]);
         }
     }
 
@@ -331,8 +331,8 @@ TEST_CASE(encode_then_decode) {
 
     REPEAT(10) {
         unsigned int n = random;
-        Matrix data(n,n);
-        generate(data.data(),random.randomComplexDouble);
+        MatrixPtr data(new Matrix(n,n));
+        generate(data->data(),random.randomComplexDouble);
         OperatorLink link1(random,random,data);
 
         YAML::Emitter out;
@@ -350,7 +350,7 @@ TEST_CASE(encode_then_decode) {
         ASSERT_EQ(link1.from,link2.from);
         ASSERT_EQ(link1.to,link2.to);
         BOOST_FOREACH(unsigned int const i, irange(0u,n*n)) {
-            ASSERT_EQ(link2.matrix.data()[i],link1.matrix.data()[i]);
+            ASSERT_EQ(link2.matrix->data()[i],link1.matrix->data()[i]);
         }
     }
 
@@ -400,8 +400,8 @@ TEST_CASE(decode) {
             ;
         vector<OperatorLink> links;
         REPEAT(random) {
-            Matrix data(physical_dimension,physical_dimension);
-            generate(data.data(),random.randomComplexDouble);
+            MatrixPtr data(new Matrix(physical_dimension,physical_dimension));
+            generate(data->data(),random.randomComplexDouble);
             links.emplace_back(random(1,left_dimension),random(1,right_dimension),data);
         }
 
@@ -438,7 +438,7 @@ TEST_CASE(decode) {
             ASSERT_EQ(link.from,index_data[0]);
             ASSERT_EQ(link.to,index_data[1]);
             index_data += 2;
-            ASSERT_TRUE(equal(link.matrix.data().begin(),link.matrix.data().end(),matrix_data));
+            ASSERT_TRUE(equal(link.matrix->data().begin(),link.matrix->data().end(),matrix_data));
             matrix_data += physical_dimension*physical_dimension;
         }
     }

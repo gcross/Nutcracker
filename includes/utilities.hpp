@@ -43,6 +43,7 @@
 #include <boost/range/iterator_range.hpp>
 #include <boost/move/move.hpp>
 #include <boost/none_t.hpp>
+#include <boost/numeric/ublas/matrix.hpp>
 #include <complex>
 #include <exception>
 #include <functional>
@@ -90,6 +91,12 @@ using std::type_info;
 //@+node:gcross.20110215135633.1864: ** Type aliases
 //! None type tag
 typedef boost::none_t None;
+typedef boost::numeric::ublas::matrix<complex<double> > Matrix;
+typedef boost::shared_ptr<Matrix> MatrixPtr;
+typedef boost::shared_ptr<Matrix const> MatrixConstPtr;
+//@+node:gcross.20110129220506.1652: ** Macros
+//! Repeats a statement or block \c n times.
+#define REPEAT(n) for(unsigned int _counter##__LINE__ = 0; _##counter##__LINE__ < n; ++_##counter##__LINE__)
 //@+node:gcross.20110202200838.1710: ** Exceptions
 //@+node:gcross.20110202200838.1709: *3* BadProgrammerException
 //! Exception indicating a programmer error.
@@ -368,6 +375,29 @@ template<typename A, typename B, typename C> bool outsideTolerance(A a, B b, C t
 //@+node:gcross.20110213233103.3637: *4* rethrow
 //! Throws the argument passed to it; useful as part of a signal handler.
 template<typename Exception> void rethrow(Exception& e) { throw e; }
+//@+node:gcross.20110817110920.2485: *3* Matrices
+//@+node:gcross.20110817110920.2490: *4* diagonalMatrix
+template<typename T> MatrixPtr diagonalMatrix(T const& data) {
+    unsigned int const n = data.size();
+    Matrix* matrix = new Matrix(n,n,c(0,0));
+    unsigned int i = 0;
+    typename boost::range_iterator<T const>::type px = boost::begin(data);
+    while(px != boost::end(data)) {
+        (*matrix)(i,i) = *px++;
+        ++i;
+    }
+    return MatrixPtr(matrix);
+}
+//@+node:gcross.20110817110920.2486: *4* identityMatrix
+MatrixPtr identityMatrix(unsigned int const n);
+//@+node:gcross.20110817110920.2492: *4* squareMatrix
+template<typename T> MatrixPtr squareMatrix(T const& data) {
+    unsigned int const n = (unsigned int)sqrt(data.size());
+    assert(n*n == data.size());
+    Matrix* matrix = new Matrix(n,n);
+    copy(data,matrix->data().begin());
+    return MatrixPtr(matrix);
+}
 //@+node:gcross.20110429225820.2533: *3* Move assistants
 /*!
 \defgroup MoveAssistantFunctions Move assistants
@@ -395,9 +425,10 @@ template<typename T> inline void moveArrayToFrom(T*& to, T*& from) {
 
 //! @}
 //@-others
-//@+node:gcross.20110129220506.1652: ** Macros
-//! Repeats a statement or block \c n times.
-#define REPEAT(n) for(unsigned int _counter##__LINE__ = 0; _##counter##__LINE__ < n; ++_##counter##__LINE__)
+//@+node:gcross.20110815001337.2452: ** Values
+namespace Pauli {
+    extern MatrixConstPtr const I, X, Y, Z;
+}
 //@-others
 
 //! @}

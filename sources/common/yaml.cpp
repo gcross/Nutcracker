@@ -260,14 +260,15 @@ void operator >> (Node const& node, OperatorLink& link) {
     Node const& data = node["data"];
     unsigned int const nsq = data.size(), n = (unsigned int)sqrt(nsq);
     if(n*n != nsq) throw NonSquareMatrixYAMLInputError(data.GetMark(),nsq);
-    link.matrix.resize(n,n);
+    Matrix* matrix = new Matrix(n,n);
     Iterator node_iter = data.begin();
-    Matrix::array_type::iterator matrix_iter = link.matrix.data().begin();
+    Matrix::array_type::iterator matrix_iter = matrix->data().begin();
     REPEAT(n*n) {
         using namespace std;
         using namespace YAML;
         *node_iter++ >> *matrix_iter++;
     }
+    link.matrix = MatrixConstPtr(matrix);
 }
 //@+node:gcross.20110430163445.2638: *5* <<
 Emitter& operator << (Emitter& out, OperatorLink const& link) {
@@ -277,7 +278,7 @@ Emitter& operator << (Emitter& out, OperatorLink const& link) {
     out << Key << "data" << Value;
     {
         out << Flow << BeginSeq;
-        BOOST_FOREACH(complex<double> const x, link.matrix.data()) { out << x; }
+        BOOST_FOREACH(complex<double> const x, link.matrix->data()) { out << x; }
         out << EndSeq;
     }
     out << EndMap;

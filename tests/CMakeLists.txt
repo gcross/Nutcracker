@@ -11,10 +11,10 @@ set(test-SOURCES
     flat
     hdf
     io
-    operators
     optimizer
     projectors
     tensors
+    utilities
     yaml
 
     test_utils
