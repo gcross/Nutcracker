@@ -23,6 +23,8 @@
 #include <boost/random/bernoulli_distribution.hpp>
 #include <boost/random/normal_distribution.hpp>
 #include <boost/random/uniform_smallint.hpp>
+#include <boost/range/adaptor/indirected.hpp>
+#include <boost/range/adaptor/transformed.hpp>
 #include <boost/range/algorithm/equal.hpp>
 #include <boost/range/algorithm/generate.hpp>
 #include <boost/range/irange.hpp>
@@ -33,6 +35,8 @@
 
 #include "test_utils.hpp"
 
+using boost::adaptors::indirected;
+using boost::adaptors::transformed;
 using boost::bernoulli_distribution;
 using boost::equal;
 using boost::filesystem::exists;
@@ -137,9 +141,9 @@ RNG::RNG()
   , randomComplexDouble(ComplexDoubleGenerator(*this))
   , randomLowercaseLetter(makeVariateGenerator(generator,uniform_smallint<unsigned int>('a','z')))
 {}
-//@+node:gcross.20110206092738.1747: *4* operator()
-unsigned int RNG::operator()(unsigned int lo, unsigned int hi) {
-    return generateRandomIntegers(lo,hi)();
+//@+node:gcross.20110206092738.1751: *4* generateRandomHermitianMatrices
+function<complex<double>()> RNG::generateRandomHermitianMatrices(unsigned int const size) {
+    return HermitianMatrixGenerator(*this,size);
 }
 //@+node:gcross.20110206092738.1745: *4* generateRandomIndices
 function<uint32_t()> RNG::generateRandomIndices(
@@ -152,9 +156,15 @@ function<uint32_t()> RNG::generateRandomIndices(
 function<unsigned int()> RNG::generateRandomIntegers(unsigned int lo, unsigned int hi) {
     return IntegerGenerator(*this,lo,hi);
 }
-//@+node:gcross.20110206092738.1751: *4* generateRandomHermitianMatrices
-function<complex<double>()> RNG::generateRandomHermitianMatrices(unsigned int const size) {
-    return HermitianMatrixGenerator(*this,size);
+//@+node:gcross.20110206092738.1747: *4* operator()
+unsigned int RNG::operator()(unsigned int lo, unsigned int hi) {
+    return generateRandomIntegers(lo,hi)();
+}
+//@+node:gcross.20110818221240.2504: *4* randomMatrix
+MatrixPtr RNG::randomMatrix(unsigned int rows, unsigned int cols) {
+    MatrixPtr const matrix(new Matrix(rows,cols));
+    boost::generate(matrix->data(),randomComplexDouble);
+    return matrix;
 }
 //@+node:gcross.20110215135633.1866: *4* randomOperator
 Operator RNG::randomOperator(
@@ -205,6 +215,10 @@ OperatorSite RNG::randomOperatorSite() {
         RightDimension((*this)(1,5))
     );
 }
+//@+node:gcross.20110818221240.2514: *4* randomSquareMatrix
+MatrixPtr RNG::randomSquareMatrix(unsigned int dimension) {
+    return randomMatrix(dimension,dimension);
+}
 //@+node:gcross.20110215135633.1863: *4* randomState
 State RNG::randomState() {
     return randomState((*this)(1,5));
@@ -217,33 +231,23 @@ State RNG::randomState(unsigned int const number_of_sites) {
 
 State RNG::randomState(vector<unsigned int> const& physical_dimensions) {
     unsigned int const number_of_sites = physical_dimensions.size();
-    unsigned int left_dimension = number_of_sites == 1 ? 1 : (*this)(1,physical_dimensions[0]);
+    vector<unsigned int> const bandwidth_dimensions = computeBandwidthDimensionSequence((*this)(1,maximumBandwidthDimension(physical_dimensions)),physical_dimensions);
     StateSite<Middle> first_state_site(
         randomStateSiteMiddle(
              PhysicalDimension(physical_dimensions[0])
-            ,LeftDimension(1)
-            ,RightDimension(left_dimension)
+            ,LeftDimension(bandwidth_dimensions[0])
+            ,RightDimension(bandwidth_dimensions[1])
         )
     );
     vector<StateSite<Right> > rest_state_sites;
     BOOST_FOREACH(unsigned int const site_number, irange(1u,number_of_sites)) {
-        unsigned int const physical_dimension = physical_dimensions[site_number];
-        unsigned int const right_dimension
-            = site_number == number_of_sites-1
-                ? 1
-                : (*this)(
-                    left_dimension/physical_dimension+(left_dimension%physical_dimension==0 ? 0 : 1),
-                    min(10u,left_dimension*physical_dimension)
-                  )
-                ;
         rest_state_sites.push_back(
             randomStateSiteRight(
-                 PhysicalDimension(physical_dimension)
-                ,LeftDimension(left_dimension)
-                ,RightDimension(right_dimension)
+                 PhysicalDimension(physical_dimensions[site_number])
+                ,LeftDimension(bandwidth_dimensions[site_number])
+                ,RightDimension(bandwidth_dimensions[site_number+1])
             )
         );
-        left_dimension = right_dimension;
     }
     return State(boost::move(first_state_site),boost::move(rest_state_sites));
 }
@@ -283,6 +287,21 @@ void checkOperatorsEqual(Operator const& operator_1,Operator const& operator_2) 
     ASSERT_EQ(operator_1.size(),operator_2.size());
     BOOST_FOREACH(unsigned int const i, irange(0u,(unsigned int)operator_1.size())) {
         checkOperatorSitesEqual(*operator_1[i],*operator_2[i]);
+    }
+}
+//@+node:gcross.20110818221240.2501: *3* checkOperatorsEquivalent
+void checkOperatorsEquivalent(
+    Operator const& operator_1,
+    Operator const& operator_2,
+    RNG& random,
+    unsigned int number_of_samples
+) {
+    ASSERT_EQ(operator_1.size(),operator_2.size())
+    vector<unsigned int> physical_dimensions(operator_1.size());
+    copy(operator_1 | indirected | transformed(bind(&OperatorSite::physicalDimension,_1)),physical_dimensions.begin());
+    REPEAT(number_of_samples) {
+        State state = random.randomState(physical_dimensions);
+        ASSERT_NEAR_REL(computeExpectationValue(state,operator_1),computeExpectationValue(state,operator_2),1e-13)
     }
 }
 //@+node:gcross.20110430221653.2183: *3* checkOperatorSitesEqual

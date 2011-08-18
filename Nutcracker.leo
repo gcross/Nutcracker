@@ -18,6 +18,7 @@
 <v t="gcross.20110124161335.1866"><vh>@path includes</vh>
 <v t="gcross.20110214183844.1813"><vh>@file boundaries.hpp</vh></v>
 <v t="gcross.20110130170743.1665"><vh>@file chain.hpp</vh></v>
+<v t="gcross.20110805222031.2339"><vh>@file compiler.hpp</vh></v>
 <v t="gcross.20110511190907.3699"><vh>@file configuration.hpp</vh></v>
 <v t="gcross.20110125120748.2458"><vh>@file core.hpp</vh></v>
 <v t="gcross.20110510004855.2218"><vh>@file flat.hpp</vh></v>
@@ -50,6 +51,7 @@
 <v t="gcross.20110125120748.2421"><vh>@file CMakeLists.txt</vh></v>
 <v t="gcross.20110214155808.1862"><vh>@file boundaries.cpp</vh></v>
 <v t="gcross.20110130170743.1674"><vh>@file chain.cpp</vh></v>
+<v t="gcross.20110805222031.2351"><vh>@file compiler.cpp</vh></v>
 <v t="gcross.20110511190907.3708"><vh>@file configuration.cpp</vh></v>
 <v t="gcross.20091110205054.1939"><vh>@file core.f95</vh></v>
 <v t="gcross.20091112145455.1619"><vh>@file core.cpp</vh></v>
@@ -76,6 +78,7 @@
 <v t="gcross.20110125120748.2426"><vh>@file CMakeLists.txt</vh></v>
 <v t="gcross.20110215235924.1881"><vh>@file boundaries.cpp</vh></v>
 <v t="gcross.20110130170743.1679"><vh>@file chain.cpp</vh></v>
+<v t="gcross.20110805222031.4665"><vh>@file compiler.cpp</vh></v>
 <v t="gcross.20110511190907.3785"><vh>@file configuration.cpp</vh></v>
 <v t="gcross.20110213161858.1822"><vh>@file flat.cpp</vh></v>
 <v t="gcross.20110511190907.2319"><vh>@file hdf.cpp</vh></v>

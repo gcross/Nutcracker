@@ -34,13 +34,16 @@
 #include <boost/container/vector.hpp>
 #include <boost/foreach.hpp>
 #include <boost/format.hpp>
+#include <boost/functional/hash.hpp>
 #include <boost/iterator/iterator_facade.hpp>
+#include <boost/lambda/lambda.hpp>
 #include <boost/range/adaptor/reversed.hpp>
 #include <boost/range/algorithm/reverse.hpp>
 #include <boost/range/algorithm/reverse_copy.hpp>
 #include <boost/range/concepts.hpp>
 #include <boost/range/irange.hpp>
 #include <boost/range/iterator_range.hpp>
+#include <boost/tuple/tuple.hpp>
 #include <boost/move/move.hpp>
 #include <boost/none_t.hpp>
 #include <boost/numeric/ublas/matrix.hpp>
@@ -349,6 +352,19 @@ inline void zgemv(
 //@-others
 
 //! @}
+//@+node:gcross.20110805222031.4650: *3* Loop utilities
+//@+node:gcross.20110805222031.4651: *4* getFirstLoopIterator
+template<typename Range> inline typename Range::iterator getFirstLoopIterator(bool forward,Range& range) {
+    return forward ? range.begin() : range.end();
+}
+//@+node:gcross.20110805222031.4649: *4* updateLoopIterator
+template<typename Iterator> inline typename std::iterator_traits<Iterator>::reference updateLoopIterator(bool forward,Iterator& iter) {
+    return forward ? *(iter++) : *(--iter);
+}
+//@+node:gcross.20110818221240.2517: *4* dereferenceLoopIterator
+template<typename Iterator> inline typename std::iterator_traits<Iterator>::reference dereferenceLoopIterator(bool forward,Iterator iter) {
+    return forward ? *iter : *(--iter);
+}
 //@+node:gcross.20110429225820.2540: *3* Miscellaneous
 //@+node:gcross.20110211120708.1786: *4* c
 //! Convenience function that constructs the complex number x + iy.
@@ -371,6 +387,23 @@ template<typename T> ProductIterator<T> makeProductIterator(T const x) { return 
 //! Returns whether \c a and \c b do not match within the specified relative \c tolerance.
 template<typename A, typename B, typename C> bool outsideTolerance(A a, B b, C tolerance) {
     return ((abs(a)+abs(b))/2 > tolerance) && (abs(a-b)/(abs(a)+abs(b)+tolerance) > tolerance);
+}
+//@+node:gcross.20110815001337.2441: *4* rangeToString
+template<typename RangeType> std::string rangeToString(RangeType const& range) {
+    typedef typename iterator_traits<typename boost::range_iterator<RangeType const>::type>::reference ElementReference;
+    std::ostringstream s;
+    s << '[';
+    bool first = true;
+    BOOST_FOREACH(ElementReference element, range) {
+        if(first) {
+            first = false;
+        } else {
+            s << ',';
+        }
+        s << element;
+    }
+    s << ']';
+    return s.str();
 }
 //@+node:gcross.20110213233103.3637: *4* rethrow
 //! Throws the argument passed to it; useful as part of a signal handler.
@@ -439,6 +472,12 @@ namespace Pauli {
 //@+node:gcross.20110511190907.3784: ** << Outside namespace >>
 inline std::istream& operator>> (std::istream& in, boost::none_t& _) { return in; }
 inline std::ostream& operator<< (std::ostream& out, const boost::none_t& _) { return out; }
+
+namespace std {
+    template<> struct less<Nutcracker::MatrixConstPtr> : std::binary_function<Nutcracker::MatrixConstPtr,Nutcracker::MatrixConstPtr,bool> {
+        bool operator()(Nutcracker::MatrixConstPtr const& x, Nutcracker::MatrixConstPtr const& y) const;
+    };
+}
 //@-<< Outside namespace >>
 
 #endif

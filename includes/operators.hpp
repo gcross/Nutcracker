@@ -58,6 +58,16 @@ struct OperatorLink {
       , matrix(matrix)
     { }
 
+    bool operator<(OperatorLink const& other) const {
+        return from < other.from ||
+               from == other.from && (
+                 to < other.to ||
+                 to == other.to && (
+                   matrix < other.matrix
+                 )
+               );
+    }
+
 };
 //@+node:gcross.20110206185121.1771: ** Functions
 OperatorSite constructOperatorSite(

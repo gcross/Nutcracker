@@ -3,6 +3,7 @@
 add_library(Nutcracker
     boundaries
     chain
+    compiler
     configuration
     core.f95
     core.cpp

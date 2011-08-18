@@ -142,4 +142,29 @@ namespace Pauli {
 //@-others
 
 }
+
+//@+<< Outside namespace >>
+//@+node:gcross.20110815001337.2499: ** << Outside namespace >>
+//@+others
+//@+node:gcross.20110815001337.2486: *3* Function Objects
+//@+node:gcross.20110815001337.2488: *4* less<MatrixConstPtr>
+namespace std {
+    bool less<Nutcracker::MatrixConstPtr>::operator()(Nutcracker::MatrixConstPtr const& x, Nutcracker::MatrixConstPtr const& y) const {
+        if(x->size1() < y->size1()) return true;
+        if(x->size1() > y->size1()) return false;
+        boost::numeric::ublas::unbounded_array<complex<double> >::const_iterator xi(x->data().begin()), yi(y->data().begin());
+        REPEAT(x->size1()*x->size1()) {
+            complex<double> const &a = *xi++, &b = *yi++;
+            if(abs(a-b) > 1e-14) {
+                if(a.real() != b.real())
+                    return a.real() < b.real();
+                else
+                    return a.imag() < b.imag();
+            }
+        }
+        return false;
+    }
+}
+//@-others
+//@-<< Outside namespace >>
 //@-leo

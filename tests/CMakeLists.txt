@@ -7,6 +7,7 @@ link_directories ( ${Illuminate_LIBRARY_DIRS} )
 set(test-SOURCES
     boundaries
     chain
+    compiler
     configuration
     flat
     hdf

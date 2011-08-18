@@ -34,6 +34,93 @@ using boost::make_shared;
 //@+node:gcross.20110815001337.2496: ** Tests
 TEST_SUITE(Utilities) {
 //@+others
+//@+node:gcross.20110815001337.2497: *3* MatrixConstPtrComparisonPredicate
+TEST_SUITE(MatrixConstPtrComparisonPredicate) {
+    //@+others
+    //@+node:gcross.20110815001337.2498: *4* x smaller than y
+    TEST_CASE(x_smaller_than_y) {
+        RNG random;
+
+        std::less<MatrixConstPtr> predicate = std::less<MatrixConstPtr>();
+
+        REPEAT(10) {
+            unsigned int dx = random, dy = dx + random(1,5);
+            MatrixPtr x(new Matrix(dx,dx)), y(new Matrix(dy,dy));
+            boost::generate(x->data(),random.randomComplexDouble);
+            boost::generate(y->data(),random.randomComplexDouble);
+            ASSERT_TRUE(predicate(x,y));
+        }
+    }
+    //@+node:gcross.20110815001337.2501: *4* x larger than y
+    TEST_CASE(x_larger_than_y) {
+        RNG random;
+
+        std::less<MatrixConstPtr> predicate = std::less<MatrixConstPtr>();
+
+        REPEAT(10) {
+            unsigned int dy = random, dx = dy + random(1,5);
+            MatrixPtr x(new Matrix(dx,dx)), y(new Matrix(dy,dy));
+            boost::generate(x->data(),random.randomComplexDouble);
+            boost::generate(y->data(),random.randomComplexDouble);
+            ASSERT_FALSE(predicate(x,y));
+        }
+    }
+    //@+node:gcross.20110815001337.2502: *4* size 1
+    TEST_SUITE(size_1) {
+    //@+others
+    //@+node:gcross.20110815001337.2511: *5* equal
+    TEST_CASE(equal) {
+        std::less<MatrixConstPtr> predicate = std::less<MatrixConstPtr>();
+        ASSERT_FALSE(predicate(make_shared<Matrix>(1,1,c(1,1)),make_shared<Matrix>(1,1,c(1,1))));
+        ASSERT_FALSE(predicate(make_shared<Matrix>(1,1,c(2,-1)),make_shared<Matrix>(1,1,c(2,-1))));
+    }
+    //@+node:gcross.20110815001337.2509: *5* greater
+    TEST_CASE(greater) {
+        std::less<MatrixConstPtr> predicate = std::less<MatrixConstPtr>();
+        ASSERT_FALSE(predicate(make_shared<Matrix>(1,1,c(1,1)),make_shared<Matrix>(1,1,c(1,0))));
+        ASSERT_FALSE(predicate(make_shared<Matrix>(1,1,c(2,-1)),make_shared<Matrix>(1,1,c(1,0))));
+    }
+    //@+node:gcross.20110815001337.2503: *5* less
+    TEST_CASE(less) {
+        std::less<MatrixConstPtr> predicate = std::less<MatrixConstPtr>();
+        ASSERT_TRUE(predicate(make_shared<Matrix>(1,1,c(1,0)),make_shared<Matrix>(1,1,c(1,1))));
+        ASSERT_TRUE(predicate(make_shared<Matrix>(1,1,c(1,0)),make_shared<Matrix>(1,1,c(2,-1))));
+    }
+    //@-others
+    }
+    //@+node:gcross.20110815001337.2506: *4* size 2
+    TEST_SUITE(size_2) {
+    //@+others
+    //@+node:gcross.20110815001337.2507: *5* less
+    TEST_CASE(less) {
+        std::less<MatrixConstPtr> predicate = std::less<MatrixConstPtr>();
+        MatrixPtr x(new Matrix(2,2)), y(new Matrix(2,2));
+        boost::copy(list_of(0)(0)(0)(0),x->data().begin());
+        boost::copy(list_of(0)(0)(1)(0),y->data().begin());
+        ASSERT_TRUE(predicate(x,y));
+    }
+    //@+node:gcross.20110815001337.2513: *5* greater
+    TEST_CASE(greater) {
+        std::less<MatrixConstPtr> predicate = std::less<MatrixConstPtr>();
+        MatrixPtr x(new Matrix(2,2)), y(new Matrix(2,2));
+        boost::copy(list_of(0)(0)(0)(0),x->data().begin());
+        boost::copy(list_of(0)(0)(1)(0),y->data().begin());
+        ASSERT_FALSE(predicate(y,x));
+    }
+    //@+node:gcross.20110815001337.2515: *5* equal
+    TEST_CASE(equal) {
+        std::less<MatrixConstPtr> predicate = std::less<MatrixConstPtr>();
+        MatrixPtr x(new Matrix(2,2)), y(new Matrix(2,2));
+        boost::copy(list_of(0)(0)(1)(0),x->data().begin());
+        boost::copy(list_of(0)(0)(1)(0),y->data().begin());
+        ASSERT_FALSE(predicate(x,y));
+        ASSERT_FALSE(predicate(y,x));
+    }
+    //@-others
+    }
+    //@-others
+}
+//@+node:gcross.20110817110920.2494: *3* Pauli
 TEST_SUITE(Pauli) {
 
     using namespace Pauli;

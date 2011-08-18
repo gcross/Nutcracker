@@ -84,7 +84,9 @@ public:
         , unsigned int const maximum_physical_dimension=10
         , unsigned int const maximum_bandwidth_dimension=10
     );
-
+    MatrixPtr randomMatrix(unsigned int rows, unsigned int cols);
+    MatrixPtr randomSquareMatrix(unsigned int dimension);
+ 
     vector<unsigned int> randomUnsignedIntegerVector(unsigned int n, unsigned int lo=1,unsigned int hi=10);
 
     State randomState();
@@ -105,6 +107,7 @@ public:
 };
 //@+node:gcross.20110511190907.2324: ** Functions
 void checkOperatorsEqual(Operator const& operator_1,Operator const& operator_2);
+void checkOperatorsEquivalent(Operator const& operator_1,Operator const& operator_2,RNG& random,unsigned int number_of_samples=20);
 void checkOperatorSitesEqual(OperatorSite const& operator_site_1,OperatorSite const& operator_site_2);
 void checkSiteTensorsEqual(SiteBaseTensor const& site_1,SiteBaseTensor const& site_2);
 void checkStatesEqual(State const& state_1,State const& state_2);
