@@ -132,10 +132,10 @@ unsigned int lookupWeightedSumOfMatrices(vector<pair<unsigned int,complex<double
 unsigned int lookupIdentityMatrixId(unsigned int dimension);
 unsigned int lookupMatrixIdFromTable(MatrixTable const& other, unsigned int matrix_id_in_other);
 
-unsigned int getIMatrixId() const { return 1; };
-unsigned int getXMatrixId() const { return 2; };
-unsigned int getYMatrixId() const { return 3; };
-unsigned int getZMatrixId() const { return 4; };
+static unsigned int getIMatrixId() { return 1u; };
+static unsigned int getXMatrixId() { return 2u; };
+static unsigned int getYMatrixId() { return 3u; };
+static unsigned int getZMatrixId() { return 4u; };
 
 Matrix const& getMatrix(unsigned int index) const;
 MatrixConstPtr const& getMatrixPtr(unsigned int index) const;
