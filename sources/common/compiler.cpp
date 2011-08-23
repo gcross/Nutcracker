@@ -203,33 +203,28 @@ OperatorBuilder& OperatorBuilder::addSites(unsigned int number_of_sites, Physica
     return *this;
 }
 //@+node:gcross.20110822214054.2515: *4* add(X)ExternalField
-OperatorBuilder& OperatorBuilder::addLocalExternalField(unsigned int site_number, MatrixConstPtr const& field_operator, complex<double> scale_factor) {
-    return connect(site_number,getStartSignal(),getEndSignal(),lookupMatrixId(field_operator),scale_factor);
+OperatorBuilder& OperatorBuilder::addLocalExternalField(unsigned int site_number, unsigned int field_matrix_id, complex<double> scale_factor) {
+    return connect(site_number,getStartSignal(),getEndSignal(),field_matrix_id,scale_factor);
 }
 
-OperatorBuilder& OperatorBuilder::addGlobalExternalField(MatrixConstPtr const& field_operator, complex<double> scale_factor) {
-    unsigned int const matrix_id = lookupMatrixId(field_operator);
+OperatorBuilder& OperatorBuilder::addGlobalExternalField(unsigned int field_matrix_id, complex<double> scale_factor) {
     BOOST_FOREACH(unsigned int const site_number, irange(0u,numberOfSites())) {
-        connect(site_number,getStartSignal(),getEndSignal(),matrix_id,scale_factor);
+        addLocalExternalField(site_number,field_matrix_id,scale_factor);
     }
     return *this;
 }
 //@+node:gcross.20110822214054.2520: *4* add(X)NeighborCouplingField
-OperatorBuilder& OperatorBuilder::addLocalNeighborCouplingField(unsigned int left_site_number, MatrixConstPtr const& left_field_operator, MatrixConstPtr const& right_field_operator, complex<double> scale_factor) {
+OperatorBuilder& OperatorBuilder::addLocalNeighborCouplingField(unsigned int left_site_number, unsigned int left_field_matrix_id, unsigned int right_field_matrix_id, complex<double> scale_factor) {
     unsigned int const signal = allocateSignal();
-    connect(left_site_number,getStartSignal(),signal,lookupMatrixId(left_field_operator),scale_factor);
-    return connect(left_site_number+1,signal,getEndSignal(),lookupMatrixId(right_field_operator));
+    connect(left_site_number,getStartSignal(),signal,left_field_matrix_id,scale_factor);
+    return connect(left_site_number+1,signal,getEndSignal(),right_field_matrix_id);
 }
 
-OperatorBuilder& OperatorBuilder::addGlobalNeighborCouplingField(MatrixConstPtr const& left_field_operator, MatrixConstPtr const& right_field_operator, complex<double> scale_factor) {
-    unsigned int const
-        left_matrix_id = lookupMatrixId(left_field_operator),
-        right_matrix_id = lookupMatrixId(right_field_operator),
-        signal = allocateSignal();
-    ;
+OperatorBuilder& OperatorBuilder::addGlobalNeighborCouplingField(unsigned int left_field_matrix_id, unsigned int right_field_matrix_id, complex<double> scale_factor) {
+    unsigned int const signal = allocateSignal();
     BOOST_FOREACH(unsigned int const site_number, irange(0u,numberOfSites())) {
-        connect(site_number,getStartSignal(),signal,left_matrix_id,scale_factor);
-        connect(site_number,signal,getEndSignal(),right_matrix_id);
+        connect(site_number,getStartSignal(),signal,left_field_matrix_id,scale_factor);
+        connect(site_number,signal,getEndSignal(),right_field_matrix_id);
     }
     return *this;
 }

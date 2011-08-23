@@ -276,11 +276,11 @@ public:
 OperatorBuilder& operator=(BOOST_COPY_ASSIGN_REF(OperatorBuilder) other);
 OperatorBuilder& operator=(BOOST_RV_REF(OperatorBuilder) other);
 //@+node:gcross.20110822214054.2514: *4* Physics
-OperatorBuilder& addLocalExternalField(unsigned int site_number, MatrixConstPtr const& field_operator, complex<double> scale_factor=c(1,0));
-OperatorBuilder& addGlobalExternalField(MatrixConstPtr const& field_operator, complex<double> scale_factor=c(1,0));
+OperatorBuilder& addLocalExternalField(unsigned int site_number, unsigned int field_matrix_id, complex<double> scale_factor=c(1,0));
+OperatorBuilder& addGlobalExternalField(unsigned int field_matrix_id, complex<double> scale_factor=c(1,0));
 
-OperatorBuilder& addLocalNeighborCouplingField(unsigned int left_site_number, MatrixConstPtr const& left_field_operator, MatrixConstPtr const& right_field_operator, complex<double> scale_factor=c(1,0));
-OperatorBuilder& addGlobalNeighborCouplingField(MatrixConstPtr const& left_field_operator, MatrixConstPtr const& right_field_operator, complex<double> scale_factor=c(1,0));
+OperatorBuilder& addLocalNeighborCouplingField(unsigned int left_site_number, unsigned int left_field_matrix_id, unsigned int right_field_matrix_id, complex<double> scale_factor=c(1,0));
+OperatorBuilder& addGlobalNeighborCouplingField(unsigned int left_field_matrix_id, unsigned int right_field_matrix_id, complex<double> scale_factor=c(1,0));
 //@+node:gcross.20110805222031.2375: *4* Sites
 OperatorBuilder& addSite(unsigned int dimension);
 OperatorBuilder& addSites(unsigned int number_of_sites, PhysicalDimension dimension);

@@ -220,7 +220,7 @@ TEST_CASE(addGlobalExternalField) {
         checkOperatorsEqual(
             OperatorBuilder()
                 .addSites(number_of_sites,PhysicalDimension(2u))
-                .addGlobalExternalField(Pauli::Z)
+                .addGlobalExternalField(OperatorBuilder::getZMatrixId())
                 .compile()
             ,
             constructExternalFieldOperator(number_of_sites,Pauli::Z)
@@ -234,8 +234,8 @@ TEST_CASE(addGlobalNeighborCouplingField) {
         Operator op =
             OperatorBuilder()
                 .addSites(number_of_sites,PhysicalDimension(2u))
-                .addGlobalExternalField(Pauli::Z)
-                .addGlobalNeighborCouplingField(Pauli::X,Pauli::X,0.5)
+                .addGlobalExternalField(OperatorBuilder::getZMatrixId())
+                .addGlobalNeighborCouplingField(OperatorBuilder::getXMatrixId(),OperatorBuilder::getXMatrixId(),0.5)
                 .compile();
         ASSERT_EQ_VAL(op[0]->numberOfMatrices(),3u);
         BOOST_FOREACH(unsigned int const site_number,irange(1u,number_of_sites-1)) {
@@ -255,7 +255,7 @@ TEST_CASE(addLocalExternalField) {
         OperatorBuilder builder;
         builder.addSites(number_of_sites,PhysicalDimension(2u));
         BOOST_FOREACH(unsigned int const site_number, irange(0u,number_of_sites)) {
-            builder.addLocalExternalField(site_number,Pauli::Z);
+            builder.addLocalExternalField(site_number,builder.getZMatrixId());
         }
         checkOperatorsEqual(
             builder.compile(),
@@ -270,9 +270,9 @@ TEST_CASE(addLocalNeighborCouplingField) {
         OperatorBuilder builder;
         builder.addSites(number_of_sites,PhysicalDimension(2u));
         BOOST_FOREACH(unsigned int const site_number, irange(0u,number_of_sites)) {
-            builder.addLocalExternalField(site_number,Pauli::Z);
+            builder.addLocalExternalField(site_number,OperatorBuilder::getZMatrixId());
             if(site_number+1 < number_of_sites) {
-                builder.addLocalNeighborCouplingField(site_number,Pauli::X,Pauli::X,0.5);
+                builder.addLocalNeighborCouplingField(site_number,builder.getXMatrixId(),builder.getXMatrixId(),0.5);
             }
         }
         Operator op = builder.compile();
