@@ -21,6 +21,7 @@
 //@+node:gcross.20110805222031.2353: ** << Includes >>
 #include <boost/container/set.hpp>
 #include <boost/lambda/bind.hpp>
+#include <boost/make_shared.hpp>
 #include <boost/range/adaptor/map.hpp>
 #include <boost/range/algorithm/for_each.hpp>
 #include <boost/range/algorithm/fill.hpp>
@@ -236,7 +237,7 @@ OperatorBuilder& OperatorBuilder::addGlobalNeighborCouplingField(MatrixConstPtr 
 Operator OperatorBuilder::compile(bool optimize, bool add_start_and_end_loops) {
     OperatorSpecification source(generateSpecification(add_start_and_end_loops));
     if(optimize) source.optimize();
-    return boost::move(source.compile());
+    return source.compile();
 }
 //@+node:gcross.20110805222031.2385: *4* connect
 OperatorBuilder& OperatorBuilder::connect(
