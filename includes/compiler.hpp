@@ -288,13 +288,6 @@ OperatorBuilder& addSites(unsigned int number_of_sites, PhysicalDimension dimens
 OperatorBuilder& connect(unsigned int site_number, unsigned int left_signal, unsigned int right_signal, unsigned int matrix_id, complex<double> scale_factor=c(1,0));
 //@-others
 };
-//@+node:gcross.20110805222031.4656: ** Functions
-//Operator compile(OperatorSpecification const& source);
-
-bool performOptimizationPassEliminateNullMatrices(vector<SiteConnections>& connections);
-bool performOptimizationPassEliminateDeadLeftSignals(SignalTable const& signal_table, vector<SiteConnections>& connections);
-bool performOptimizationPassEliminateDeadRightSignals(SignalTable const& signal_table, vector<SiteConnections>& connections);
-bool performOptimizationPassEliminateDeadSignals(SignalTable const& signal_table, vector<SiteConnections>& connections);
 //@-others
 
 }
