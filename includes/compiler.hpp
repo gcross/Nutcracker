@@ -267,6 +267,8 @@ vector<unsigned int> sites;
 
 vector<UnmergedSiteConnections> connections;
 //@+node:gcross.20110822214054.2516: *4* Informational
+public:
+
 unsigned int numberOfSites() const { return sites.size(); }
 //@+node:gcross.20110817110920.2481: *4* Operators
 public:
