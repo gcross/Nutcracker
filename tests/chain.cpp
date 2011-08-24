@@ -246,8 +246,9 @@ TEST_SUITE(performOptimizationSweep) {
                      constructExternalFieldOperator(
                           number_of_sites
                         , matrix
-                     )
-                    ,initial_bandwidth_dimension
+                     ),
+                     ChainOptions()
+                        .setInitialBandwidthDimension(initial_bandwidth_dimension)
                 );
                 chain.signalOptimizeSiteFailure.connect(rethrow<OptimizerFailure>);
                 chain.performOptimizationSweep();
@@ -305,7 +306,7 @@ TEST_SUITE(sweepUntilConverged) {
         , unsigned int const bandwidth_dimension
         , double const correct_energy
     ) {
-        Chain chain(constructTransverseIsingModelOperator(number_of_sites,coupling_strength),bandwidth_dimension);
+        Chain chain(constructTransverseIsingModelOperator(number_of_sites,coupling_strength),ChainOptions().setInitialBandwidthDimension(bandwidth_dimension));
         chain.signalOptimizeSiteFailure.connect(rethrow<OptimizerFailure>);
         chain.sweepUntilConverged();
         ASSERT_NEAR_REL(correct_energy,chain.getEnergy(),1e-7);
@@ -361,9 +362,9 @@ TEST_SUITE(external_field) {
                           number_of_sites
                         , matrix
                      )
-                    ,initial_bandwidth_dimension
-                    ,Chain::defaults
-                    ,optimizer_mode
+                    ,ChainOptions()
+                        .setInitialBandwidthDimension(initial_bandwidth_dimension)
+                        .setOptimizerMode(optimizer_mode)
                 );
                 chain.signalOptimizeSiteFailure.connect(rethrow<OptimizerFailure>);
                 unsigned int number_of_sweeps = 0;
@@ -413,9 +414,8 @@ TEST_SUITE(transverse_Ising_model) {
     ) {
         Chain chain(
             constructTransverseIsingModelOperator(number_of_sites,coupling_strength)
-          , 1
-          , Chain::defaults
-          , optimizer_mode
+          , ChainOptions()
+                .setOptimizerMode(optimizer_mode)
         );
         chain.signalOptimizeSiteFailure.connect(rethrow<OptimizerFailure>);
         chain.optimizeChain();
@@ -518,7 +518,7 @@ TEST_SUITE(external_field) {
         Chain chain(constructExternalFieldOperator(number_of_sites,diagonalMatrix(irange(0u,physical_dimension))));
 	double tolerance = 1e-12;
 	if(physical_dimension == 3 && number_of_sites == 3) {
-	  chain.options.sanity_check_threshold *= 10;
+	  chain.sanity_check_threshold *= 10;
 	}
         checkEnergies(chain,correct_energies,tolerance);
     }
@@ -547,14 +547,13 @@ TEST_SUITE(transverse_Ising_model) {
     ) {
         Chain chain(
             constructTransverseIsingModelOperator(number_of_sites,coupling_strength),
-            1,
-            Chain::defaults,
-            optimizer_mode
+            ChainOptions()
+                .setOptimizerMode(optimizer_mode)
+                .setSiteConvergenceThreshold(1e-10)
+                .setSweepConvergenceThreshold(1e-9)
+                .setChainConvergenceThreshold(1e-9)
+                .setSanityCheckThreshold(sanity_check_threshold)
         );
-        chain.options.site_convergence_threshold = 1e-10;
-        chain.options.sweep_convergence_threshold = 1e-9;
-        chain.options.chain_convergence_threshold = 1e-9;
-        chain.options.sanity_check_threshold = sanity_check_threshold;
         checkEnergies(
             chain,
             correct_energies,

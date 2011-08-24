@@ -134,7 +134,7 @@ class ToleranceOptions : public Options {
     //@+node:gcross.20110511190907.3741: *4* Fields
     protected:
 
-    Chain::Options chain_options;
+    ChainOptions chain_options;
 
     public:
 
@@ -144,7 +144,7 @@ class ToleranceOptions : public Options {
     double getToleranceSanity() const;
     unsigned int getToleranceIterations() const;
 
-    Chain::Options const& getToleranceChainOptions() const;
+    ChainOptions getToleranceChainOptions() const;
     //@-others
 };
 //@-others

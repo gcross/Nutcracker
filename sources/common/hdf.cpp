@@ -155,10 +155,10 @@ struct Outputter : public Destructable, public trackable {
         {
             if(configuration_location.exists()) group.remove("configuration");
             Group configuration(createAt(configuration_location));
-            configuration["site convergence tolerance"] = chain.options.site_convergence_threshold;
-            configuration["sweep convergence tolerance"] = chain.options.sweep_convergence_threshold;
-            configuration["chain convergence tolerance"] = chain.options.chain_convergence_threshold;
-            configuration["sanity check tolerance"] = chain.options.sanity_check_threshold;
+            configuration["site convergence tolerance"] = chain.site_convergence_threshold;
+            configuration["sweep convergence tolerance"] = chain.sweep_convergence_threshold;
+            configuration["chain convergence tolerance"] = chain.chain_convergence_threshold;
+            configuration["sanity check tolerance"] = chain.sanity_check_threshold;
         }
 
 

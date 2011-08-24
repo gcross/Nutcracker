@@ -148,7 +148,7 @@ struct YAMLOutputter : public Destructable, public trackable {
     )
       : chain(chain)
       , out(maybe_filename ? file : std::cout)
-      , digits_of_precision(computeDigitsOfPrecision(chain.options.chain_convergence_threshold))
+      , digits_of_precision(computeDigitsOfPrecision(chain.chain_convergence_threshold))
     {
         assert(!maybe_location);
         assert(!output_states);
@@ -161,10 +161,10 @@ struct YAMLOutputter : public Destructable, public trackable {
 
         out
             << "Configuration:" << endl
-            << "  site convergence tolerance: " << chain.options.site_convergence_threshold << endl
-            << "  sweep convergence tolerance: " << chain.options.sweep_convergence_threshold << endl
-            << "  chain convergence tolerance: " << chain.options.chain_convergence_threshold << endl
-            << "  sanity check threshold: " << chain.options.sanity_check_threshold << endl
+            << "  site convergence tolerance: " << chain.site_convergence_threshold << endl
+            << "  sweep convergence tolerance: " << chain.sweep_convergence_threshold << endl
+            << "  chain convergence tolerance: " << chain.chain_convergence_threshold << endl
+            << "  sanity check threshold: " << chain.sanity_check_threshold << endl
         ;
 
         out << "Energy levels:" << endl;

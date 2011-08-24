@@ -213,7 +213,7 @@ double ToleranceOptions::getToleranceChain() const { return chain_options.chain_
 double ToleranceOptions::getToleranceSanity() const { return chain_options.sanity_check_threshold; }
 unsigned int ToleranceOptions::getToleranceIterations() const { return chain_options.maximum_number_of_iterations; }
 
-Chain::Options const& ToleranceOptions::getToleranceChainOptions() const { return chain_options; }
+ChainOptions ToleranceOptions::getToleranceChainOptions() const { return chain_options; }
 //@-others
 
 }

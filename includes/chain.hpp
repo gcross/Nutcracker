@@ -95,13 +95,56 @@ public:
         overlap_boundaries = boost::move(other.overlap_boundaries);
     }
 };
+//@+node:gcross.20110823190118.2578: *3* ChainOptions
+struct ChainOptions {
+    unsigned int maximum_number_of_iterations;
+    double sanity_check_threshold;
+    double site_convergence_threshold;
+    double sweep_convergence_threshold;
+    double chain_convergence_threshold;
+
+    unsigned int initial_bandwidth_dimension;
+    function<unsigned int (unsigned int)> computeNewBandwidthDimension;
+
+    OptimizerMode optimizer_mode;
+
+    ChainOptions()
+      : maximum_number_of_iterations(10000)
+      , sanity_check_threshold(1e-12)
+      , site_convergence_threshold(1e-12)
+      , sweep_convergence_threshold(1e-12)
+      , chain_convergence_threshold(1e-12)
+      , initial_bandwidth_dimension(1)
+      , computeNewBandwidthDimension(lambda::_1+1)
+      , optimizer_mode(OptimizerMode::least_value)
+    {}
+
+    static ChainOptions const defaults;
+
+#define GENERATE_ChainOptions_SETTER(type,underscore_name,CapsName) \
+    ChainOptions& set##CapsName(type underscore_name) { \
+        this->underscore_name = underscore_name; \
+        return *this; \
+    }
+
+    GENERATE_ChainOptions_SETTER(unsigned int,maximum_number_of_iterations,MaximumNumberOfIterations)
+    GENERATE_ChainOptions_SETTER(double,sanity_check_threshold,SanityCheckThreshold)
+    GENERATE_ChainOptions_SETTER(double,site_convergence_threshold,SiteConvergenceThreshold)
+    GENERATE_ChainOptions_SETTER(double,sweep_convergence_threshold,SweepConvergenceThreshold)
+    GENERATE_ChainOptions_SETTER(double,chain_convergence_threshold,ChainConvergenceThreshold)
+    GENERATE_ChainOptions_SETTER(unsigned int,initial_bandwidth_dimension,InitialBandwidthDimension)
+    GENERATE_ChainOptions_SETTER(function<unsigned int (unsigned int)> const&,computeNewBandwidthDimension,ComputeNewBandwidthDimension)
+    GENERATE_ChainOptions_SETTER(OptimizerMode const&,optimizer_mode,OptimizerMode)
+
+#undef GENERATE_ChainOptions_SETTER
+
+};
 //@+node:gcross.20110202175920.1704: *3* Chain
-class Chain {
+class Chain: public ChainOptions {
 public:
     unsigned int const number_of_sites;
 protected:
     Operator const operator_sites;
-    OptimizerMode const optimizer_mode;
     vector<Projector> projectors;
     unsigned int current_site_number;
     ExpectationBoundary<Left> left_expectation_boundary;
@@ -137,15 +180,8 @@ protected:
     void resetProjectorMatrix();
 
 public:
-    struct Options {
-        unsigned int maximum_number_of_iterations;
-        double sanity_check_threshold;
-        double site_convergence_threshold;
-        double sweep_convergence_threshold;
-        double chain_convergence_threshold;
-        function<unsigned int (unsigned int)> computeNewBandwidthDimension;
-    } options;
-    static Options const defaults;
+    Chain(Operator const& operator_sites);
+    Chain(Operator const& operator_sites, ChainOptions const& options);
 
     signal<void (unsigned int)> signalOptimizeSiteSuccess;
     signal<void (OptimizerFailure&)> signalOptimizeSiteFailure;
@@ -154,12 +190,6 @@ public:
     signal<void ()> signalChainOptimized;
     signal<void ()> signalChainReset;
 
-    Chain(
-      Operator const& operator_sites
-    , unsigned int const initial_bandwidth = 1
-    , Options const& options = defaults
-    , OptimizerMode const& optimizer_mode = OptimizerMode::least_value
-    );
     void reset(unsigned int initial_bandwidth = 1);
 
     double getEnergy() const { return energy; }

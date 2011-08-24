@@ -244,9 +244,7 @@ int main(int argc, char** argv) {
 
         Chain chain
             (hamiltonian
-            ,1
-            ,options.getToleranceChainOptions()
-            ,options.getOptimizerMode()
+            ,options.getToleranceChainOptions().setOptimizerMode(options.getOptimizerMode())
             );
 
         auto_ptr<Destructable const> outputter = options.connectToChainUsingOutputFormat(output_format,chain);

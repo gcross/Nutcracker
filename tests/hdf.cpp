@@ -135,10 +135,10 @@ TEST_CASE(Output) {
 
         {
             Group configuration(file / "configuration");
-            ASSERT_EQ(chain.options.site_convergence_threshold,static_cast<double>(configuration["site convergence tolerance"]));
-            ASSERT_EQ(chain.options.sweep_convergence_threshold,static_cast<double>(configuration["sweep convergence tolerance"]));
-            ASSERT_EQ(chain.options.chain_convergence_threshold,static_cast<double>(configuration["chain convergence tolerance"]));
-            ASSERT_EQ(chain.options.sanity_check_threshold,static_cast<double>(configuration["sanity check tolerance"]));
+            ASSERT_EQ(chain.site_convergence_threshold,static_cast<double>(configuration["site convergence tolerance"]));
+            ASSERT_EQ(chain.sweep_convergence_threshold,static_cast<double>(configuration["sweep convergence tolerance"]));
+            ASSERT_EQ(chain.chain_convergence_threshold,static_cast<double>(configuration["chain convergence tolerance"]));
+            ASSERT_EQ(chain.sanity_check_threshold,static_cast<double>(configuration["sanity check tolerance"]));
         }
 
         ASSERT_TRUE(equal(levels,Dataset(file / "levels").readVector<double>()));

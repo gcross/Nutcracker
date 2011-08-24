@@ -56,25 +56,14 @@ using std::numeric_limits;
 //@-<< Usings >>
 
 //@+others
-//@+node:gcross.20110208151104.1790: ** Values
-Chain::Options const Chain::defaults =
-    { 10000
-    , 1e-12
-    , 1e-12
-    , 1e-12
-    , 1e-12
-    , lambda::_1+1
-    };
+//@+node:gcross.20110823190118.2596: ** Values
+ChainOptions const ChainOptions::defaults;
 //@+node:gcross.20110202175920.1714: ** class Chain
 //@+node:gcross.20110202175920.1715: *3* (constructors)
-Chain::Chain(
-      Operator const& operator_sites
-    , unsigned int const bandwidth_dimension
-    , Options const& options
-    , OptimizerMode const& optimizer_mode
-) : number_of_sites(operator_sites.size())
+Chain::Chain(Operator const& operator_sites)
+  : ChainOptions()
+  , number_of_sites(operator_sites.size())
   , operator_sites(operator_sites)
-  , optimizer_mode(optimizer_mode)
   , current_site_number(0)
   , left_expectation_boundary(make_trivial)
   , right_expectation_boundary(make_trivial)
@@ -82,8 +71,26 @@ Chain::Chain(
   , physical_dimensions(extractPhysicalDimensions(operator_sites))
   , maximum_number_of_levels(accumulate(physical_dimensions,1,multiplies<unsigned int>()))
   , maximum_bandwidth_dimension(maximumBandwidthDimension(physical_dimensions))
-  , bandwidth_dimension(bandwidth_dimension)
-  , options(options)
+  , bandwidth_dimension(initial_bandwidth_dimension)
+{
+    assert(number_of_sites > 0);
+    assert(bandwidth_dimension <= maximum_bandwidth_dimension);
+
+    reset(bandwidth_dimension);
+}
+
+Chain::Chain(Operator const& operator_sites, ChainOptions const& options)
+  : ChainOptions(options)
+  , number_of_sites(operator_sites.size())
+  , operator_sites(operator_sites)
+  , current_site_number(0)
+  , left_expectation_boundary(make_trivial)
+  , right_expectation_boundary(make_trivial)
+  , energy(0)
+  , physical_dimensions(extractPhysicalDimensions(operator_sites))
+  , maximum_number_of_levels(accumulate(physical_dimensions,1,multiplies<unsigned int>()))
+  , maximum_bandwidth_dimension(maximumBandwidthDimension(physical_dimensions))
+  , bandwidth_dimension(initial_bandwidth_dimension)
 {
     assert(number_of_sites > 0);
     assert(bandwidth_dimension <= maximum_bandwidth_dimension);
@@ -203,11 +210,11 @@ void Chain::moveTo(unsigned int new_site_number) {
 void Chain::optimizeChain() {
     double previous_energy = energy;
     sweepUntilConverged();
-    while(outsideTolerance(previous_energy,energy,options.chain_convergence_threshold)
+    while(outsideTolerance(previous_energy,energy,chain_convergence_threshold)
        && bandwidth_dimension < maximum_bandwidth_dimension
     ) {
         previous_energy = energy;
-        increaseBandwidthDimension(min(options.computeNewBandwidthDimension(bandwidth_dimension),maximum_bandwidth_dimension));
+        increaseBandwidthDimension(min(computeNewBandwidthDimension(bandwidth_dimension),maximum_bandwidth_dimension));
         sweepUntilConverged();
     }
     signalChainOptimized();
@@ -222,16 +229,16 @@ void Chain::optimizeSite() {
                 ,*operator_sites[current_site_number]
                 ,right_expectation_boundary
                 ,projector_matrix
-                ,options.site_convergence_threshold
-                ,options.sanity_check_threshold
-                ,options.maximum_number_of_iterations
+                ,site_convergence_threshold
+                ,sanity_check_threshold
+                ,maximum_number_of_iterations
                 ,optimizer_mode
             )
         );
-        if(optimizer_mode.checkForRegressionFromTo(energy,result.eigenvalue,options.sanity_check_threshold)) {
+        if(optimizer_mode.checkForRegressionFromTo(energy,result.eigenvalue,sanity_check_threshold)) {
             throw OptimizerObtainedRegressiveEigenvalue(energy,result.eigenvalue);
         }
-        if((energy >= 0 && result.eigenvalue >= 0) || (energy <= 0 && result.eigenvalue <= 0) || outsideTolerance(abs(energy),abs(result.eigenvalue),options.sanity_check_threshold)) {
+        if((energy >= 0 && result.eigenvalue >= 0) || (energy <= 0 && result.eigenvalue <= 0) || outsideTolerance(abs(energy),abs(result.eigenvalue),sanity_check_threshold)) {
             energy = result.eigenvalue;
             state_site = boost::move(result.state_site);
         }
@@ -358,7 +365,7 @@ void Chain::solveForMultipleLevels(unsigned int number_of_levels) {
 void Chain::sweepUntilConverged() {
     double previous_energy = energy;
     performOptimizationSweep();
-    while(outsideTolerance(previous_energy,energy,options.sweep_convergence_threshold)) {
+    while(outsideTolerance(previous_energy,energy,sweep_convergence_threshold)) {
         previous_energy = energy;
         performOptimizationSweep();
     }
