@@ -224,6 +224,7 @@ public:
     void solveForMultipleLevels(unsigned int number_of_levels);
 
     State makeCopyOfState() const;
+    State removeState();
 
     friend class const_iterator;
     class const_iterator :

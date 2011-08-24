@@ -257,6 +257,16 @@ void Chain::performOptimizationSweep() {
     }
     signalSweepPerformed();
 }
+//@+node:gcross.20110822214054.2524: *3* removeState
+State Chain::removeState() {
+    checkAtFirstSite();
+    vector<StateSite<Right> > rest_state_sites;
+    BOOST_FOREACH(Neighbor<Right>& neighbor, right_neighbors | reversed) {
+        rest_state_sites.emplace_back(boost::move(neighbor.state_site));
+    }
+    right_neighbors.clear();
+    return State(boost::move(state_site),boost::move(rest_state_sites));
+}
 //@+node:gcross.20110208233325.1798: *3* reset
 void Chain::reset() {
     bandwidth_dimension =
