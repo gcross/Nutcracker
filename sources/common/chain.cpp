@@ -71,12 +71,11 @@ Chain::Chain(Operator const& operator_sites)
   , physical_dimensions(extractPhysicalDimensions(operator_sites))
   , maximum_number_of_levels(accumulate(physical_dimensions,1,multiplies<unsigned int>()))
   , maximum_bandwidth_dimension(maximumBandwidthDimension(physical_dimensions))
-  , bandwidth_dimension(initial_bandwidth_dimension)
+  , bandwidth_dimension(0u)
 {
     assert(number_of_sites > 0);
-    assert(bandwidth_dimension <= maximum_bandwidth_dimension);
 
-    reset(bandwidth_dimension);
+    reset();
 }
 
 Chain::Chain(Operator const& operator_sites, ChainOptions const& options)
@@ -90,12 +89,15 @@ Chain::Chain(Operator const& operator_sites, ChainOptions const& options)
   , physical_dimensions(extractPhysicalDimensions(operator_sites))
   , maximum_number_of_levels(accumulate(physical_dimensions,1,multiplies<unsigned int>()))
   , maximum_bandwidth_dimension(maximumBandwidthDimension(physical_dimensions))
-  , bandwidth_dimension(initial_bandwidth_dimension)
+  , bandwidth_dimension(0u)
 {
     assert(number_of_sites > 0);
-    assert(bandwidth_dimension <= maximum_bandwidth_dimension);
 
-    reset(bandwidth_dimension);
+    reset();
+}
+//@+node:gcross.20110822214054.2525: *3* checkAtFirstSite
+void Chain::checkAtFirstSite() const {
+    if(current_site_number != 0u) throw ChainNotAtFirstSiteError(current_site_number);
 }
 //@+node:gcross.20110202175920.1720: *3* computeExpectationValueAtSite
 complex<double> Chain::computeExpectationValueAtCurrentSite() const {
@@ -115,24 +117,14 @@ double Chain::computeProjectorOverlapAtCurrentSite() const {
 double Chain::computeStateNorm() const {
     return state_site.norm();
 }
-//@+node:gcross.20110218083552.1930: *3* convertStateToProjectorAndReset
-void Chain::convertStateToProjectorAndReset(unsigned int const new_bandwidth_dimension) {
+//@+node:gcross.20110218083552.1930: *3* constructAndAddProjectorFromState
+void Chain::constructAndAddProjectorFromState() {
     using namespace boost;
-    assert(current_site_number == 0);
+    checkAtFirstSite();
     projectors.push_back(
         computeProjectorFromStateSites(
              state_site
             ,right_neighbors | reversed | transformed(bind(&Neighbor<Right>::state_site,_1))
-        )
-    );
-    reset(
-        min(maximum_bandwidth_dimension
-           ,max(new_bandwidth_dimension
-               ,minimumBandwidthDimensionForProjectorCount(
-                     physical_dimensions
-                    ,projectors.size()
-                )+1
-            )
         )
     );
 }
@@ -141,7 +133,7 @@ void Chain::increaseBandwidthDimension(unsigned int const new_bandwidth_dimensio
     if(bandwidth_dimension == new_bandwidth_dimension) return;
     assert(bandwidth_dimension < new_bandwidth_dimension);
     assert(new_bandwidth_dimension <= maximum_bandwidth_dimension);
-    assert(current_site_number == 0);
+    checkAtFirstSite();
     vector<unsigned int> initial_bandwidth_dimensions = computeBandwidthDimensionSequence(new_bandwidth_dimension,physical_dimensions);
     vector<unsigned int>::const_reverse_iterator dimension_iterator = initial_bandwidth_dimensions.rbegin()+1;
 
@@ -185,7 +177,7 @@ void Chain::increaseBandwidthDimension(unsigned int const new_bandwidth_dimensio
 }
 //@+node:gcross.20110215235924.1878: *3* makeCopyOfState
 State Chain::makeCopyOfState() const {
-    assert(current_site_number == 0);
+    checkAtFirstSite();
     StateSite<Middle> first_state_site(copyFrom<StateSite<Middle> const>(state_site));
     vector<StateSite<Right> > rest_state_sites; rest_state_sites.reserve(number_of_sites-1);
     BOOST_FOREACH(Neighbor<Right> const& neighbor, right_neighbors | reversed) {
@@ -266,7 +258,18 @@ void Chain::performOptimizationSweep() {
     signalSweepPerformed();
 }
 //@+node:gcross.20110208233325.1798: *3* reset
-void Chain::reset(unsigned int bandwidth_dimension) {
+void Chain::reset() {
+    bandwidth_dimension =
+        min(maximum_bandwidth_dimension
+           ,max(initial_bandwidth_dimension
+               ,minimumBandwidthDimensionForProjectorCount(
+                     physical_dimensions
+                    ,projectors.size()
+                )
+            )
+        )
+    ;
+
     current_site_number = 0;
 
     resetBoundaries();
@@ -357,7 +360,8 @@ void Chain::solveForMultipleLevels(unsigned int number_of_levels) {
     assert(number_of_levels+projectors.size() <= maximum_number_of_levels);
     REPEAT(number_of_levels-1) {
         optimizeChain();
-        convertStateToProjectorAndReset();
+        constructAndAddProjectorFromState();
+        reset();
     }
     optimizeChain();
 }

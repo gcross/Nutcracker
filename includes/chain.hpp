@@ -53,6 +53,17 @@ namespace lambda = boost::lambda;
 
 //@+others
 //@+node:gcross.20110130193548.1684: ** Exceptions
+//@+node:gcross.20110822214054.2527: *3* ChainNotAtFirstSiteError
+struct ChainNotAtFirstSiteError : public std::logic_error {
+    unsigned int current_site_number;
+    ChainNotAtFirstSiteError(unsigned int current_site_number)
+      : std::logic_error((
+            format("The requested operation requires the chain to be at the first site (that is, site #0), but it is instead at (zero-based) site #%1%")
+                % current_site_number
+        ).str())
+      , current_site_number(current_site_number)
+    {}
+};
 //@+node:gcross.20110202200838.1712: *3* InitialChainEnergyNotRealError
 struct InitialChainEnergyNotRealError : public std::runtime_error {
     complex<double> const energy;
@@ -178,6 +189,7 @@ protected:
 
     void resetBoundaries();
     void resetProjectorMatrix();
+    void checkAtFirstSite() const;
 
 public:
     Chain(Operator const& operator_sites);
@@ -190,7 +202,7 @@ public:
     signal<void ()> signalChainOptimized;
     signal<void ()> signalChainReset;
 
-    void reset(unsigned int initial_bandwidth = 1);
+    void reset();
 
     double getEnergy() const { return energy; }
     unsigned int bandwidthDimension() const { return bandwidth_dimension; }
@@ -203,7 +215,7 @@ public:
     template<typename side> void move();
     void moveTo(unsigned int new_site_number);
     void increaseBandwidthDimension(unsigned int const new_bandwidth_dimension);
-    void convertStateToProjectorAndReset(unsigned int const new_bandwidth_dimension=1);
+    void constructAndAddProjectorFromState();
 
     void optimizeSite();
     void performOptimizationSweep();

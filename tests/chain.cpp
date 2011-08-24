@@ -549,6 +549,7 @@ TEST_SUITE(transverse_Ising_model) {
             constructTransverseIsingModelOperator(number_of_sites,coupling_strength),
             ChainOptions()
                 .setOptimizerMode(optimizer_mode)
+                .setInitialBandwidthDimension(2u)
                 .setSiteConvergenceThreshold(1e-10)
                 .setSweepConvergenceThreshold(1e-9)
                 .setChainConvergenceThreshold(1e-9)
