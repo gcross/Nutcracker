@@ -138,6 +138,7 @@ unsigned int minimumBandwidthDimensionForProjectorCount(
       vector<unsigned int> const& physical_dimensions
     , unsigned int const number_of_projectors
 ) {
+    if(number_of_projectors == 0) return 1;
     for(unsigned int bandwidth_dimension = 1; true; ++bandwidth_dimension) {
         vector<unsigned int> const bandwidth_dimension_sequence =
             computeBandwidthDimensionSequence(

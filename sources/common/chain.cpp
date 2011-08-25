@@ -64,14 +64,9 @@ Chain::Chain(Operator const& operator_sites)
   : ChainOptions()
   , number_of_sites(operator_sites.size())
   , operator_sites(operator_sites)
-  , current_site_number(0)
-  , left_expectation_boundary(make_trivial)
-  , right_expectation_boundary(make_trivial)
-  , energy(0)
   , physical_dimensions(extractPhysicalDimensions(operator_sites))
   , maximum_number_of_levels(accumulate(physical_dimensions,1,multiplies<unsigned int>()))
   , maximum_bandwidth_dimension(maximumBandwidthDimension(physical_dimensions))
-  , bandwidth_dimension(0u)
 {
     assert(number_of_sites > 0);
 
@@ -82,14 +77,9 @@ Chain::Chain(Operator const& operator_sites, ChainOptions const& options)
   : ChainOptions(options)
   , number_of_sites(operator_sites.size())
   , operator_sites(operator_sites)
-  , current_site_number(0)
-  , left_expectation_boundary(make_trivial)
-  , right_expectation_boundary(make_trivial)
-  , energy(0)
   , physical_dimensions(extractPhysicalDimensions(operator_sites))
   , maximum_number_of_levels(accumulate(physical_dimensions,1,multiplies<unsigned int>()))
   , maximum_bandwidth_dimension(maximumBandwidthDimension(physical_dimensions))
-  , bandwidth_dimension(0u)
 {
     assert(number_of_sites > 0);
 
@@ -98,6 +88,11 @@ Chain::Chain(Operator const& operator_sites, ChainOptions const& options)
 //@+node:gcross.20110822214054.2525: *3* checkAtFirstSite
 void Chain::checkAtFirstSite() const {
     if(current_site_number != 0u) throw ChainNotAtFirstSiteError(current_site_number);
+}
+//@+node:gcross.20110824002720.2598: *3* clear
+void Chain::clear() {
+    projectors.clear();
+    reset();
 }
 //@+node:gcross.20110202175920.1720: *3* computeExpectationValueAtSite
 complex<double> Chain::computeExpectationValueAtCurrentSite() const {
@@ -364,6 +359,34 @@ void Chain::resetProjectorMatrix() {
             ,right_overlap_boundaries
             ,projectors | transformed(FetchOverlapSite(current_site_number))
         );
+}
+//@+node:gcross.20110824002720.2602: *3* solveForEigenvaluesAndEigenvectorsAndThenClearChain
+vector<Solution> Chain::solveForEigenvaluesAndEigenvectorsAndThenClearChain(unsigned int number_of_levels) {
+    vector<Solution> eigenvalues_and_eigenvectors;
+    REPEAT(number_of_levels-1) {
+        optimizeChain();
+        constructAndAddProjectorFromState();
+        eigenvalues_and_eigenvectors.emplace_back(getEnergy(),boost::move(removeState()));
+        reset();
+    }
+    optimizeChain();
+    eigenvalues_and_eigenvectors.emplace_back(getEnergy(),boost::move(removeState()));
+    clear();
+    return boost::move(eigenvalues_and_eigenvectors);
+}
+//@+node:gcross.20110824002720.2600: *3* solveForEigenvaluesAndThenClearChain
+vector<double> Chain::solveForEigenvaluesAndThenClearChain(unsigned int number_of_levels) {
+    vector<double> eigenvalues;
+    REPEAT(number_of_levels-1) {
+        optimizeChain();
+        constructAndAddProjectorFromState();
+        eigenvalues.push_back(getEnergy());
+        reset();
+    }
+    optimizeChain();
+    eigenvalues.push_back(getEnergy());
+    clear();
+    return boost::move(eigenvalues);
 }
 //@+node:gcross.20110218083552.3113: *3* solveForMultipleLevels
 void Chain::solveForMultipleLevels(unsigned int number_of_levels) {

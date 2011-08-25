@@ -37,6 +37,7 @@
 #include <functional>
 
 #include "chain.hpp"
+#include "compiler.hpp"
 #include "operators.hpp"
 #include "utilities.hpp"
 
@@ -646,6 +647,46 @@ TEST_SUITE(transverse_Ising_model) {
 }
 //@-others
 
+}
+//@+node:gcross.20110824002720.2607: *3* solveForEigenvaluesAndThenClearChain
+TEST_CASE(solveForEigenvaluesAndThenClearChain) {
+    RNG random;
+    BOOST_FOREACH(unsigned int const number_of_sites, irange(3u,6u)) {
+        OperatorBuilder builder;
+        builder.addSites(number_of_sites,PhysicalDimension(2));
+        BOOST_FOREACH(unsigned int site_number, irange(0u,number_of_sites)) {
+            builder.addLocalExternalField(site_number,builder.lookupMatrixId(squareMatrix(list_of(0)(0)(0)(1 << site_number))));
+        }
+        Chain chain(builder.compile(),ChainOptions().setInitialBandwidthDimension(3));
+        REPEAT(10) {
+            vector<double> eigenvalues = chain.solveForEigenvaluesAndThenClearChain(3);
+            ASSERT_EQ_VAL(eigenvalues.size(),3u);
+            BOOST_FOREACH(unsigned int const i, irange(0u,3u)) {
+                ASSERT_NEAR_ABS(eigenvalues[i],(double)i,1e-13);
+            }
+        }
+    }
+}
+//@+node:gcross.20110824002720.2609: *3* solveForEigenvaluesAndEigenvectorsAndThenClearChain
+TEST_CASE(solveForEigenvaluesAndEigenvectorsAndThenClearChain) {
+    RNG random;
+    BOOST_FOREACH(unsigned int const number_of_sites, irange(3u,6u)) {
+        OperatorBuilder builder;
+        builder.addSites(number_of_sites,PhysicalDimension(2));
+        BOOST_FOREACH(unsigned int site_number, irange(0u,number_of_sites)) {
+            builder.addLocalExternalField(site_number,builder.lookupMatrixId(squareMatrix(list_of(0)(0)(0)(1 << site_number))));
+        }
+        Operator op = builder.compile();
+        Chain chain(op,ChainOptions().setInitialBandwidthDimension(3));
+        REPEAT(10) {
+            vector<Solution> solutions = chain.solveForEigenvaluesAndEigenvectorsAndThenClearChain(3);
+            ASSERT_EQ_VAL(solutions.size(),3u);
+            BOOST_FOREACH(unsigned int const i, irange(0u,3u)) {
+                ASSERT_NEAR_ABS(solutions[i].eigenvalue,(double)i,1e-13);
+                ASSERT_NEAR_ABS(computeExpectationValue(solutions[i].eigenvector,op),(double)i,1e-13);
+            }
+        }
+    }
 }
 //@-others
 

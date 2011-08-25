@@ -76,6 +76,32 @@ struct InitialChainEnergyNotRealError : public std::runtime_error {
     {}
 };
 //@+node:gcross.20110202175920.1701: ** Classes
+//@+node:gcross.20110824002720.2604: *3* Solution
+class Solution {
+private:
+    BOOST_MOVABLE_BUT_NOT_COPYABLE(Solution)
+public:
+    double eigenvalue;
+    State eigenvector;
+
+    Solution(BOOST_RV_REF(Solution) other)
+      : eigenvalue(other.eigenvalue)
+      , eigenvector(boost::move(other.eigenvector))
+    {}
+
+    Solution(
+          double eigenvalue
+        , BOOST_RV_REF(State) eigenvector
+    ) : eigenvalue(eigenvalue)
+      , eigenvector(eigenvector)
+    {}
+
+    Solution& operator=(BOOST_RV_REF(Solution) other) {
+        eigenvalue = other.eigenvalue;
+        eigenvector = boost::move(other.eigenvector);
+        return *this;
+    }
+};
 //@+node:gcross.20110202175920.1703: *3* Neighbor
 template<typename side> struct Neighbor {
 private:
@@ -202,6 +228,7 @@ public:
     signal<void ()> signalChainOptimized;
     signal<void ()> signalChainReset;
 
+    void clear();
     void reset();
 
     double getEnergy() const { return energy; }
@@ -222,6 +249,9 @@ public:
     void sweepUntilConverged();
     void optimizeChain();
     void solveForMultipleLevels(unsigned int number_of_levels);
+
+    vector<double> solveForEigenvaluesAndThenClearChain(unsigned int number_of_levels);
+    vector<Solution> solveForEigenvaluesAndEigenvectorsAndThenClearChain(unsigned int number_of_levels);
 
     State makeCopyOfState() const;
     State removeState();
