@@ -99,7 +99,7 @@ typedef boost::shared_ptr<Matrix> MatrixPtr;
 typedef boost::shared_ptr<Matrix const> MatrixConstPtr;
 //@+node:gcross.20110129220506.1652: ** Macros
 //! Repeats a statement or block \c n times.
-#define REPEAT(n) for(unsigned int _counter##__LINE__ = 0; _##counter##__LINE__ < n; ++_##counter##__LINE__)
+#define REPEAT(n) for(unsigned int _counter##__LINE__ = 0; _counter##__LINE__ < n; ++_counter##__LINE__)
 //@+node:gcross.20110202200838.1710: ** Exceptions
 //@+node:gcross.20110202200838.1709: *3* BadProgrammerException
 //! Exception indicating a programmer error.
