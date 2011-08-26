@@ -174,8 +174,8 @@ public:
 
 unsigned int allocateSignal();
 
-unsigned int getStartSignal() const { return 1; }
-unsigned int getEndSignal() const { return 2; }
+static unsigned int getStartSignal() { return 1u; }
+static unsigned int getEndSignal() { return 2u; }
 
 void reserveSignalsBelow(unsigned int exclusive_upper_bound);
 //@-others
