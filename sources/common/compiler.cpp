@@ -191,17 +191,6 @@ OperatorBuilder::OperatorBuilder(BOOST_RV_REF(OperatorBuilder) other)
   , SignalTable(other)
   , connections(boost::move(other.connections))
 {}
-//@+node:gcross.20110805222031.2380: *4* addSite(s)
-OperatorBuilder& OperatorBuilder::addSite(unsigned int dimension) {
-    sites.push_back(dimension);
-    connections.emplace_back();
-    return *this;
-}
-
-OperatorBuilder& OperatorBuilder::addSites(unsigned int number_of_sites, PhysicalDimension dimension) {
-    REPEAT(number_of_sites) { addSite(*dimension); }
-    return *this;
-}
 //@+node:gcross.20110822214054.2515: *4* add(X)ExternalField
 OperatorBuilder& OperatorBuilder::addLocalExternalField(unsigned int site_number, unsigned int field_matrix_id, complex<double> scale_factor) {
     return connect(site_number,getStartSignal(),getEndSignal(),field_matrix_id,scale_factor);
@@ -226,6 +215,17 @@ OperatorBuilder& OperatorBuilder::addGlobalNeighborCouplingField(unsigned int le
         connect(site_number,getStartSignal(),signal,left_field_matrix_id,scale_factor);
         connect(site_number,signal,getEndSignal(),right_field_matrix_id);
     }
+    return *this;
+}
+//@+node:gcross.20110805222031.2380: *4* addSite(s)
+OperatorBuilder& OperatorBuilder::addSite(unsigned int dimension) {
+    sites.push_back(dimension);
+    connections.emplace_back();
+    return *this;
+}
+
+OperatorBuilder& OperatorBuilder::addSites(unsigned int number_of_sites, PhysicalDimension dimension) {
+    REPEAT(number_of_sites) { addSite(*dimension); }
     return *this;
 }
 //@+node:gcross.20110826085250.2531: *4* addTerm
