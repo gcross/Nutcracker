@@ -129,14 +129,21 @@ void contract_sos_right(
     complex<double>* new_right_environment
 );
 
+//! Contracts the overlap and state site tensors into the left (overlap) boundary.
+/*!
+\image html contract_vs_left.png
+\image latex contract_vs_left.eps
+*/
 void contract_vs_left(
-    uint32_t const b_left_old, uint32_t const b_right_old,
-    uint32_t const b_left_new, uint32_t const b_right_new,
-    uint32_t const d,
-    complex<double> const* left_environment,
-    complex<double> const* normalized_projector_site_tensor,
-    complex<double> const* normalized_state_site_tensor,
-    complex<double>* new_left_environment
+    uint32_t const b_left_old, //!< the overlap site tensor left dimension
+    uint32_t const b_right_old, //!< the overlap site tensor right dimension
+    uint32_t const b_left_new, //!< the state site tensor left dimension
+    uint32_t const b_right_new, //!< the state site tensor right dimension
+    uint32_t const d, //!< the physical dimension (shared by both the overlap and state site tensors)
+    complex<double> const* left_environment, //!< read-only pointer to the (old) left overlap boundary data
+    complex<double> const* normalized_projector_site_tensor, //!< read-only pointer to the overlap site tensor data
+    complex<double> const* normalized_state_site_tensor, //!< read-only pointer to the state site tensor data
+    complex<double>* new_left_environment //!< writable pointer to the new left overlap boundary tensor data
 );
 
 void contract_vs_right(
