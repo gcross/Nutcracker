@@ -476,7 +476,13 @@ inline static bool mergeSignalsGeneric(
 //@+at
 // Remove all of the old outgoing signals to be merged and replace them with the same set of connections to a freshly allocated signal.
 //@@c
-            unsigned int new_outgoing_signal = signal_table.allocateSignal();
+            unsigned int const new_outgoing_signal =
+                (incoming_connections.size() == 1u &&
+                 incoming_connections.begin()->first == (forward ? signal_table.getStartSignal() : signal_table.getEndSignal()) &&
+                 incoming_connections.begin()->second == matrix_table.getIMatrixId()
+                )   ? (forward ? signal_table.getStartSignal() : signal_table.getEndSignal())
+                    : signal_table.allocateSignal()
+            ;
             BOOST_FOREACH(IncomingToMatricesMap::const_reference incoming_signal_and_matrix, incoming_connections) {
                 unsigned int const
                     incoming_signal = incoming_signal_and_matrix.first,
