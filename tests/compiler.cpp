@@ -288,6 +288,32 @@ TEST_CASE(addLocalNeighborCouplingField) {
         );
     }
 }
+//@+node:gcross.20110826085250.2532: *4* addTerm
+TEST_CASE(addTerm) {
+    RNG random;
+    BOOST_FOREACH(unsigned int const number_of_sites, irange(2u,6u)) {
+        OperatorBuilder builder;
+        builder.addSites(number_of_sites,PhysicalDimension(2u));
+        BOOST_FOREACH(unsigned int const site_number,irange(0u,number_of_sites)) {
+            vector<unsigned int> components;
+            REPEAT(site_number) { components.push_back(builder.getIMatrixId()); }
+            components.push_back(builder.getZMatrixId());
+            REPEAT(number_of_sites-site_number-1) { components.push_back(builder.getIMatrixId()); }
+            builder.addTerm(components);
+        }
+        Operator op = builder.compile();
+        ASSERT_EQ_VAL(op[0]->numberOfMatrices(),2u);
+        BOOST_FOREACH(unsigned int const site_number,irange(1u,number_of_sites-1)) {
+            ASSERT_EQ_VAL(op[site_number]->numberOfMatrices(),3u);
+        }
+        ASSERT_EQ_VAL(op[number_of_sites-1]->numberOfMatrices(),2u);
+        checkOperatorsEquivalent(
+            op,
+            constructExternalFieldOperator(number_of_sites,Pauli::Z),
+            random
+        );
+    }
+}
 //@+node:gcross.20110821165641.2511: *4* generateSpecification
 TEST_SUITE(generateSpecification) {
 

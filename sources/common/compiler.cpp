@@ -228,6 +228,17 @@ OperatorBuilder& OperatorBuilder::addGlobalNeighborCouplingField(unsigned int le
     }
     return *this;
 }
+//@+node:gcross.20110826085250.2531: *4* addTerm
+OperatorBuilder& OperatorBuilder::addTerm(vector<unsigned int> const& components) {
+    if(components.size() != numberOfSites()) throw WrongNumberOfSites(components.size(),numberOfSites());
+    unsigned int const signal = allocateSignal();
+    connect(0u,getStartSignal(),signal,components[0u]);
+    BOOST_FOREACH(unsigned int const site_number, irange(1u,numberOfSites()-1)) {
+        connect(site_number,signal,signal,components[site_number]);
+    }
+    connect(numberOfSites()-1,signal,getEndSignal(),components[numberOfSites()-1]);
+    return *this;
+}
 //@+node:gcross.20110814140556.2427: *4* compile
 Operator OperatorBuilder::compile(bool optimize, bool add_start_and_end_loops) {
     OperatorSpecification source(generateSpecification(add_start_and_end_loops));

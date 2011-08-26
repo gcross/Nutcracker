@@ -99,6 +99,15 @@ struct SiteNumberTooLarge : public std::logic_error {
       , maximum_site_number(maximum_site_number)
     {}
 };
+//@+node:gcross.20110826085250.2533: *3* WrongNumberOfSites
+struct WrongNumberOfSites : public std::logic_error {
+    unsigned int argument_number_of_sites, system_number_of_sites;
+    WrongNumberOfSites(unsigned int argument_number_of_sites, unsigned int system_number_of_sites)
+      : std::logic_error((format("The number of sites in the argument (%1%) does not match the number of sites in the system (%2%).  [%1% != %2%]") % argument_number_of_sites % system_number_of_sites).str())
+      , argument_number_of_sites(argument_number_of_sites)
+      , system_number_of_sites(system_number_of_sites)
+    {}
+};
 //@+node:gcross.20110805222031.2343: ** Classes
 //@+node:gcross.20110805222031.4631: *3* MatrixTable
 class MatrixTable {
@@ -281,6 +290,8 @@ OperatorBuilder& addGlobalExternalField(unsigned int field_matrix_id, complex<do
 
 OperatorBuilder& addLocalNeighborCouplingField(unsigned int left_site_number, unsigned int left_field_matrix_id, unsigned int right_field_matrix_id, complex<double> scale_factor=c(1,0));
 OperatorBuilder& addGlobalNeighborCouplingField(unsigned int left_field_matrix_id, unsigned int right_field_matrix_id, complex<double> scale_factor=c(1,0));
+
+OperatorBuilder& addTerm(vector<unsigned int> const& components);
 //@+node:gcross.20110805222031.2375: *4* Sites
 OperatorBuilder& addSite(unsigned int dimension);
 OperatorBuilder& addSites(unsigned int number_of_sites, PhysicalDimension dimension);
