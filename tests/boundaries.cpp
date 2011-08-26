@@ -351,14 +351,14 @@ TEST_SUITE(computeSOSRight) {
     //@-others
 
 }
-//@+node:gcross.20110127123226.2837: *3* contractSSLeft
+//@+node:gcross.20110127123226.2837: *3* contractVSLeft
 TEST_SUITE(computeSSLeft) {
 
     //@+others
     //@+node:gcross.20110127123226.2838: *4* trivial with all dimensions 1
     TEST_CASE(trivial_with_all_dimensions_1) {
         OverlapBoundary<Left> const new_boundary(
-            contractSSLeft(
+            contractVSLeft(
                  OverlapBoundary<Left>::trivial
                 ,OverlapSite<Left>::trivial
                 ,StateSite<Left>::trivial
@@ -381,7 +381,7 @@ TEST_SUITE(computeSSLeft) {
             ,fillWithRange(list_of(1)(1))
             );
         OverlapBoundary<Left> const new_boundary(
-            contractSSLeft(
+            contractVSLeft(
                  OverlapBoundary<Left>::trivial
                 ,overlap_site
                 ,state_site
@@ -415,7 +415,7 @@ TEST_SUITE(computeSSLeft) {
                 (c(2,0))(c(0,2))(c(-2,0))(c( 1,-2))(c( 2,0))
             ));
         OverlapBoundary<Left> const actual_boundary(
-            contractSSLeft(
+            contractVSLeft(
                  boundary
                 ,overlap_site
                 ,state_site
@@ -437,14 +437,14 @@ TEST_SUITE(computeSSLeft) {
     //@-others
 
 }
-//@+node:gcross.20110127123226.2862: *3* contractSSRight
+//@+node:gcross.20110127123226.2862: *3* contractVSRight
 TEST_SUITE(computeSSRight) {
 
     //@+others
     //@+node:gcross.20110127123226.2863: *4* trivial with all dimensions 1
     TEST_CASE(trivial_with_all_dimensions_1) {
         OverlapBoundary<Right> const new_boundary(
-            contractSSRight(
+            contractVSRight(
                  OverlapBoundary<Right>::trivial
                 ,OverlapSite<Right>::trivial
                 ,StateSite<Right>::trivial
@@ -467,7 +467,7 @@ TEST_SUITE(computeSSRight) {
             ,fillWithRange(list_of(1)(1)
             ));
         OverlapBoundary<Right> const new_boundary(
-            contractSSRight(
+            contractVSRight(
                  OverlapBoundary<Right>::trivial
                 ,overlap_site
                 ,state_site
@@ -503,7 +503,7 @@ TEST_SUITE(computeSSRight) {
                 (c(2,0))(c(0,2))(c(-2,0))(c( 1,-2))(c( 2,0))
             ));
         OverlapBoundary<Right> const actual_boundary(
-            contractSSRight(
+            contractVSRight(
                  boundary
                 ,overlap_site
                 ,state_site

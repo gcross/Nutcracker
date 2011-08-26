@@ -560,8 +560,8 @@ class contract_sos_right(TestCase):
         )
         self.assertAllClose(actual_output_tensor,correct_output_tensor)
 #@+node:gcross.20091116094945.1741: *4* contract_ss
-#@+node:gcross.20091116094945.1740: *5* contract_ss_left
-contract_ss_left_correct_contractor = form_contractor([
+#@+node:gcross.20091116094945.1740: *5* contract_vs_left
+contract_vs_left_correct_contractor = form_contractor([
     ("L2","O1"),
     ("L1","N2"),
     ("O2","N3"),
@@ -574,7 +574,7 @@ contract_ss_left_correct_contractor = form_contractor([
 ], ("L'",2)
 )
 
-class contract_ss_left(TestCase):
+class contract_vs_left(TestCase):
 
     @with_checker(number_of_calls=10)
     def test_agreement_with_contractor(self,
@@ -587,19 +587,19 @@ class contract_ss_left(TestCase):
         left_environment = crand(nsl,osl)
         new_state_site_tensor = crand(nsr,nsl,d)
         old_state_site_tensor = crand(osl,d,osr)
-        actual_output_tensor = vmps.contract_ss_left(
+        actual_output_tensor = vmps.contract_vs_left(
             left_environment,
             old_state_site_tensor,
             new_state_site_tensor,
         )
-        correct_output_tensor = contract_ss_left_correct_contractor(
+        correct_output_tensor = contract_vs_left_correct_contractor(
             left_environment,
             old_state_site_tensor,
             new_state_site_tensor,
         )
         self.assertAllClose(actual_output_tensor,correct_output_tensor)
-#@+node:gcross.20091116094945.1745: *5* contract_ss_right
-contract_ss_right_correct_contractor = form_contractor([
+#@+node:gcross.20091116094945.1745: *5* contract_vs_right
+contract_vs_right_correct_contractor = form_contractor([
     ("R1","O3"),
     ("R2","N1"),
     ("O2","N3"),
@@ -612,7 +612,7 @@ contract_ss_right_correct_contractor = form_contractor([
 ], ("R'",2)
 )
 
-class contract_ss_right(TestCase):
+class contract_vs_right(TestCase):
 
     @with_checker(number_of_calls=10)
     def test_agreement_with_contractor(self,
@@ -625,12 +625,12 @@ class contract_ss_right(TestCase):
         right_environment = crand(osr,nsr)
         new_state_site_tensor = crand(nsr,nsl,d)
         old_state_site_tensor = crand(osl,d,osr)
-        actual_output_tensor = vmps.contract_ss_right(
+        actual_output_tensor = vmps.contract_vs_right(
             right_environment,
             old_state_site_tensor,
             new_state_site_tensor,
         )
-        correct_output_tensor = contract_ss_right_correct_contractor(
+        correct_output_tensor = contract_vs_right_correct_contractor(
             right_environment,
             old_state_site_tensor,
             new_state_site_tensor,
@@ -1730,8 +1730,8 @@ tests = [
     contract_sos_right_stage_2b,
     contract_sos_right_stage_2,
     contract_sos_right,
-    contract_ss_left,
-    contract_ss_right,
+    contract_vs_left,
+    contract_vs_right,
     form_overlap_vector,
     compute_expectation,
     compute_optimization_matrix,

@@ -111,16 +111,16 @@ ExpectationBoundary<Right> contractSOSRight(
     );
     return boost::move(new_boundary);
 }
-//@+node:gcross.20110216193817.1923: *3* contractSSLeft
-OverlapBoundary<Left> contractSSLeft(
+//@+node:gcross.20110216193817.1923: *3* contractVSLeft
+OverlapBoundary<Left> contractVSLeft(
       OverlapBoundary<Left> const& old_boundary
     , OverlapSite<Left> const& overlap_site
     , StateSite<Left> const& state_site
 ) {
-    return Unsafe::contractSSLeft(old_boundary,overlap_site,state_site);
+    return Unsafe::contractVSLeft(old_boundary,overlap_site,state_site);
 }
-//@+node:gcross.20110214155808.1879: *3* contractSSRight
-OverlapBoundary<Right> contractSSRight(
+//@+node:gcross.20110214155808.1879: *3* contractVSRight
+OverlapBoundary<Right> contractVSRight(
       OverlapBoundary<Right> const& old_boundary
     , OverlapSite<Right> const& overlap_site
     , StateSite<Right> const& state_site
@@ -129,7 +129,7 @@ OverlapBoundary<Right> contractSSRight(
         (OverlapDimension(overlap_site.leftDimension())
         ,StateDimension(state_site.leftDimension())
         );
-    Core::contract_ss_right(
+    Core::contract_vs_right(
          overlap_site.leftDimension()
         ,overlap_site | old_boundary
         ,state_site.leftDimension()
@@ -146,8 +146,8 @@ OverlapBoundary<Right> contractSSRight(
 namespace Unsafe {
 
 //@+others
-//@+node:gcross.20110214155808.1878: *4* contractSSLeft
-OverlapBoundary<Left> contractSSLeft(
+//@+node:gcross.20110214155808.1878: *4* contractVSLeft
+OverlapBoundary<Left> contractVSLeft(
       OverlapBoundary<Left> const& old_boundary
     , OverlapSiteAny const& overlap_site
     , StateSiteAny const& state_site
@@ -156,7 +156,7 @@ OverlapBoundary<Left> contractSSLeft(
         (OverlapDimension(overlap_site.rightDimension())
         ,StateDimension(state_site.rightDimension())
         );
-    Core::contract_ss_left(
+    Core::contract_vs_left(
          old_boundary | overlap_site
         ,overlap_site.rightDimension()
         ,old_boundary | state_site

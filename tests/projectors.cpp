@@ -323,7 +323,7 @@ TEST_CASE(projector_matrix) {
         right_boundaries.emplace_back(make_trivial);
         BOOST_FOREACH(unsigned int const i, irange(1u,number_of_sites) | reversed) {
             right_boundaries.push_back(
-                contract<Right>::SS(
+                contract<Right>::VS(
                      right_boundaries.back()
                     ,projector[i].get<Right>()
                     ,state.getRestSite(i-1)
@@ -348,7 +348,7 @@ TEST_CASE(projector_matrix) {
             );
             if(i < number_of_sites-1) {
                 left_boundary =
-                    Unsafe::contractSSLeft(
+                    Unsafe::contractVSLeft(
                          left_boundary
                         ,projector[i].get<Left>()
                         ,state[i]

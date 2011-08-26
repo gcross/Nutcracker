@@ -110,34 +110,34 @@ Nutcracker::ExpectationBoundary<Right> contractSOSRight(
     , Nutcracker::StateSite<Right> const& state_site
     , Nutcracker::OperatorSite const& operator_site
 );
-//@+node:gcross.20110509141853.2174: *3* contractSSLeft
+//@+node:gcross.20110509141853.2174: *3* contractVSLeft
 //! Contracts the state and overlap site tensors into the left boundary.
 /*!
-\image html contractSSLeft.png
-\image latex contractSSLeft.eps
+\image html contractVSLeft.png
+\image latex contractVSLeft.eps
 
 \param left_boundary the left overlap boundary (L)
 \param overlap_site the overlap site tensor (V)
 \param state_site the state site tensor (S)
 \returns the new left overlap boundary (L')
 */
-Nutcracker::OverlapBoundary<Left> contractSSLeft(
+Nutcracker::OverlapBoundary<Left> contractVSLeft(
       Nutcracker::OverlapBoundary<Left> const& old_boundary
     , Nutcracker::OverlapSite<Left> const& overlap_site
     , Nutcracker::StateSite<Left> const& state_site
 );
-//@+node:gcross.20110509141853.2175: *3* contractSSRight
+//@+node:gcross.20110509141853.2175: *3* contractVSRight
 //! Contracts the state and overlap site tensors into the right boundary.
 /*!
-\image html contractSSRight.png
-\image latex contractSSRight.eps
+\image html contractVSRight.png
+\image latex contractVSRight.eps
 
 \param right_boundary the right overlap boundary (R)
 \param overlap_site the overlap site tensor (V)
 \param state_site the state site tensor (S)
 \returns the new right overlap boundary (R')
 */
-Nutcracker::OverlapBoundary<Right> contractSSRight(
+Nutcracker::OverlapBoundary<Right> contractVSRight(
       Nutcracker::OverlapBoundary<Right> const& old_boundary
     , Nutcracker::OverlapSite<Right> const& overlap_site
     , Nutcracker::StateSite<Right> const& state_site
@@ -155,8 +155,8 @@ ExpectationBoundary<Left> contractSOSLeft(
     , OperatorSite const& operator_site
 );
 
-//! Unsafe version of Nutcracker::contractSSLeft that ignores the site tensor normalization.
-OverlapBoundary<Left> contractSSLeft(
+//! Unsafe version of Nutcracker::contractVSLeft that ignores the site tensor normalization.
+OverlapBoundary<Left> contractVSLeft(
       OverlapBoundary<Left> const& old_boundary
     , OverlapSiteAny const& overlap_site
     , StateSiteAny const& state_site
@@ -190,12 +190,12 @@ template<> struct contract<Left> {
         , Nutcracker::OperatorSite const& operator_site
     ) { return contractSOSLeft(old_boundary,state_site,operator_site); }
 
-    //! Alias for contractSSLeft().
-    static Nutcracker::OverlapBoundary<Left> SS(
+    //! Alias for contractVSLeft().
+    static Nutcracker::OverlapBoundary<Left> VS(
           Nutcracker::OverlapBoundary<Left> const& old_boundary
         , Nutcracker::OverlapSite<Left> const& overlap_site
         , Nutcracker::StateSite<Left> const& state_site
-    ) { return contractSSLeft(old_boundary,overlap_site,state_site); }
+    ) { return contractVSLeft(old_boundary,overlap_site,state_site); }
 };
 
 //! Right boundary contractors
@@ -208,12 +208,12 @@ template<> struct contract<Right> {
         , Nutcracker::OperatorSite const& operator_site
     ) { return contractSOSRight(old_boundary,state_site,operator_site); }
 
-    //! Alias for contractSSRight().
-    static Nutcracker::OverlapBoundary<Right> SS(
+    //! Alias for contractVSRight().
+    static Nutcracker::OverlapBoundary<Right> VS(
           Nutcracker::OverlapBoundary<Right> const& old_boundary
         , Nutcracker::OverlapSite<Right> const& overlap_site
         , Nutcracker::StateSite<Right> const& state_site
-    ) { return contractSSRight(old_boundary,overlap_site,state_site); }
+    ) { return contractVSRight(old_boundary,overlap_site,state_site); }
 };
 //@-others
 

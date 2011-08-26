@@ -841,8 +841,8 @@ subroutine contract_sos_right( &
 
 end subroutine
 !@+node:gcross.20091115224921.1737: *3* Environment SS contraction
-!@+node:gcross.20091115224921.1738: *4* contract_ss_left
-subroutine contract_ss_left( &
+!@+node:gcross.20091115224921.1738: *4* contract_vs_left
+subroutine contract_vs_left( &
   b_left_old, b_right_old, &
   b_left_new, b_right_new, &
   d, &
@@ -888,8 +888,8 @@ subroutine contract_ss_left( &
   )
 
 end subroutine
-!@+node:gcross.20091116094945.1743: *4* contract_ss_right
-subroutine contract_ss_right( &
+!@+node:gcross.20091116094945.1743: *4* contract_vs_right
+subroutine contract_vs_right( &
   b_left_old, b_right_old, &
   b_left_new, b_right_new, &
   d, &

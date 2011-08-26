@@ -139,7 +139,7 @@ void contract_sos_right(
     complex<double>* new_right_environment
 );
 
-void contract_ss_left(
+void contract_vs_left(
     uint32_t const b_left_old, uint32_t const b_right_old,
     uint32_t const b_left_new, uint32_t const b_right_new,
     uint32_t const d,
@@ -149,7 +149,7 @@ void contract_ss_left(
     complex<double>* new_left_environment
 );
 
-void contract_ss_right(
+void contract_vs_right(
     uint32_t const b_left_old, uint32_t const b_right_old,
     uint32_t const b_left_new, uint32_t const b_right_new,
     uint32_t const d,

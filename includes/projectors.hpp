@@ -409,21 +409,21 @@ complex<double> computeProjectorOverlap(
     ) {
         if(i < active_site_number) {
             left_boundary =
-                Unsafe::contractSSLeft(
+                Unsafe::contractVSLeft(
                      left_boundary
                     ,projector[i].get<Left>()
                     ,state_site
                 );
         } else if(i == active_site_number) {
             left_boundary =
-                Unsafe::contractSSLeft(
+                Unsafe::contractVSLeft(
                      left_boundary
                     ,projector[i].get<Middle>()
                     ,state_site
                 );
         } else {
             left_boundary =
-                Unsafe::contractSSLeft(
+                Unsafe::contractVSLeft(
                      left_boundary
                     ,projector[i].get<Right>()
                     ,state_site
@@ -458,7 +458,7 @@ template<
     ) {
         OverlapSite<None> overlap_site(computeOverlapSiteFromStateSite(state_site_pair.get<0>()));
         left_boundary =
-            Unsafe::contractSSLeft(
+            Unsafe::contractVSLeft(
                  left_boundary
                 ,overlap_site
                 ,state_site_pair.get<1>()

@@ -338,7 +338,7 @@ template<typename side> void Chain::absorb(
     new_overlap_boundaries.reserve(projectors.size());
     BOOST_FOREACH(unsigned int const i, irange(0u,(unsigned int)projectors.size())) {
         new_overlap_boundaries.push_back(
-            contract<side>::SS(
+            contract<side>::VS(
                  overlap_boundaries[i]
                 ,projectors[i][site_number].get<side>()
                 ,state_site

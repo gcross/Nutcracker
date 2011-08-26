@@ -250,8 +250,8 @@ void contract_sos_right(
         new_right_environment
     );
 }
-//@+node:gcross.20110124175241.1628: *3* contract_ss_left
-extern "C" void contract_ss_left_(
+//@+node:gcross.20110124175241.1628: *3* contract_vs_left
+extern "C" void contract_vs_left_(
     uint32_t const* b_left_old, uint32_t const* b_right_old,
     uint32_t const* b_left_new, uint32_t const* b_right_new,
     uint32_t const* d,
@@ -261,7 +261,7 @@ extern "C" void contract_ss_left_(
     complex<double>* new_left_environment
 );
 
-void contract_ss_left(
+void contract_vs_left(
     uint32_t const b_left_old, uint32_t const b_right_old,
     uint32_t const b_left_new, uint32_t const b_right_new,
     uint32_t const d,
@@ -270,7 +270,7 @@ void contract_ss_left(
     complex<double> const* normalized_state_site_tensor,
     complex<double>* new_left_environment
 ) {
-    contract_ss_left_(
+    contract_vs_left_(
         &b_left_old, &b_right_old,
         &b_left_new, &b_right_new,
         &d,
@@ -280,8 +280,8 @@ void contract_ss_left(
         new_left_environment
     );
 }
-//@+node:gcross.20110124175241.1629: *3* contract_ss_right
-extern "C" void contract_ss_right_(
+//@+node:gcross.20110124175241.1629: *3* contract_vs_right
+extern "C" void contract_vs_right_(
     uint32_t const* b_left_old, uint32_t const* b_right_old,
     uint32_t const* b_left_new, uint32_t const* b_right_new,
     uint32_t const* d,
@@ -291,7 +291,7 @@ extern "C" void contract_ss_right_(
     complex<double>* new_right_environment
 );
 
-void contract_ss_right(
+void contract_vs_right(
     uint32_t const b_left_old, uint32_t const b_right_old,
     uint32_t const b_left_new, uint32_t const b_right_new,
     uint32_t const d,
@@ -300,7 +300,7 @@ void contract_ss_right(
     complex<double> const* normalized_state_site_tensor,
     complex<double>* new_right_environment
 ) {
-    contract_ss_right_(
+    contract_vs_right_(
         &b_left_old, &b_right_old,
         &b_left_new, &b_right_new,
         &d,
