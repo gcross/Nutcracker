@@ -38,6 +38,7 @@
 #include <boost/iterator/iterator_facade.hpp>
 #include <boost/lambda/lambda.hpp>
 #include <boost/range/adaptor/reversed.hpp>
+#include <boost/range/algorithm/fill.hpp>
 #include <boost/range/algorithm/reverse.hpp>
 #include <boost/range/algorithm/reverse_copy.hpp>
 #include <boost/range/concepts.hpp>
@@ -490,10 +491,22 @@ template<typename T> inline void moveArrayToFrom(T*& to, T*& from) {
 //@-others
 
 //! @}
+//@+node:gcross.20110904235122.2872: *3* Vectors
+//@+node:gcross.20110904235122.2873: *4* basisVector
+inline VectorConstPtr basisVector(unsigned int physical_dimension, unsigned int observation) {
+    VectorPtr vector = boost::make_shared<Vector>(physical_dimension);
+    boost::fill(vector->data(),c(0,0));
+    (*vector)[observation] = 1;
+    return vector;
+}
 //@-others
 //@+node:gcross.20110815001337.2452: ** Values
 namespace Pauli {
     extern MatrixConstPtr const I, X, Y, Z;
+}
+
+namespace Qubit {
+    extern VectorConstPtr const Up, Down;
 }
 //@+node:gcross.20110903210625.2704: ** Arithmetic Operators
 inline MatrixConstPtr operator+(MatrixConstPtr const& a, MatrixConstPtr const& b) {

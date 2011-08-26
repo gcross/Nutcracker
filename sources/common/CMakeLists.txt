@@ -6,7 +6,7 @@ set(PROTO_INCLUDE ${PROTO_INCLUDE} PARENT_SCOPE)
 
 include_directories (${PROTO_INCLUDE})
 
-add_library(Nutcracker
+add_library(Nutcracker++ SHARED
     boundaries
     chain
     compiler
@@ -27,7 +27,7 @@ add_library(Nutcracker
 
     ${PROTO_SRCS}
 )
-target_link_libraries(Nutcracker
+target_link_libraries(Nutcracker++
     ${Boost_LIBRARIES}
     ${BLAS_LIBRARIES}
     ${LAPACK_LIBRARIES}

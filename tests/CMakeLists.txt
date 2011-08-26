@@ -8,6 +8,7 @@ link_directories ( ${Illuminate_LIBRARY_DIRS} )
 set(test-SOURCES
     boundaries
     chain
+    c-interface
     compiler
     configuration
     flat
@@ -25,7 +26,7 @@ set(test-SOURCES
 )
 
 add_executable(test EXCLUDE_FROM_ALL ${test-SOURCES})
-target_link_libraries(test Nutcracker illuminate-main illuminate)
+target_link_libraries(test Nutcracker Nutcracker++ illuminate-main illuminate)
 set_property(TARGET test PROPERTY RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR})
 
 add_executable(stress EXCLUDE_FROM_ALL stress test_utils)

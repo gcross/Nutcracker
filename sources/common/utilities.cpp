@@ -139,6 +139,13 @@ namespace Pauli {
         ,Z = diagonalMatrix(list_of(1)(-1))
         ;
 }
+
+namespace Qubit {
+    VectorConstPtr const
+         Up = basisVector(2,0)
+        ,Down = basisVector(2,1)
+        ;
+}
 //@-others
 
 }

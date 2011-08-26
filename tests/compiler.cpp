@@ -298,8 +298,35 @@ TEST_CASE(null) {
 TEST_SUITE(OperatorBuilder) {
 
 //@+others
-//@+node:gcross.20110826085250.2532: *4* addProductTerm
-TEST_CASE(addProductTerm) {
+//@+node:gcross.20110905174854.2854: *4* addProductTerm
+TEST_SUITE(addProductTerm) {
+//@+others
+//@+node:gcross.20110905174854.2856: *5* increasing diagonals
+TEST_CASE(increasing_diagonals) {
+    BOOST_FOREACH(unsigned int const number_of_sites, irange(2u,6u)) {
+        OperatorBuilder builder(number_of_sites,PhysicalDimension(2u));
+        BOOST_FOREACH(unsigned int const site_number,irange(0u,number_of_sites)) {
+            vector<MatrixConstPtr> components;
+            REPEAT(site_number) { components.push_back(Pauli::I); }
+            components.emplace_back(diagonalMatrix(list_of(0u)(site_number)));
+            REPEAT(number_of_sites-site_number-1) { components.push_back(Pauli::I); }
+            builder.addProductTerm(components);
+        }
+        Operator op = builder.compile();
+        BOOST_FOREACH(unsigned int const site_number,irange(0u,number_of_sites)) {
+            StateBuilder builder(number_of_sites,PhysicalDimension(2u));
+            vector<VectorConstPtr> components;
+            REPEAT(site_number) { components.push_back(Qubit::Up); }
+            components.push_back(Qubit::Down);
+            REPEAT(number_of_sites-site_number-1) { components.push_back(Qubit::Up); }
+            builder.addProductTerm(components);
+            State state = builder.compile();
+            ASSERT_NEAR_ABS(computeExpectationValue(state,op),c(site_number,0),1e-12);
+        }
+    }
+}
+//@+node:gcross.20110826085250.2532: *5* magnetic field
+TEST_CASE(magnetic_field) {
     RNG random;
     BOOST_FOREACH(unsigned int const number_of_sites, irange(2u,6u)) {
         OperatorBuilder builder(number_of_sites,PhysicalDimension(2u));
@@ -322,6 +349,8 @@ TEST_CASE(addProductTerm) {
             random
         );
     }
+}
+//@-others
 }
 //@+node:gcross.20110821165641.2511: *4* generateSpecification
 TEST_SUITE(generateSpecification) {

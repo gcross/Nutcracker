@@ -16,6 +16,7 @@
 <v t="gcross.20110501233304.2056"><vh>@path documentation</vh>
 </v>
 <v t="gcross.20110904224519.2700"><vh>@path includes</vh>
+<v t="gcross.20110902235008.2736"><vh>@file nutcracker.h</vh></v>
 <v t="gcross.20110124161335.1866"><vh>@path nutcracker</vh>
 <v t="gcross.20110214183844.1813"><vh>@file boundaries.hpp</vh></v>
 <v t="gcross.20110130170743.1665"><vh>@file chain.hpp</vh></v>
@@ -50,6 +51,17 @@
 </v>
 <v t="gcross.20091106154604.9812"><vh>@path sources</vh>
 <v t="gcross.20110125120748.2419"><vh>@file CMakeLists.txt</vh></v>
+<v t="gcross.20110823131135.2569"><vh>@path c-interface</vh>
+<v t="gcross.20110823131135.2599"><vh>@file CMakeLists.txt</vh></v>
+<v t="gcross.20110904213222.2777"><vh>@file common.hpp</vh></v>
+<v t="gcross.20110902235008.2729"><vh>@file errors.cpp</vh></v>
+<v t="gcross.20110904235122.2777"><vh>@file matrix.cpp</vh></v>
+<v t="gcross.20110823131135.2582"><vh>@file operator.cpp</vh></v>
+<v t="gcross.20110823131135.2594"><vh>@file operator_builder.cpp</vh></v>
+<v t="gcross.20110904235122.2804"><vh>@file state.cpp</vh></v>
+<v t="gcross.20110904235122.2855"><vh>@file state_builder.cpp</vh></v>
+<v t="gcross.20110904235122.2823"><vh>@file vector.cpp</vh></v>
+</v>
 <v t="gcross.20110124161335.1865"><vh>@path common</vh>
 <v t="gcross.20110125120748.2421"><vh>@file CMakeLists.txt</vh></v>
 <v t="gcross.20110214155808.1862"><vh>@file boundaries.cpp</vh></v>
@@ -82,6 +94,7 @@
 <v t="gcross.20091106154604.1972"><vh>@path tests</vh>
 <v t="gcross.20110125120748.2426"><vh>@file CMakeLists.txt</vh></v>
 <v t="gcross.20110215235924.1881"><vh>@file boundaries.cpp</vh></v>
+<v t="gcross.20110905151655.2845"><vh>@file c-interface.cpp</vh></v>
 <v t="gcross.20110130170743.1679"><vh>@file chain.cpp</vh></v>
 <v t="gcross.20110805222031.4665"><vh>@file compiler.cpp</vh></v>
 <v t="gcross.20110511190907.3785"><vh>@file configuration.cpp</vh></v>
@@ -110,6 +123,10 @@
 <v t="gcross.20110805222031.4669"><vh>Tests</vh></v>
 </v>
 </v>
+<v t="gcross.20110823131135.2527"><vh>file template.h</vh>
+<v t="gcross.20110823131135.2528"><vh>&lt;&lt; License &gt;&gt;</vh></v>
+<v t="gcross.20110823131135.2529"><vh>&lt;&lt; Includes &gt;&gt;</vh></v>
+</v>
 <v t="gcross.20110213233103.1919"><vh>file template.hpp</vh>
 <v t="gcross.20110220182654.2068"><vh>&lt;&lt; License &gt;&gt;</vh></v>
 <v t="gcross.20110213233103.1920"><vh>&lt;&lt; Includes &gt;&gt;</vh></v>
@@ -119,6 +136,11 @@
 <v t="gcross.20110220182654.2070"><vh>&lt;&lt; License &gt;&gt;</vh></v>
 <v t="gcross.20110213233103.1926"><vh>&lt;&lt; Includes &gt;&gt;</vh></v>
 <v t="gcross.20110213233103.1927"><vh>&lt;&lt; Usings &gt;&gt;</vh></v>
+</v>
+<v t="gcross.20110823131135.2574"><vh>file template-c.cpp</vh>
+<v t="gcross.20110823131135.2575"><vh>&lt;&lt; License &gt;&gt;</vh></v>
+<v t="gcross.20110823131135.2576"><vh>&lt;&lt; Includes &gt;&gt;</vh></v>
+<v t="gcross.20110823131135.2577"><vh>&lt;&lt; Usings &gt;&gt;</vh></v>
 </v>
 </vnodes>
 <tnodes>
@@ -217,6 +239,65 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 #include "test_utils.hpp"</t>
 <t tx="gcross.20110805222031.4669"></t>
+<t tx="gcross.20110823131135.2527">@language cplusplus
+
+&lt;&lt; License &gt;&gt;
+
+#ifndef NUTCRACKER_TEMPLATE_H
+#define NUTCRACKER_TEMPLATE_H
+
+&lt;&lt; Includes &gt;&gt;
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+@others
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif</t>
+<t tx="gcross.20110823131135.2528">@
+Copyright (c) 2011, Gregory Crosswhite
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
+
+    * Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+@c</t>
+<t tx="gcross.20110823131135.2529"></t>
+<t tx="gcross.20110823131135.2569"></t>
+<t tx="gcross.20110823131135.2574">@language cplusplus
+
+&lt;&lt; License &gt;&gt;
+
+&lt;&lt; Includes &gt;&gt;
+
+&lt;&lt; Usings &gt;&gt;
+
+extern "C" {
+
+@others
+
+}</t>
+<t tx="gcross.20110823131135.2575">@
+Copyright (c) 2011, Gregory Crosswhite
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
+
+    * Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+@c</t>
+<t tx="gcross.20110823131135.2576">#include "common.hpp"</t>
+<t tx="gcross.20110823131135.2577"></t>
 <t tx="gcross.20110904224519.2700"></t>
 </tnodes>
 </leo_file>

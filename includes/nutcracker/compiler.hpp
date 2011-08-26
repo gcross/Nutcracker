@@ -26,6 +26,7 @@
 #include <boost/container/map.hpp>
 #include <boost/container/set.hpp>
 #include <boost/foreach.hpp>
+#include <boost/function.hpp>
 #include <boost/functional/hash.hpp>
 #include <boost/iterator/zip_iterator.hpp>
 #include <boost/make_shared.hpp>
@@ -1215,6 +1216,29 @@ template<typename Builder, typename Facade1, typename Facade2> struct SumTerm : 
 template<typename Builder, typename Facade1, typename Facade2> SumTerm<Builder,Facade1,Facade2> operator+(Facade1 const& facade1, Facade2 const& facade2) {
     return SumTerm<Builder,Facade1,Facade2>(facade1,facade2);
 }
+//@+node:gcross.20110904213222.2776: *5* WrappedTerm
+template<typename Builder> class WrappedTerm : Term<Builder,WrappedTerm<Builder> > {
+protected:
+
+    boost::shared_ptr<void> wrapped;
+    boost::function<void (Builder&)> wrappedCall;
+    boost::function<void (complex<double>)> wrappedMultiplyBy;
+
+public:
+
+    template<typename Term> WrappedTerm(Term const& term) {
+        boost::shared_ptr<Term> const wrapped_term = boost::make_shared<Term>(term);
+        wrapped = wrapped_term;
+        wrappedCall = *wrapped_term;
+        wrappedMultiplyBy(boost::bind(&Term::multiplyBy,wrapped_term));
+    }
+
+    void operator()(Builder& builder) const { wrappedCall(builder); }
+    void multiplyBy(complex<double> const coefficient) { wrappedMultiplyBy(coefficient); }
+};
+
+typedef WrappedTerm<OperatorBuilder> WrappedOperatorTerm;
+typedef WrappedTerm<StateBuilder> WrappedStateTerm;
 //@+node:gcross.20110903210625.2692: *4* Operator
 //@+node:gcross.20110903210625.2693: *5* LocalExternalField
 struct LocalExternalField : DataTerm<OperatorBuilder,LocalExternalField> {
