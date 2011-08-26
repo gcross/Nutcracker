@@ -102,29 +102,19 @@ void contract_matrix_left(
 /*!
 \image html contract_sos_left.png
 \image latex contract_sos_left.eps
-
-\param bl the state site tensor left dimension
-\param br the state site tensor right dimension
-\param cl the operator site tensor left dimension
-\param br the operator site tensor right dimension
-\param d the state and operator site physical dimension
-\param left_environment read-only pointer to the left expectation boundary data
-\param number_of_matrices the number of operator transition matrices
-\param sparse_operator_indices read-only pointer to the operator transition index data
-\param sparse_operator_matrices read-only pointer the operator transition matrix data
-\param state_site_tensor read-only the state site tensor
-\param writable pointer to the new left expectation boundary tensor
 */
 void contract_sos_left(
-    uint32_t const bl,
-    uint32_t const br,
-    uint32_t const cl,
-    uint32_t const cr,
-    uint32_t const d,
-    complex<double> const* left_environment,
-    uint32_t const number_of_matrices, uint32_t const* sparse_operator_indices, complex<double> const* sparse_operator_matrices,
-    complex<double> const* state_site_tensor,
-    complex<double>* new_left_environment
+    uint32_t const bl, //!< the state site tensor left dimension
+    uint32_t const br, //!< the state site tensor right dimension
+    uint32_t const cl, //!< the operator site tensor left dimension
+    uint32_t const cr, //!< the operator site tensor right dimension
+    uint32_t const d, //!< the physical dimension (shared by both the state and operator site)
+    complex<double> const* left_environment, //!< read-only pointer to the (old) left expectation boundary data
+    uint32_t const number_of_matrices, //!< the number of operator transition matrices
+    uint32_t const* sparse_operator_indices, //!< read-only pointer to the operator transition index data
+    complex<double> const* sparse_operator_matrices, //!< read-only pointer the operator transition matrix data
+    complex<double> const* state_site_tensor, //!< read-only pointer to the state site tensor data
+    complex<double>* new_left_environment //!< writable pointer to the new left expectation boundary tensor
 );
 
 void contract_sos_right(
