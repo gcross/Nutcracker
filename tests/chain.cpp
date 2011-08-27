@@ -684,6 +684,10 @@ TEST_CASE(solveForEigenvaluesAndEigenvectorsAndThenClearChain) {
             BOOST_FOREACH(unsigned int const i, irange(0u,3u)) {
                 ASSERT_NEAR_ABS(solutions[i].eigenvalue,(double)i,1e-13);
                 ASSERT_NEAR_ABS(computeExpectationValue(solutions[i].eigenvector,op),(double)i,1e-13);
+                ASSERT_NEAR_ABS(computeStateOverlap(solutions[i].eigenvector,solutions[i].eigenvector),c(1,0),1e-13);
+                BOOST_FOREACH(unsigned int const j, irange(i+1,3u)) {
+                    ASSERT_NEAR_ABS(computeStateOverlap(solutions[i].eigenvector,solutions[j].eigenvector),c(0,0),1e-13);
+                }
             }
         }
     }
