@@ -434,39 +434,6 @@ complex<double> computeProjectorOverlap(
     assert(left_boundary.size() == 1);
     return left_boundary[0];
 }
-//@+node:gcross.20110217014932.1923: *3* computeStateOverlap
-template<
-     typename StateSiteRange1
-    ,typename StateSiteRange2
-> complex<double> computeStateOverlap(
-      StateSiteRange1 const& state_sites_1
-    , StateSiteRange2 const& state_sites_2
-) {
-    BOOST_CONCEPT_ASSERT((SinglePassRangeConcept<StateSiteRange1 const>));
-    BOOST_CONCEPT_ASSERT((SinglePassRangeConcept<StateSiteRange2 const>));
-    OverlapBoundary<Left> left_boundary(make_trivial);
-    typedef tuple<
-             StateSiteAny const&
-            ,StateSiteAny const&
-            > StateSiteAnyPair;
-    BOOST_FOREACH(
-         StateSiteAnyPair const state_site_pair
-        ,make_pair(
-             make_zip_iterator(make_tuple(state_sites_1.begin(),state_sites_2.begin()))
-            ,make_zip_iterator(make_tuple(state_sites_1.end(),state_sites_2.end()))
-         )
-    ) {
-        OverlapSite<None> overlap_site(computeOverlapSiteFromStateSite(state_site_pair.get<0>()));
-        left_boundary =
-            Unsafe::contractVSLeft(
-                 left_boundary
-                ,overlap_site
-                ,state_site_pair.get<1>()
-            );
-    }
-    assert(left_boundary.size() == 1);
-    return left_boundary[0];
-}
 //@+node:gcross.20110218083552.1928: *3* formProjectorMatrix
 template<
      typename OverlapBoundaryLeftRange

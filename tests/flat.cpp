@@ -50,7 +50,7 @@ using std::abs;
 
 //@+others
 //@+node:gcross.20110213161858.1824: ** Tests
-TEST_SUITE(States) {
+TEST_SUITE(Flat) {
 
 //@+others
 //@+node:gcross.20110213161858.1825: *3* computeStateVector

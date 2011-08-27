@@ -43,6 +43,8 @@ using boost::make_tuple;
 using boost::make_zip_iterator;
 using boost::SinglePassRangeConcept;
 using boost::tuple;
+
+using std::make_pair;
 //@-<< Usings >>
 
 //@+others
@@ -359,6 +361,40 @@ template<typename StateSiteRange> complex<double> computeExpectationValue(
             );
     }
     assert(i == operator_sites.size() && "the number of state sites is greater than the number of operator sites");
+    assert(left_boundary.size() == 1);
+    return left_boundary[0];
+}
+//@+node:gcross.20110217014932.1923: *3* computeStateOverlap
+OverlapSite<None> computeOverlapSiteFromStateSite(StateSiteAny const& state_site);
+
+template<
+     typename StateSiteRange1
+    ,typename StateSiteRange2
+> complex<double> computeStateOverlap(
+      StateSiteRange1 const& state_sites_1
+    , StateSiteRange2 const& state_sites_2
+) {
+    BOOST_CONCEPT_ASSERT((SinglePassRangeConcept<StateSiteRange1 const>));
+    BOOST_CONCEPT_ASSERT((SinglePassRangeConcept<StateSiteRange2 const>));
+    OverlapBoundary<Left> left_boundary(make_trivial);
+    typename boost::range_iterator<StateSiteRange1>::type
+        state_site_1 = boost::begin(state_sites_1),
+        end_of_state_sites_1 = boost::end(state_sites_1);
+    typename boost::range_iterator<StateSiteRange2>::type
+        state_site_2 = boost::begin(state_sites_2),
+        end_of_state_sites_2 = boost::end(state_sites_2);
+    for(;
+        state_site_1 != end_of_state_sites_1 &&
+        state_site_2 != end_of_state_sites_2;
+        ++state_site_1, ++state_site_2
+    ) {
+        left_boundary =
+            Unsafe::contractVSLeft(
+                 left_boundary
+                ,(OverlapSite<None>&)computeOverlapSiteFromStateSite(*state_site_1)
+                ,*state_site_2
+            );
+    }
     assert(left_boundary.size() == 1);
     return left_boundary[0];
 }

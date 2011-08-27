@@ -14,6 +14,7 @@ set(test-SOURCES
     io
     optimizer
     projectors
+    states
     tensors
     utilities
     yaml
