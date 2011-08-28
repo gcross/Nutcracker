@@ -56,14 +56,6 @@ using std::make_pair;
 //@+others
 //@+node:gcross.20110805222031.2355: ** Classes
 //@+node:gcross.20110805222031.2356: *3* OperatorBuilder
-//@+node:gcross.20110817110920.2479: *4* (constructors)
-OperatorBuilder::OperatorBuilder() {}
-
-OperatorBuilder::OperatorBuilder(BOOST_RV_REF(OperatorBuilder) other)
-  : MatrixTable(static_cast<BOOST_RV_REF(MatrixTable)>(other))
-  , SignalTable(other)
-  , connections(boost::move(other.connections))
-{}
 //@+node:gcross.20110822214054.2515: *4* add(X)ExternalField
 OperatorBuilder& OperatorBuilder::addLocalExternalField(unsigned int site_number, unsigned int field_matrix_id, complex<double> scale_factor) {
     return connect(site_number,getStartSignal(),getEndSignal(),field_matrix_id,scale_factor);
@@ -87,99 +79,6 @@ OperatorBuilder& OperatorBuilder::addGlobalNeighborCouplingField(unsigned int le
     BOOST_FOREACH(unsigned int const site_number, irange(0u,numberOfSites())) {
         connect(site_number,getStartSignal(),signal,left_field_matrix_id,scale_factor);
         connect(site_number,signal,getEndSignal(),right_field_matrix_id);
-    }
-    return *this;
-}
-//@+node:gcross.20110805222031.2380: *4* addSite(s)
-OperatorBuilder& OperatorBuilder::addSite(unsigned int dimension) {
-    sites.push_back(dimension);
-    connections.emplace_back();
-    return *this;
-}
-
-OperatorBuilder& OperatorBuilder::addSites(unsigned int number_of_sites, PhysicalDimension dimension) {
-    REPEAT(number_of_sites) { addSite(*dimension); }
-    return *this;
-}
-//@+node:gcross.20110826085250.2531: *4* addTerm
-OperatorBuilder& OperatorBuilder::addTerm(vector<unsigned int> const& components) {
-    if(components.size() != numberOfSites()) throw WrongNumberOfSites(components.size(),numberOfSites());
-    unsigned int const signal = allocateSignal();
-    connect(0u,getStartSignal(),signal,components[0u]);
-    BOOST_FOREACH(unsigned int const site_number, irange(1u,numberOfSites()-1)) {
-        connect(site_number,signal,signal,components[site_number]);
-    }
-    connect(numberOfSites()-1,signal,getEndSignal(),components[numberOfSites()-1]);
-    return *this;
-}
-//@+node:gcross.20110814140556.2427: *4* compile
-Operator OperatorBuilder::compile(bool optimize, bool add_start_and_end_loops) {
-    OperatorSpecification source(generateSpecification(add_start_and_end_loops));
-    if(optimize) source.optimize();
-    return source.compile();
-}
-//@+node:gcross.20110805222031.2385: *4* connect
-OperatorBuilder& OperatorBuilder::connect(
-    unsigned int const site_number,
-    unsigned int const left_signal,
-    unsigned int const right_signal,
-    unsigned int const matrix_id,
-    complex<double> const scale_factor
-) {
-    if(site_number >= sites.size()) throw SiteNumberTooLarge(site_number,sites.size());
-    if(getSizeOf(matrix_id) != sites[site_number])
-        throw BadMatrixDimensionForSite(site_number,sites[site_number],matrix_id,getSizeOf(matrix_id));
-    UnmergedSiteConnections& site_connections = connections[site_number];
-    UnmergedSiteConnections::key_type key(left_signal,right_signal,matrix_id);
-    UnmergedSiteConnections::iterator iter = site_connections.find(key);
-    if(iter != site_connections.end()) {
-        iter->second += scale_factor;
-    } else {
-        site_connections[key] = scale_factor;
-    }
-    return *this;
-}
-//@+node:gcross.20110805222031.4630: *4* generateSpecification
-OperatorSpecification OperatorBuilder::generateSpecification(bool add_start_and_end_loops) {
-    OperatorSpecification specification;
-    specification.reserveSignalsBelow(next_free_signal);
-    unsigned int site_number = 0u;
-    BOOST_FOREACH(UnmergedSiteConnections const& site_connections,connections) {
-        typedef unordered_map<pair<unsigned int,unsigned int>, vector<pair<unsigned int,complex<double> > > > MatricesAndFactors;
-        MatricesAndFactors matrices_and_factors;
-        BOOST_FOREACH(UnmergedSiteConnections::const_reference p, site_connections) {
-            matrices_and_factors[make_pair(p.first.get<0>(),p.first.get<1>())].push_back(make_pair(p.first.get<2>(),p.second));
-        }
-        BOOST_FOREACH(MatricesAndFactors::const_reference p, matrices_and_factors) {
-            specification.connect(site_number,p.first.first,p.first.second,specification.lookupIdFromTable(*this,lookupIdOfWeightedSum(p.second)));
-        }
-        ++site_number;
-    }
-    if(add_start_and_end_loops) {
-        BOOST_FOREACH(unsigned int const site_number, irange((size_t)0u,connections.size())) {
-            specification.connect(site_number,specification.getStartSignal(),specification.getStartSignal(),specification.lookupIdOfIdentityWithDimension(sites[site_number]));
-            specification.connect(site_number,specification.getEndSignal(),  specification.getEndSignal(),  specification.lookupIdOfIdentityWithDimension(sites[site_number]));
-        }
-    }
-    return boost::move(specification);
-}
-//@+node:gcross.20110817110920.2483: *4* operator=
-OperatorBuilder& OperatorBuilder::operator=(BOOST_COPY_ASSIGN_REF(OperatorBuilder) other)
-{
-    if (this != &other){
-        MatrixTable::operator=(other);
-        SignalTable::operator=(other);
-        connections = other.connections;
-    }
-    return *this;
-}
-
-OperatorBuilder& OperatorBuilder::operator=(BOOST_RV_REF(OperatorBuilder) other)
-{
-    if (this != &other){
-        MatrixTable::operator=(static_cast<BOOST_RV_REF(MatrixTable)>(other));
-        SignalTable::operator=(other);
-        connections = boost::move(other.connections);
     }
     return *this;
 }
