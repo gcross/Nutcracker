@@ -268,7 +268,7 @@ void operator >> (Node const& node, OperatorLink& link) {
         using namespace YAML;
         *node_iter++ >> *matrix_iter++;
     }
-    link.matrix = MatrixConstPtr(matrix);
+    link.label = MatrixConstPtr(matrix);
 }
 //@+node:gcross.20110430163445.2638: *5* <<
 Emitter& operator << (Emitter& out, OperatorLink const& link) {
@@ -278,7 +278,7 @@ Emitter& operator << (Emitter& out, OperatorLink const& link) {
     out << Key << "data" << Value;
     {
         out << Flow << BeginSeq;
-        BOOST_FOREACH(complex<double> const x, link.matrix->data()) { out << x; }
+        BOOST_FOREACH(complex<double> const x, link.label->data()) { out << x; }
         out << EndSeq;
     }
     out << EndMap;

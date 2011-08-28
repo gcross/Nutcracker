@@ -319,7 +319,7 @@ TEST_CASE(decode) {
         ASSERT_EQ(from,link.from);
         ASSERT_EQ(to,link.to);
         BOOST_FOREACH(unsigned int const i, irange(0u,n*n)) {
-            ASSERT_EQ(data[i],link.matrix->data()[i]);
+            ASSERT_EQ(data[i],link.label->data()[i]);
         }
     }
 
@@ -350,7 +350,7 @@ TEST_CASE(encode_then_decode) {
         ASSERT_EQ(link1.from,link2.from);
         ASSERT_EQ(link1.to,link2.to);
         BOOST_FOREACH(unsigned int const i, irange(0u,n*n)) {
-            ASSERT_EQ(link2.matrix->data()[i],link1.matrix->data()[i]);
+            ASSERT_EQ(link2.label->data()[i],link1.label->data()[i]);
         }
     }
 
@@ -438,7 +438,7 @@ TEST_CASE(decode) {
             ASSERT_EQ(link.from,index_data[0]);
             ASSERT_EQ(link.to,index_data[1]);
             index_data += 2;
-            ASSERT_TRUE(equal(link.matrix->data().begin(),link.matrix->data().end(),matrix_data));
+            ASSERT_TRUE(equal(link.label->data().begin(),link.label->data().end(),matrix_data));
             matrix_data += physical_dimension*physical_dimension;
         }
     }

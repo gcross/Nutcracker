@@ -143,6 +143,33 @@ struct RequestedBandwidthDimensionTooLargeError : public std::logic_error {
 //@+node:gcross.20110211120708.1791: ** Classes
 //@+node:gcross.20110511190907.3636: *3* Destructable
 struct Destructable { virtual ~Destructable() {} };
+//@+node:gcross.20110827215622.2635: *3* Link
+template<typename Label> struct Link {
+    unsigned int from, to;
+    Label label;
+
+    Link() {}
+
+    Link(
+          unsigned int const from
+        , unsigned int const to
+        , Label const& label
+    ) : from(from)
+      , to(to)
+      , label(label)
+    { }
+
+    bool operator<(Link const& other) const {
+        return from < other.from ||
+               from == other.from && (
+                 to < other.to ||
+                 to == other.to && (
+                   label < other.label
+                 )
+               );
+    }
+
+};
 //@+node:gcross.20110211120708.1793: *3* ProductIterator
 //@+<< Description >>
 //@+node:gcross.20110429225820.2541: *4* << Description >>

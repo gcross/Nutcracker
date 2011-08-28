@@ -117,7 +117,7 @@ Operator OperatorSpecification::compile() const {
         } else {
             operator_site.reset(new OperatorSite(
                 constructOperatorSite(
-                    PhysicalDimension(links[0].matrix->size1()),
+                    PhysicalDimension(links[0].label->size1()),
                     LeftDimension(left_signals.size()),
                     RightDimension(right_signals.size()),
                     links

@@ -41,34 +41,8 @@ using boost::reverse_copy;
 //@-<< Usings >>
 
 //@+others
-//@+node:gcross.20110214164734.1939: ** Classes
-//@+node:gcross.20110206185121.1761: *3* OperatorLink
-struct OperatorLink {
-    unsigned int from, to;
-    MatrixConstPtr matrix;
-
-    OperatorLink() {}
-
-    OperatorLink(
-          unsigned int const from
-        , unsigned int const to
-        , MatrixConstPtr const& matrix
-    ) : from(from)
-      , to(to)
-      , matrix(matrix)
-    { }
-
-    bool operator<(OperatorLink const& other) const {
-        return from < other.from ||
-               from == other.from && (
-                 to < other.to ||
-                 to == other.to && (
-                   matrix < other.matrix
-                 )
-               );
-    }
-
-};
+//@+node:gcross.20110827215622.2633: ** Type aliases
+typedef Link<MatrixConstPtr> OperatorLink;
 //@+node:gcross.20110206185121.1771: ** Functions
 OperatorSite constructOperatorSite(
       PhysicalDimension const physical_dimension

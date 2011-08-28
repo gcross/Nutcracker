@@ -127,9 +127,9 @@ OperatorSite constructOperatorSite(
     ) {
         *index_data++ = link.from;
         *index_data++ = link.to;
-        assert(link.matrix->size1() == *physical_dimension);
-        assert(link.matrix->size2() == *physical_dimension);
-        matrix_data = copy(link.matrix->data(),matrix_data);
+        assert(link.label->size1() == *physical_dimension);
+        assert(link.label->size2() == *physical_dimension);
+        matrix_data = copy(link.label->data(),matrix_data);
     }
 
     return boost::move(operator_site);
