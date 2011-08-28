@@ -545,18 +545,23 @@ public:
     };
 
 };
-//@+node:gcross.20110826235932.2650: *3* Specification
-template<typename Table, typename Facade> class Specification: public Table, public SignalTable {
+//@+node:gcross.20110827234144.2594: *3* Specification and specializations
+//@+node:gcross.20110826235932.2650: *4* Specification
+template<typename SpecificationTraits, typename Table, typename Facade> class Specification: public Table, public SignalTable {
 //@+others
-//@+node:gcross.20110826235932.2652: *4* [Move support]
+//@+node:gcross.20110826235932.2652: *5* [Move support]
 private:
 
 BOOST_COPYABLE_AND_MOVABLE(Specification)
-//@+node:gcross.20110826235932.2694: *4* [Type aliases]
+//@+node:gcross.20110826235932.2694: *5* [Type aliases]
 public:
 
 typedef Table DataTable;
-//@+node:gcross.20110826235932.2653: *4* Constructors
+typedef typename SpecificationTraits::Result Result;
+typedef typename SpecificationTraits::Site Site;
+typedef shared_ptr<Site const> SiteConstPtr;
+typedef Link<typename Table::DataConstPtr> SiteLink;
+//@+node:gcross.20110826235932.2653: *5* Constructors
 public:
 
 Specification() {}
@@ -566,20 +571,76 @@ Specification(BOOST_RV_REF(Specification) other)
   , SignalTable(other)
   , connections(boost::move(other.connections))
 {}
-//@+node:gcross.20110826235932.2654: *4* Fields
+//@+node:gcross.20110826235932.2654: *5* Fields
 public:
 
 vector<SiteConnections> connections;
-//@+node:gcross.20110826235932.2655: *4* Methods
+//@+node:gcross.20110826235932.2655: *5* Methods
 public:
 
 //@+others
-//@+node:gcross.20110826235932.2658: *5* connect
+//@+node:gcross.20110827234144.2596: *6* compile
+Result compile() const {
+    using boost::adaptors::map_keys;
+    using boost::container::map;
+    using boost::container::set;
+
+    vector<SiteConstPtr> sites;
+    typedef map<vector<SiteLink>,SiteConstPtr> SiteIndex;
+    SiteIndex site_index;
+    map<unsigned int,unsigned int> left_signals_map;
+    left_signals_map[1] = 1;
+    unsigned int site_number = 0;
+    BOOST_FOREACH(SiteConnections const& site_connections, connections) {
+        set<unsigned int> left_signals, right_signals;
+        BOOST_FOREACH(SiteConnections::key_type signal, site_connections | map_keys) {
+            left_signals.insert(signal.first);
+            right_signals.insert(signal.second);
+        }
+        if(!boost::equal(left_signals_map | map_keys,left_signals)) {
+            throw NeighborSignalConflict(site_number,left_signals_map | map_keys,left_signals);
+        }
+        map<unsigned int,unsigned int> right_signals_map;
+        unsigned int next_index = 1;
+        BOOST_FOREACH(unsigned int right_signal, right_signals) {
+            right_signals_map[right_signal] = next_index++;
+        }
+        vector<SiteLink> links;
+        links.reserve(site_connections.size());
+        BOOST_FOREACH(SiteConnections::const_reference p, site_connections) {
+            links.emplace_back(left_signals_map[p.first.first],right_signals_map[p.first.second],DataTable::get(p.second));
+        }
+        typename SiteIndex::iterator iter = site_index.find(links);
+        SiteConstPtr site;
+        if(iter != site_index.end()) {
+            site = iter->second;
+        } else {
+            site.reset(new Site(
+                SpecificationTraits::constructSite(
+                    PhysicalDimension(links[0].label->size1()),
+                    LeftDimension(left_signals.size()),
+                    RightDimension(right_signals.size()),
+                    links
+                )
+            ));
+            site_index[links] = site;
+        }
+        sites.emplace_back(site);
+        ++site_number;
+        left_signals_map = boost::move(right_signals_map);
+    }
+    static vector<unsigned int> left_signals = list_of(2u);
+    if(!boost::equal(left_signals_map | map_keys,left_signals)) {
+        throw NeighborSignalConflict(site_number,left_signals_map | map_keys,left_signals);
+    }
+    return SpecificationTraits::postProcess(sites);
+}
+//@+node:gcross.20110826235932.2658: *6* connect
 void connect(unsigned int site_number, unsigned int from, unsigned int to, unsigned int id) {
     if(connections.size() <= site_number) connections.resize(site_number+1);
     connections[site_number][std::make_pair(from,to)] = id;
 }
-//@+node:gcross.20110826235932.2660: *5* eliminateDeadXSignals
+//@+node:gcross.20110826235932.2660: *6* eliminateDeadXSignals
 private:
 
 bool inline eliminateDeadSignalsGeneric(
@@ -623,7 +684,7 @@ bool eliminateDeadSignals() {
         || eliminateDeadRightSignals()
     ;
 }
-//@+node:gcross.20110826235932.2668: *5* eliminateNullMatrices
+//@+node:gcross.20110826235932.2668: *6* eliminateNullMatrices
 bool eliminateNullMatrices() {
     bool changed = false;
     BOOST_FOREACH(SiteConnections& site_connections, connections) {
@@ -638,7 +699,7 @@ bool eliminateNullMatrices() {
     }
     return changed;
 }
-//@+node:gcross.20110826235932.2670: *5* mergeXSignals
+//@+node:gcross.20110826235932.2670: *6* mergeXSignals
 private:
 
 inline bool mergeSignalsGeneric(bool forward) {
@@ -731,7 +792,7 @@ bool mergeSignals() {
         || mergeRightSignals()
     ;
 }
-//@+node:gcross.20110826235932.2672: *5* optimize
+//@+node:gcross.20110826235932.2672: *6* optimize
 void optimize() {
     for(bool keep_going = true;
         keep_going;
@@ -742,7 +803,7 @@ void optimize() {
     ) ;
 }
 //@-others
-//@+node:gcross.20110826235932.2656: *4* Operators
+//@+node:gcross.20110826235932.2656: *5* Operators
 Facade& operator=(BOOST_COPY_ASSIGN_REF(Specification) other)
 {
     if (this != &other){
@@ -764,22 +825,42 @@ Facade& operator=(BOOST_RV_REF(Specification) other)
 }
 //@-others
 };
-//@+node:gcross.20110814140556.2428: *3* OperatorSpecification
-class OperatorSpecification: public Specification<MatrixTable,OperatorSpecification> {
+//@+node:gcross.20110814140556.2428: *4* OperatorSpecification
+//@+<< Traits >>
+//@+node:gcross.20110827234144.2597: *5* << Traits >>
+struct OperatorSpecificationTraits {
 //@+others
-//@+node:gcross.20110814140556.2436: *4* [Move support]
+//@+node:gcross.20110827234144.2598: *6* [Type aliases]
+typedef Operator Result;
+typedef OperatorSite Site;
+typedef shared_ptr<OperatorSite const> SiteConstPtr;
+//@+node:gcross.20110827234144.2599: *6* constructSite
+static inline Site constructSite(
+      PhysicalDimension const physical_dimension
+    , LeftDimension const left_dimension
+    , RightDimension const right_dimension
+    , vector<OperatorSiteLink> const& links
+) {
+    return constructOperatorSite(physical_dimension,left_dimension,right_dimension,links);
+}
+//@+node:gcross.20110827234144.2600: *6* postProcess
+static inline Result postProcess(vector<SiteConstPtr> sites) {
+    return boost::move(sites);
+}
+//@-others
+};
+//@-<< Traits >>
+class OperatorSpecification: public Specification<OperatorSpecificationTraits,MatrixTable,OperatorSpecification> {
+//@+others
+//@+node:gcross.20110814140556.2436: *5* [Move support]
 private:
 
 BOOST_COPYABLE_AND_MOVABLE(OperatorSpecification)
-//@+node:gcross.20110826235932.2673: *4* [Type aliases]
+//@+node:gcross.20110826235932.2673: *5* [Type aliases]
 private:
 
-typedef Specification<MatrixTable,OperatorSpecification> Base;
-
-public:
-
-typedef Operator Result;
-//@+node:gcross.20110814140556.2435: *4* Constructors
+typedef Specification<OperatorSpecificationTraits,MatrixTable,OperatorSpecification> Base;
+//@+node:gcross.20110814140556.2435: *5* Constructors
 public:
 
 OperatorSpecification() {}
@@ -787,9 +868,7 @@ OperatorSpecification() {}
 OperatorSpecification(BOOST_RV_REF(OperatorSpecification) other)
   : Base(static_cast<BOOST_RV_REF(Base)>(other))
 {}
-//@+node:gcross.20110814140556.2443: *4* Methods
-Operator compile() const;
-//@+node:gcross.20110826235932.2722: *4* Operators
+//@+node:gcross.20110826235932.2722: *5* Operators
 public:
 
 OperatorSpecification& operator=(BOOST_COPY_ASSIGN_REF(OperatorSpecification) other)

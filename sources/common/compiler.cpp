@@ -36,7 +36,6 @@ namespace Nutcracker {
 
 //@+<< Usings >>
 //@+node:gcross.20110805222031.2354: ** << Usings >>
-using boost::adaptors::map_keys;
 using boost::container::map;
 using boost::container::set;
 using boost::fill;
@@ -81,59 +80,6 @@ OperatorBuilder& OperatorBuilder::addGlobalNeighborCouplingField(unsigned int le
         connect(site_number,signal,getEndSignal(),right_field_matrix_id);
     }
     return *this;
-}
-//@+node:gcross.20110814140556.2438: *3* OperatorSpecification
-//@+node:gcross.20110814140556.2445: *4* compile
-Operator OperatorSpecification::compile() const {
-    Operator op;
-    typedef map<vector<OperatorSiteLink>,shared_ptr<OperatorSite> > OperatorSites;
-    OperatorSites operator_sites;
-    map<unsigned int,unsigned int> left_signals_map;
-    left_signals_map[1] = 1;
-    unsigned int site_number = 0;
-    BOOST_FOREACH(SiteConnections const& site_connections, connections) {
-        set<unsigned int> left_signals, right_signals;
-        BOOST_FOREACH(SiteConnections::key_type signal, site_connections | map_keys) {
-            left_signals.insert(signal.first);
-            right_signals.insert(signal.second);
-        }
-        if(!boost::equal(left_signals_map | map_keys,left_signals)) {
-            throw NeighborSignalConflict(site_number,left_signals_map | map_keys,left_signals);
-        }
-        map<unsigned int,unsigned int> right_signals_map;
-        unsigned int next_index = 1;
-        BOOST_FOREACH(unsigned int right_signal, right_signals) {
-            right_signals_map[right_signal] = next_index++;
-        }
-        vector<OperatorSiteLink> links;
-        links.reserve(site_connections.size());
-        BOOST_FOREACH(SiteConnections::const_reference p, site_connections) {
-            links.emplace_back(left_signals_map[p.first.first],right_signals_map[p.first.second],get(p.second));
-        }
-        OperatorSites::iterator iter = operator_sites.find(links);
-        shared_ptr<OperatorSite> operator_site;
-        if(iter != operator_sites.end()) {
-            operator_site = iter->second;
-        } else {
-            operator_site.reset(new OperatorSite(
-                constructOperatorSite(
-                    PhysicalDimension(links[0].label->size1()),
-                    LeftDimension(left_signals.size()),
-                    RightDimension(right_signals.size()),
-                    links
-                )
-            ));
-            operator_sites[links] = operator_site;
-        }
-        op.emplace_back(operator_site);
-        ++site_number;
-        left_signals_map = boost::move(right_signals_map);
-    }
-    static vector<unsigned int> left_signals = list_of(2u);
-    if(!boost::equal(left_signals_map | map_keys,left_signals)) {
-        throw NeighborSignalConflict(site_number,left_signals_map | map_keys,left_signals);
-    }
-    return boost::move(op);
 }
 //@+node:gcross.20110805222031.4644: *3* SignalTable
 //@+node:gcross.20110805222031.4645: *4* (constructors)
