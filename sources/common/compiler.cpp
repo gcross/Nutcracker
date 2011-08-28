@@ -22,7 +22,6 @@
 #include <boost/container/set.hpp>
 #include <boost/lambda/bind.hpp>
 #include <boost/make_shared.hpp>
-#include <boost/range/adaptor/map.hpp>
 #include <boost/range/algorithm/for_each.hpp>
 #include <boost/range/algorithm/fill.hpp>
 #include <boost/range/algorithm/sort.hpp>
@@ -55,27 +54,6 @@ using std::make_pair;
 //@-<< Usings >>
 
 //@+others
-//@+node:gcross.20110805222031.4640: ** Helper Functions
-//@+node:gcross.20110805222031.4652: *3* XSignalOf
-static inline unsigned int& incomingSignalOf(bool forward,pair<unsigned int,unsigned int>& key) {
-    return forward ? key.first : key.second;
-}
-
-static inline unsigned int& outgoingSignalOf(bool forward,pair<unsigned int,unsigned int>& key) {
-    return forward ? key.second : key.first;
-}
-
-static inline unsigned int const& incomingSignalOf(bool forward,pair<unsigned int,unsigned int> const& key) {
-    return forward ? key.first : key.second;
-}
-
-static inline unsigned int const& outgoingSignalOf(bool forward,pair<unsigned int,unsigned int> const& key) {
-    return forward ? key.second : key.first;
-}
-//@+node:gcross.20110805222031.4653: *3* newSignalPair
-static inline pair<unsigned int,unsigned int> newSignalPair(bool forward,unsigned int incoming_signal, unsigned int outgoing_signal) {
-    return forward ? make_pair(incoming_signal,outgoing_signal) : make_pair(outgoing_signal,incoming_signal);
-}
 //@+node:gcross.20110805222031.2355: ** Classes
 //@+node:gcross.20110805222031.2356: *3* OperatorBuilder
 //@+node:gcross.20110817110920.2479: *4* (constructors)
@@ -206,14 +184,6 @@ OperatorBuilder& OperatorBuilder::operator=(BOOST_RV_REF(OperatorBuilder) other)
     return *this;
 }
 //@+node:gcross.20110814140556.2438: *3* OperatorSpecification
-//@+node:gcross.20110817110920.2477: *4* (constructors)
-OperatorSpecification::OperatorSpecification() {}
-
-OperatorSpecification::OperatorSpecification(BOOST_RV_REF(OperatorSpecification) other)
-  : MatrixTable(static_cast<BOOST_RV_REF(MatrixTable)>(other))
-  , SignalTable(other)
-  , connections(boost::move(other.connections))
-{}
 //@+node:gcross.20110814140556.2445: *4* compile
 Operator OperatorSpecification::compile() const {
     Operator op;
@@ -265,196 +235,6 @@ Operator OperatorSpecification::compile() const {
         throw NeighborSignalConflict(site_number,left_signals_map | map_keys,left_signals);
     }
     return boost::move(op);
-}
-//@+node:gcross.20110817110920.2469: *4* connect
-void OperatorSpecification::connect(unsigned int site_number, unsigned int from, unsigned int to, unsigned int matrix_id) {
-    if(connections.size() <= site_number) connections.resize(site_number+1);
-    connections[site_number][make_pair(from,to)] = matrix_id;
-}
-//@+node:gcross.20110805222031.4620: *4* eliminateDeadXSignals
-static inline bool eliminateDeadSignalsGeneric(
-    bool forward,
-    unsigned int first_signal,
-    vector<SiteConnections>& connections
-) {
-    bool changed = false;
-    set<unsigned int> incoming_signals;
-    incoming_signals.insert(first_signal);
-    vector<SiteConnections>::iterator iter = getFirstLoopIterator(forward,connections);
-    REPEAT(connections.size()) {
-        SiteConnections& site_connections = updateLoopIterator(forward,iter);
-        set<SiteConnections::key_type> keys_to_remove;
-        set<unsigned int> outgoing_signals;
-        BOOST_FOREACH(SiteConnections::key_type const& key, site_connections | map_keys) {
-            if(incoming_signals.find(incomingSignalOf(forward,key)) == incoming_signals.end()) {
-                changed = true;
-                keys_to_remove.insert(key);
-            } else {
-                outgoing_signals.insert(outgoingSignalOf(forward,key));
-            }
-        }
-        site_connections.eraseAll(keys_to_remove);
-        incoming_signals = boost::move(outgoing_signals);
-    }
-    return changed;
-}
-
-bool OperatorSpecification::eliminateDeadLeftSignals() {
-    return eliminateDeadSignalsGeneric(true,getStartSignal(),connections);
-}
-
-bool OperatorSpecification::eliminateDeadRightSignals() {
-    return eliminateDeadSignalsGeneric(false,getEndSignal(),connections);
-}
-
-bool OperatorSpecification::eliminateDeadSignals() {
-    return eliminateDeadLeftSignals()
-        || eliminateDeadRightSignals()
-    ;
-}
-//@+node:gcross.20110805222031.4619: *4* eliminateNullMatrices
-bool OperatorSpecification::eliminateNullMatrices() {
-    bool changed = false;
-    BOOST_FOREACH(SiteConnections& site_connections, connections) {
-        set<SiteConnections::key_type> keys_to_remove;
-        BOOST_FOREACH(SiteConnections::const_reference p, site_connections) {
-            if(p.second == 0) {
-                changed = true;
-                keys_to_remove.insert(p.first);
-            }
-        }
-        site_connections.eraseAll(keys_to_remove);
-    }
-    return changed;
-}
-//@+node:gcross.20110805222031.4625: *4* mergeXSignals
-inline static bool mergeSignalsGeneric(
-    bool forward,
-    MatrixTable& matrix_table,
-    SignalTable& signal_table,
-    vector<SiteConnections>& connections
-) {
-    bool changed = false;
-    vector<SiteConnections>::iterator iter = getFirstLoopIterator(forward,connections);
-    REPEAT(connections.size()-1) {
-        SiteConnections& site_connections = updateLoopIterator(forward,iter);
-        SiteConnections& next_site_connections = dereferenceLoopIterator(forward,iter);
-
-//@+at
-// First, we build a table that gives us the set of incoming signals connected to each outgoing signal.
-//@@c
-        typedef map<unsigned int,unsigned int> IncomingToMatricesMap;
-        typedef map<unsigned int,IncomingToMatricesMap> OutgoingToIncomingToMatricesMap;
-        OutgoingToIncomingToMatricesMap out_to_in_to_matrics;
-        BOOST_FOREACH(SiteConnections::const_reference site_connection, site_connections) {
-            out_to_in_to_matrics
-                [outgoingSignalOf(forward,site_connection.first)]
-                [incomingSignalOf(forward,site_connection.first)]
-                    = site_connection.second;
-        }
-//@+at
-// Now we invert the out_to_in_matrices_table so that for each set of incoming signal/matrix connections it gives us the list of outgoing signals which share that exact set of connections.
-//@@c
-        typedef map<IncomingToMatricesMap,vector<unsigned int> > MergableOutgoingSignals;
-        MergableOutgoingSignals mergable_outgoing_signals;
-        BOOST_FOREACH(OutgoingToIncomingToMatricesMap::const_reference p, out_to_in_to_matrics) {
-            mergable_outgoing_signals[p.second].push_back(p.first);
-        }
-//@+at
-// Iterate over the inverted table.
-//@@c
-        BOOST_FOREACH(MergableOutgoingSignals::const_reference incoming_connections_and_outgoing_signals, mergable_outgoing_signals) {
-            IncomingToMatricesMap incoming_connections = incoming_connections_and_outgoing_signals.first;
-            vector<unsigned int> const& outgoing_signals = incoming_connections_and_outgoing_signals.second;
-            if(outgoing_signals.size() <= 1) continue;
-            changed = true;
-//@+at
-// Remove all of the old outgoing signals to be merged and replace them with the same set of connections to a freshly allocated signal.
-//@@c
-            unsigned int const new_outgoing_signal =
-                (incoming_connections.size() == 1u &&
-                 incoming_connections.begin()->first == (forward ? signal_table.getStartSignal() : signal_table.getEndSignal()) &&
-                 incoming_connections.begin()->second == matrix_table.getIMatrixId()
-                )   ? (forward ? signal_table.getStartSignal() : signal_table.getEndSignal())
-                    : signal_table.allocateSignal()
-            ;
-            BOOST_FOREACH(IncomingToMatricesMap::const_reference incoming_signal_and_matrix, incoming_connections) {
-                unsigned int const
-                    incoming_signal = incoming_signal_and_matrix.first,
-                    matrix_id = incoming_signal_and_matrix.second;
-                BOOST_FOREACH(unsigned int const outgoing_signal, outgoing_signals) {
-                    site_connections.erase(newSignalPair(forward,incoming_signal,outgoing_signal));
-                }
-                site_connections[newSignalPair(forward,incoming_signal,new_outgoing_signal)] = matrix_id;
-            }
-//@+at
-// Now in the neighboring site take all of the connections to the incoming signals that we just removed and replace them with the sum of all of these connections made to the freshly allocated incoming signal.
-//@@c
-            vector<SiteConnections::key_type> keys_to_remove;
-            typedef map<unsigned int,vector<unsigned int> > OutgoingToMatricesMap;
-            OutgoingToMatricesMap merged_connections;
-            BOOST_FOREACH(unsigned int const outgoing_signal, outgoing_signals) {
-                BOOST_FOREACH(SiteConnections::const_reference p, next_site_connections) {
-                    if(incomingSignalOf(forward,p.first) == outgoing_signal) {
-                        keys_to_remove.push_back(p.first);
-                        merged_connections[outgoingSignalOf(forward,p.first)].push_back(p.second);
-                    }
-                }
-            }
-            next_site_connections.eraseAll(keys_to_remove);
-            BOOST_FOREACH(OutgoingToMatricesMap::const_reference merged_connection, merged_connections) {
-                unsigned int const outgoing_signal = merged_connection.first;
-                vector<unsigned int> const& matrices = merged_connection.second;
-                next_site_connections[newSignalPair(forward,new_outgoing_signal,outgoing_signal)]
-                    = matrix_table.lookupIdOfSum(matrices);
-            }
-        }
-    }
-    return changed;
-}
-
-bool OperatorSpecification::mergeLeftSignals() {
-    return mergeSignalsGeneric(true,*this,*this,connections);
-}
-
-bool OperatorSpecification::mergeRightSignals() {
-    return mergeSignalsGeneric(false,*this,*this,connections);
-}
-
-bool OperatorSpecification::mergeSignals() {
-    return mergeLeftSignals()
-        || mergeRightSignals()
-    ;
-}
-//@+node:gcross.20110814140556.2442: *4* operator=
-OperatorSpecification& OperatorSpecification::operator=(BOOST_COPY_ASSIGN_REF(OperatorSpecification) other)
-{
-    if (this != &other){
-        MatrixTable::operator=(other);
-        SignalTable::operator=(other);
-        connections = other.connections;
-    }
-    return *this;
-}
-
-OperatorSpecification& OperatorSpecification::operator=(BOOST_RV_REF(OperatorSpecification) other)
-{
-    if (this != &other){
-        MatrixTable::operator=(static_cast<BOOST_RV_REF(MatrixTable)>(other));
-        SignalTable::operator=(other);
-        connections = boost::move(other.connections);
-    }
-    return *this;
-}
-//@+node:gcross.20110814140556.2444: *4* optimize
-void OperatorSpecification::optimize() {
-    for(bool keep_going = true;
-        keep_going;
-        keep_going =
-            eliminateNullMatrices()
-         || eliminateDeadSignals()
-         || mergeSignals()
-    ) ;
 }
 //@+node:gcross.20110805222031.4644: *3* SignalTable
 //@+node:gcross.20110805222031.4645: *4* (constructors)
