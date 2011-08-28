@@ -21,6 +21,7 @@
 //@+node:gcross.20110202223558.1715: ** << Includes >>
 #include <boost/filesystem.hpp>
 #include <boost/function.hpp>
+#include <boost/make_shared.hpp>
 #include <boost/optional.hpp>
 #include <boost/random.hpp>
 #include <complex>
@@ -32,9 +33,10 @@ using namespace Nutcracker;
 
 using boost::filesystem::path;
 using boost::function;
-using boost::taus88;
+using boost::make_shared;
 using boost::none;
 using boost::optional;
+using boost::taus88;
 
 using std::abs;
 //@-<< Includes >>
@@ -86,6 +88,8 @@ public:
     );
     MatrixPtr randomMatrix(unsigned int rows, unsigned int cols);
     MatrixPtr randomSquareMatrix(unsigned int dimension);
+    shared_ptr<boost::container::vector<complex<double> > > randomVector();
+    shared_ptr<boost::container::vector<complex<double> > > randomVector(unsigned int size);
  
     vector<unsigned int> randomUnsignedIntegerVector(unsigned int n, unsigned int lo=1,unsigned int hi=10);
 

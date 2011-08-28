@@ -58,27 +58,31 @@ public:
 TEST_SUITE(Compiler) {
 
 //@+others
-//@+node:gcross.20110805222031.4670: *3* MatrixTable
+//@+node:gcross.20110827215622.2603: *3* DataTable specializations
+TEST_SUITE(DataTable_specializations) {
+
+//@+others
+//@+node:gcross.20110805222031.4670: *4* MatrixTable
 TEST_SUITE(MatrixTable) {
 
 //@+others
-//@+node:gcross.20110805222031.4671: *4* initial matrices
+//@+node:gcross.20110805222031.4671: *5* initial matrices
 TEST_SUITE(initial_matrices) {
 
 //@+others
-//@+node:gcross.20110805222031.4672: *5* Null
+//@+node:gcross.20110805222031.4672: *6* Null
 TEST_CASE(Null) {
     EXPECT_EQ_VAL(MatrixTable().lookupIdOf(make_shared<Matrix>(2,2,c(0,0))),0);
 }
-//@+node:gcross.20110805222031.4674: *5* I
+//@+node:gcross.20110805222031.4674: *6* I
 TEST_SUITE(I) {
 //@+others
-//@+node:gcross.20110815001337.2461: *6* correct add
+//@+node:gcross.20110815001337.2461: *7* correct add
 TEST_CASE(correct_add) {
     MatrixTable matrix_table;
     EXPECT_EQ_VAL(matrix_table.lookupIdOf(I),matrix_table.getIMatrixId());
 }
-//@+node:gcross.20110815001337.2454: *6* correct lookup
+//@+node:gcross.20110815001337.2454: *7* correct lookup
 TEST_CASE(correct_lookup) {
     MatrixTable matrix_table;
     Matrix const& matrix = *matrix_table.get(matrix_table.getIMatrixId());
@@ -88,15 +92,15 @@ TEST_CASE(correct_lookup) {
 }
 //@-others
 }
-//@+node:gcross.20110805222031.4676: *5* X
+//@+node:gcross.20110805222031.4676: *6* X
 TEST_SUITE(X) {
 //@+others
-//@+node:gcross.20110815001337.2463: *6* correct add
+//@+node:gcross.20110815001337.2463: *7* correct add
 TEST_CASE(correct_add) {
     MatrixTable matrix_table;
     EXPECT_EQ_VAL(matrix_table.lookupIdOf(X),matrix_table.getXMatrixId());
 }
-//@+node:gcross.20110815001337.2456: *6* correct lookup
+//@+node:gcross.20110815001337.2456: *7* correct lookup
 TEST_CASE(correct_lookup) {
     MatrixTable matrix_table;
     Matrix const& matrix = *matrix_table.get(matrix_table.getXMatrixId());
@@ -106,15 +110,15 @@ TEST_CASE(correct_lookup) {
 }
 //@-others
 }
-//@+node:gcross.20110805222031.4680: *5* Y
+//@+node:gcross.20110805222031.4680: *6* Y
 TEST_SUITE(Y) {
 //@+others
-//@+node:gcross.20110815001337.2465: *6* correct add
+//@+node:gcross.20110815001337.2465: *7* correct add
 TEST_CASE(correct_add) {
     MatrixTable matrix_table;
     EXPECT_EQ_VAL(matrix_table.lookupIdOf(Y),matrix_table.getYMatrixId());
 }
-//@+node:gcross.20110815001337.2458: *6* correct lookup
+//@+node:gcross.20110815001337.2458: *7* correct lookup
 TEST_CASE(correct_lookup) {
     MatrixTable matrix_table;
     Matrix const& matrix = *matrix_table.get(matrix_table.getYMatrixId());
@@ -124,15 +128,15 @@ TEST_CASE(correct_lookup) {
 }
 //@-others
 }
-//@+node:gcross.20110805222031.4678: *5* Z
+//@+node:gcross.20110805222031.4678: *6* Z
 TEST_SUITE(Z) {
 //@+others
-//@+node:gcross.20110815001337.2467: *6* correct add
+//@+node:gcross.20110815001337.2467: *7* correct add
 TEST_CASE(correct_add) {
     MatrixTable matrix_table;
     EXPECT_EQ_VAL(matrix_table.lookupIdOf(Z),matrix_table.getZMatrixId());
 }
-//@+node:gcross.20110815001337.2460: *6* correct lookup
+//@+node:gcross.20110815001337.2460: *7* correct lookup
 TEST_CASE(correct_lookup) {
     MatrixTable matrix_table;
     Matrix const& matrix = *matrix_table.get(matrix_table.getZMatrixId());
@@ -145,11 +149,11 @@ TEST_CASE(correct_lookup) {
 //@-others
 
 }
-//@+node:gcross.20110805222031.4681: *4* lookupIdOf
+//@+node:gcross.20110805222031.4681: *5* lookupIdOf
 TEST_SUITE(lookupIdOf) {
 
 //@+others
-//@+node:gcross.20110805222031.4682: *5* correct for new matrix
+//@+node:gcross.20110805222031.4682: *6* correct for new matrix
 TEST_CASE(correct_for_new_matrix) {
     MatrixTable matrix_table;
     RNG random;
@@ -171,7 +175,7 @@ TEST_CASE(correct_for_new_matrix) {
         previous_matrices.emplace_back(matrix_id,matrix);
     }
 }
-//@+node:gcross.20110805222031.4684: *5* correct for repeated matrix
+//@+node:gcross.20110805222031.4684: *6* correct for repeated matrix
 TEST_CASE(correct_for_repeated_matrix) {
     MatrixTable matrix_table;
     RNG random;
@@ -195,14 +199,94 @@ TEST_CASE(correct_for_repeated_matrix) {
 //@-others
 
 }
-//@+node:gcross.20110805222031.4702: *4* lookupIdOfIdentityWithDimension
+//@+node:gcross.20110805222031.4702: *5* lookupIdOfIdentityWithDimension
 TEST_SUITE(lookupIdOfIdentityWithDimension) {
 
 //@+others
-//@+node:gcross.20110805222031.4703: *5* returns_I_for_dimension_2
+//@+node:gcross.20110805222031.4703: *6* returns_I_for_dimension_2
 TEST_CASE(returns_I_for_dimension_2) {
     MatrixTable matrix_table;
     EXPECT_EQ(matrix_table.lookupIdOfIdentityWithDimension(2),matrix_table.getIMatrixId())
+}
+//@-others
+
+}
+//@-others
+
+}
+//@+node:gcross.20110827215622.2583: *4* VectorTable
+TEST_SUITE(VectorTable) {
+
+//@+others
+//@+node:gcross.20110827215622.2611: *5* lookupIdOf
+TEST_SUITE(lookupIdOf) {
+
+//@+others
+//@+node:gcross.20110827215622.2612: *6* correct for new vector
+TEST_CASE(correct_for_new_vector) {
+    VectorTable table;
+    RNG random;
+    typedef vector<pair<unsigned int,VectorTable::DataConstPtr> > PreviousVectors;
+    PreviousVectors previous_vectors;
+    REPEAT(100) {
+        unsigned int const dimension = random;
+        VectorTable::DataConstPtr vector = random.randomVector(dimension);
+
+        unsigned int const id = table.lookupIdOf(vector);
+        ASSERT_EQ(table.getSizeOf(id),dimension);
+        ASSERT_TRUE(*table.get(id) == *vector);
+
+        BOOST_FOREACH(PreviousVectors::const_reference p, previous_vectors) {
+            ASSERT_TRUE(*table.get(p.first) == *p.second);
+        }
+
+        previous_vectors.emplace_back(id,vector);
+    }
+}
+//@+node:gcross.20110827215622.2613: *6* correct for repeated vector
+TEST_CASE(correct_for_repeated_vector) {
+    VectorTable table;
+    RNG random;
+    typedef vector<pair<unsigned int,VectorTable::DataConstPtr> > PreviousVectors;
+    PreviousVectors previous_vectors;
+    REPEAT(100) {
+        unsigned int const dimension = random;
+        VectorTable::DataConstPtr vector = random.randomVector(dimension);
+
+        unsigned int const id = table.lookupIdOf(vector);
+        ASSERT_EQ_VAL(table.lookupIdOf(vector),id)
+
+        BOOST_FOREACH(PreviousVectors::reference p, previous_vectors) {
+            ASSERT_EQ(table.lookupIdOf(p.second),p.first);
+        }
+
+        previous_vectors.emplace_back(id,vector);
+    }
+}
+//@-others
+
+}
+//@+node:gcross.20110827215622.2606: *5* lookupIdOfObservation
+TEST_CASE(lookupIdOfObservation) {
+    RNG random;
+    REPEAT(100) {
+        unsigned int const
+            dimension = random(1,10),
+            observation = random(0,dimension-1);
+        VectorTable table;
+        unsigned int id = table.lookupIdOfObservation(observation,dimension);
+        VectorTable::Data const& data = *table.get(id);
+        ASSERT_EQ_VAL(data.size(),dimension);
+        VectorTable::Data correct_data(dimension,c(0,0));
+        correct_data[observation] = c(1,0);
+        ASSERT_TRUE(correct_data == data);
+        ASSERT_EQ_VAL(table.lookupIdOfObservation(observation,dimension),id);
+        ASSERT_EQ_VAL(table.lookupIdOf(make_shared<VectorTable::Data const>(correct_data)),id);
+    }
+}
+//@+node:gcross.20110827215622.2585: *5* null
+TEST_CASE(null) {
+    EXPECT_EQ_VAL(VectorTable().lookupIdOfRange(vector<complex<double> >()),0);
 }
 //@-others
 

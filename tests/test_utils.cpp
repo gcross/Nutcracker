@@ -263,6 +263,16 @@ vector<unsigned int> RNG::randomUnsignedIntegerVector(unsigned int n, unsigned i
     generate(physical_dimensions,generateRandomIntegers(lo,hi));
     return boost::move(physical_dimensions);
 }
+//@+node:gcross.20110827215622.2614: *4* randomVector
+shared_ptr<boost::container::vector<complex<double> > > RNG::randomVector() {
+    return randomVector(*this);
+}
+
+shared_ptr<boost::container::vector<complex<double> > > RNG::randomVector(unsigned int size) {
+    shared_ptr<boost::container::vector<complex<double> > > data = make_shared<boost::container::vector<complex<double> > >(size);
+    generate(*data,randomComplexDouble);
+    return data;
+}
 //@+node:gcross.20110511190907.3826: *3* TemporaryFilepath
 //@+node:gcross.20110511190907.3827: *4* (constructors)
 TemporaryFilepath::TemporaryFilepath() {}
