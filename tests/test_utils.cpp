@@ -311,7 +311,7 @@ void checkOperatorsEquivalent(
     copy(operator_1 | indirected | transformed(bind(&OperatorSite::physicalDimension,_1)),physical_dimensions.begin());
     REPEAT(number_of_samples) {
         State state = random.randomState(physical_dimensions);
-        ASSERT_NEAR_REL(computeExpectationValue(state,operator_1),computeExpectationValue(state,operator_2),1e-13)
+        ASSERT_NEAR_REL(computeExpectationValue(state,operator_1),computeExpectationValue(state,operator_2),1e-10)
     }
 }
 //@+node:gcross.20110430221653.2183: *3* checkOperatorSitesEqual
