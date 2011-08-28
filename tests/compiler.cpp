@@ -68,7 +68,7 @@ TEST_SUITE(initial_matrices) {
 //@+others
 //@+node:gcross.20110805222031.4672: *5* Null
 TEST_CASE(Null) {
-    EXPECT_EQ_VAL(MatrixTable().lookupMatrixId(make_shared<Matrix>(2,2,c(0,0))),0);
+    EXPECT_EQ_VAL(MatrixTable().lookupIdOf(make_shared<Matrix>(2,2,c(0,0))),0);
 }
 //@+node:gcross.20110805222031.4674: *5* I
 TEST_SUITE(I) {
@@ -76,12 +76,12 @@ TEST_SUITE(I) {
 //@+node:gcross.20110815001337.2461: *6* correct add
 TEST_CASE(correct_add) {
     MatrixTable matrix_table;
-    EXPECT_EQ_VAL(matrix_table.lookupMatrixId(I),matrix_table.getIMatrixId());
+    EXPECT_EQ_VAL(matrix_table.lookupIdOf(I),matrix_table.getIMatrixId());
 }
 //@+node:gcross.20110815001337.2454: *6* correct lookup
 TEST_CASE(correct_lookup) {
     MatrixTable matrix_table;
-    Matrix const& matrix = matrix_table.getMatrix(matrix_table.getIMatrixId());
+    Matrix const& matrix = *matrix_table.get(matrix_table.getIMatrixId());
 
     EXPECT_EQ_VAL(matrix.size1(),2)
     EXPECT_TRUE(boost::equal(matrix.data(),I->data()))
@@ -94,12 +94,12 @@ TEST_SUITE(X) {
 //@+node:gcross.20110815001337.2463: *6* correct add
 TEST_CASE(correct_add) {
     MatrixTable matrix_table;
-    EXPECT_EQ_VAL(matrix_table.lookupMatrixId(X),matrix_table.getXMatrixId());
+    EXPECT_EQ_VAL(matrix_table.lookupIdOf(X),matrix_table.getXMatrixId());
 }
 //@+node:gcross.20110815001337.2456: *6* correct lookup
 TEST_CASE(correct_lookup) {
     MatrixTable matrix_table;
-    Matrix const& matrix = matrix_table.getMatrix(matrix_table.getXMatrixId());
+    Matrix const& matrix = *matrix_table.get(matrix_table.getXMatrixId());
 
     EXPECT_EQ_VAL(matrix.size1(),2)
     EXPECT_TRUE(boost::equal(matrix.data(),X->data()))
@@ -112,12 +112,12 @@ TEST_SUITE(Y) {
 //@+node:gcross.20110815001337.2465: *6* correct add
 TEST_CASE(correct_add) {
     MatrixTable matrix_table;
-    EXPECT_EQ_VAL(matrix_table.lookupMatrixId(Y),matrix_table.getYMatrixId());
+    EXPECT_EQ_VAL(matrix_table.lookupIdOf(Y),matrix_table.getYMatrixId());
 }
 //@+node:gcross.20110815001337.2458: *6* correct lookup
 TEST_CASE(correct_lookup) {
     MatrixTable matrix_table;
-    Matrix const& matrix = matrix_table.getMatrix(matrix_table.getYMatrixId());
+    Matrix const& matrix = *matrix_table.get(matrix_table.getYMatrixId());
 
     EXPECT_EQ_VAL(matrix.size1(),2)
     EXPECT_TRUE(boost::equal(matrix.data(),Y->data()))
@@ -130,12 +130,12 @@ TEST_SUITE(Z) {
 //@+node:gcross.20110815001337.2467: *6* correct add
 TEST_CASE(correct_add) {
     MatrixTable matrix_table;
-    EXPECT_EQ_VAL(matrix_table.lookupMatrixId(Z),matrix_table.getZMatrixId());
+    EXPECT_EQ_VAL(matrix_table.lookupIdOf(Z),matrix_table.getZMatrixId());
 }
 //@+node:gcross.20110815001337.2460: *6* correct lookup
 TEST_CASE(correct_lookup) {
     MatrixTable matrix_table;
-    Matrix const& matrix = matrix_table.getMatrix(matrix_table.getZMatrixId());
+    Matrix const& matrix = *matrix_table.get(matrix_table.getZMatrixId());
 
     EXPECT_EQ_VAL(matrix.size1(),2)
     EXPECT_TRUE(boost::equal(matrix.data(),Z->data()))
@@ -145,8 +145,8 @@ TEST_CASE(correct_lookup) {
 //@-others
 
 }
-//@+node:gcross.20110805222031.4681: *4* lookupMatrixId
-TEST_SUITE(lookupMatrixId) {
+//@+node:gcross.20110805222031.4681: *4* lookupIdOf
+TEST_SUITE(lookupIdOf) {
 
 //@+others
 //@+node:gcross.20110805222031.4682: *5* correct for new matrix
@@ -160,12 +160,12 @@ TEST_CASE(correct_for_new_matrix) {
         shared_ptr<Matrix> matrix(new Matrix(dimension,dimension));
         generate(matrix->data(),random.randomComplexDouble);
 
-        unsigned int const matrix_id = matrix_table.lookupMatrixId(matrix);
-        ASSERT_EQ(matrix_table.getMatrix(matrix_id).size1(),dimension);
-        ASSERT_TRUE(boost::equal(matrix_table.getMatrix(matrix_id).data(),matrix->data()));
+        unsigned int const matrix_id = matrix_table.lookupIdOf(matrix);
+        ASSERT_EQ(matrix_table.getSizeOf(matrix_id),dimension);
+        ASSERT_TRUE(boost::equal(matrix_table.get(matrix_id)->data(),matrix->data()));
 
         BOOST_FOREACH(PreviousMatrices::const_reference p, previous_matrices) {
-            ASSERT_TRUE(boost::equal(matrix_table.getMatrix(p.first).data(),p.second->data()));
+            ASSERT_TRUE(boost::equal(matrix_table.get(p.first)->data(),p.second->data()));
         }
 
         previous_matrices.emplace_back(matrix_id,matrix);
@@ -182,11 +182,11 @@ TEST_CASE(correct_for_repeated_matrix) {
         shared_ptr<Matrix> matrix(new Matrix(dimension,dimension));
         generate(matrix->data(),random.randomComplexDouble);
 
-        unsigned int const matrix_id = matrix_table.lookupMatrixId(matrix);
-        ASSERT_EQ_VAL(matrix_table.lookupMatrixId(matrix),matrix_id)
+        unsigned int const matrix_id = matrix_table.lookupIdOf(matrix);
+        ASSERT_EQ_VAL(matrix_table.lookupIdOf(matrix),matrix_id)
 
         BOOST_FOREACH(PreviousMatrices::reference p, previous_matrices) {
-            ASSERT_EQ(matrix_table.lookupMatrixId(p.second),p.first);
+            ASSERT_EQ(matrix_table.lookupIdOf(p.second),p.first);
         }
 
         previous_matrices.emplace_back(matrix_id,matrix);
@@ -195,14 +195,14 @@ TEST_CASE(correct_for_repeated_matrix) {
 //@-others
 
 }
-//@+node:gcross.20110805222031.4702: *4* lookupIdentityMatrixId
-TEST_SUITE(lookupIdentityMatrixId) {
+//@+node:gcross.20110805222031.4702: *4* lookupIdOfIdentityWithDimension
+TEST_SUITE(lookupIdOfIdentityWithDimension) {
 
 //@+others
 //@+node:gcross.20110805222031.4703: *5* returns_I_for_dimension_2
 TEST_CASE(returns_I_for_dimension_2) {
     MatrixTable matrix_table;
-    EXPECT_EQ(matrix_table.lookupIdentityMatrixId(2),matrix_table.getIMatrixId())
+    EXPECT_EQ(matrix_table.lookupIdOfIdentityWithDimension(2),matrix_table.getIMatrixId())
 }
 //@-others
 
@@ -346,7 +346,7 @@ TEST_CASE(multiconnections) {
     TestingOperatorSpecification spec(builder.generateSpecification(false));
     SiteConnections correct_connections;
     MatrixConstPtr matrix = squareMatrix(list_of(c(2,0))(c(1,-1))(c(1,1))(c(0,0)));
-    correct_connections[make_pair(0u,0u)] = spec.lookupMatrixId(matrix);
+    correct_connections[make_pair(0u,0u)] = spec.lookupIdOf(matrix);
     EXPECT_EQ_VAL(spec.getConnections()[0].size(),1u);
     EXPECT_TRUE(spec.getConnections()[0] == correct_connections);
 }
@@ -412,7 +412,7 @@ TEST_CASE(nontrivial_link) {
         unsigned int dimension = random;
         MatrixPtr const matrix = random.randomSquareMatrix(dimension);
         OperatorSpecification spec;
-        spec.connect(0,spec.getStartSignal(),spec.getEndSignal(),spec.lookupMatrixId(matrix));
+        spec.connect(0,spec.getStartSignal(),spec.getEndSignal(),spec.lookupIdOf(matrix));
         checkOperatorSitesEqual(
             *spec.compile()[0],
             constructOperatorSite(
@@ -427,7 +427,7 @@ TEST_CASE(nontrivial_link) {
 //@+node:gcross.20110817224742.2471: *6* trivial link
 TEST_CASE(trivial_link) {
     OperatorSpecification spec;
-    spec.connect(0,spec.getStartSignal(),spec.getEndSignal(),spec.lookupIdentityMatrixId(2));
+    spec.connect(0,spec.getStartSignal(),spec.getEndSignal(),spec.lookupIdOfIdentityWithDimension(2));
     checkOperatorSitesEqual(
         *spec.compile()[0],
         constructOperatorSite(
@@ -471,8 +471,8 @@ TEST_CASE(non_trivial_single_links) {
             matrix1 = random.randomSquareMatrix(dimension1),
             matrix2 = random.randomSquareMatrix(dimension2);
         OperatorSpecification spec;
-        spec.connect(0,spec.getStartSignal(),10,spec.lookupMatrixId(matrix1));
-        spec.connect(1,10,spec.getEndSignal(),spec.lookupMatrixId(matrix2));
+        spec.connect(0,spec.getStartSignal(),10,spec.lookupIdOf(matrix1));
+        spec.connect(1,10,spec.getEndSignal(),spec.lookupIdOf(matrix2));
         Operator op = spec.compile();
         EXPECT_EQ_VAL(op.size(),2)
         checkOperatorSitesEqual(
@@ -512,10 +512,10 @@ TEST_CASE(random_links) {
                 matrix2 = random.randomSquareMatrix(dimension2);
 
             links1.emplace_back(spec.getStartSignal(),current_signal,matrix1);
-            spec.connect(0,spec.getStartSignal(),current_signal,spec.lookupMatrixId(matrix1));
+            spec.connect(0,spec.getStartSignal(),current_signal,spec.lookupIdOf(matrix1));
 
             links2.emplace_back(current_signal,1,matrix2);
-            spec.connect(1,current_signal,spec.getEndSignal(),spec.lookupMatrixId(matrix2));
+            spec.connect(1,current_signal,spec.getEndSignal(),spec.lookupIdOf(matrix2));
         }
         Operator op = spec.compile();
         checkOperatorSitesEqual(
@@ -541,8 +541,8 @@ TEST_CASE(random_links) {
 //@+node:gcross.20110817224742.2480: *6* trivial links
 TEST_CASE(trivial_links) {
     OperatorSpecification spec;
-    spec.connect(0,spec.getStartSignal(),10,spec.lookupIdentityMatrixId(2));
-    spec.connect(1,10,spec.getEndSignal(),spec.lookupIdentityMatrixId(2));
+    spec.connect(0,spec.getStartSignal(),10,spec.lookupIdOfIdentityWithDimension(2));
+    spec.connect(1,10,spec.getEndSignal(),spec.lookupIdOfIdentityWithDimension(2));
     Operator op = spec.compile();
     EXPECT_EQ_VAL(op.size(),2)
     checkOperatorSitesEqual(
@@ -721,14 +721,14 @@ TEST_CASE(mergable_signal_sets) {
             dimension2 = random+1;
         TestingOperatorSpecification spec;
         unsigned int const
-            matrix1_id1 = spec.lookupMatrixId(random.randomSquareMatrix(dimension1)),
-            matrix1_id2 = spec.lookupMatrixId(random.randomSquareMatrix(dimension1));
+            matrix1_id1 = spec.lookupIdOf(random.randomSquareMatrix(dimension1)),
+            matrix1_id2 = spec.lookupIdOf(random.randomSquareMatrix(dimension1));
         MatrixPtr const merged_matrix(new Matrix(dimension2,dimension2,c(0,0)));
         REPEAT(number_of_signals) {
             unsigned int const signal = spec.allocateSignal();
             MatrixPtr const matrix2 = random.randomSquareMatrix(dimension2);
             *merged_matrix += *matrix2;
-            unsigned int const matrix2_id = spec.lookupMatrixId(matrix2);
+            unsigned int const matrix2_id = spec.lookupIdOf(matrix2);
             spec.connect(0u,1u,signal,matrix1_id1);
             spec.connect(0u,2u,signal,matrix1_id2);
             spec.connect(1u,signal,spec.getEndSignal(),matrix2_id);
@@ -754,7 +754,7 @@ TEST_CASE(mergable_signal_sets) {
         EXPECT_EQ_VAL(spec.getConnections()[1].begin()->first.second,spec.getEndSignal())
         EXPECT_EQ(spec.getConnections()[0].begin()->second,matrix1_id1)
         EXPECT_EQ((++spec.getConnections()[0].begin())->second,matrix1_id2)
-        EXPECT_EQ(spec.getConnections()[1].begin()->second,spec.lookupMatrixId(merged_matrix))
+        EXPECT_EQ(spec.getConnections()[1].begin()->second,spec.lookupIdOf(merged_matrix))
     }
 }
 //@+node:gcross.20110818221240.2500: *5* mergable signals
@@ -767,13 +767,13 @@ TEST_CASE(mergable_signals) {
             dimension1 = random+1,
             dimension2 = random+1;
         TestingOperatorSpecification spec;
-        unsigned int const matrix1_id = spec.lookupMatrixId(random.randomSquareMatrix(dimension1));
+        unsigned int const matrix1_id = spec.lookupIdOf(random.randomSquareMatrix(dimension1));
         MatrixPtr const merged_matrix(new Matrix(dimension2,dimension2,c(0,0)));
         REPEAT(number_of_signals) {
             unsigned int const signal = spec.allocateSignal();
             MatrixPtr const matrix2 = random.randomSquareMatrix(dimension2);
             *merged_matrix += *matrix2;
-            unsigned int const matrix2_id = spec.lookupMatrixId(matrix2);
+            unsigned int const matrix2_id = spec.lookupIdOf(matrix2);
             spec.connect(0u,spec.getStartSignal(),signal,matrix1_id);
             spec.connect(1u,signal,spec.getEndSignal(),matrix2_id);
         }
@@ -792,7 +792,7 @@ TEST_CASE(mergable_signals) {
         )
         EXPECT_EQ_VAL(spec.getConnections()[1].begin()->first.second,spec.getEndSignal())
         EXPECT_EQ(spec.getConnections()[0].begin()->second,matrix1_id)
-        EXPECT_EQ(spec.getConnections()[1].begin()->second,spec.lookupMatrixId(merged_matrix))
+        EXPECT_EQ(spec.getConnections()[1].begin()->second,spec.lookupIdOf(merged_matrix))
         checkOperatorsEquivalent(old_spec.compile(),spec.compile(),random);
     }
 }
@@ -804,13 +804,13 @@ TEST_CASE(unmergable_signal_sets) {
         unsigned int const dimension = random+1;
         unsigned int last_matrix_id = 0;
         TestingOperatorSpecification spec;
-        unsigned int identical_matrix_id = spec.lookupMatrixId(random.randomSquareMatrix(dimension));
+        unsigned int identical_matrix_id = spec.lookupIdOf(random.randomSquareMatrix(dimension));
         unsigned int const number_of_signals = random+1;
         vector<unsigned int> left_signals;
         BOOST_FOREACH(unsigned int signal, irange(1u,number_of_signals+1u)) {
             unsigned int random_matrix_id = 0;
             while(random_matrix_id <= last_matrix_id) {
-                random_matrix_id = spec.lookupMatrixId(random.randomSquareMatrix(dimension));
+                random_matrix_id = spec.lookupIdOf(random.randomSquareMatrix(dimension));
             }
             last_matrix_id = random_matrix_id;
             spec.connect(0u,signal,1u,random_matrix_id);
@@ -837,7 +837,7 @@ TEST_CASE(unmergable_signals) {
         BOOST_FOREACH(unsigned int signal, irange(1u,number_of_signals+1u)) {
             unsigned int matrix_id = 0;
             while(matrix_id <= last_matrix_id) {
-                matrix_id = spec.lookupMatrixId(random.randomSquareMatrix(dimension));
+                matrix_id = spec.lookupIdOf(random.randomSquareMatrix(dimension));
             }
             last_matrix_id = matrix_id;
             spec.connect(0u,signal,spec.getEndSignal(),matrix_id);
@@ -866,14 +866,14 @@ TEST_CASE(mergable_signal_sets) {
             dimension2 = random+1;
         TestingOperatorSpecification spec;
         unsigned int const
-            matrix1_id1 = spec.lookupMatrixId(random.randomSquareMatrix(dimension1)),
-            matrix1_id2 = spec.lookupMatrixId(random.randomSquareMatrix(dimension1));
+            matrix1_id1 = spec.lookupIdOf(random.randomSquareMatrix(dimension1)),
+            matrix1_id2 = spec.lookupIdOf(random.randomSquareMatrix(dimension1));
         MatrixPtr const merged_matrix(new Matrix(dimension2,dimension2,c(0,0)));
         REPEAT(number_of_signals) {
             unsigned int const signal = spec.allocateSignal();
             MatrixPtr const matrix2 = random.randomSquareMatrix(dimension2);
             *merged_matrix += *matrix2;
-            unsigned int const matrix2_id = spec.lookupMatrixId(matrix2);
+            unsigned int const matrix2_id = spec.lookupIdOf(matrix2);
             spec.connect(1u,signal,1u,matrix1_id1);
             spec.connect(1u,signal,2u,matrix1_id2);
             spec.connect(0u,spec.getStartSignal(),signal,matrix2_id);
@@ -899,7 +899,7 @@ TEST_CASE(mergable_signal_sets) {
         EXPECT_EQ_VAL(spec.getConnections()[0].begin()->first.first,spec.getStartSignal())
         EXPECT_EQ(spec.getConnections()[1].begin()->second,matrix1_id1)
         EXPECT_EQ((++spec.getConnections()[1].begin())->second,matrix1_id2)
-        EXPECT_EQ(spec.getConnections()[0].begin()->second,spec.lookupMatrixId(merged_matrix))
+        EXPECT_EQ(spec.getConnections()[0].begin()->second,spec.lookupIdOf(merged_matrix))
     }
 }
 //@+node:gcross.20110817224742.2515: *5* mergable signals
@@ -912,13 +912,13 @@ TEST_CASE(mergable_signals) {
             dimension1 = random+1,
             dimension2 = random+1;
         TestingOperatorSpecification spec;
-        unsigned int const matrix2_id = spec.lookupMatrixId(random.randomSquareMatrix(dimension2));
+        unsigned int const matrix2_id = spec.lookupIdOf(random.randomSquareMatrix(dimension2));
         MatrixPtr const merged_matrix(new Matrix(dimension1,dimension1,c(0,0)));
         REPEAT(number_of_signals) {
             unsigned int const signal = spec.allocateSignal();
             MatrixPtr const matrix1 = random.randomSquareMatrix(dimension1);
             *merged_matrix += *matrix1;
-            unsigned int const matrix1_id = spec.lookupMatrixId(matrix1);
+            unsigned int const matrix1_id = spec.lookupIdOf(matrix1);
             spec.connect(0u,spec.getStartSignal(),signal,matrix1_id);
             spec.connect(1u,signal,spec.getEndSignal(),matrix2_id);
         }
@@ -936,7 +936,7 @@ TEST_CASE(mergable_signals) {
             spec.getConnections()[1].begin()->first.first
         )
         EXPECT_EQ_VAL(spec.getConnections()[1].begin()->first.second,spec.getEndSignal())
-        EXPECT_EQ(spec.getConnections()[0].begin()->second,spec.lookupMatrixId(merged_matrix))
+        EXPECT_EQ(spec.getConnections()[0].begin()->second,spec.lookupIdOf(merged_matrix))
         EXPECT_EQ(spec.getConnections()[1].begin()->second,matrix2_id)
         checkOperatorsEquivalent(old_spec.compile(),spec.compile(),random);
     }
@@ -949,13 +949,13 @@ TEST_CASE(unmergable_signal_sets) {
         unsigned int const dimension = random+1;
         unsigned int last_matrix_id = 0;
         TestingOperatorSpecification spec;
-        unsigned int identical_matrix_id = spec.lookupMatrixId(random.randomSquareMatrix(dimension));
+        unsigned int identical_matrix_id = spec.lookupIdOf(random.randomSquareMatrix(dimension));
         unsigned int const number_of_signals = random+1;
         vector<unsigned int> left_signals;
         BOOST_FOREACH(unsigned int signal, irange(1u,number_of_signals+1u)) {
             unsigned int random_matrix_id = 0;
             while(random_matrix_id <= last_matrix_id) {
-                random_matrix_id = spec.lookupMatrixId(random.randomSquareMatrix(dimension));
+                random_matrix_id = spec.lookupIdOf(random.randomSquareMatrix(dimension));
             }
             last_matrix_id = random_matrix_id;
             spec.connect(0u,1u,signal,random_matrix_id);
@@ -982,7 +982,7 @@ TEST_CASE(unmergable_signals) {
         BOOST_FOREACH(unsigned int signal, irange(1u,number_of_signals+1u)) {
             unsigned int matrix_id = 0;
             while(matrix_id <= last_matrix_id) {
-                matrix_id = spec.lookupMatrixId(random.randomSquareMatrix(dimension));
+                matrix_id = spec.lookupIdOf(random.randomSquareMatrix(dimension));
             }
             last_matrix_id = matrix_id;
             spec.connect(0u,spec.getStartSignal(),signal,matrix_id);

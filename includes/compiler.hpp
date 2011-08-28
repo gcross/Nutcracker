@@ -24,7 +24,11 @@
 //@+node:gcross.20110805222031.2341: ** << Includes >>
 #include <boost/container/map.hpp>
 #include <boost/container/set.hpp>
+#include <boost/foreach.hpp>
 #include <boost/functional/hash.hpp>
+#include <boost/iterator/zip_iterator.hpp>
+#include <boost/make_shared.hpp>
+#include <boost/range/algorithm/transform.hpp>
 #include <boost/tuple/tuple.hpp>
 #include <boost/tuple/tuple_comparison.hpp>
 #include <boost/unordered_map.hpp>
@@ -108,54 +112,267 @@ struct WrongNumberOfSites : public std::logic_error {
       , system_number_of_sites(system_number_of_sites)
     {}
 };
+//@+node:gcross.20110826235932.2597: ** Traits
 //@+node:gcross.20110805222031.2343: ** Classes
+//@+node:gcross.20110826235932.2550: *3* DataTable
+template<typename DataTraits> struct DataTable {
+//@+<< DataConstPtr alias >>
+//@+node:gcross.20110826235932.2615: *4* << DataConstPtr alias >>
+typedef typename DataTraits::DataPtr DataPtr;
+typedef typename DataTraits::DataConstPtr DataConstPtr;
+//@-<< DataConstPtr alias >>
+//@+others
+//@+node:gcross.20110826235932.2551: *4* [Move support]
+private:
+
+BOOST_COPYABLE_AND_MOVABLE(DataTable)
+//@+node:gcross.20110826235932.2610: *4* [Inner function objects]
+//@+node:gcross.20110826235932.2614: *5* DataConstPtrComparisonPredicate
+struct DataConstPtrComparisonPredicate : std::binary_function<DataConstPtr,DataConstPtr,bool> {
+    bool operator()(DataConstPtr const& x, DataConstPtr const& y) const {
+        if(x == y) return false;
+        unsigned int const
+            x_size = DataTraits::dimensionOf(x),
+            y_size = DataTraits::dimensionOf(y);
+        if(x_size < y_size) return true;
+        if(x_size > y_size) return false;
+        typedef boost::tuple<std::complex<double>,std::complex<double> > XY;
+        BOOST_FOREACH(
+            XY const& xy,
+            std::make_pair(
+                boost::make_zip_iterator(boost::make_tuple(
+                    DataTraits::access(x).begin(),
+                    DataTraits::access(y).begin()
+                )),
+                boost::make_zip_iterator(boost::make_tuple(
+                    DataTraits::access(x).end(),
+                    DataTraits::access(y).end()
+                ))
+            )
+        ) {
+            complex<double> const &a = xy.get<0>(), &b = xy.get<1>();
+            if(abs(a-b) > 1e-14) {
+                if(a.real() != b.real())
+                    return a.real() < b.real();
+                else
+                    return a.imag() < b.imag();
+            }
+        }
+        return false;
+    }
+};
+//@+node:gcross.20110826235932.2552: *4* [Type alises]
+protected:
+
+typedef boost::container::map<unsigned int,unsigned int> IdentityIndex;
+typedef boost::container::map<DataConstPtr,unsigned int,DataConstPtrComparisonPredicate> DataIndex;
+typedef boost::container::vector<DataConstPtr> DataStore;
+//@+node:gcross.20110826235932.2553: *4* Constructors
+public:
+
+DataTable() {
+    store.emplace_back();
+}
+
+DataTable(BOOST_RV_REF(DataTable) other)
+  : identity_index(boost::move(other.identity_index))
+  , store(boost::move(other.store))
+  , index(boost::move(other.index))
+{}
+//@+node:gcross.20110826235932.2554: *4* Fields
+protected:
+
+IdentityIndex identity_index;
+DataStore store;
+DataIndex index;
+//@+node:gcross.20110826235932.2589: *4* Methods
+public:
+
+//@+others
+//@+node:gcross.20110826235932.2595: *5* get
+DataConstPtr const& get(unsigned int id) const {
+    return store[id];
+}
+//@+node:gcross.20110826235932.2609: *5* getSizeOf
+unsigned int getSizeOf(unsigned int const id) const {
+    return DataTraits::dimensionOf(get(id));
+}
+//@+node:gcross.20110826235932.2592: *5* lookupIdFromTable
+unsigned int lookupIdFromTable(DataTable const& other, unsigned int id_in_other) {
+    return lookupIdOf(other.get(id_in_other));
+}
+//@+node:gcross.20110826235932.2591: *5* lookupIdOf
+unsigned int lookupIdOf(DataConstPtr const& data) {
+    DataTraits::assertCorrectlyFormed(data);
+    if(DataTraits::dimensionOf(data) == 0) return 0;
+    BOOST_FOREACH(complex<double> const& datum, DataTraits::access(data)) {
+        if(abs(datum) >= 1e-14) goto notnull;
+    }
+    return 0;
+notnull:
+    typename DataIndex::const_iterator const iter = index.find(data);
+    if(iter != index.end()) {
+        return iter->second;
+    } else {
+        unsigned int id = store.size();
+        index[data] = id;
+        store.emplace_back(data);
+        return id;
+    }
+}
+//@+node:gcross.20110826235932.2593: *5* lookupIdOfSum
+unsigned int lookupIdOfSum(vector<unsigned int> const& ids) {
+    if(ids.size() == 0) return 0;
+    if(ids.size() == 1) return ids[0];
+    DataPtr data = DataTraits::copy(get(ids[0]));
+    BOOST_FOREACH(unsigned int id, make_iterator_range(ids.begin()+1,ids.end())) {
+        boost::transform(
+            DataTraits::access(data),
+            DataTraits::access(get(id)),
+            DataTraits::access(data).begin(),
+            boost::lambda::_1 + boost::lambda::_2
+        );
+    }
+    return lookupIdOf(data);
+}
+//@+node:gcross.20110826235932.2594: *5* lookupIdOfWeightedSum
+unsigned int lookupIdOfWeightedSum(vector<pair<unsigned int,complex<double> > > const& ids_and_scale_factors) {
+    if(ids_and_scale_factors.size() == 0) return 0;
+    if(ids_and_scale_factors.size() == 1 && ids_and_scale_factors.front().second == c(1,0))
+        return ids_and_scale_factors.front().first;
+    unsigned int dimension = DataTraits::dimensionOf(get(ids_and_scale_factors.front().first));
+    DataPtr data = DataTraits::createBlank(dimension);
+    typedef pair<unsigned int,complex<double> > P;
+    BOOST_FOREACH(P const& p,ids_and_scale_factors) {
+        boost::transform(
+            DataTraits::access(data),
+            DataTraits::access(get(p.first)),
+            DataTraits::access(data).begin(),
+            boost::lambda::_1 + p.second * boost::lambda::_2
+        );
+    }
+    return lookupIdOf(data);
+}
+//@-others
+//@+node:gcross.20110826235932.2556: *4* Operators
+public:
+
+DataTable& operator=(BOOST_COPY_ASSIGN_REF(DataTable) other) {
+    if (this != &other){
+        identity_index = other.identity_index;
+        store = other.store;
+        index = other.index;
+    }
+    return *this;
+}
+
+DataTable& operator=(BOOST_RV_REF(DataTable) other) {
+    if (this != &other){
+        identity_index = boost::move(other.identity_index);
+        store = boost::move(other.store);
+        index = boost::move(other.index);
+    }
+    return *this;
+}
+//@-others
+};
 //@+node:gcross.20110805222031.4631: *3* MatrixTable
-class MatrixTable {
+//@+<< Traits >>
+//@+node:gcross.20110805222031.4634: *4* << Traits >>
+struct MatrixDataTraits {
+
+//@+others
+//@+node:gcross.20110826235932.2602: *5* [Type aliases]
+typedef MatrixPtr DataPtr;
+typedef MatrixConstPtr DataConstPtr;
+//@+node:gcross.20110826235932.2605: *5* access
+static inline Matrix::array_type const& access(DataConstPtr const& data) {
+    return data->data();
+}
+static inline Matrix::array_type& access(DataPtr const& data) {
+    return data->data();
+}
+//@+node:gcross.20110826235932.2606: *5* assertCorrectlyFormed
+static inline void assertCorrectlyFormed(DataConstPtr const& data) {
+    if(data->size1() != data->size2()) throw NonSquareMatrix(data->size1(),data->size2());
+}
+//@+node:gcross.20110826235932.2607: *5* copy
+static inline DataPtr copy(DataConstPtr const& data) {
+    return boost::make_shared<Matrix>(*data);
+}
+//@+node:gcross.20110826235932.2608: *5* createBlank
+static inline DataPtr createBlank(unsigned int const dimension) {
+    return boost::make_shared<Matrix>(dimension,dimension,c(0,0));
+}
+//@+node:gcross.20110826235932.2604: *5* createIdentity
+static inline DataConstPtr createIdentity(unsigned int const dimension) {
+    return identityMatrix(dimension);
+}
+//@+node:gcross.20110826235932.2601: *5* dimensionOf
+static inline unsigned int dimensionOf(DataConstPtr const& data) {
+    return data->size1();
+}
+//@-others
+
+};
+//@-<< Traits >>
+
+class MatrixTable: public DataTable<MatrixDataTraits> {
 //@+others
 //@+node:gcross.20110814140556.2431: *4* [Move support]
 private:
 
 BOOST_COPYABLE_AND_MOVABLE(MatrixTable)
-//@+node:gcross.20110805222031.4634: *4* [Type alises]
-protected:
+//@+node:gcross.20110826235932.2603: *4* [Type alises]
+private:
 
-typedef boost::container::map<MatrixConstPtr,unsigned int> MatrixLookupTable;
-typedef boost::container::vector<MatrixConstPtr> Matrices;
+typedef DataTable<MatrixDataTraits> Base;
 //@+node:gcross.20110805222031.4641: *4* Constructors
 public:
 
-MatrixTable();
-MatrixTable(BOOST_RV_REF(MatrixTable) other);
-//@+node:gcross.20110805222031.4632: *4* Fields
-protected:
+MatrixTable() {
+    lookupIdOfIdentityWithDimension(2);
+    lookupIdOf(Pauli::X);
+    lookupIdOf(Pauli::Y);
+    lookupIdOf(Pauli::Z);
+}
 
-boost::container::map<unsigned int,unsigned int> identity_lookup_table;
-Matrices matrices;
-MatrixLookupTable matrix_lookup_table;
+MatrixTable(BOOST_RV_REF(MatrixTable) other)
+  : Base(static_cast<BOOST_RV_REF(Base)>(other))
+{}
 //@+node:gcross.20110805222031.2346: *4* Methods
 public:
-
-unsigned int lookupMatrixId(MatrixConstPtr const& matrix);
-unsigned int lookupSumOfMatrices(vector<unsigned int> const& matrix_ids);
-unsigned int lookupWeightedSumOfMatrices(vector<pair<unsigned int,complex<double> > > const& matrix_ids_and_scale_factors);
-unsigned int lookupIdentityMatrixId(unsigned int dimension);
-unsigned int lookupMatrixIdFromTable(MatrixTable const& other, unsigned int matrix_id_in_other);
 
 static unsigned int getIMatrixId() { return 1u; };
 static unsigned int getXMatrixId() { return 2u; };
 static unsigned int getYMatrixId() { return 3u; };
 static unsigned int getZMatrixId() { return 4u; };
 
-Matrix const& getMatrix(unsigned int index) const;
-MatrixConstPtr const& getMatrixPtr(unsigned int index) const;
-
 //@+others
+//@+node:gcross.20110826235932.2617: *5* lookupIdOfIdentityWithDimension
+unsigned int lookupIdOfIdentityWithDimension(unsigned int dimension) {
+    IdentityIndex::const_iterator const iter = identity_index.find(dimension);
+    if(iter != identity_index.end()) {
+        return iter->second;
+    } else {
+        DataConstPtr const data = identityMatrix(dimension);
+        unsigned int id = lookupIdOf(data);
+        identity_index[dimension] = id;
+        return id;
+    }
+}
 //@-others
 //@+node:gcross.20110814140556.2434: *4* Operators
 public:
 
-MatrixTable& operator=(BOOST_COPY_ASSIGN_REF(MatrixTable) other);
-MatrixTable& operator=(BOOST_RV_REF(MatrixTable) other);
+MatrixTable& operator=(BOOST_COPY_ASSIGN_REF(MatrixTable) other) {
+    Base::operator=(static_cast<BOOST_COPY_ASSIGN_REF(Base)>(other));
+    return *this;
+}
+MatrixTable& operator=(BOOST_RV_REF(MatrixTable) other) {
+    Base::operator=(static_cast<BOOST_RV_REF(Base)>(other));
+    return *this;
+}
 //@-others
 };
 //@+node:gcross.20110805222031.4642: *3* SignalTable

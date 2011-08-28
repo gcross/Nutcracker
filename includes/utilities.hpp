@@ -472,12 +472,6 @@ namespace Pauli {
 //@+node:gcross.20110511190907.3784: ** << Outside namespace >>
 inline std::istream& operator>> (std::istream& in, boost::none_t& _) { return in; }
 inline std::ostream& operator<< (std::ostream& out, const boost::none_t& _) { return out; }
-
-namespace std {
-    template<> struct less<Nutcracker::MatrixConstPtr> : std::binary_function<Nutcracker::MatrixConstPtr,Nutcracker::MatrixConstPtr,bool> {
-        bool operator()(Nutcracker::MatrixConstPtr const& x, Nutcracker::MatrixConstPtr const& y) const;
-    };
-}
 //@-<< Outside namespace >>
 
 #endif

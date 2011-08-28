@@ -19,7 +19,6 @@
 
 //@+<< Includes >>
 //@+node:gcross.20110206185121.1778: ** << Includes >>
-#include <boost/iterator/zip_iterator.hpp>
 #include <boost/make_shared.hpp>
 #include <boost/range/algorithm/copy.hpp>
 #include <boost/tuple/tuple.hpp>
@@ -38,7 +37,6 @@ namespace Nutcracker {
 using boost::irange;
 using boost::make_shared;
 using boost::make_tuple;
-using boost::make_zip_iterator;
 using boost::tuple;
 
 using std::make_pair;

@@ -77,111 +77,6 @@ static inline pair<unsigned int,unsigned int> newSignalPair(bool forward,unsigne
     return forward ? make_pair(incoming_signal,outgoing_signal) : make_pair(outgoing_signal,incoming_signal);
 }
 //@+node:gcross.20110805222031.2355: ** Classes
-//@+node:gcross.20110805222031.4635: *3* MatrixTable
-//@+node:gcross.20110805222031.2373: *4* Constructors
-MatrixTable::MatrixTable() {
-    matrices.emplace_back();
-    lookupIdentityMatrixId(2);
-    lookupMatrixId(Pauli::X);
-    lookupMatrixId(Pauli::Y);
-    lookupMatrixId(Pauli::Z);
-}
-
-MatrixTable::MatrixTable(BOOST_RV_REF(MatrixTable) other)
-  : identity_lookup_table(boost::move(other.identity_lookup_table))
-  , matrices(boost::move(other.matrices))
-  , matrix_lookup_table(boost::move(other.matrix_lookup_table))
-{}
-//@+node:gcross.20110805222031.2372: *4* Methods
-//@+node:gcross.20110805222031.2357: *5* lookupIdentityMatrixId
-unsigned int MatrixTable::lookupIdentityMatrixId(unsigned int dimension) {
-    map<unsigned int,unsigned int>::const_iterator const iter = identity_lookup_table.find(dimension);
-    if(iter != identity_lookup_table.end()) {
-        return iter->second;
-    } else {
-        MatrixConstPtr const matrix = identityMatrix(dimension);
-        unsigned int matrix_id = lookupMatrixId(matrix);
-        identity_lookup_table[dimension] = matrix_id;
-        return matrix_id;
-    }
-}
-//@+node:gcross.20110805222031.2358: *5* lookupMatrixId
-unsigned int MatrixTable::lookupMatrixId(shared_ptr<Matrix const> const& matrix) {
-    if(matrix->size1() != matrix->size2()) throw NonSquareMatrix(matrix->size1(),matrix->size2());
-    if(matrix->size1() == 0) return 0;
-    BOOST_FOREACH(complex<double> const& datum, matrix->data()) {
-        if(abs(datum) >= 1e-14) goto notnull;
-    }
-    return 0;
-notnull:
-    MatrixLookupTable::const_iterator const iter = matrix_lookup_table.find(matrix);
-    if(iter != matrix_lookup_table.end()) {
-        return iter->second;
-    } else {
-        unsigned int matrix_id = matrices.size();
-        matrix_lookup_table[matrix] = matrix_id;
-        matrices.emplace_back(matrix);
-        return matrix_id;
-    }
-}
-//@+node:gcross.20110805222031.4639: *5* lookupMatrixIdFromTable
-unsigned int MatrixTable::lookupMatrixIdFromTable(MatrixTable const& other, unsigned int matrix_id_in_other) {
-    return lookupMatrixId(other.getMatrixPtr(matrix_id_in_other));
-}
-//@+node:gcross.20110805222031.4655: *5* lookupSumOfMatrices
-unsigned int MatrixTable::lookupSumOfMatrices(vector<unsigned int> const& matrix_ids) {
-    if(matrix_ids.size() == 0) return 0;
-    if(matrix_ids.size() == 1) return matrix_ids[0];
-    MatrixPtr matrix(new Matrix(getMatrix(matrix_ids[0])));
-    boost::for_each(
-        make_iterator_range(matrix_ids.begin()+1,matrix_ids.end()),
-        lambda::var(*matrix) += lambda::bind(&MatrixTable::getMatrix,this,lambda::_1)
-    );
-    return lookupMatrixId(matrix);
-}
-//@+node:gcross.20110805222031.4719: *5* lookupWeightedSumOfMatrices
-unsigned int MatrixTable::lookupWeightedSumOfMatrices(vector<pair<unsigned int,complex<double> > > const& matrix_ids_and_scale_factors) {
-    if(matrix_ids_and_scale_factors.size() == 0) return 0;
-    if(matrix_ids_and_scale_factors.size() == 1 && matrix_ids_and_scale_factors.front().second == c(1,0))
-        return matrix_ids_and_scale_factors.front().first;
-    unsigned int dimension = getMatrix(matrix_ids_and_scale_factors.front().first).size1();
-    shared_ptr<Matrix> matrix(make_shared<Matrix>(dimension,dimension,c(0,0)));
-    typedef pair<unsigned int,complex<double> > P;
-    typedef vector<P> T;
-    BOOST_FOREACH(P const& p,matrix_ids_and_scale_factors) {
-        (*matrix) += p.second*getMatrix(p.first);
-    }
-    return lookupMatrixId(matrix);
-}
-//@+node:gcross.20110805222031.2370: *5* lookupMatrix
-Matrix const& MatrixTable::getMatrix(unsigned int matrix_id) const {
-    return *getMatrixPtr(matrix_id);
-}
-//@+node:gcross.20110815001337.2469: *5* lookupMatrixPtr
-shared_ptr<Matrix const> const& MatrixTable::getMatrixPtr(unsigned int matrix_id) const {
-    return matrices[matrix_id];
-}
-//@+node:gcross.20110814140556.2432: *4* Operators
-//@+node:gcross.20110814140556.2433: *5* operator=
-MatrixTable& MatrixTable::operator=(BOOST_COPY_ASSIGN_REF(MatrixTable) other)
-{
-    if (this != &other){
-        identity_lookup_table = other.identity_lookup_table;
-        matrices = other.matrices;
-        matrix_lookup_table = other.matrix_lookup_table;
-    }
-    return *this;
-}
-
-MatrixTable& MatrixTable::operator=(BOOST_RV_REF(MatrixTable) other)
-{
-    if (this != &other){
-        identity_lookup_table = boost::move(other.identity_lookup_table);
-        matrices = boost::move(other.matrices);
-        matrix_lookup_table = boost::move(other.matrix_lookup_table);
-    }
-    return *this;
-}
 //@+node:gcross.20110805222031.2356: *3* OperatorBuilder
 //@+node:gcross.20110817110920.2479: *4* (constructors)
 OperatorBuilder::OperatorBuilder() {}
@@ -254,8 +149,8 @@ OperatorBuilder& OperatorBuilder::connect(
     complex<double> const scale_factor
 ) {
     if(site_number >= sites.size()) throw SiteNumberTooLarge(site_number,sites.size());
-    if(getMatrix(matrix_id).size1() != sites[site_number])
-        throw BadMatrixDimensionForSite(site_number,sites[site_number],matrix_id,getMatrix(matrix_id).size1());
+    if(getSizeOf(matrix_id) != sites[site_number])
+        throw BadMatrixDimensionForSite(site_number,sites[site_number],matrix_id,getSizeOf(matrix_id));
     UnmergedSiteConnections& site_connections = connections[site_number];
     UnmergedSiteConnections::key_type key(left_signal,right_signal,matrix_id);
     UnmergedSiteConnections::iterator iter = site_connections.find(key);
@@ -278,14 +173,14 @@ OperatorSpecification OperatorBuilder::generateSpecification(bool add_start_and_
             matrices_and_factors[make_pair(p.first.get<0>(),p.first.get<1>())].push_back(make_pair(p.first.get<2>(),p.second));
         }
         BOOST_FOREACH(MatricesAndFactors::const_reference p, matrices_and_factors) {
-            specification.connect(site_number,p.first.first,p.first.second,specification.lookupMatrixIdFromTable(*this,lookupWeightedSumOfMatrices(p.second)));
+            specification.connect(site_number,p.first.first,p.first.second,specification.lookupIdFromTable(*this,lookupIdOfWeightedSum(p.second)));
         }
         ++site_number;
     }
     if(add_start_and_end_loops) {
         BOOST_FOREACH(unsigned int const site_number, irange((size_t)0u,connections.size())) {
-            specification.connect(site_number,specification.getStartSignal(),specification.getStartSignal(),specification.lookupIdentityMatrixId(sites[site_number]));
-            specification.connect(site_number,specification.getEndSignal(),  specification.getEndSignal(),  specification.lookupIdentityMatrixId(sites[site_number]));
+            specification.connect(site_number,specification.getStartSignal(),specification.getStartSignal(),specification.lookupIdOfIdentityWithDimension(sites[site_number]));
+            specification.connect(site_number,specification.getEndSignal(),  specification.getEndSignal(),  specification.lookupIdOfIdentityWithDimension(sites[site_number]));
         }
     }
     return boost::move(specification);
@@ -344,7 +239,7 @@ Operator OperatorSpecification::compile() const {
         vector<OperatorLink> links;
         links.reserve(site_connections.size());
         BOOST_FOREACH(SiteConnections::const_reference p, site_connections) {
-            links.emplace_back(left_signals_map[p.first.first],right_signals_map[p.first.second],getMatrixPtr(p.second));
+            links.emplace_back(left_signals_map[p.first.first],right_signals_map[p.first.second],get(p.second));
         }
         OperatorSites::iterator iter = operator_sites.find(links);
         shared_ptr<OperatorSite> operator_site;
@@ -511,7 +406,7 @@ inline static bool mergeSignalsGeneric(
                 unsigned int const outgoing_signal = merged_connection.first;
                 vector<unsigned int> const& matrices = merged_connection.second;
                 next_site_connections[newSignalPair(forward,new_outgoing_signal,outgoing_signal)]
-                    = matrix_table.lookupSumOfMatrices(matrices);
+                    = matrix_table.lookupIdOfSum(matrices);
             }
         }
     }
