@@ -412,9 +412,9 @@ struct VectorDataTraits {
 
 //@+others
 //@+node:gcross.20110827214508.2562: *6* [Type aliases]
-typedef boost::container::vector<complex<double> > Data;
-typedef boost::shared_ptr<Data> DataPtr;
-typedef boost::shared_ptr<Data const> DataConstPtr;
+typedef Vector Data;
+typedef VectorPtr DataPtr;
+typedef VectorConstPtr DataConstPtr;
 //@+node:gcross.20110827214508.2563: *6* access
 static inline Data const& access(DataConstPtr const& data) {
     return *data;
@@ -426,7 +426,7 @@ static inline Data& access(DataPtr const& data) {
 static inline void assertCorrectlyFormed(DataConstPtr const& data) { }
 //@+node:gcross.20110827214508.2565: *6* copy
 static inline DataPtr copy(DataConstPtr const& data) {
-    return boost::make_shared<Data>(data->begin(),data->end());
+    return boost::make_shared<Data>(*data);
 }
 //@+node:gcross.20110827214508.2566: *6* createBlank
 static inline DataPtr createBlank(unsigned int const dimension) {
@@ -454,7 +454,6 @@ typedef DataTable<VectorDataTraits> Base;
 
 public:
 
-typedef boost::container::vector<complex<double> > Data;
 typedef boost::container::map<std::pair<unsigned int,unsigned int>,unsigned int> ObservationIndex;
 //@+node:gcross.20110827214508.2571: *5* Constructors
 public:
@@ -475,8 +474,10 @@ public:
 //@+others
 //@+node:gcross.20110827214508.2576: *6* lookupIdOf
 template<typename Range> unsigned int lookupIdOfRange(Range const& components) {
-    BOOST_CONCEPT_ASSERT((boost::SinglePassRangeConcept<Range const>));
-    return Base::lookupIdOf(boost::make_shared<Data>(components.begin(),components.end()));
+    BOOST_CONCEPT_ASSERT((boost::RandomAccessRangeConcept<Range const>));
+    VectorPtr vector = boost::make_shared<Vector>(components.size());
+    boost::copy(components,vector->begin());
+    return Base::lookupIdOf(vector);
 }
 //@+node:gcross.20110827214508.2578: *6* lookupIdOfObservation
 unsigned int lookupIdOfObservation(unsigned int observation, unsigned int dimension) {
@@ -485,7 +486,7 @@ unsigned int lookupIdOfObservation(unsigned int observation, unsigned int dimens
     if(iter != observation_index.end()) {
         return iter->second;
     } else {
-        DataPtr data = boost::make_shared<Data>(dimension,c(0,0));
+        DataPtr data = boost::make_shared<Vector>(dimension,c(0,0));
         (*data)[observation] = c(1,0);
         unsigned int id = Base::lookupIdOf(data);
         observation_index[std::make_pair(observation,dimension)] = id;

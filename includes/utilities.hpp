@@ -94,9 +94,14 @@ using std::type_info;
 //@+node:gcross.20110215135633.1864: ** Type aliases
 //! None type tag
 typedef boost::none_t None;
+
 typedef boost::numeric::ublas::matrix<complex<double> > Matrix;
 typedef boost::shared_ptr<Matrix> MatrixPtr;
 typedef boost::shared_ptr<Matrix const> MatrixConstPtr;
+
+typedef boost::numeric::ublas::vector<complex<double> > Vector;
+typedef boost::shared_ptr<Vector> VectorPtr;
+typedef boost::shared_ptr<Vector const> VectorConstPtr;
 //@+node:gcross.20110129220506.1652: ** Macros
 //! Repeats a statement or block \c n times.
 #define REPEAT(n) for(unsigned int _counter##__LINE__ = 0; _counter##__LINE__ < n; ++_counter##__LINE__)

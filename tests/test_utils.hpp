@@ -88,8 +88,8 @@ public:
     );
     MatrixPtr randomMatrix(unsigned int rows, unsigned int cols);
     MatrixPtr randomSquareMatrix(unsigned int dimension);
-    shared_ptr<boost::container::vector<complex<double> > > randomVector();
-    shared_ptr<boost::container::vector<complex<double> > > randomVector(unsigned int size);
+    VectorPtr randomVector();
+    VectorPtr randomVector(unsigned int size);
  
     vector<unsigned int> randomUnsignedIntegerVector(unsigned int n, unsigned int lo=1,unsigned int hi=10);
 

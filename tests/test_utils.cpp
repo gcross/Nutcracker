@@ -264,12 +264,12 @@ vector<unsigned int> RNG::randomUnsignedIntegerVector(unsigned int n, unsigned i
     return boost::move(physical_dimensions);
 }
 //@+node:gcross.20110827215622.2614: *4* randomVector
-shared_ptr<boost::container::vector<complex<double> > > RNG::randomVector() {
+VectorPtr RNG::randomVector() {
     return randomVector(*this);
 }
 
-shared_ptr<boost::container::vector<complex<double> > > RNG::randomVector(unsigned int size) {
-    shared_ptr<boost::container::vector<complex<double> > > data = make_shared<boost::container::vector<complex<double> > >(size);
+VectorPtr RNG::randomVector(unsigned int size) {
+    VectorPtr data = make_shared<Vector>(size);
     generate(*data,randomComplexDouble);
     return data;
 }

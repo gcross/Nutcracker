@@ -226,18 +226,18 @@ TEST_SUITE(lookupIdOf) {
 TEST_CASE(correct_for_new_vector) {
     VectorTable table;
     RNG random;
-    typedef vector<pair<unsigned int,VectorTable::DataConstPtr> > PreviousVectors;
+    typedef vector<pair<unsigned int,VectorConstPtr> > PreviousVectors;
     PreviousVectors previous_vectors;
     REPEAT(100) {
         unsigned int const dimension = random;
-        VectorTable::DataConstPtr vector = random.randomVector(dimension);
+        VectorConstPtr vector = random.randomVector(dimension);
 
         unsigned int const id = table.lookupIdOf(vector);
         ASSERT_EQ(table.getSizeOf(id),dimension);
-        ASSERT_TRUE(*table.get(id) == *vector);
+        ASSERT_TRUE(boost::equal(*table.get(id),*vector));
 
         BOOST_FOREACH(PreviousVectors::const_reference p, previous_vectors) {
-            ASSERT_TRUE(*table.get(p.first) == *p.second);
+            ASSERT_TRUE(boost::equal(*table.get(p.first),*p.second));
         }
 
         previous_vectors.emplace_back(id,vector);
@@ -275,13 +275,13 @@ TEST_CASE(lookupIdOfObservation) {
             observation = random(0,dimension-1);
         VectorTable table;
         unsigned int id = table.lookupIdOfObservation(observation,dimension);
-        VectorTable::Data const& data = *table.get(id);
+        Vector const& data = *table.get(id);
         ASSERT_EQ_VAL(data.size(),dimension);
-        VectorTable::Data correct_data(dimension,c(0,0));
+        Vector correct_data(dimension,c(0,0));
         correct_data[observation] = c(1,0);
-        ASSERT_TRUE(correct_data == data);
+        ASSERT_TRUE(boost::equal(correct_data,data));
         ASSERT_EQ_VAL(table.lookupIdOfObservation(observation,dimension),id);
-        ASSERT_EQ_VAL(table.lookupIdOf(make_shared<VectorTable::Data const>(correct_data)),id);
+        ASSERT_EQ_VAL(table.lookupIdOf(make_shared<Vector>(correct_data)),id);
     }
 }
 //@+node:gcross.20110827215622.2585: *5* null
