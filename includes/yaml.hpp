@@ -115,8 +115,8 @@ template<typename T> inline void operator>>(YAML::Node const& node,std::complex<
 //! Reads an Operator from a YAML node.
 void operator >> (const YAML::Node& node, Nutcracker::Operator& operator_site);
 
-//! Reads an OperatorLink from a YAML node.
-void operator >> (const YAML::Node& node, Nutcracker::OperatorLink& link);
+//! Reads an OperatorSiteLink from a YAML node.
+void operator >> (const YAML::Node& node, Nutcracker::OperatorSiteLink& link);
 
 //! Reads an OperatorSite from a YAML node.
 void operator >> (const YAML::Node& node, Nutcracker::OperatorSite& operator_site);
@@ -147,8 +147,8 @@ template<typename T> inline YAML::Emitter& operator<<(YAML::Emitter& out,std::co
 //! Write an Operator to a YAML document.
 YAML::Emitter& operator << (YAML::Emitter& emitter, Nutcracker::Operator const& operator_site);
 
-//! Write an OperatorLink to a YAML document.
-YAML::Emitter& operator << (YAML::Emitter& emitter, Nutcracker::OperatorLink const& link);
+//! Write an OperatorSiteLink to a YAML document.
+YAML::Emitter& operator << (YAML::Emitter& emitter, Nutcracker::OperatorSiteLink const& link);
 
 //! Write an OperatorSite to a YAML document.
 YAML::Emitter& operator << (YAML::Emitter& emitter, Nutcracker::OperatorSite const& operator_site);

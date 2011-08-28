@@ -61,7 +61,7 @@ Operator constructExternalFieldOperator(
                  physical_dimension
                 ,LeftDimension(1)
                 ,RightDimension(1)
-                ,list_of(OperatorLink(1,1,matrix))
+                ,list_of(OperatorSiteLink(1,1,matrix))
             )
         ));
     } else {
@@ -72,8 +72,8 @@ Operator constructExternalFieldOperator(
                 ,LeftDimension(1)
                 ,RightDimension(2)
                 ,list_of
-                    (OperatorLink(1,1,I))
-                    (OperatorLink(1,2,matrix))
+                    (OperatorSiteLink(1,1,I))
+                    (OperatorSiteLink(1,2,matrix))
             )
         ));
         shared_ptr<OperatorSite const> const middle(new OperatorSite(
@@ -82,9 +82,9 @@ Operator constructExternalFieldOperator(
                 ,LeftDimension(2)
                 ,RightDimension(2)
                 ,list_of
-                    (OperatorLink(1,1,I))
-                    (OperatorLink(1,2,matrix))
-                    (OperatorLink(2,2,I))
+                    (OperatorSiteLink(1,1,I))
+                    (OperatorSiteLink(1,2,matrix))
+                    (OperatorSiteLink(2,2,I))
             )
         ));
         REPEAT(number_of_sites-2) {
@@ -96,8 +96,8 @@ Operator constructExternalFieldOperator(
                 ,LeftDimension(2)
                 ,RightDimension(1)
                 ,list_of
-                    (OperatorLink(1,1,matrix))
-                    (OperatorLink(2,1,I))
+                    (OperatorSiteLink(1,1,matrix))
+                    (OperatorSiteLink(2,1,I))
             )
         ));
     }
@@ -108,7 +108,7 @@ OperatorSite constructOperatorSite(
       PhysicalDimension const physical_dimension
     , LeftDimension const left_dimension
     , RightDimension const right_dimension
-    , vector<OperatorLink> const& links
+    , vector<OperatorSiteLink> const& links
 ) {
     assert(links.size() > 0);
 
@@ -122,7 +122,7 @@ OperatorSite constructOperatorSite(
     complex<double>* matrix_data = operator_site;
 
     BOOST_FOREACH(
-         OperatorLink const& link
+         OperatorSiteLink const& link
         ,links
     ) {
         *index_data++ = link.from;
@@ -153,9 +153,9 @@ Operator constructTransverseIsingModelOperator(
             ,LeftDimension(1)
             ,RightDimension(3)
             ,list_of
-                (OperatorLink(1,1,I ))
-                (OperatorLink(1,2,X1))
-                (OperatorLink(1,3,Z ))
+                (OperatorSiteLink(1,1,I ))
+                (OperatorSiteLink(1,2,X1))
+                (OperatorSiteLink(1,3,Z ))
         )
     ));
     shared_ptr<OperatorSite const> const middle(new OperatorSite(
@@ -164,11 +164,11 @@ Operator constructTransverseIsingModelOperator(
             ,LeftDimension(3)
             ,RightDimension(3)
             ,list_of
-                (OperatorLink(1,1,I ))
-                (OperatorLink(1,2,X1))
-                (OperatorLink(2,3,X2))
-                (OperatorLink(1,3,Z ))
-                (OperatorLink(3,3,I ))
+                (OperatorSiteLink(1,1,I ))
+                (OperatorSiteLink(1,2,X1))
+                (OperatorSiteLink(2,3,X2))
+                (OperatorSiteLink(1,3,Z ))
+                (OperatorSiteLink(3,3,I ))
         )
     ));
     REPEAT(number_of_sites-2) {
@@ -180,9 +180,9 @@ Operator constructTransverseIsingModelOperator(
             ,LeftDimension(3)
             ,RightDimension(1)
             ,list_of
-                (OperatorLink(1,1,Z ))
-                (OperatorLink(2,1,X2))
-                (OperatorLink(3,1,I ))
+                (OperatorSiteLink(1,1,Z ))
+                (OperatorSiteLink(2,1,X2))
+                (OperatorSiteLink(3,1,I ))
         )
     ));
     return boost::move(operator_sites);

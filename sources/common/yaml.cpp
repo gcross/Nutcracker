@@ -252,9 +252,9 @@ Emitter& operator << (Emitter& out, Operator const& operator_sites) {
     out << EndMap;
     return out;
 }
-//@+node:gcross.20110430163445.2636: *4* OperatorLink
+//@+node:gcross.20110430163445.2636: *4* OperatorSiteLink
 //@+node:gcross.20110430163445.2637: *5* >>
-void operator >> (Node const& node, OperatorLink& link) {
+void operator >> (Node const& node, OperatorSiteLink& link) {
     node["from"] >> link.from;
     node["to"] >> link.to;
     Node const& data = node["data"];
@@ -271,7 +271,7 @@ void operator >> (Node const& node, OperatorLink& link) {
     link.label = MatrixConstPtr(matrix);
 }
 //@+node:gcross.20110430163445.2638: *5* <<
-Emitter& operator << (Emitter& out, OperatorLink const& link) {
+Emitter& operator << (Emitter& out, OperatorSiteLink const& link) {
     out << BeginMap;
     out << Key << "from" << Value << link.from;
     out << Key << "to" << Value << link.to;

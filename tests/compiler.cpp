@@ -503,7 +503,7 @@ TEST_CASE(nontrivial_link) {
                 PhysicalDimension(dimension),
                 LeftDimension(1),
                 RightDimension(1),
-                list_of(OperatorLink(1,1,matrix))
+                list_of(OperatorSiteLink(1,1,matrix))
             )
         );
     }
@@ -518,7 +518,7 @@ TEST_CASE(trivial_link) {
             PhysicalDimension(2),
             LeftDimension(1),
             RightDimension(1),
-            list_of(OperatorLink(1,1,I))
+            list_of(OperatorSiteLink(1,1,I))
         )
     );
 }
@@ -565,7 +565,7 @@ TEST_CASE(non_trivial_single_links) {
                 PhysicalDimension(dimension1),
                 LeftDimension(1),
                 RightDimension(1),
-                list_of(OperatorLink(1,1,matrix1))
+                list_of(OperatorSiteLink(1,1,matrix1))
             )
         );
         checkOperatorSitesEqual(
@@ -574,7 +574,7 @@ TEST_CASE(non_trivial_single_links) {
                 PhysicalDimension(dimension2),
                 LeftDimension(1),
                 RightDimension(1),
-                list_of(OperatorLink(1,1,matrix2))
+                list_of(OperatorSiteLink(1,1,matrix2))
             )
         );
     }
@@ -588,7 +588,7 @@ TEST_CASE(random_links) {
             dimension1 = random,
             dimension2 = random,
             number_of_signals = random;
-        vector<OperatorLink> links1, links2;
+        vector<OperatorSiteLink> links1, links2;
         OperatorSpecification spec;
         BOOST_FOREACH(unsigned int current_signal, irange(1u,number_of_signals+1)) {
             MatrixPtr const
@@ -635,7 +635,7 @@ TEST_CASE(trivial_links) {
             PhysicalDimension(2),
             LeftDimension(1),
             RightDimension(1),
-            list_of(OperatorLink(1,1,I))
+            list_of(OperatorSiteLink(1,1,I))
         )
     );
     checkOperatorSitesEqual(
@@ -644,7 +644,7 @@ TEST_CASE(trivial_links) {
             PhysicalDimension(2),
             LeftDimension(1),
             RightDimension(1),
-            list_of(OperatorLink(1,1,I))
+            list_of(OperatorSiteLink(1,1,I))
         )
     );
     EXPECT_EQ(op[0],op[1]);

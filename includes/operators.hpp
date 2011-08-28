@@ -42,13 +42,13 @@ using boost::reverse_copy;
 
 //@+others
 //@+node:gcross.20110827215622.2633: ** Type aliases
-typedef Link<MatrixConstPtr> OperatorLink;
+typedef Link<MatrixConstPtr> OperatorSiteLink;
 //@+node:gcross.20110206185121.1771: ** Functions
 OperatorSite constructOperatorSite(
       PhysicalDimension const physical_dimension
     , LeftDimension const left_dimension
     , RightDimension const right_dimension
-    , vector<OperatorLink> const& links
+    , vector<OperatorSiteLink> const& links
 );
 
 Operator constructExternalFieldOperator(

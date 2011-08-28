@@ -288,8 +288,8 @@ TEST_CASE(no_such_operator_site_number) {
 //@-others
 
 }
-//@+node:gcross.20110220093853.1954: *3* OperatorLink
-TEST_SUITE(OperatorLink) {
+//@+node:gcross.20110220093853.1954: *3* OperatorSiteLink
+TEST_SUITE(OperatorSiteLink) {
 
 //@+others
 //@+node:gcross.20110220093853.1956: *4* decode
@@ -313,7 +313,7 @@ TEST_CASE(decode) {
         YAML::Node doc;
         parser.GetNextDocument(doc);
 
-        OperatorLink link;
+        OperatorSiteLink link;
         doc >> link;
 
         ASSERT_EQ(from,link.from);
@@ -333,7 +333,7 @@ TEST_CASE(encode_then_decode) {
         unsigned int n = random;
         MatrixPtr data(new Matrix(n,n));
         generate(data->data(),random.randomComplexDouble);
-        OperatorLink link1(random,random,data);
+        OperatorSiteLink link1(random,random,data);
 
         YAML::Emitter out;
         out << link1;
@@ -344,7 +344,7 @@ TEST_CASE(encode_then_decode) {
         YAML::Node doc;
         parser.GetNextDocument(doc);
 
-        OperatorLink link2;
+        OperatorSiteLink link2;
         doc >> link2;
 
         ASSERT_EQ(link1.from,link2.from);
@@ -367,7 +367,7 @@ TEST_CASE(non_square_matrix) {
         "to: 1\n"
         "data: [1,2,3]\n"
     );
-    OperatorLink link;
+    OperatorSiteLink link;
     try {
         *result >> link;
         FAIL("No exception was thrown.")
@@ -398,7 +398,7 @@ TEST_CASE(decode) {
             ,left_dimension = random
             ,right_dimension = random
             ;
-        vector<OperatorLink> links;
+        vector<OperatorSiteLink> links;
         REPEAT(random) {
             MatrixPtr data(new Matrix(physical_dimension,physical_dimension));
             generate(data->data(),random.randomComplexDouble);
@@ -413,7 +413,7 @@ TEST_CASE(decode) {
         out << YAML::Key << "matrices" << YAML::Value;
         {
             out << YAML::BeginSeq;
-            BOOST_FOREACH(OperatorLink const& link, links) { out << link; }
+            BOOST_FOREACH(OperatorSiteLink const& link, links) { out << link; }
             out << YAML::EndSeq;
         }
         out << YAML::EndMap;
@@ -434,7 +434,7 @@ TEST_CASE(decode) {
 
         uint32_t const* index_data = operator_site;
         complex<double> const* matrix_data = operator_site;
-        BOOST_FOREACH(OperatorLink const& link, links) {
+        BOOST_FOREACH(OperatorSiteLink const& link, links) {
             ASSERT_EQ(link.from,index_data[0]);
             ASSERT_EQ(link.to,index_data[1]);
             index_data += 2;

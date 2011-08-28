@@ -86,7 +86,7 @@ OperatorBuilder& OperatorBuilder::addGlobalNeighborCouplingField(unsigned int le
 //@+node:gcross.20110814140556.2445: *4* compile
 Operator OperatorSpecification::compile() const {
     Operator op;
-    typedef map<vector<OperatorLink>,shared_ptr<OperatorSite> > OperatorSites;
+    typedef map<vector<OperatorSiteLink>,shared_ptr<OperatorSite> > OperatorSites;
     OperatorSites operator_sites;
     map<unsigned int,unsigned int> left_signals_map;
     left_signals_map[1] = 1;
@@ -105,7 +105,7 @@ Operator OperatorSpecification::compile() const {
         BOOST_FOREACH(unsigned int right_signal, right_signals) {
             right_signals_map[right_signal] = next_index++;
         }
-        vector<OperatorLink> links;
+        vector<OperatorSiteLink> links;
         links.reserve(site_connections.size());
         BOOST_FOREACH(SiteConnections::const_reference p, site_connections) {
             links.emplace_back(left_signals_map[p.first.first],right_signals_map[p.first.second],get(p.second));

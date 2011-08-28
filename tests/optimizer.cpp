@@ -66,7 +66,7 @@ TEST_SUITE(one_site_under_external_field) {
                      PhysicalDimension(physical_dimension)
                     ,LeftDimension(1)
                     ,RightDimension(1)
-                    ,list_of(OperatorLink(1,1,diagonalMatrix(diagonal)))
+                    ,list_of(OperatorSiteLink(1,1,diagonalMatrix(diagonal)))
                 )
 
             );
@@ -128,7 +128,7 @@ TEST_SUITE(optimizer_modes) {
                      PhysicalDimension(4)
                     ,LeftDimension(1)
                     ,RightDimension(1)
-                    ,list_of(OperatorLink(1,1,diagonalMatrix(list_of(a)(b)(c)(d))))
+                    ,list_of(OperatorSiteLink(1,1,diagonalMatrix(list_of(a)(b)(c)(d))))
                 )
 
             );
