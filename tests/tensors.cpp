@@ -198,6 +198,25 @@ TEST_CASE(move_constructable) {
         ASSERT_EQ(right_dimension,new_site.rightDimension(as_dimension));
     }
 }
+//@+node:gcross.20110827234144.2626: *4* normalizable
+TEST_CASE(normalizable) {
+    RNG random;
+
+    REPEAT(10) {
+        State const state_1 = random.randomState();
+        vector<StateSite<Middle> > state_2;
+        BOOST_FOREACH(StateSiteAny const& state_site, state_1) {
+            state_2.emplace_back(boost::move(state_site.normalize()));
+        }
+        Vector
+            v1 = computeStateVector(state_1),
+            v2 = computeStateVector(state_2);
+        complex<double> ratio = v1[0]/v2[0];
+        BOOST_FOREACH(unsigned int const index, irange<size_t>(1u,v1.size())) {
+            ASSERT_NEAR_REL(v1[index]/v2[index],ratio,1e-13);
+        }
+    }
+}
 //@-others
 
 }

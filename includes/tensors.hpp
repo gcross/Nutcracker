@@ -1104,6 +1104,10 @@ See the documentation in BaseTensor for a description of the policy of how data 
 \see BaseTensor
 */
 //@-<< Description >>
+//@+<< Forward declarations >>
+//@+node:gcross.20110827234144.2624: *5* << Forward declarations >>
+template<typename side> class StateSite;
+//@-<< Forward declarations >>
 class StateSiteAny : public SiteBaseTensor {
     //@+others
     //@+node:gcross.20110428160636.2479: *5* [Move support]
@@ -1248,6 +1252,8 @@ class StateSiteAny : public SiteBaseTensor {
     }
 
     //! @}
+    //@+node:gcross.20110827234144.2620: *5* Normalization
+    StateSite<Middle> normalize() const;
     //@+node:gcross.20110428160636.2484: *5* Observation transition matrices
     //! \name Observation transition matrices
     //! @{
