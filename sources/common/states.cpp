@@ -97,13 +97,27 @@ MoveSiteCursorResult<Left> moveSiteCursorLeft(
       StateSite<Middle> const& old_state_site_2
     , StateSite<Left> const& old_state_site_1
 ) {
+    return Unsafe::moveSiteCursorLeft(old_state_site_1,old_state_site_2);
+}
+
+namespace Unsafe {
+
+MoveSiteCursorResult<Left> moveSiteCursorLeft(
+      StateSiteAny const& old_state_site_1
+    , StateSiteAny const& old_state_site_2
+) {
     old_state_site_2.assertCanBeLeftNormalized();
     StateSite<Middle> new_state_site_1(dimensionsOf(old_state_site_1));
     StateSite<Right> new_state_site_2(dimensionsOf(old_state_site_2));
     unsigned int const info =
     Core::norm_denorm_going_left(
          old_state_site_1.leftDimension()
-        ,old_state_site_1 | old_state_site_2
+        ,connectDimensions(
+            "left state site right",
+            old_state_site_1.rightDimension(),
+            "right state site left",
+            old_state_site_2.leftDimension()
+         )
         ,old_state_site_2.rightDimension()
         ,old_state_site_1.physicalDimension()
         ,old_state_site_2.physicalDimension()
@@ -117,6 +131,8 @@ MoveSiteCursorResult<Left> moveSiteCursorLeft(
             (boost::move(new_state_site_1)
             ,boost::move(new_state_site_2)
             );
+}
+
 }
 //@+node:gcross.20110125120748.1518: *3* moveSiteCursorRight
 MoveSiteCursorResult<Right> moveSiteCursorRight(

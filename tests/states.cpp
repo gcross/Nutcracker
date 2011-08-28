@@ -254,6 +254,36 @@ TEST_CASE(three_sites) {
 //@-others
 
 }
+//@+node:gcross.20110828142008.2597: *3* normalization
+TEST_CASE(normalization) {
+    RNG random;
+
+    REPEAT(100) {
+        State state = random.randomState();
+        ASSERT_NEAR_ABS_VAL(computeStateOverlap(state,state),c(1,0),1e-13);
+    }
+}
+//@+node:gcross.20110828142008.2596: *3* range constructor
+TEST_CASE(range_constructor) {
+    RNG random;
+
+    REPEAT(100) {
+        State const
+            state_1 = random.randomState(),
+            state_2(copyFrom(state_1));
+        Vector const
+            v1 = computeStateVector(state_1),
+            v2 = computeStateVector(state_2);
+        ASSERT_NEAR_ABS_VAL(computeStateOverlap(state_1,state_1),c(1,0),1e-13);
+        ASSERT_NEAR_ABS_VAL(computeStateOverlap(state_2,state_2),c(1,0),1e-13);
+        ASSERT_NEAR_ABS_VAL(computeStateOverlap(state_1,state_2),c(1,0),1e-13);
+        ASSERT_NEAR_ABS_VAL(computeStateOverlap(state_2,state_1),c(1,0),1e-13);
+        ASSERT_EQ(v1.size(),v2.size());
+        BOOST_FOREACH(size_t const index, irange<size_t>(0u,v1.size())) {
+            ASSERT_NEAR_REL(v1[index],v2[index],1e-13);
+        }
+    }
+}
 //@-others
 
 }

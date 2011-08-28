@@ -25,6 +25,7 @@
 #include <boost/concept_check.hpp>
 #include <boost/container/vector.hpp>
 #include <boost/iterator/zip_iterator.hpp>
+#include <boost/range/algorithm/reverse.hpp>
 #include <boost/range/concepts.hpp>
 #include <boost/tuple/tuple.hpp>
 
@@ -153,6 +154,8 @@ struct State {
     ) : first_site(first_site)
       , rest_sites(rest_sites)
     { }
+
+    template<typename StateSiteRange> State(CopyFrom<StateSiteRange> sites);
     //@+node:gcross.20110430223656.2184: *4* Fields
     protected:
 
@@ -471,6 +474,11 @@ IncreaseDimensionBetweenResult<side1,side2> increaseDimensionBetween(
 }
 //@-others
 
+MoveSiteCursorResult<Left> moveSiteCursorLeft(
+      StateSiteAny const& left_state_site
+    , StateSiteAny const& right_state_site
+);
+
 }
 //@+node:gcross.20110213233103.2755: ** struct moveSiteCursor
 template<typename side> struct moveSiteCursor { };
@@ -489,6 +497,30 @@ template<> struct moveSiteCursor<Right> {
     ) { return moveSiteCursorRight(old_middle_state_site,old_right_state_site); }
 };
 //@-others
+
+//@+<< State constructor implementation >>
+//@+node:gcross.20110827234144.2619: ** << State constructor implementation >>
+template<typename StateSiteRange> State::State(CopyFrom<StateSiteRange> sites) {
+    BOOST_CONCEPT_ASSERT((boost::BidirectionalRangeConcept<StateSiteRange>));
+    typedef typename boost::range_reverse_iterator<StateSiteRange const>::type iterator;
+    iterator
+        current_site_iter = boost::rbegin(*sites),
+        next_site_iter = current_site_iter+1;
+    iterator const end_of_sites = boost::rend(*sites);
+    StateSite<Middle> current_site = current_site_iter->normalize();
+    while(next_site_iter != end_of_sites) {
+        MoveSiteCursorResult<Left> result = Unsafe::moveSiteCursorLeft(*next_site_iter,*current_site_iter);
+        rest_sites.emplace_back(boost::move(result.other_side_state_site));
+        current_site = boost::move(result.middle_state_site);
+        current_site_iter = next_site_iter;
+        ++next_site_iter;
+    }
+    BOOST_FOREACH(unsigned int i, irange((long unsigned)0u,rest_sites.size()/2)) {
+        rest_sites[i].swap(rest_sites[rest_sites.size()-i-1]);
+    }
+    first_site = boost::move(current_site);
+}
+//@-<< State constructor implementation >>
 
 }
 
