@@ -172,7 +172,7 @@ struct State {
     /*!
     \note Since this function necesarily has exponential running time, if you only need a few components of this vector then you should consider calling computeComponent().
     */
-    StateVector computeVector() {
+    Vector computeVector() {
         return computeStateVector(*this);
     }
 

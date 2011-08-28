@@ -54,10 +54,6 @@ using boost::SinglePassRangeConcept;
 //! @{
 
 //@+others
-//@+node:gcross.20110510004855.2269: ** Type aliases
-//! The flat representation of quantum states
-/* This is just a typedef to the vector class provided in the Boost.uBlas library. */
-typedef boost::numeric::ublas::vector<complex<double> > StateVector;
 //@+node:gcross.20110510004855.2249: ** Tensors
 //@+node:gcross.20110510004855.2286: *3* class Fragment
 //@+<< Description >>
@@ -206,7 +202,7 @@ class Fragment : public BaseTensor {
 \image html state_vector_fragment_tensor.png
 \image latex state_vector_fragment_tensor.eps
 
-This tensor represents one of the intermediate results of converting a matrix product state into the flat vector representation of a state.  It has two ranks:  the physical dimension which corresponds to the state space of the qubits that we have flattened so far, and a right dimension that connects this state vector fragment to the remaining qubits in the matrix product state.  When the matrix product state has been completely flattened the physical dimension will be equal to the dimension of the original Hilbert space and the right dimension will be equal to be one, and at that point this object can be casted to a StateVector without raising an error.
+This tensor represents one of the intermediate results of converting a matrix product state into the flat vector representation of a state.  It has two ranks:  the physical dimension which corresponds to the state space of the qubits that we have flattened so far, and a right dimension that connects this state vector fragment to the remaining qubits in the matrix product state.  When the matrix product state has been completely flattened the physical dimension will be equal to the dimension of the original Hilbert space and the right dimension will be equal to be one, and at that point this object can be casted to a Vector without raising an error.
 
 \note
 See the documentation in BaseTensor for a description of the policy of how data ownership in tensors works.  (Short version: tensors own their data, which can be moved but not copied unless you explicitly ask for a copy to be made.)
@@ -289,10 +285,10 @@ class StateVectorFragment : public Fragment {
 
     public:
 
-    //! Casts this tensor to a flat StateVector as long as the right dimension is 1.
-    operator StateVector() const {
+    //! Casts this tensor to a flat Vector as long as the right dimension is 1.
+    operator Vector() const {
         assert(rightDimension() == 1);
-        StateVector v(size());
+        Vector v(size());
         copy(*this,v.data().begin());
         return v;
     }
@@ -325,7 +321,7 @@ StateVectorFragment extendStateVectorFragment(
 \param state_sites the list of state site tensors
 \returns the state vector
 */
-template<typename StateSiteRange> StateVector computeStateVector(StateSiteRange const& state_sites) {
+template<typename StateSiteRange> Vector computeStateVector(StateSiteRange const& state_sites) {
     BOOST_CONCEPT_ASSERT((SinglePassRangeConcept<StateSiteRange const>));
     StateVectorFragment current_fragment(make_trivial);
     BOOST_FOREACH(StateSiteAny const& state_site, state_sites) {

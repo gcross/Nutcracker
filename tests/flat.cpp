@@ -69,7 +69,7 @@ TEST_CASE(single_site) {
             ,RightDimension(1)
             ,fillWithGenerator(random.randomComplexDouble)
         );
-        StateVector state_vector = computeStateVector(vector<StateSiteAny const*>(1,&state_site) | indirected);
+        Vector state_vector = computeStateVector(vector<StateSiteAny const*>(1,&state_site) | indirected);
         ASSERT_EQ(*physical_dimension,state_vector.size());
         ASSERT_TRUE(equal(state_site,state_vector));
     }
@@ -86,8 +86,8 @@ TEST_CASE(single_site_squared) {
             ,RightDimension(1)
             ,fillWithGenerator(random.randomComplexDouble)
         );
-        StateVector actual_state_vector = computeStateVector(vector<StateSiteAny const*>(2,&state_site) | indirected);
-        StateVector correct_state_vector(d*d);
+        Vector actual_state_vector = computeStateVector(vector<StateSiteAny const*>(2,&state_site) | indirected);
+        Vector correct_state_vector(d*d);
         BOOST_FOREACH(unsigned int i, irange(0u,d)) {
             BOOST_FOREACH(unsigned int j, irange(0u,d)) {
                 correct_state_vector[i*d+j] = (state_site.begin()[i]) * (state_site.begin()[j]);
@@ -117,7 +117,7 @@ TEST_CASE(two_trivial_sites) {
                 ,fillWithGenerator(random.randomComplexDouble)
                 )
             ;
-        StateVector state_vector = computeStateVector(list_of(&state_site_1)(&state_site_2) | indirected);
+        Vector state_vector = computeStateVector(list_of(&state_site_1)(&state_site_2) | indirected);
         ASSERT_EQ(1u,state_vector.size());
         ASSERT_NEAR_REL(inner_product(state_site_1,state_site_2,c(0,0)),state_vector[0],1e-15);
     }
@@ -152,7 +152,7 @@ TEST_CASE(two_sites) {
              )
             )
         ;
-    StateVector actual_state_vector = computeStateVector(list_of(&state_site_1)(&state_site_2) | indirected);
+    Vector actual_state_vector = computeStateVector(list_of(&state_site_1)(&state_site_2) | indirected);
     ASSERT_EQ(4u,actual_state_vector.size());
     complex<double> correct_state_vector[] = {0,1,-1,0};
     ASSERT_TRUE(equal(correct_state_vector,actual_state_vector));
@@ -194,7 +194,7 @@ TEST_CASE(three_sites) {
              )
             )
         ;
-    StateVector actual_state_vector = computeStateVector(list_of(&state_site_1)(&state_site_2)(&state_site_3) | indirected);
+    Vector actual_state_vector = computeStateVector(list_of(&state_site_1)(&state_site_2)(&state_site_3) | indirected);
     ASSERT_EQ(8u,actual_state_vector.size());
     complex<double> correct_state_vector[] =
         {0  // 000
@@ -448,7 +448,7 @@ TEST_CASE(computeStateVector_consistent_with_computeStateVectorComponent) {
 
     REPEAT(10) {
         State state = random.randomState();
-        StateVector state_vector = computeStateVector(state);
+        Vector state_vector = computeStateVector(state);
         unsigned long long const state_length = computeStateVectorLength(state);
         REPEAT(10) {
             unsigned long long const index = random(0,state_length-1);
