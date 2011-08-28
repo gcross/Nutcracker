@@ -48,6 +48,8 @@ using std::make_pair;
 //@-<< Usings >>
 
 //@+others
+//@+node:gcross.20110827234144.2561: ** Type aliases
+typedef Link<VectorConstPtr> StateSiteLink;
 //@+node:gcross.20110214155808.1966: ** Exceptions
 //@+node:gcross.20110214155808.1967: *3* NormalizationError
 struct NormalizationError : public std::runtime_error {
@@ -311,6 +313,13 @@ struct State {
     //@-others
 };
 //@+node:gcross.20110213161858.1813: ** Functions
+StateSite<None> constructStateSite(
+      PhysicalDimension const physical_dimension
+    , LeftDimension const left_dimension
+    , RightDimension const right_dimension
+    , vector<StateSiteLink> const& links
+);
+
 IncreaseDimensionBetweenResult<Right,Right> increaseDimensionBetweenRightRight(
       unsigned int new_dimension
     , StateSite<Right> const& old_site_1

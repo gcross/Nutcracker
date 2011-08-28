@@ -19,6 +19,11 @@
 
 //@+<< Includes >>
 //@+node:gcross.20110213161858.1817: ** << Includes >>
+#include <boost/range/adaptor/sliced.hpp>
+#include <boost/range/adaptor/strided.hpp>
+#include <boost/range/algorithm/copy.hpp>
+#include <boost/range/algorithm/fill.hpp>
+
 #include "core.hpp"
 #include "states.hpp"
 //@-<< Includes >>
@@ -27,6 +32,8 @@ namespace Nutcracker {
 
 //@+<< Usings >>
 //@+node:gcross.20110213161858.1818: ** << Usings >>
+using boost::adaptors::sliced;
+using boost::adaptors::strided;
 //@-<< Usings >>
 
 //@+others
@@ -41,6 +48,38 @@ NormalizationError::NormalizationError(int info)
     , info(info)
 { }
 //@+node:gcross.20110213161858.1820: ** Functions
+//@+node:gcross.20110827234144.2560: *3* constructStateSite
+StateSite<None> constructStateSite(
+      PhysicalDimension const physical_dimension
+    , LeftDimension const left_dimension
+    , RightDimension const right_dimension
+    , vector<StateSiteLink> const& links
+) {
+    StateSite<None> state_site
+        (physical_dimension
+        ,left_dimension
+        ,right_dimension
+        );
+    boost::fill(state_site,c(0,0));
+
+    BOOST_FOREACH(
+         StateSiteLink const& link
+        ,links
+    ) {
+        assert(link.from < state_site.leftDimension());
+        assert(link.to < state_site.rightDimension());
+        assert(link.label->size() == *physical_dimension);
+        boost::copy(
+            *link.label,
+            (state_site
+                | sliced(link.to + link.from * (*right_dimension),state_site.size())
+                | strided((*left_dimension)*(*right_dimension))
+            ).begin()
+        );
+    }
+
+    return boost::move(state_site);
+}
 //@+node:gcross.20110124175241.1649: *3* increaseDimensionBetweenXY
 IncreaseDimensionBetweenResult<Right,Right> increaseDimensionBetweenRightRight(
       unsigned int new_dimension
