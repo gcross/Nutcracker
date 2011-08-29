@@ -29,6 +29,7 @@
 #include <boost/functional/hash.hpp>
 #include <boost/iterator/zip_iterator.hpp>
 #include <boost/make_shared.hpp>
+#include <boost/range/adaptor/indirected.hpp>
 #include <boost/range/adaptor/map.hpp>
 #include <boost/range/algorithm/transform.hpp>
 #include <boost/range/concepts.hpp>
@@ -38,6 +39,7 @@
 #include <utility>
 
 #include "operators.hpp"
+#include "states.hpp"
 //@-<< Includes >>
 
 namespace Nutcracker {
@@ -188,6 +190,7 @@ struct DataConstPtrComparisonPredicate : std::binary_function<DataConstPtr,DataC
 //@+node:gcross.20110826235932.2552: *5* [Type alises]
 protected:
 
+typedef DataTraits Traits;
 typedef boost::container::map<DataConstPtr,unsigned int,DataConstPtrComparisonPredicate> DataIndex;
 typedef boost::container::vector<DataConstPtr> DataStore;
 //@+node:gcross.20110826235932.2553: *5* Constructors
@@ -617,7 +620,7 @@ Result compile() const {
         } else {
             site.reset(new Site(
                 SpecificationTraits::constructSite(
-                    PhysicalDimension(links[0].label->size1()),
+                    PhysicalDimension(DataTable::Traits::dimensionOf(links[0].label)),
                     LeftDimension(left_signals.size()),
                     RightDimension(right_signals.size()),
                     links
@@ -877,6 +880,63 @@ OperatorSpecification& operator=(BOOST_COPY_ASSIGN_REF(OperatorSpecification) ot
 }
 
 OperatorSpecification& operator=(BOOST_RV_REF(OperatorSpecification) other)
+{
+    return Base::operator=(static_cast<BOOST_RV_REF(Base)>(other));
+}
+//@-others
+};
+//@+node:gcross.20110827234144.2610: *4* StateSpecification
+//@+<< Traits >>
+//@+node:gcross.20110827234144.2611: *5* << Traits >>
+struct StateSpecificationTraits {
+//@+others
+//@+node:gcross.20110827234144.2612: *6* [Type aliases]
+typedef State Result;
+typedef StateSite<None> Site;
+typedef shared_ptr<Site const> SiteConstPtr;
+//@+node:gcross.20110827234144.2613: *6* constructSite
+static inline Site constructSite(
+      PhysicalDimension const physical_dimension
+    , LeftDimension const left_dimension
+    , RightDimension const right_dimension
+    , vector<StateSiteLink> const& links
+) {
+    return constructStateSite(physical_dimension,left_dimension,right_dimension,links);
+}
+//@+node:gcross.20110827234144.2614: *6* postProcess
+static inline Result postProcess(vector<SiteConstPtr> sites) {
+    return State(copyFrom(sites | boost::adaptors::indirected));
+}
+//@-others
+};
+//@-<< Traits >>
+class StateSpecification: public Specification<StateSpecificationTraits,VectorTable,StateSpecification> {
+//@+others
+//@+node:gcross.20110827234144.2615: *5* [Move support]
+private:
+
+BOOST_COPYABLE_AND_MOVABLE(StateSpecification)
+//@+node:gcross.20110827234144.2616: *5* [Type aliases]
+private:
+
+typedef Specification<StateSpecificationTraits,VectorTable,StateSpecification> Base;
+//@+node:gcross.20110827234144.2617: *5* Constructors
+public:
+
+StateSpecification() {}
+
+StateSpecification(BOOST_RV_REF(StateSpecification) other)
+  : Base(static_cast<BOOST_RV_REF(Base)>(other))
+{}
+//@+node:gcross.20110827234144.2618: *5* States
+public:
+
+StateSpecification& operator=(BOOST_COPY_ASSIGN_REF(StateSpecification) other)
+{
+    return Base::operator=(static_cast<BOOST_COPY_ASSIGN_REF(Base)>(other));
+}
+
+StateSpecification& operator=(BOOST_RV_REF(StateSpecification) other)
 {
     return Base::operator=(static_cast<BOOST_RV_REF(Base)>(other));
 }

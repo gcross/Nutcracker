@@ -1159,6 +1159,116 @@ TEST_CASE(transverse_ising) {
 //@-others
 
 }
+//@+node:gcross.20110828143807.2598: *3* StateSpecification
+TEST_SUITE(StateSpecification) {
+
+//@+others
+//@+node:gcross.20110828143807.2610: *4* compile
+TEST_SUITE(compile) {
+//@+others
+//@+node:gcross.20110828143807.2611: *5* 1 site
+TEST_SUITE(_1_site) {
+//@+others
+//@+node:gcross.20110828143807.2614: *6* non-trivial link
+TEST_CASE(nontrivial_link) {
+    RNG random;
+
+    REPEAT(100) {
+        unsigned int dimension = random;
+        VectorConstPtr const vector = random.randomVector(dimension);
+        StateSpecification spec;
+        spec.connect(0,spec.getStartSignal(),spec.getEndSignal(),spec.lookupIdOf(vector));
+        State state = spec.compile();
+        EXPECT_EQ_VAL(state.numberOfSites(),1u);
+        StateSiteAny const& state_site = *state.begin();
+        ASSERT_EQ_VAL(state_site.size(),vector->size());
+        ASSERT_EQ_VAL(state_site.physicalDimension(),vector->size());
+        ASSERT_EQ_VAL(state_site.leftDimension(),1u);
+        ASSERT_EQ_VAL(state_site.rightDimension(),1u);
+        complex<double> ratio = state_site[0]/(*vector)[0];
+        BOOST_FOREACH(unsigned int index, irange<size_t>(1u,vector->size())) {
+            ASSERT_NEAR_ABS(state_site[index]/(*vector)[index],ratio,1e-14);
+        }
+    }
+}
+//@+node:gcross.20110828143807.2615: *6* trivial link
+TEST_CASE(trivial_link) {
+    StateSpecification spec;
+    spec.connect(0,spec.getStartSignal(),spec.getEndSignal(),spec.lookupIdOfObservation(0,1));
+    State state = spec.compile();
+    EXPECT_EQ_VAL(state.numberOfSites(),1u);
+    StateSiteAny const& state_site = *state.begin();
+    EXPECT_EQ_VAL(state_site.size(),1u);
+    EXPECT_EQ_VAL(state_site.physicalDimension(),1u);
+    EXPECT_EQ_VAL(state_site.leftDimension(),1u);
+    EXPECT_EQ_VAL(state_site.rightDimension(),1u);
+    EXPECT_TRUE(boost::equal(state_site,list_of(c(1,0))));
+}
+//@-others
+}
+//@+node:gcross.20110828143807.2631: *5* W state
+TEST_SUITE(W_state) {
+
+//@+others
+//@+node:gcross.20110828143807.2632: *6* two sites
+TEST_CASE(two_sites) {
+    StateSpecification spec;
+    spec.connect(0,1,1,spec.lookupIdOf(vectorFromRange(list_of(1)(0))));
+    spec.connect(0,1,2,spec.lookupIdOf(vectorFromRange(list_of(0)(-1))));
+    spec.connect(1,2,2,spec.lookupIdOf(vectorFromRange(list_of(1)(0))));
+    spec.connect(1,1,2,spec.lookupIdOf(vectorFromRange(list_of(0)(1))));
+    State state = spec.compile();
+    EXPECT_NEAR_ABS_VAL(computeStateOverlap(state,state),c(1,0),1e-13);
+    Vector actual_state_vector = computeStateVector(state);
+    ASSERT_EQ_VAL(actual_state_vector.size(),4u);
+    complex<double> correct_state_vector[] = {0,1/sqrt(2),-1/sqrt(2),0};
+    BOOST_FOREACH(unsigned int const index, irange(0u,4u)) {
+        EXPECT_NEAR_ABS(actual_state_vector[index],correct_state_vector[index],1e-13);
+    }
+}
+//@+node:gcross.20110828143807.2633: *6* three sites
+TEST_CASE(three_sites) {
+    StateSpecification spec;
+    spec.connect(0,1,1,spec.lookupIdOf(vectorFromRange(list_of(1)(0))));
+    spec.connect(0,1,2,spec.lookupIdOf(vectorFromRange(list_of(0)(-1))));
+
+    spec.connect(1,1,1,spec.lookupIdOf(vectorFromRange(list_of(1)(0))));
+    spec.connect(1,1,2,spec.lookupIdOf(vectorFromRange(list_of(0)(1))));
+    spec.connect(1,2,2,spec.lookupIdOf(vectorFromRange(list_of(1)(0))));
+
+    spec.connect(2,2,2,spec.lookupIdOf(vectorFromRange(list_of(1)(0))));
+    spec.connect(2,1,2,spec.lookupIdOf(vectorFromRange(list_of(0)(2))));
+
+    State state = spec.compile();
+    EXPECT_NEAR_ABS_VAL(computeStateOverlap(state,state),c(1,0),1e-13);
+
+    Vector actual_state_vector = computeStateVector(state);
+    ASSERT_EQ_VAL(actual_state_vector.size(),8u);
+
+    complex<double> correct_state_vector[] =
+        {0  // 000
+        ,2/sqrt(6)  // 001
+        ,1/sqrt(6)  // 010
+        ,0  // 011
+        ,-1/sqrt(6) // 100
+        ,0  // 101
+        ,0  // 110
+        ,0  // 111
+        }
+    ;
+
+    BOOST_FOREACH(unsigned int const index, irange(0u,8u)) {
+        EXPECT_NEAR_ABS(actual_state_vector[index],correct_state_vector[index],1e-13);
+    }
+}
+//@-others
+
+}
+//@-others
+}
+//@-others
+
+}
 //@+node:gcross.20110814140556.2422: *3* SignalTable
 TEST_SUITE(SignalTable) {
 
