@@ -430,7 +430,7 @@ TEST_CASE(correct_on_random) {
     RNG random;
 
     REPEAT(100) {
-        unsigned int number_of_sites = random;
+        unsigned int number_of_sites = random(1,6);
         vector<unsigned int> const
             physical_dimensions = random.randomUnsignedIntegerVector(number_of_sites),
             bandwidth_dimensions = computeBandwidthDimensionSequence(random(1,maximumBandwidthDimension(physical_dimensions)),physical_dimensions);
