@@ -1159,6 +1159,88 @@ TEST_CASE(transverse_ising) {
 //@-others
 
 }
+//@+node:gcross.20110828205143.2640: *3* StateBuilder
+TEST_SUITE(StateBuilder) {
+
+//@+others
+//@+node:gcross.20110828205143.2641: *4* W_state
+TEST_CASE(W_state) {
+    RNG random;
+    
+    REPEAT(100) {
+        unsigned int number_of_sites = random(2,5);
+        vector<unsigned int> physical_dimensions(number_of_sites);
+        boost::transform(
+            random.randomUnsignedIntegerVector(number_of_sites),
+            physical_dimensions.begin(),
+            lambda::_1 + 1
+        );
+        vector<StateSite<None> > sites;
+        StateBuilder builder;
+        BOOST_FOREACH(unsigned int site_number, irange(0u,number_of_sites)) {
+            unsigned int const physical_dimension = physical_dimensions[0];
+            builder.addSite(physical_dimension);
+            VectorPtr v0 = make_shared<Vector>(physical_dimension,c(0,0));
+            (*v0)[0] = c(1,0);
+            VectorPtr v1 = make_shared<Vector>(physical_dimension,c(0,0));
+            (*v1)[1] = c(1,0);
+            if(site_number == 0u) {
+                sites.push_back(constructStateSite(
+                    PhysicalDimension(physical_dimension),
+                    LeftDimension(1),
+                    RightDimension(2),
+                    list_of(StateSiteLink(1,1,v0))
+                           (StateSiteLink(1,2,v1))
+                ));
+            } else if(site_number == number_of_sites-1) {
+                sites.push_back(constructStateSite(
+                    PhysicalDimension(physical_dimension),
+                    LeftDimension(2),
+                    RightDimension(1),
+                    list_of(StateSiteLink(2,1,v0))
+                           (StateSiteLink(1,1,v1))
+                ));
+            } else {
+                sites.push_back(constructStateSite(
+                    PhysicalDimension(physical_dimension),
+                    LeftDimension(2),
+                    RightDimension(2),
+                    list_of(StateSiteLink(1,1,v0))
+                           (StateSiteLink(1,2,v1))
+                           (StateSiteLink(2,2,v0))
+                ));
+            }
+        }
+        State state = builder.addWState().compile();
+        ASSERT_NEAR_ABS_VAL(computeStateOverlap(state,state),c(1,0),1e-13);
+        ASSERT_NEAR_ABS_VAL(computeStateOverlap(state,sites)/std::sqrt(computeStateOverlap(sites,sites)),c(1,0),1e-13);
+    }
+
+}
+//@+node:gcross.20110828205143.2642: *4* W_state_cancellation
+TEST_CASE(W_state_cancellation) {
+    RNG random;
+
+    REPEAT(100) {
+        unsigned int number_of_sites = random(2,5);
+        StateBuilder builder;
+        REPEAT(number_of_sites) {
+            builder.addSite(random(3,8));
+        }
+        builder.addWState();
+        State state_1 = builder.compile();
+        builder.addWState(0,2,c(+1,0));
+        builder.addWState(0,2,c(-1,0));
+        State state_2 = builder.compile();
+        ASSERT_NEAR_ABS_VAL(computeStateOverlap(state_1,state_1),c(1,0),1e-13);
+        ASSERT_NEAR_ABS_VAL(computeStateOverlap(state_1,state_2),c(1,0),1e-13);
+        ASSERT_NEAR_ABS_VAL(computeStateOverlap(state_2,state_1),c(1,0),1e-13);
+        ASSERT_NEAR_ABS_VAL(computeStateOverlap(state_2,state_2),c(1,0),1e-13);
+    }
+}
+//@-others
+
+}
 //@+node:gcross.20110828143807.2598: *3* StateSpecification
 TEST_SUITE(StateSpecification) {
 

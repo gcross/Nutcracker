@@ -48,6 +48,7 @@ namespace Nutcracker {
 //@+node:gcross.20110805222031.2342: ** << Usings >>
 using boost::hash;
 using boost::hash_range;
+namespace lambda = boost::lambda;
 using boost::tuple;
 using boost::unordered_map;
 
@@ -942,14 +943,15 @@ StateSpecification& operator=(BOOST_RV_REF(StateSpecification) other)
 }
 //@-others
 };
-//@+node:gcross.20110826235932.2684: *3* Builder
+//@+node:gcross.20110828205143.2614: *3* Builder and specializations
+//@+node:gcross.20110826235932.2684: *4* Builder
 template<typename Specification, typename Facade> class Builder: public Specification::DataTable, public SignalTable {
 //@+others
-//@+node:gcross.20110826235932.2685: *4* [Move support]
+//@+node:gcross.20110826235932.2685: *5* [Move support]
 private:
 
 BOOST_COPYABLE_AND_MOVABLE(Builder)
-//@+node:gcross.20110826235932.2686: *4* [Type alises]
+//@+node:gcross.20110826235932.2686: *5* [Type alises]
 protected:
 
 typedef boost::container::map<tuple<unsigned int,unsigned int,unsigned int>,complex<double> > UnmergedSiteConnections;
@@ -957,8 +959,7 @@ typedef boost::container::map<tuple<unsigned int,unsigned int,unsigned int>,comp
 public:
 
 typedef typename Specification::DataTable DataTable;
-typedef typename Specification::Result Result;
-//@+node:gcross.20110826235932.2688: *4* Constructors
+//@+node:gcross.20110826235932.2688: *5* Constructors
 public:
 
 Builder() {}
@@ -968,17 +969,17 @@ Builder(BOOST_RV_REF(Builder) other)
   , SignalTable(other)
   , connections(boost::move(other.connections))
 {}
-//@+node:gcross.20110826235932.2689: *4* Fields
+//@+node:gcross.20110826235932.2689: *5* Fields
 protected:
 
 vector<unsigned int> sites;
 
 vector<UnmergedSiteConnections> connections;
-//@+node:gcross.20110826235932.2695: *4* Methods
+//@+node:gcross.20110826235932.2695: *5* Methods
 public:
 
 //@+others
-//@+node:gcross.20110826235932.2702: *5* addSite(s)
+//@+node:gcross.20110826235932.2702: *6* addSite(s)
 Facade& addSite(unsigned int dimension) {
     sites.push_back(dimension);
     connections.emplace_back();
@@ -989,7 +990,7 @@ Facade& addSites(unsigned int number_of_sites, PhysicalDimension dimension) {
     REPEAT(number_of_sites) { addSite(*dimension); }
     return static_cast<Facade&>(*this);
 }
-//@+node:gcross.20110826235932.2700: *5* addTerm
+//@+node:gcross.20110826235932.2700: *6* addTerm
 Facade& addTerm(vector<unsigned int> const& components) {
     if(components.size() != numberOfSites()) throw WrongNumberOfSites(components.size(),numberOfSites());
     unsigned int const signal = allocateSignal();
@@ -1000,13 +1001,7 @@ Facade& addTerm(vector<unsigned int> const& components) {
     connect(numberOfSites()-1,signal,getEndSignal(),components[numberOfSites()-1]);
     return static_cast<Facade&>(*this);
 }
-//@+node:gcross.20110826235932.2706: *5* compile
-Result compile(bool optimize=true, bool add_start_and_end_loops=true) {
-    Specification source = generateSpecification(add_start_and_end_loops);
-    if(optimize) source.optimize();
-    return source.compile();
-}
-//@+node:gcross.20110826235932.2698: *5* connect
+//@+node:gcross.20110826235932.2698: *6* connect
 Facade& connect(
     unsigned int const site_number,
     unsigned int const left_signal,
@@ -1027,7 +1022,9 @@ Facade& connect(
     }
     return static_cast<Facade&>(*this);
 }
-//@+node:gcross.20110826235932.2704: *5* generateSpecification
+//@+node:gcross.20110826235932.2704: *6* generateSpecification
+protected:
+
 Specification generateSpecification(bool add_start_and_end_loops=true) {
     Specification specification;
     specification.reserveSignalsBelow(next_free_signal);
@@ -1043,18 +1040,14 @@ Specification generateSpecification(bool add_start_and_end_loops=true) {
         }
         ++site_number;
     }
-    if(add_start_and_end_loops) {
-        BOOST_FOREACH(unsigned int const site_number, irange((size_t)0u,connections.size())) {
-            specification.connect(site_number,specification.getStartSignal(),specification.getStartSignal(),specification.lookupIdOfIdentityWithDimension(sites[site_number]));
-            specification.connect(site_number,specification.getEndSignal(),  specification.getEndSignal(),  specification.lookupIdOfIdentityWithDimension(sites[site_number]));
-        }
-    }
     return boost::move(specification);
 }
-//@+node:gcross.20110826235932.2696: *5* numberOfSites
+
+public:
+//@+node:gcross.20110826235932.2696: *6* numberOfSites
 unsigned int numberOfSites() const { return sites.size(); }
 //@-others
-//@+node:gcross.20110826235932.2691: *4* Operators
+//@+node:gcross.20110826235932.2691: *5* Operators
 public:
 
 Facade& operator=(BOOST_COPY_ASSIGN_REF(Builder) other)
@@ -1078,18 +1071,23 @@ Facade& operator=(BOOST_RV_REF(Builder) other)
 }
 //@-others
 };
-//@+node:gcross.20110805222031.2344: *3* OperatorBuilder
+//@+node:gcross.20110805222031.2344: *4* OperatorBuilder
 class OperatorBuilder: public Builder<OperatorSpecification,OperatorBuilder> {
 //@+others
-//@+node:gcross.20110817110920.2471: *4* [Move support]
+//@+node:gcross.20110817110920.2471: *5* [Move support]
 private:
 
 BOOST_COPYABLE_AND_MOVABLE(OperatorBuilder)
-//@+node:gcross.20110805222031.2381: *4* [Type alises]
+//@+node:gcross.20110805222031.2381: *5* [Type alises]
 private:
 
 typedef Builder<OperatorSpecification,OperatorBuilder> Base;
-//@+node:gcross.20110817110920.2473: *4* Constructors
+//@+node:gcross.20110828205143.2629: *5* Compiling
+public:
+
+Operator compile(bool optimize=true, bool add_start_and_end_loops=true);
+OperatorSpecification generateSpecification(bool add_start_and_end_loops=true);
+//@+node:gcross.20110817110920.2473: *5* Constructors
 public:
 
 OperatorBuilder() {}
@@ -1097,15 +1095,7 @@ OperatorBuilder() {}
 OperatorBuilder(BOOST_RV_REF(OperatorBuilder) other)
   : Base(static_cast<BOOST_RV_REF(Base)>(other))
 {}
-//@+node:gcross.20110822214054.2514: *4* Physics
-public:
-
-OperatorBuilder& addLocalExternalField(unsigned int site_number, unsigned int field_matrix_id, complex<double> scale_factor=c(1,0));
-OperatorBuilder& addGlobalExternalField(unsigned int field_matrix_id, complex<double> scale_factor=c(1,0));
-
-OperatorBuilder& addLocalNeighborCouplingField(unsigned int left_site_number, unsigned int left_field_matrix_id, unsigned int right_field_matrix_id, complex<double> scale_factor=c(1,0));
-OperatorBuilder& addGlobalNeighborCouplingField(unsigned int left_field_matrix_id, unsigned int right_field_matrix_id, complex<double> scale_factor=c(1,0));
-//@+node:gcross.20110826235932.2708: *4* Operators
+//@+node:gcross.20110826235932.2708: *5* Operators
 public:
 
 OperatorBuilder& operator=(BOOST_COPY_ASSIGN_REF(OperatorBuilder) other)
@@ -1117,6 +1107,56 @@ OperatorBuilder& operator=(BOOST_RV_REF(OperatorBuilder) other)
 {
     return Base::operator=(static_cast<BOOST_RV_REF(Base)>(other));
 }
+//@+node:gcross.20110822214054.2514: *5* Physics
+public:
+
+OperatorBuilder& addLocalExternalField(unsigned int site_number, unsigned int field_matrix_id, complex<double> scale_factor=c(1,0));
+OperatorBuilder& addGlobalExternalField(unsigned int field_matrix_id, complex<double> scale_factor=c(1,0));
+
+OperatorBuilder& addLocalNeighborCouplingField(unsigned int left_site_number, unsigned int left_field_matrix_id, unsigned int right_field_matrix_id, complex<double> scale_factor=c(1,0));
+OperatorBuilder& addGlobalNeighborCouplingField(unsigned int left_field_matrix_id, unsigned int right_field_matrix_id, complex<double> scale_factor=c(1,0));
+//@-others
+};
+//@+node:gcross.20110828205143.2621: *4* StateBuilder
+class StateBuilder: public Builder<StateSpecification,StateBuilder> {
+//@+others
+//@+node:gcross.20110828205143.2622: *5* [Move support]
+private:
+
+BOOST_COPYABLE_AND_MOVABLE(StateBuilder)
+//@+node:gcross.20110828205143.2623: *5* [Type alises]
+private:
+
+typedef Builder<StateSpecification,StateBuilder> Base;
+//@+node:gcross.20110828205143.2638: *5* Compiling
+public:
+
+State compile(bool optimize=true);
+StateSpecification generateSpecification();
+//@+node:gcross.20110828205143.2624: *5* Constructors
+public:
+
+StateBuilder() {}
+
+StateBuilder(BOOST_RV_REF(StateBuilder) other)
+  : Base(static_cast<BOOST_RV_REF(Base)>(other))
+{}
+//@+node:gcross.20110828205143.2626: *5* Operators
+public:
+
+StateBuilder& operator=(BOOST_COPY_ASSIGN_REF(StateBuilder) other)
+{
+    return Base::operator=(static_cast<BOOST_COPY_ASSIGN_REF(Base)>(other));
+}
+
+StateBuilder& operator=(BOOST_RV_REF(StateBuilder) other)
+{
+    return Base::operator=(static_cast<BOOST_RV_REF(Base)>(other));
+}
+//@+node:gcross.20110828205143.2625: *5* Physics
+public:
+
+StateBuilder& addWState(unsigned int common_observation=0,unsigned int special_observation=1,complex<double> amplitude=c(1,0));
 //@-others
 };
 //@-others
