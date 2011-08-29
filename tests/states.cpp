@@ -33,13 +33,6 @@ using std::abs;
 //@-<< Includes >>
 
 //@+others
-//@+node:gcross.20110827234144.2592: ** Functions
-//@+node:gcross.20110827234144.2593: *3* vectorFromRange
-template<typename Range> VectorPtr vectorFromRange(Range const& range) {
-    VectorPtr vector = make_shared<Vector>(range.size());
-    copy(range,vector->begin());
-    return vector;
-}
 //@+node:gcross.20110826235932.2542: ** Tests
 TEST_SUITE(States) {
 

@@ -115,5 +115,11 @@ void checkOperatorsEquivalent(Operator const& operator_1,Operator const& operato
 void checkOperatorSitesEqual(OperatorSite const& operator_site_1,OperatorSite const& operator_site_2);
 void checkSiteTensorsEqual(SiteBaseTensor const& site_1,SiteBaseTensor const& site_2);
 void checkStatesEqual(State const& state_1,State const& state_2);
+//@+node:gcross.20110828143807.2635: *3* vectorFromRange
+template<typename Range> VectorPtr vectorFromRange(Range const& range) {
+    VectorPtr vector = make_shared<Vector>(range.size());
+    copy(range,vector->begin());
+    return vector;
+}
 //@-others
 //@-leo
