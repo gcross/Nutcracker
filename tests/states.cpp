@@ -48,10 +48,10 @@ TEST_CASE(self_overlap_is_1) {
 
     REPEAT(10) {
         State state(random.randomState());
-        ASSERT_NEAR_REL(
-             c(1,0)
-            ,computeStateOverlap(state,state)
-            ,1e-15
+        ASSERT_NEAR_REL_VAL(
+             computeStateOverlap(state,state)
+            ,c(1,0)
+            ,1e-14
         )
     }
 
