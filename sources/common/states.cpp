@@ -19,10 +19,12 @@
 
 //@+<< Includes >>
 //@+node:gcross.20110213161858.1817: ** << Includes >>
+#include <boost/lambda/lambda.hpp>
 #include <boost/range/adaptor/sliced.hpp>
 #include <boost/range/adaptor/strided.hpp>
 #include <boost/range/algorithm/copy.hpp>
 #include <boost/range/algorithm/fill.hpp>
+#include <boost/range/algorithm/transform.hpp>
 
 #include "core.hpp"
 #include "states.hpp"
@@ -34,6 +36,8 @@ namespace Nutcracker {
 //@+node:gcross.20110213161858.1818: ** << Usings >>
 using boost::adaptors::sliced;
 using boost::adaptors::strided;
+
+namespace lambda = boost::lambda;
 //@-<< Usings >>
 
 //@+others
@@ -129,6 +133,11 @@ MoveSiteCursorResult<Left> moveSiteCursorLeft(
         ,new_state_site_2
     );
     if(info != 0) throw NormalizationError(info);
+    boost::transform(
+        new_state_site_1,
+        new_state_site_1.begin(),
+        lambda::_1 / new_state_site_1.norm()
+    );
     return MoveSiteCursorResult<Left>
             (boost::move(new_state_site_1)
             ,boost::move(new_state_site_2)
@@ -157,6 +166,11 @@ MoveSiteCursorResult<Right> moveSiteCursorRight(
         ,new_state_site_2
     );
     if(info != 0) throw NormalizationError(info);
+    boost::transform(
+        new_state_site_2,
+        new_state_site_2.begin(),
+        lambda::_1 / new_state_site_2.norm()
+    );
     return MoveSiteCursorResult<Right>
             (boost::move(new_state_site_2)
             ,boost::move(new_state_site_1)
