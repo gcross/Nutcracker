@@ -389,10 +389,10 @@ template<
     BOOST_CONCEPT_ASSERT((SinglePassRangeConcept<StateSiteRange1 const>));
     BOOST_CONCEPT_ASSERT((SinglePassRangeConcept<StateSiteRange2 const>));
     OverlapBoundary<Left> left_boundary(make_trivial);
-    typename boost::range_iterator<StateSiteRange1>::type
+    typename boost::range_iterator<StateSiteRange1 const>::type
         state_site_1 = boost::begin(state_sites_1),
         end_of_state_sites_1 = boost::end(state_sites_1);
-    typename boost::range_iterator<StateSiteRange2>::type
+    typename boost::range_iterator<StateSiteRange2 const>::type
         state_site_2 = boost::begin(state_sites_2),
         end_of_state_sites_2 = boost::end(state_sites_2);
     for(;
