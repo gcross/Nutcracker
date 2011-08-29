@@ -123,24 +123,126 @@ TEST_SUITE(single_site_orthogonal_overlap_is_zero) {
 TEST_SUITE(constructStateSite) {
 
 //@+others
-//@+node:gcross.20110827234144.2578: *4* single site
-TEST_CASE(single_site) {
+//@+node:gcross.20110828143807.2637: *4* single site
+TEST_SUITE(single_site) {
+//@+others
+//@+node:gcross.20110827234144.2578: *5* bandwidth dimension 1
+TEST_CASE(bandwidth_dimension_1) {
     RNG random;
 
-    REPEAT(10) {
+    REPEAT(100) {
         PhysicalDimension const physical_dimension(random);
         VectorConstPtr const vector = random.randomVector(*physical_dimension);
         StateSite<None> state_site = constructStateSite(
              physical_dimension
             ,LeftDimension(1)
             ,RightDimension(1)
-            ,list_of(StateSiteLink(0,0,vector))
+            ,list_of(StateSiteLink(1,1,vector))
         );
         ASSERT_EQ(state_site.physicalDimension(),*physical_dimension);
         ASSERT_EQ_VAL(state_site.leftDimension(),1);
         ASSERT_EQ_VAL(state_site.rightDimension(),1);
         ASSERT_TRUE(boost::equal(state_site,*vector));
     }
+}
+//@+node:gcross.20110828143807.2639: *5* random left dimension
+TEST_CASE(random_left_dimension) {
+    RNG random;
+
+    REPEAT(100) {
+        LeftDimension const left_dimension(random);
+        unsigned int const left_index = random(1,*left_dimension);
+        complex<double> const value = random;
+        StateSite<None> state_site = constructStateSite(
+             PhysicalDimension(1)
+            ,left_dimension
+            ,RightDimension(1)
+            ,list_of(StateSiteLink(left_index,1,make_shared<Vector>(1u,value)))
+        );
+        ASSERT_EQ_VAL(state_site.physicalDimension(),1u);
+        ASSERT_EQ(state_site.leftDimension(),*left_dimension);
+        ASSERT_EQ_VAL(state_site.rightDimension(),1u);
+        Vector correct_data(state_site.size(),c(0,0));
+        correct_data[left_index-1] = value;
+        ASSERT_TRUE(boost::equal(state_site,correct_data));
+    }
+}
+//@+node:gcross.20110828143807.2641: *5* random right dimension
+TEST_CASE(random_right_dimension) {
+    RNG random;
+
+    REPEAT(100) {
+        RightDimension const right_dimension(random);
+        unsigned int const right_index = random(1,*right_dimension);
+        complex<double> const value = random;
+        StateSite<None> state_site = constructStateSite(
+             PhysicalDimension(1)
+            ,LeftDimension(1)
+            ,right_dimension
+            ,list_of(StateSiteLink(1,right_index,make_shared<Vector>(1u,value)))
+        );
+        ASSERT_EQ_VAL(state_site.physicalDimension(),1u);
+        ASSERT_EQ_VAL(state_site.leftDimension(),1u);
+        ASSERT_EQ(state_site.rightDimension(),*right_dimension);
+        Vector correct_data(state_site.size(),c(0,0));
+        correct_data[right_index-1] = value;
+        ASSERT_TRUE(boost::equal(state_site,correct_data));
+    }
+}
+//@+node:gcross.20110828143807.2643: *5* random bandwidth dimensions
+TEST_CASE(random_bandwidth_dimensions) {
+    RNG random;
+
+    REPEAT(100) {
+        LeftDimension const left_dimension(random);
+        RightDimension const right_dimension(random);
+        unsigned int const
+            left_index = random(1,*left_dimension),
+            right_index = random(1,*right_dimension);
+        complex<double> const value = random;
+        StateSite<None> state_site = constructStateSite(
+             PhysicalDimension(1)
+            ,left_dimension
+            ,right_dimension
+            ,list_of(StateSiteLink(left_index,right_index,make_shared<Vector>(1u,value)))
+        );
+        ASSERT_EQ_VAL(state_site.physicalDimension(),1u);
+        ASSERT_EQ(state_site.leftDimension(),*left_dimension);
+        ASSERT_EQ(state_site.rightDimension(),*right_dimension);
+        Vector correct_data(state_site.size(),c(0,0));
+        correct_data[(left_index-1)*(*right_dimension)+(right_index-1)] = value;
+        ASSERT_TRUE(boost::equal(state_site,correct_data));
+    }
+}
+//@+node:gcross.20110828143807.2645: *5* random all dimensions
+TEST_CASE(random_all_dimensions) {
+    RNG random;
+
+    REPEAT(100) {
+        PhysicalDimension const physical_dimension(random);
+        LeftDimension const left_dimension(random);
+        RightDimension const right_dimension(random);
+        unsigned int const
+            left_index = random(1,*left_dimension),
+            right_index = random(1,*right_dimension);
+        VectorConstPtr const vector = random.randomVector(*physical_dimension);
+        StateSite<None> state_site = constructStateSite(
+             physical_dimension
+            ,left_dimension
+            ,right_dimension
+            ,list_of(StateSiteLink(left_index,right_index,vector))
+        );
+        ASSERT_EQ(state_site.physicalDimension(),*physical_dimension);
+        ASSERT_EQ(state_site.leftDimension(),*left_dimension);
+        ASSERT_EQ(state_site.rightDimension(),*right_dimension);
+        Vector correct_data(state_site.size(),c(0,0));
+        BOOST_FOREACH(unsigned int const physical_index, irange(0u,*physical_dimension)) {
+           correct_data[physical_index*(*left_dimension)*(*right_dimension)+(left_index-1)*(*right_dimension)+(right_index-1)] = (*vector)[physical_index];
+        }
+        ASSERT_TRUE(boost::equal(state_site,correct_data));
+    }
+}
+//@-others
 }
 //@+node:gcross.20110827234144.2585: *4* two trivial sites
 TEST_CASE(two_trivial_sites) {
@@ -151,13 +253,13 @@ TEST_CASE(two_trivial_sites) {
         vector<StateSiteLink> links_1, links_2;
         complex<double> inner_product = c(0,0);
         vector<complex<double> > data_1, data_2;
-        BOOST_FOREACH(unsigned int const i, irange(0u,b)) {
+        BOOST_FOREACH(unsigned int const i, irange(1u,1u+b)) {
             complex<double> const x = random, y = random;
             inner_product += x*y;
             data_1.emplace_back(x);
             data_2.emplace_back(y);
-            links_1.emplace_back(0,i,make_shared<Vector>(1,x));
-            links_2.emplace_back(i,0,make_shared<Vector>(1,y));
+            links_1.emplace_back(1,i,make_shared<Vector>(1,x));
+            links_2.emplace_back(i,1,make_shared<Vector>(1,y));
         }
         StateSite<None>
              state_site_1 = constructStateSite
@@ -191,15 +293,15 @@ TEST_CASE(two_sites) {
             (PhysicalDimension(2)
             ,LeftDimension(1)
             ,RightDimension(2)
-            ,list_of(StateSiteLink(0,0,vectorFromRange(list_of(1)(0))))
-                    (StateSiteLink(0,1,vectorFromRange(list_of(0)(-1))))
+            ,list_of(StateSiteLink(1,1,vectorFromRange(list_of(1)(0))))
+                    (StateSiteLink(1,2,vectorFromRange(list_of(0)(-1))))
             )
         ,state_site_2 = constructStateSite
             (PhysicalDimension(2)
             ,LeftDimension(2)
             ,RightDimension(1)
-            ,list_of(StateSiteLink(1,0,vectorFromRange(list_of(1)(0))))
-                    (StateSiteLink(0,0,vectorFromRange(list_of(0)(1))))
+            ,list_of(StateSiteLink(2,1,vectorFromRange(list_of(1)(0))))
+                    (StateSiteLink(1,1,vectorFromRange(list_of(0)(1))))
             )
         ;
     Vector actual_state_vector = computeStateVector(list_of(&state_site_1)(&state_site_2) | indirected);
@@ -214,23 +316,23 @@ TEST_CASE(three_sites) {
             (PhysicalDimension(2)
             ,LeftDimension(1)
             ,RightDimension(2)
-            ,list_of(StateSiteLink(0,0,vectorFromRange(list_of(1)(0))))
-                    (StateSiteLink(0,1,vectorFromRange(list_of(0)(-1))))
+            ,list_of(StateSiteLink(1,1,vectorFromRange(list_of(1)(0))))
+                    (StateSiteLink(1,2,vectorFromRange(list_of(0)(-1))))
             )
         ,state_site_2 = constructStateSite
             (PhysicalDimension(2)
             ,LeftDimension(2)
             ,RightDimension(2)
-            ,list_of(StateSiteLink(0,0,vectorFromRange(list_of(1)(0))))
-                    (StateSiteLink(1,1,vectorFromRange(list_of(1)(0))))
-                    (StateSiteLink(0,1,vectorFromRange(list_of(0)(1))))
+            ,list_of(StateSiteLink(1,1,vectorFromRange(list_of(1)(0))))
+                    (StateSiteLink(2,2,vectorFromRange(list_of(1)(0))))
+                    (StateSiteLink(1,2,vectorFromRange(list_of(0)(1))))
             )
         ,state_site_3 = constructStateSite
             (PhysicalDimension(2)
             ,LeftDimension(2)
             ,RightDimension(1)
-            ,list_of(StateSiteLink(1,0,vectorFromRange(list_of(1)(0))))
-                    (StateSiteLink(0,0,vectorFromRange(list_of(0)(2))))
+            ,list_of(StateSiteLink(2,1,vectorFromRange(list_of(1)(0))))
+                    (StateSiteLink(1,1,vectorFromRange(list_of(0)(2))))
             )
         ;
     Vector actual_state_vector = computeStateVector(list_of(&state_site_1)(&state_site_2)(&state_site_3) | indirected);
@@ -250,6 +352,49 @@ TEST_CASE(three_sites) {
 }
 //@-others
 
+}
+//@+node:gcross.20110828143807.2636: *4* random site
+TEST_CASE(random_site) {
+    RNG random;
+
+    REPEAT(100) {
+        unsigned int const
+              physical_dimension = random
+            , left_dimension = random
+            , right_dimension = random
+            , increment = left_dimension*right_dimension
+            ;
+        StateSite<None> state_site_1 = StateSite<None>
+            (PhysicalDimension(physical_dimension)
+            ,LeftDimension(left_dimension)
+            ,RightDimension(right_dimension)
+            );
+        complex<double>* left_right_ptr = state_site_1.begin();
+        vector<StateSiteLink> links;
+        BOOST_FOREACH(unsigned int left, irange(0u,left_dimension)) {
+            BOOST_FOREACH(unsigned int right, irange(0u,right_dimension)) {
+                complex<double>* current_ptr = left_right_ptr++;
+                VectorPtr vector = make_shared<Vector>(physical_dimension);
+                BOOST_FOREACH(unsigned int physical, irange(0u,physical_dimension)) {
+                    complex<double> x = random;
+                    (*vector)[physical] = x;
+                    *current_ptr = x;
+                    current_ptr += increment;
+                }
+                links.emplace_back(left+1,right+1,vector);
+            }
+        }
+        StateSite<None> state_site_2 = constructStateSite
+            (PhysicalDimension(physical_dimension)
+            ,LeftDimension(left_dimension)
+            ,RightDimension(right_dimension)
+            ,links
+            );
+        ASSERT_EQ(state_site_1.physicalDimension(),state_site_2.physicalDimension());
+        ASSERT_EQ(state_site_1.leftDimension(),state_site_2.leftDimension());
+        ASSERT_EQ(state_site_1.rightDimension(),state_site_2.rightDimension());
+        ASSERT_TRUE(boost::equal(state_site_1,state_site_2));
+    }
 }
 //@-others
 

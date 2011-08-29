@@ -66,13 +66,15 @@ StateSite<None> constructStateSite(
          StateSiteLink const& link
         ,links
     ) {
-        assert(link.from < state_site.leftDimension());
-        assert(link.to < state_site.rightDimension());
+        assert(link.from > 0);
+        assert(link.from <= state_site.leftDimension());
+        assert(link.to > 0);
+        assert(link.to <= state_site.rightDimension());
         assert(link.label->size() == *physical_dimension);
         boost::copy(
             *link.label,
             (state_site
-                | sliced(link.to + link.from * (*right_dimension),state_site.size())
+                | sliced((link.to-1) + (link.from-1) * (*right_dimension),state_site.size())
                 | strided((*left_dimension)*(*right_dimension))
             ).begin()
         );
