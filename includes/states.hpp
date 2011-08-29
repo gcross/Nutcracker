@@ -503,17 +503,13 @@ template<> struct moveSiteCursor<Right> {
 template<typename StateSiteRange> State::State(CopyFrom<StateSiteRange> sites) {
     BOOST_CONCEPT_ASSERT((boost::BidirectionalRangeConcept<StateSiteRange>));
     typedef typename boost::range_reverse_iterator<StateSiteRange const>::type iterator;
-    iterator
-        current_site_iter = boost::rbegin(*sites),
-        next_site_iter = current_site_iter+1;
+    iterator next_site_iter = boost::rbegin(*sites);
     iterator const end_of_sites = boost::rend(*sites);
-    StateSite<Middle> current_site = current_site_iter->normalize();
-    while(next_site_iter != end_of_sites) {
-        MoveSiteCursorResult<Left> result = Unsafe::moveSiteCursorLeft(*next_site_iter,*current_site_iter);
+    StateSite<Middle> current_site = next_site_iter->normalize();
+    for(++next_site_iter; next_site_iter != end_of_sites; ++next_site_iter) {
+        MoveSiteCursorResult<Left> result = Unsafe::moveSiteCursorLeft(*next_site_iter,current_site);
         rest_sites.emplace_back(boost::move(result.other_side_state_site));
         current_site = boost::move(result.middle_state_site);
-        current_site_iter = next_site_iter;
-        ++next_site_iter;
     }
     BOOST_FOREACH(unsigned int i, irange((long unsigned)0u,rest_sites.size()/2)) {
         rest_sites[i].swap(rest_sites[rest_sites.size()-i-1]);

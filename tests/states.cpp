@@ -401,8 +401,11 @@ TEST_CASE(normalization) {
         ASSERT_NEAR_ABS_VAL(computeStateOverlap(state,state),c(1,0),1e-13);
     }
 }
-//@+node:gcross.20110828142008.2596: *3* range constructor
-TEST_CASE(range_constructor) {
+//@+node:gcross.20110828205143.2612: *3* range constructor
+TEST_SUITE(range_constructor) {
+//@+others
+//@+node:gcross.20110828142008.2596: *4* correct on self
+TEST_CASE(correct_on_self) {
     RNG random;
 
     REPEAT(100) {
@@ -421,6 +424,30 @@ TEST_CASE(range_constructor) {
             ASSERT_NEAR_REL(v1[index],v2[index],1e-13);
         }
     }
+}
+//@+node:gcross.20110828205143.2613: *4* correct on random
+TEST_CASE(correct_on_random) {
+    RNG random;
+
+    REPEAT(100) {
+        unsigned int number_of_sites = random;
+        vector<unsigned int> const
+            physical_dimensions = random.randomUnsignedIntegerVector(number_of_sites),
+            bandwidth_dimensions = computeBandwidthDimensionSequence(random(1,maximumBandwidthDimension(physical_dimensions)),physical_dimensions);
+        vector<StateSite<Middle> > sites;
+        BOOST_FOREACH(unsigned int const site_number, irange(0u,number_of_sites)) {
+            sites.push_back(randomStateSiteMiddle(
+                PhysicalDimension(physical_dimensions[site_number]),
+                LeftDimension(bandwidth_dimensions[site_number]),
+                RightDimension(bandwidth_dimensions[site_number+1])
+            ));
+        }
+        State state(copyFrom(sites));
+        ASSERT_NEAR_ABS_VAL(computeStateOverlap(state,state),c(1,0),1e-13);
+        ASSERT_NEAR_ABS_VAL(computeStateOverlap(state,sites)/sqrt(computeStateOverlap(sites,sites)),c(1,0),1e-13);
+    }
+}
+//@-others
 }
 //@-others
 
