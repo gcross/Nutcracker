@@ -366,11 +366,11 @@ vector<Solution> Chain::solveForEigenvaluesAndEigenvectorsAndThenClearChain(unsi
     REPEAT(number_of_levels-1) {
         optimizeChain();
         constructAndAddProjectorFromState();
-        eigenvalues_and_eigenvectors.emplace_back(getEnergy(),boost::move(removeState()));
+        eigenvalues_and_eigenvectors.push_back(Solution(getEnergy(),removeState()));
         reset();
     }
     optimizeChain();
-    eigenvalues_and_eigenvectors.emplace_back(getEnergy(),boost::move(removeState()));
+    eigenvalues_and_eigenvectors.push_back(Solution(getEnergy(),removeState()));
     clear();
     return boost::move(eigenvalues_and_eigenvectors);
 }

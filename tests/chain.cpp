@@ -679,7 +679,7 @@ TEST_CASE(solveForEigenvaluesAndEigenvectorsAndThenClearChain) {
         Operator op = builder.compile();
         Chain chain(op,ChainOptions().setInitialBandwidthDimension(3));
         REPEAT(10) {
-            vector<Solution> solutions = chain.solveForEigenvaluesAndEigenvectorsAndThenClearChain(3);
+            vector<Solution> solutions(static_cast<BOOST_RV_REF(vector<Solution>)>(chain.solveForEigenvaluesAndEigenvectorsAndThenClearChain(3)));
             ASSERT_EQ_VAL(solutions.size(),3u);
             BOOST_FOREACH(unsigned int const i, irange(0u,3u)) {
                 ASSERT_NEAR_ABS(solutions[i].eigenvalue,(double)i,1e-13);

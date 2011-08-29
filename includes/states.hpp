@@ -248,6 +248,8 @@ struct State {
         //! Current location in the matrix product state.
         unsigned int index;
     public:
+        const_iterator() {}
+
         //! Construct a new iterator using the given state and index.
         const_iterator(
               State const* state
@@ -403,7 +405,7 @@ template<
         left_boundary =
             Unsafe::contractVSLeft(
                  left_boundary
-                ,(OverlapSite<None>&)computeOverlapSiteFromStateSite(*state_site_1)
+                ,computeOverlapSiteFromStateSite(*state_site_1)
                 ,*state_site_2
             );
     }
