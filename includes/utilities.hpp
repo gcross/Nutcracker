@@ -166,12 +166,12 @@ template<typename Label> struct Link {
 
     bool operator<(Link const& other) const {
         return from < other.from ||
-               from == other.from && (
+              (from == other.from && (
                  to < other.to ||
-                 to == other.to && (
+                (to == other.to && (
                    label < other.label
-                 )
-               );
+                ))
+              ));
     }
 
 };
