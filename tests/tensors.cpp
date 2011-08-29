@@ -206,7 +206,7 @@ TEST_CASE(normalizable) {
         State const state_1 = random.randomState();
         vector<StateSite<Middle> > state_2;
         BOOST_FOREACH(StateSiteAny const& state_site, state_1) {
-            state_2.emplace_back(boost::move(state_site.normalize()));
+            state_2.push_back(state_site.normalize());
         }
         Vector
             v1 = computeStateVector(state_1),
