@@ -32,6 +32,8 @@
 #include <boost/range/algorithm/copy.hpp>
 #include <boost/range/concepts.hpp>
 #include <boost/range/irange.hpp>
+#include <boost/serialization/complex.hpp>
+#include <boost/serialization/optional.hpp>
 #include <boost/smart_ptr/shared_ptr.hpp>
 #include <boost/utility.hpp>
 #include <complex>
@@ -107,17 +109,16 @@ struct NotEnoughDegreesOfFreedomToNormalizeError : public std::logic_error {
     { }
     virtual ~NotEnoughDegreesOfFreedomToNormalizeError() throw() {}
 };
-//@+node:gcross.20110215235924.1980: ** Functions
-//@+node:gcross.20110215235924.1982: *3* function connectDimensions
-inline unsigned int connectDimensions(
-      const char* n1
-    , unsigned int const d1
-    , const char* n2
-    , unsigned int const d2
-) {
-    if(d1 != d2) throw DimensionMismatch(n1,d1,n2,d2);
-    return d1;
-}
+//@+node:gcross.20110829224358.2640: *3* WrongTensorNormalizationException
+struct WrongTensorNormalizationException : public std::runtime_error {
+    WrongTensorNormalizationException(optional<string> const& expected_normalization, optional<string> const& actual_normalization)
+        : std::runtime_error(
+            (boost::format("Expected a tensor with %1% normalization but encountered a tensor with %2% normalization.")
+                % (expected_normalization ? *expected_normalization : "unspecified")
+                % (actual_normalization   ? *actual_normalization    : "unspecified")
+            ).str())
+    {}
+};
 //@+node:gcross.20110215231246.1878: ** Type aliases
 class OperatorSite;
 typedef vector<shared_ptr<OperatorSite const> > Operator;
@@ -410,6 +411,34 @@ DECLARE_DUMMY_PARAMETER(MakeTrivial,make_trivial)
 template<typename other_side> struct Other { };
 template<> struct Other<Left> { typedef Right value; };
 template<> struct Other<Right> { typedef Left value; };
+//@+node:gcross.20110215235924.1980: ** Functions
+//@+node:gcross.20110215235924.1982: *3* function connectDimensions
+inline unsigned int connectDimensions(
+      const char* n1
+    , unsigned int const d1
+    , const char* n2
+    , unsigned int const d2
+) {
+    if(d1 != d2) throw DimensionMismatch(n1,d1,n2,d2);
+    return d1;
+}
+//@+node:gcross.20110829224358.2659: *3* serializeNormalization
+template<typename side, typename Archive>
+typename boost::enable_if<typename Archive::is_saving>::type
+serializeNormalization(Archive& ar) {
+    ar << normalizationOf<side>::value;
+}
+
+template<typename side, typename Archive>
+typename boost::enable_if<typename Archive::is_loading>::type
+serializeNormalization(Archive& ar) {
+    optional<string> const& expected_normalization = normalizationOf<side>::value;
+    optional<string> actual_normalization;
+    ar >> actual_normalization;
+    if(expected_normalization && expected_normalization != actual_normalization) {
+        throw WrongTensorNormalizationException(expected_normalization,actual_normalization);
+    }
+}
 //@+node:gcross.20110124161335.2012: ** Tensors
 //! \defgroup Tensors Tensors
 //! @{
@@ -618,6 +647,19 @@ class BaseTensor {
 
     //! Returns the Frobenius 2-norm of this tensor --- i.e., the sum of the absolute value squared of all components.
     double norm() const { return dznrm2(data_size,data); }
+    //@+node:gcross.20110829224358.2632: *5* Serialization
+    protected:
+
+    template<class Archive>
+    void serialize(Archive & ar, const unsigned int version)
+    {
+        ar & data_size;
+        if(Archive::is_loading::value) {
+            if(valid()) delete[] data;
+            data = new complex<double>[data_size];
+        }
+        ar & boost::serialization::make_array(data,data_size);
+    }
     //@-others
 };
 //@+node:gcross.20110214164734.1934: *4* SiteBaseTensor
@@ -780,6 +822,17 @@ class SiteBaseTensor : public BaseTensor {
     unsigned int left_dimension;
     //! The right dimension of the site.
     unsigned int right_dimension;
+    //@+node:gcross.20110829224358.2634: *5* Serialization
+    protected:
+
+    template<class Archive>
+    void serialize(Archive & ar, const unsigned int version)
+    {
+        BaseTensor::serialize(ar,version);
+        ar & physical_dimension;
+        ar & left_dimension;
+        ar & right_dimension;
+    }
     //@-others
 };
 //@+node:gcross.20110215235924.2004: *3* Boundary
@@ -1407,6 +1460,17 @@ template<typename side> class StateSite : public StateSiteAny {
 
     //! The trivial state site tensor with all dimensions one and containing the single value 1.
     static StateSite const trivial;
+    //@+node:gcross.20110829224358.2638: *5* Serialization
+    private:
+
+    friend class boost::serialization::access;
+
+    template<class Archive>
+    void serialize(Archive & ar, const unsigned int version)
+    {
+        SiteBaseTensor::serialize(ar,version);
+        serializeNormalization<side>(ar);
+    }
     //@-others
 };
 
@@ -1886,6 +1950,22 @@ class OperatorSite : public SiteBaseTensor {
 
     //! The trivial operator site tensor with all dimensions and the number of matrices to 1, and the only transition matrix equal to the identity.
     static OperatorSite const trivial;
+    //@+node:gcross.20110829224358.2636: *4* Serialization
+    private:
+
+    friend class boost::serialization::access;
+
+    template<class Archive>
+    void serialize(Archive & ar, const unsigned int version)
+    {
+        SiteBaseTensor::serialize(ar,version);
+        ar & number_of_matrices;
+        if(Archive::is_loading::value) {
+            if(valid()) delete[] index_data;
+            index_data = new uint32_t[2*number_of_matrices];
+        }
+        ar & boost::serialization::make_array(index_data,2*number_of_matrices);
+    }
     //@-others
 };
 //@-others

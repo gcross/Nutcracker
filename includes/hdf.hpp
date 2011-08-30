@@ -61,16 +61,6 @@ using ::HDF::Location;
 struct InconsistentTensorDimensions : public std::runtime_error {
     InconsistentTensorDimensions() : std::runtime_error("The tensor dimensions are inconsistent.") {}
 };
-//@+node:gcross.20110511190907.2310: *3* WrongTensorNormalizationException
-struct WrongTensorNormalizationException : public std::runtime_error {
-    WrongTensorNormalizationException(optional<string> const& expected_normalization, optional<string> const& actual_normalization)
-        : std::runtime_error(
-            (format("Expected a tensor with %1% normalization but encountered a tensor with %2% normalization.")
-                % (expected_normalization ? *expected_normalization : "unspecified")
-                % (actual_normalization   ? *actual_normalization    : "unspecified")
-            ).str())
-    {}
-};
 //@+node:gcross.20110511190907.2271: *3* WrongTensorRankException
 struct WrongTensorRankException : public std::runtime_error {
     WrongTensorRankException(unsigned int const expected_rank, unsigned int const actual_rank)
@@ -145,7 +135,7 @@ template<typename side> HDF::Dataset operator>> (HDF::Location const& location, 
     if(expected_normalization) {
         optional<string> actual_normalization = dataset["normalization"];
         if(expected_normalization != actual_normalization) {
-            throw Nutcracker::HDF::WrongTensorNormalizationException(expected_normalization,actual_normalization);
+            throw Nutcracker::WrongTensorNormalizationException(expected_normalization,actual_normalization);
         }
     }
 

@@ -20,6 +20,8 @@
 //@+<< Includes >>
 //@+node:gcross.20110204201608.1726: ** << Includes >>
 #include <algorithm>
+#include <boost/archive/text_iarchive.hpp>
+#include <boost/archive/text_oarchive.hpp>
 #include <boost/range/algorithm/equal.hpp>
 #include <complex>
 #include <illuminate.hpp>
@@ -41,6 +43,7 @@ using std::endl;
 using std::equal;
 using std::istringstream;
 using std::ostringstream;
+using std::stringstream;
 //@-<< Includes >>
 
 //@+others
@@ -217,6 +220,123 @@ TEST_CASE(normalizable) {
         }
     }
 }
+//@+node:gcross.20110829224358.2649: *4* serialization
+TEST_SUITE(serialization) {
+
+//@+others
+//@+node:gcross.20110829224358.2653: *5* data
+TEST_CASE(data) {
+    RNG random;
+
+    REPEAT(10) {
+        PhysicalDimension const physical_dimension(random);
+        LeftDimension const left_dimension(random);
+        RightDimension const right_dimension(random);
+
+        StateSite<None> state_site_tensor_1
+            (physical_dimension
+            ,left_dimension
+            ,right_dimension
+            ,fillWithGenerator(random.randomComplexDouble)
+            );
+
+        stringstream buffer;
+        boost::archive::text_oarchive(buffer) << state_site_tensor_1;
+
+        StateSite<None> state_site_tensor_2 = StateSite<None>
+            (PhysicalDimension(random)
+            ,LeftDimension(random)
+            ,RightDimension(random)
+            ,fillWithGenerator(random.randomComplexDouble)
+            );
+        boost::archive::text_iarchive(buffer) >> state_site_tensor_2;
+
+        checkSiteTensorsEqual(state_site_tensor_1,state_site_tensor_2);
+    }
+}
+//@+node:gcross.20110829224358.2664: *5* normalization
+struct NormalizationBuffer {
+    string data;
+    template<typename Side> NormalizationBuffer(Side* _) {
+        ostringstream buffer;
+        boost::archive::text_oarchive(buffer) << StateSite<Side>::trivial;
+        data = buffer.str();
+    }
+    template<typename Item> void operator>>(Item& item) const {
+        istringstream buffer(data);
+        boost::archive::text_iarchive(buffer) >> item;
+    }
+};
+
+TEST_CASE(normalization) {
+    NormalizationBuffer const
+          left_buffer((Left*)NULL)
+        , middle_buffer((Middle*)NULL)
+        , right_buffer((Right*)NULL)
+        , none_buffer((None*)NULL)
+        ;
+
+    StateSite<Left> left_site;
+    StateSite<Middle> middle_site;
+    StateSite<Right> right_site;
+    StateSite<None> none_site;
+
+    left_buffer >> none_site;
+    middle_buffer >> none_site;
+    right_buffer >> none_site;
+
+    left_buffer >> left_site;
+    middle_buffer >> middle_site;
+    right_buffer >> right_site;
+
+    try {
+        left_buffer >> middle_site;
+        FAIL("A middle-normalized state site accepted a left-normalized tensor!");
+    } catch (WrongTensorNormalizationException const& _) {}
+
+    try {
+        left_buffer >> right_site;
+        FAIL("A right-normalized state site accepted a left-normalized tensor!");
+    } catch (WrongTensorNormalizationException const& _) {}
+
+    try {
+        middle_buffer >> left_site;
+        FAIL("A left-normalized state site accepted an middle-normalized tensor!");
+    } catch (WrongTensorNormalizationException const& _) {}
+
+    try {
+        middle_buffer >> right_site;
+        FAIL("A right-normalized state site accepted a middle-normalized tensor!");
+    } catch (WrongTensorNormalizationException const& _) {}
+
+    try {
+        right_buffer >> left_site;
+        FAIL("A left-normalized state site accepted a right-normalized tensor!");
+    } catch (WrongTensorNormalizationException const& _) {}
+
+    try {
+        right_buffer >> middle_site;
+        FAIL("A middle-normalized state site accepted a right-normalized tensor!");
+    } catch (WrongTensorNormalizationException const& _) {}
+
+    try {
+        none_buffer >> left_site;
+        FAIL("A left-normalized state site accepted an unnormalized tensor!");
+    } catch (WrongTensorNormalizationException const& _) {}
+
+    try {
+        none_buffer >> middle_site;
+        FAIL("A middle-normalized state site accepted an unnormalized tensor!");
+    } catch (WrongTensorNormalizationException const& _) {}
+
+    try {
+        none_buffer >> right_site;
+        FAIL("A right-normalized state site accepted an unnormalized tensor!");
+    } catch (WrongTensorNormalizationException const& _) {}
+}
+//@-others
+
+}
 //@-others
 
 }
@@ -326,6 +446,22 @@ TEST_CASE(random_generator) {
         ASSERT_FALSE(operator_site_2.valid());
         operator_site_2 = random.randomOperatorSite(physical_dimension,left_dimension,right_dimension);
         ASSERT_TRUE(operator_site_2.valid());
+    }
+}
+//@+node:gcross.20110829224358.2670: *4* serialization
+TEST_CASE(encode_then_decode) {
+    RNG random;
+
+    REPEAT(10) {
+        OperatorSite operator_site_tensor_1(random.randomOperatorSite());
+
+        stringstream buffer;
+        boost::archive::text_oarchive(buffer) << operator_site_tensor_1;
+
+        OperatorSite operator_site_tensor_2(random.randomOperatorSite());
+        boost::archive::text_iarchive(buffer) >> operator_site_tensor_2;
+
+        checkOperatorSitesEqual(operator_site_tensor_1,operator_site_tensor_2);
     }
 }
 //@-others

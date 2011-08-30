@@ -502,8 +502,8 @@ namespace Pauli {
 
 //@+<< Outside namespace >>
 //@+node:gcross.20110511190907.3784: ** << Outside namespace >>
-inline std::istream& operator>> (std::istream& in, boost::none_t& _) { return in; }
-inline std::ostream& operator<< (std::ostream& out, const boost::none_t& _) { return out; }
+template<typename T> inline T& operator>> (T& in, boost::none_t& _) { return in; }
+template<typename T> inline T& operator<< (T& out, const boost::none_t& _) { return out; }
 //@-<< Outside namespace >>
 
 #endif
