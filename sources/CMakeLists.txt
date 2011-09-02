@@ -2,4 +2,6 @@
 #@+node:gcross.20110125120748.2419: * @file CMakeLists.txt
 add_subdirectory ("common")
 add_subdirectory ("programs")
+
+set(PROTO_HDRS ${PROTO_HDRS} PARENT_SCOPE)
 #@-leo

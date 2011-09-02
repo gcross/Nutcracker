@@ -85,6 +85,9 @@ link_directories ( ${HDF++_LIBRARY_DIRS} )
 find_package( LAPACK REQUIRED )
 link_directories ( ${LAPACK_LIBRARY_DIRS} )
 include_directories ( ${LAPACK_INCLUDE_DIRS} )
+#@+node:gcross.20110831211534.2642: *3* Protobuf
+find_package(Protobuf REQUIRED)
+include_directories(${PROTOBUF_INCLUDE_DIRS})
 #@+node:gcross.20110426132142.2443: *3* YamlCXX
 find_package( YamlCXX 0.2.6 REQUIRED )
 link_directories ( ${YAMLCXX_LIBRARY_DIRS} )

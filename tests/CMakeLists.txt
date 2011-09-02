@@ -4,6 +4,9 @@ include_directories(".")
 include_directories ( ${Illuminate_INCLUDE_DIRS} )
 link_directories ( ${Illuminate_LIBRARY_DIRS} )
 
+get_filename_component(PROTO_INCLUDE ${PROTO_HDRS} PATH)
+include_directories(${PROTO_INCLUDE})
+
 set(test-SOURCES
     boundaries
     chain
@@ -14,6 +17,7 @@ set(test-SOURCES
     io
     optimizer
     projectors
+    protobuf
     states
     tensors
     utilities
