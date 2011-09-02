@@ -412,7 +412,13 @@ template<typename other_side> struct Other { };
 template<> struct Other<Left> { typedef Right value; };
 template<> struct Other<Right> { typedef Left value; };
 //@+node:gcross.20110215235924.1980: ** Functions
-//@+node:gcross.20110215235924.1982: *3* function connectDimensions
+//@+node:gcross.20110901221152.2655: *3* assertNormalizationIs
+template<typename side> void assertNormalizationIs(boost::optional<std::string> const& observed_normalization) {
+    if(normalizationOf<side>::value && normalizationOf<side>::value != observed_normalization) {
+        throw WrongTensorNormalizationException(normalizationOf<side>::value,observed_normalization);
+    }
+}
+//@+node:gcross.20110215235924.1982: *3* connectDimensions
 inline unsigned int connectDimensions(
       const char* n1
     , unsigned int const d1
@@ -432,12 +438,9 @@ serializeNormalization(Archive& ar) {
 template<typename side, typename Archive>
 typename boost::enable_if<typename Archive::is_loading>::type
 serializeNormalization(Archive& ar) {
-    optional<string> const& expected_normalization = normalizationOf<side>::value;
-    optional<string> actual_normalization;
-    ar >> actual_normalization;
-    if(expected_normalization && expected_normalization != actual_normalization) {
-        throw WrongTensorNormalizationException(expected_normalization,actual_normalization);
-    }
+    optional<string> observed_normalization;
+    ar >> observed_normalization;
+    assertNormalizationIs<side>(observed_normalization);
 }
 //@+node:gcross.20110124161335.2012: ** Tensors
 //! \defgroup Tensors Tensors
