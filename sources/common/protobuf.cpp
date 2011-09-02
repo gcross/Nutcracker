@@ -20,26 +20,36 @@
 //@+<< Includes >>
 //@+node:gcross.20110901221152.2673: ** << Includes >>
 #include "protobuf.hpp"
+#include "states.hpp"
 //@-<< Includes >>
-
-namespace Nutcracker {
 
 //@+<< Usings >>
 //@+node:gcross.20110901221152.2674: ** << Usings >>
+using boost::container::vector;
 using boost::optional;
 //@-<< Usings >>
 
 //@+others
 //@+node:gcross.20110901221152.2675: ** I/O Operators
-//@+node:gcross.20110901221152.2678: *3* State
-//@+at
-// template<typename side> void operator<<(Nutcracker::Protobuf::State& buffer, Nutcracker::State const& tensor) {
-//     using namespace Nutcracker;
-//     StateSite<Middle> first_site = 
-// }
-// 
-// template<typename side> void operator>>(Nutcracker::Protobuf::State const& buffer, Nutcracker::State& tensor)
-//@-others
-
+//@+node:gcross.20110902105950.2689: *3* State
+void operator<<(Nutcracker::Protobuf::State& buffer, Nutcracker::State const& state) {
+    using namespace Nutcracker;
+    buffer.clear_sites();
+    static_cast<Protobuf::StateSite&>(*buffer.add_sites()) << static_cast<StateSite<Middle> const&>(state.getFirstSite());
+    BOOST_FOREACH(StateSite<Right> const& state_site, state.getRestSites()) {
+        (*buffer.add_sites()) << state_site;
+    }
 }
+
+void operator>>(Nutcracker::Protobuf::State const& buffer, Nutcracker::State& tensor) {
+    using namespace Nutcracker;
+    StateSite<Middle> first_site;
+    vector<StateSite<Right> > rest_sites(buffer.sites_size()-1);
+    buffer.sites(0) >> first_site;
+    BOOST_FOREACH(unsigned int const index, irange<unsigned int>(0u,rest_sites.size())) {
+        buffer.sites(index+1) >> rest_sites[index];
+    }
+    tensor = State(boost::move(first_site),boost::move(rest_sites));
+}
+//@-others
 //@-leo

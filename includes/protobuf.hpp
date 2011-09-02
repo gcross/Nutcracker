@@ -30,6 +30,9 @@
 
 //@+others
 //@+node:gcross.20110901221152.2653: ** I/O Operators
+//@+node:gcross.20110901221152.2676: *3* State
+void operator<<(Nutcracker::Protobuf::State& buffer, Nutcracker::State const& state);
+void operator>>(Nutcracker::Protobuf::State const& buffer, Nutcracker::State& tensor);
 //@+node:gcross.20110901221152.2654: *3* StateSite
 namespace Nutcracker {
 
@@ -63,7 +66,7 @@ namespace Nutcracker {
             }
         }
 
-        boost::optional<std::string> const& loadNormalizationFrom(StateSite const& buffer) {
+        inline boost::optional<std::string> const& loadNormalizationFrom(StateSite const& buffer) {
             if(buffer.has_normalization()) {
                 switch(buffer.normalization()) {
                     case MIDDLE: return normalizationOf<Middle>::value;
@@ -109,11 +112,6 @@ template<typename side> void operator>>(Nutcracker::Protobuf::StateSite const& b
     }
     tensor = boost::move(state_site_tensor);
 }
-//@+node:gcross.20110901221152.2676: *3* State
-//@+at
-// template<typename side> void operator<<(Nutcracker::Protobuf::StateSiteTensor& buffer, Nutcracker::State const& tensor);
-// 
-// template<typename side> void operator>>(Nutcracker::Protobuf::StateSiteTensor const& buffer, Nutcracker::State& tensor)
 //@-others
 
 #endif

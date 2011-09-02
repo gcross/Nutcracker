@@ -31,6 +31,20 @@
 TEST_SUITE(Protobuf) {
 
 //@+others
+//@+node:gcross.20110902105950.2690: *3* State
+TEST_CASE(State) {
+    RNG random;
+
+    REPEAT(100) {
+        State
+            state_1 = random.randomState(),
+            state_2 = random.randomState();
+        Protobuf::State buffer;
+        buffer << state_1;
+        buffer >> state_2;
+        checkStatesEqual(state_1,state_2);
+    }
+}
 //@+node:gcross.20110901221152.2691: *3* StateSite
 TEST_SUITE(StateSite) {
 
