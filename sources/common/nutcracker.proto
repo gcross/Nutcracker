@@ -22,4 +22,13 @@ message StateSite {
 message State {
     repeated StateSite sites = 1;
 }
+
+message OperatorSite {
+    required uint32 number_of_matrices = 1;
+    required uint32 physical_dimension = 2;
+    required uint32 left_dimension = 3;
+    required uint32 right_dimension = 4;
+    repeated double matrix_data = 5 [packed=true];
+    repeated uint32 index_data = 6 [packed=true];
+}
 //@-leo

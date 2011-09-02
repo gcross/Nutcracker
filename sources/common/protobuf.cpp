@@ -31,6 +31,46 @@ using boost::optional;
 
 //@+others
 //@+node:gcross.20110901221152.2675: ** I/O Operators
+//@+node:gcross.20110902105950.2696: *3* OperatorSite
+void operator<<(Nutcracker::Protobuf::OperatorSite& buffer, Nutcracker::OperatorSite const& tensor) {
+    using namespace Nutcracker;
+    buffer.set_number_of_matrices(tensor.numberOfMatrices());
+    buffer.set_physical_dimension(tensor.physicalDimension());
+    buffer.set_left_dimension(tensor.leftDimension());
+    buffer.set_right_dimension(tensor.rightDimension());
+    google::protobuf::RepeatedField<double>& matrix_data = *buffer.mutable_matrix_data();
+    matrix_data.Clear();
+    matrix_data.Reserve(2*tensor.size());
+    BOOST_FOREACH(complex<double> const& x, tensor) {
+        (*matrix_data.AddAlreadyReserved()) = x.real();
+        (*matrix_data.AddAlreadyReserved()) = x.imag();
+    }
+    google::protobuf::RepeatedField<uint32_t>& index_data = *buffer.mutable_index_data();
+    index_data.Clear();
+    index_data.Reserve(2*tensor.size());
+    uint32_t const *ptr = static_cast<uint32_t const*>(tensor), *end = ptr + 2*tensor.numberOfMatrices();
+    while(ptr != end) {
+        (*index_data.Add()) = *ptr++;
+    }
+}
+
+void operator>>(Nutcracker::Protobuf::OperatorSite const& buffer, Nutcracker::OperatorSite& tensor) {
+    using namespace Nutcracker;
+    unsigned int const number_of_matrices = buffer.number_of_matrices();
+    PhysicalDimension const physical_dimension(buffer.physical_dimension());
+    LeftDimension     const left_dimension    (buffer.left_dimension());
+    RightDimension    const right_dimension   (buffer.right_dimension());
+    OperatorSite operator_site_tensor(number_of_matrices,physical_dimension,left_dimension,right_dimension);
+    google::protobuf::RepeatedField<double> const& matrix_data = buffer.matrix_data();
+    assert(operator_site_tensor.size()*2 == (unsigned int)matrix_data.size());
+    google::protobuf::RepeatedField<double>::const_iterator iter = matrix_data.begin();
+    BOOST_FOREACH(std::complex<double>& x, operator_site_tensor) {
+        x.real() = *(iter++);
+        x.imag() = *(iter++);
+    }
+    boost::copy(buffer.index_data(),static_cast<uint32_t*>(operator_site_tensor));
+    tensor = boost::move(operator_site_tensor);
+}
 //@+node:gcross.20110902105950.2689: *3* State
 void operator<<(Nutcracker::Protobuf::State& buffer, Nutcracker::State const& state) {
     using namespace Nutcracker;

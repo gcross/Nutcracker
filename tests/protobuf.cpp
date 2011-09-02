@@ -31,6 +31,20 @@
 TEST_SUITE(Protobuf) {
 
 //@+others
+//@+node:gcross.20110902105950.2698: *3* OperatorSite
+TEST_CASE(OperatorSite) {
+    RNG random;
+
+    REPEAT(100) {
+        OperatorSite
+            tensor_1 = random.randomOperatorSite(),
+            tensor_2 = random.randomOperatorSite();
+        Protobuf::OperatorSite buffer;
+        buffer << tensor_1;
+        buffer >> tensor_2;
+        checkOperatorSitesEqual(tensor_1,tensor_2);
+    }
+}
 //@+node:gcross.20110902105950.2690: *3* State
 TEST_CASE(State) {
     RNG random;
