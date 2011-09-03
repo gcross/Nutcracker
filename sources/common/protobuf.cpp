@@ -19,8 +19,18 @@
 
 //@+<< Includes >>
 //@+node:gcross.20110901221152.2673: ** << Includes >>
+#include <boost/make_shared.hpp>
+#include <boost/range/adaptor/indirected.hpp>
+#include <boost/shared_ptr.hpp>
+#include <iterator>
+
+#include "io.hpp"
 #include "protobuf.hpp"
 #include "states.hpp"
+
+using boost::adaptors::indirected;
+using boost::make_shared;
+using boost::shared_ptr;
 //@-<< Includes >>
 
 //@+<< Usings >>
@@ -31,6 +41,38 @@ using boost::optional;
 
 //@+others
 //@+node:gcross.20110901221152.2675: ** I/O Operators
+//@+node:gcross.20110902105950.2704: *3* Operator
+void operator<<(Nutcracker::Protobuf::Operator& buffer, Nutcracker::Operator const& op) {
+    using namespace Nutcracker;
+    vector<shared_ptr<OperatorSite const> > unique_operator_sites;
+    vector<unsigned int> sequence;
+    deconstructOperatorTo(op,unique_operator_sites,sequence);
+    buffer.clear_sites();
+    buffer.mutable_sites()->Reserve(unique_operator_sites.size());
+    BOOST_FOREACH(OperatorSite const& operator_site, unique_operator_sites | indirected) {
+        (*buffer.add_sites()) << operator_site;
+    }
+    buffer.clear_sequence();
+    buffer.mutable_sequence()->Reserve(sequence.size());
+    BOOST_FOREACH(unsigned int const id, sequence) {
+        buffer.add_sequence(id);
+    }
+}
+
+void operator>>(Nutcracker::Protobuf::Operator const& buffer, Nutcracker::Operator& op) {
+    using namespace Nutcracker;
+    vector<shared_ptr<OperatorSite const> > unique_operator_sites;
+    vector<unsigned int> sequence;
+    unique_operator_sites.reserve(buffer.sites_size());
+    BOOST_FOREACH(Protobuf::OperatorSite const& operator_site, buffer.sites()) {
+        shared_ptr<OperatorSite> operator_site_ptr = make_shared<OperatorSite>();
+        operator_site >> *operator_site_ptr;
+        unique_operator_sites.emplace_back(operator_site_ptr);
+    }
+    sequence.reserve(buffer.sequence_size());
+    boost::copy(buffer.sequence(),std::back_inserter(sequence));
+    op = constructOperatorFrom(unique_operator_sites,sequence);
+}
 //@+node:gcross.20110902105950.2696: *3* OperatorSite
 void operator<<(Nutcracker::Protobuf::OperatorSite& buffer, Nutcracker::OperatorSite const& tensor) {
     using namespace Nutcracker;

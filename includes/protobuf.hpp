@@ -33,6 +33,9 @@
 //@+node:gcross.20110902105950.2692: *3* OperatorSite
 void operator<<(Nutcracker::Protobuf::OperatorSite& buffer, Nutcracker::OperatorSite const& tensor);
 void operator>>(Nutcracker::Protobuf::OperatorSite const& buffer, Nutcracker::OperatorSite& tensor);
+//@+node:gcross.20110902105950.2700: *3* Operator
+void operator<<(Nutcracker::Protobuf::Operator& buffer, Nutcracker::Operator const& op);
+void operator>>(Nutcracker::Protobuf::Operator const& buffer, Nutcracker::Operator& op);
 //@+node:gcross.20110901221152.2676: *3* State
 void operator<<(Nutcracker::Protobuf::State& buffer, Nutcracker::State const& state);
 void operator>>(Nutcracker::Protobuf::State const& buffer, Nutcracker::State& tensor);

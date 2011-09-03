@@ -31,4 +31,9 @@ message OperatorSite {
     repeated double matrix_data = 5 [packed=true];
     repeated uint32 index_data = 6 [packed=true];
 }
+
+message Operator {
+    repeated OperatorSite sites = 1;
+    repeated uint32 sequence = 2 [packed=true];
+}
 //@-leo

@@ -31,6 +31,40 @@
 TEST_SUITE(Protobuf) {
 
 //@+others
+//@+node:gcross.20110902105950.2706: *3* Operator
+TEST_SUITE(Operator) {
+
+//@+others
+//@+node:gcross.20110902105950.2709: *4* external_field
+TEST_CASE(external_field) {
+    BOOST_FOREACH(unsigned int const number_of_sites, irange(4u,21u)) {
+        Operator operator_1 = constructExternalFieldOperator(number_of_sites,Pauli::Z), operator_2;
+        Protobuf::Operator buffer;
+        buffer << operator_1;
+        buffer >> operator_2;
+        checkOperatorsEqual(operator_1,operator_2);
+        BOOST_FOREACH(unsigned int const index, irange(2u,number_of_sites-1)) {
+            ASSERT_EQ(operator_2[index],operator_2[1]);
+        }
+    }
+}
+//@+node:gcross.20110902105950.2708: *4* random
+TEST_CASE(random) {
+    RNG random;
+
+    REPEAT(100) {
+        Operator
+            operator_1 = random.randomOperator(),
+            operator_2 = random.randomOperator();
+        Protobuf::Operator buffer;
+        buffer << operator_1;
+        buffer >> operator_2;
+        checkOperatorsEqual(operator_1,operator_2);
+    }
+}
+//@-others
+
+}
 //@+node:gcross.20110902105950.2698: *3* OperatorSite
 TEST_CASE(OperatorSite) {
     RNG random;
