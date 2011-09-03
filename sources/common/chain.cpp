@@ -23,6 +23,7 @@
 #include <boost/bind.hpp>
 #include <boost/foreach.hpp>
 #include <boost/lambda/lambda.hpp>
+#include <boost/local/function.hpp>
 #include <boost/range/adaptor/reversed.hpp>
 #include <boost/range/adaptor/transformed.hpp>
 #include <boost/range/algorithm/reverse_copy.hpp>
@@ -360,32 +361,26 @@ void Chain::resetProjectorMatrix() {
             ,projectors | transformed(FetchOverlapSite(current_site_number))
         );
 }
-//@+node:gcross.20110824002720.2602: *3* solveForEigenvaluesAndEigenvectorsAndThenClearChain
-vector<Solution> Chain::solveForEigenvaluesAndEigenvectorsAndThenClearChain(unsigned int number_of_levels) {
-    vector<Solution> eigenvalues_and_eigenvectors;
-    REPEAT(number_of_levels-1) {
-        optimizeChain();
-        constructAndAddProjectorFromState();
-        eigenvalues_and_eigenvectors.push_back(Solution(getEnergy(),removeState()));
-        reset();
+//@+node:gcross.20110824002720.2600: *3* solveForEigenvalues
+struct solveForEigenvalues_postSolution {
+    Chain& chain;
+    vector<double>& solutions;
+    solveForEigenvalues_postSolution(Chain& chain, vector<double>& solutions)
+      : chain(chain)
+      , solutions(solutions)
+    {}
+    void operator()() {
+        solutions.push_back(chain.getEnergy());
     }
-    optimizeChain();
-    eigenvalues_and_eigenvectors.push_back(Solution(getEnergy(),removeState()));
-    clear();
-    return boost::move(eigenvalues_and_eigenvectors);
-}
-//@+node:gcross.20110824002720.2600: *3* solveForEigenvaluesAndThenClearChain
-vector<double> Chain::solveForEigenvaluesAndThenClearChain(unsigned int number_of_levels) {
+    static int const group_id;
+};
+int const solveForEigenvalues_postSolution::group_id = 123456789;
+
+vector<double> Chain::solveForEigenvalues(unsigned int number_of_levels) {
     vector<double> eigenvalues;
-    REPEAT(number_of_levels-1) {
-        optimizeChain();
-        constructAndAddProjectorFromState();
-        eigenvalues.push_back(getEnergy());
-        reset();
-    }
-    optimizeChain();
-    eigenvalues.push_back(getEnergy());
-    clear();
+    signalChainOptimized.connect(solveForEigenvalues_postSolution::group_id,solveForEigenvalues_postSolution(*this,eigenvalues));
+    solveForMultipleLevels(number_of_levels);
+    signalChainOptimized.disconnect(solveForEigenvalues_postSolution::group_id);
     return boost::move(eigenvalues);
 }
 //@+node:gcross.20110218083552.3113: *3* solveForMultipleLevels
@@ -394,9 +389,33 @@ void Chain::solveForMultipleLevels(unsigned int number_of_levels) {
     REPEAT(number_of_levels-1) {
         optimizeChain();
         constructAndAddProjectorFromState();
+        if(storeState) storeState(removeState());
         reset();
     }
     optimizeChain();
+}
+//@+node:gcross.20110824002720.2602: *3* solveForMultipleLevelsAndThenClearChain
+struct solveForMultipleLevelsAndThenClearChain_postSolution {
+    Chain& chain;
+    vector<Solution>& solutions;
+    solveForMultipleLevelsAndThenClearChain_postSolution(Chain& chain, vector<Solution>& solutions)
+      : chain(chain)
+      , solutions(solutions)
+    {}
+    void operator()(BOOST_RV_REF(State) state) {
+        solutions.push_back(Solution(chain.getEnergy(),state));
+    }
+};
+
+vector<Solution> Chain::solveForMultipleLevelsAndThenClearChain(unsigned int number_of_levels) {
+    assert(!storeState);
+    vector<Solution> solutions;
+    storeState = solveForMultipleLevelsAndThenClearChain_postSolution(*this,solutions);
+    solveForMultipleLevels(number_of_levels);
+    solutions.push_back(Solution(getEnergy(),removeState()));
+    clear();
+    storeState.clear();
+    return boost::move(solutions);
 }
 //@+node:gcross.20110208151104.1791: *3* sweepUntilConverged
 void Chain::sweepUntilConverged() {

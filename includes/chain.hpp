@@ -227,6 +227,7 @@ public:
     signal<void ()> signalSweepsConverged;
     signal<void ()> signalChainOptimized;
     signal<void ()> signalChainReset;
+    function<void (BOOST_RV_REF(State) state)> storeState;
 
     void clear();
     void reset();
@@ -249,9 +250,8 @@ public:
     void sweepUntilConverged();
     void optimizeChain();
     void solveForMultipleLevels(unsigned int number_of_levels);
-
-    vector<double> solveForEigenvaluesAndThenClearChain(unsigned int number_of_levels);
-    vector<Solution> solveForEigenvaluesAndEigenvectorsAndThenClearChain(unsigned int number_of_levels);
+    vector<Solution> solveForMultipleLevelsAndThenClearChain(unsigned int number_of_levels);
+    vector<double> solveForEigenvalues(unsigned int number_of_levels);
 
     State makeCopyOfState() const;
     State removeState();

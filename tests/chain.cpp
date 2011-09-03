@@ -539,8 +539,8 @@ TEST_SUITE(external_field) {
 //@-others
 
 }
-//@+node:gcross.20110824002720.2607: *3* solveForEigenvaluesAndThenClearChain
-TEST_CASE(solveForEigenvaluesAndThenClearChain) {
+//@+node:gcross.20110824002720.2607: *3* solveForEigenvalues
+TEST_CASE(solveForEigenvalues) {
     RNG random;
     BOOST_FOREACH(unsigned int const number_of_sites, irange(3u,6u)) {
         OperatorBuilder builder;
@@ -549,18 +549,16 @@ TEST_CASE(solveForEigenvaluesAndThenClearChain) {
             builder.addLocalExternalField(site_number,builder.lookupIdOf(squareMatrix(list_of(0)(0)(0)(1))));
         }
         Chain chain(builder.compile(),ChainOptions().setInitialBandwidthDimension(3));
-        REPEAT(10) {
-            vector<double> eigenvalues = chain.solveForEigenvaluesAndThenClearChain(4);
-            ASSERT_EQ_VAL(eigenvalues.size(),4u);
-            ASSERT_NEAR_ABS(eigenvalues[0],(double)0,1e-13);
-            BOOST_FOREACH(unsigned int const i, irange(1u,4u)) {
-                ASSERT_NEAR_ABS(eigenvalues[i],(double)1,1e-13);
-            }
+        vector<double> eigenvalues = chain.solveForEigenvalues(4);
+        ASSERT_EQ_VAL(eigenvalues.size(),4u);
+        ASSERT_NEAR_ABS(eigenvalues[0],(double)0,1e-13);
+        BOOST_FOREACH(unsigned int const i, irange(1u,4u)) {
+            ASSERT_NEAR_ABS(eigenvalues[i],(double)1,1e-13);
         }
     }
 }
-//@+node:gcross.20110824002720.2609: *3* solveForEigenvaluesAndEigenvectorsAndThenClearChain
-TEST_CASE(solveForEigenvaluesAndEigenvectorsAndThenClearChain) {
+//@+node:gcross.20110824002720.2609: *3* solveForMultipleLevelsAndThenClearChain
+TEST_CASE(solveForMultipleLevelsAndThenClearChain) {
     RNG random;
     BOOST_FOREACH(unsigned int const number_of_sites, irange(3u,6u)) {
         OperatorBuilder builder;
@@ -571,7 +569,7 @@ TEST_CASE(solveForEigenvaluesAndEigenvectorsAndThenClearChain) {
         Operator op = builder.compile();
         Chain chain(op,ChainOptions().setInitialBandwidthDimension(3));
         REPEAT(10) {
-            vector<Solution> solutions(static_cast<BOOST_RV_REF(vector<Solution>)>(chain.solveForEigenvaluesAndEigenvectorsAndThenClearChain(4)));
+            vector<Solution> solutions(static_cast<BOOST_RV_REF(vector<Solution>)>(chain.solveForMultipleLevelsAndThenClearChain(4)));
             ASSERT_EQ_VAL(solutions.size(),4u);
             BOOST_FOREACH(unsigned int const i, irange(0u,4u)) {
                 if(i == 0) {
@@ -579,10 +577,10 @@ TEST_CASE(solveForEigenvaluesAndEigenvectorsAndThenClearChain) {
                 } else {
                     ASSERT_NEAR_ABS(solutions[i].eigenvalue,(double)1,1e-13);
                 }
-                ASSERT_NEAR_ABS(computeExpectationValue(solutions[i].eigenvector,op),solutions[i].eigenvalue,1e-13);
-                ASSERT_NEAR_ABS(computeStateOverlap(solutions[i].eigenvector,solutions[i].eigenvector),c(1,0),1e-13);
+                ASSERT_NEAR_ABS(computeExpectationValue(solutions[i].eigenvector,op),solutions[i].eigenvalue,1e-12);
+                ASSERT_NEAR_ABS(computeStateOverlap(solutions[i].eigenvector,solutions[i].eigenvector),c(1,0),1e-12);
                 BOOST_FOREACH(unsigned int const j, irange(i+1,4u)) {
-                    ASSERT_NEAR_ABS(computeStateOverlap(solutions[i].eigenvector,solutions[j].eigenvector),c(0,0),1e-13);
+                    ASSERT_NEAR_ABS(computeStateOverlap(solutions[i].eigenvector,solutions[j].eigenvector),c(0,0),1e-12);
                 }
             }
         }
