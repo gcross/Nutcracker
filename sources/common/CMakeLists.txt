@@ -1,7 +1,10 @@
 #@+leo-ver=5-thin
 #@+node:gcross.20110125120748.2421: * @file CMakeLists.txt
 PROTOBUF_GENERATE_CPP(PROTO_SRCS PROTO_HDRS nutcracker.proto)
-set(PROTO_HDRS ${PROTO_HDRS} PARENT_SCOPE)
+get_filename_component(PROTO_INCLUDE ${PROTO_HDRS} PATH)
+set(PROTO_INCLUDE ${PROTO_INCLUDE} PARENT_SCOPE)
+
+include_directories (${PROTO_INCLUDE})
 
 add_library(Nutcracker
     boundaries
@@ -23,7 +26,6 @@ add_library(Nutcracker
     yaml
 
     ${PROTO_SRCS}
-    ${PROTO_HDRS}
 )
 target_link_libraries(Nutcracker
     ${Boost_LIBRARIES}

@@ -3,5 +3,5 @@
 add_subdirectory ("common")
 add_subdirectory ("programs")
 
-set(PROTO_HDRS ${PROTO_HDRS} PARENT_SCOPE)
+set(PROTO_INCLUDE ${PROTO_INCLUDE} PARENT_SCOPE)
 #@-leo
