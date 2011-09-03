@@ -90,6 +90,7 @@
 <v t="gcross.20110213233103.2811"><vh>@file projectors.cpp</vh></v>
 <v t="gcross.20110901221152.2684"><vh>@file protobuf.cpp</vh></v>
 <v t="gcross.20110827234144.2562"><vh>@file states.cpp</vh></v>
+<v t="gcross.20110902221314.2682"><vh>@file stress.cpp</vh></v>
 <v t="gcross.20110204201608.1725"><vh>@file tensors.cpp</vh></v>
 <v t="gcross.20110815001337.2493"><vh>@file utilities.cpp</vh></v>
 <v t="gcross.20110430221653.2171"><vh>@file yaml.cpp</vh></v>

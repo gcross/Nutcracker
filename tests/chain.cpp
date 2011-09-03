@@ -527,123 +527,14 @@ TEST_SUITE(external_field) {
     TEST_SUITE(physical_dimension_2) {
         TEST_CASE(1_site) { runTest(2,1,list_of(0)(1)); }
         TEST_CASE(2_sites) { runTest(2,2,list_of(0)(1)(1)(2)); }
-        TEST_CASE(4_sites) { runTest(2,4,list_of(0)(1)(1)(1)(1)(2)(2)(2)(2)(2)(2)(3)(3)(3)(3)(4)); }
+        TEST_CASE(4_sites) { runTest(2,4,list_of(0)(1)(1)(1)); }
     }
     TEST_SUITE(physical_dimension_3) {
         TEST_CASE(1_site) { runTest(3,1,list_of(0)(1)(2)); }
-        TEST_CASE(2_sites) { runTest(3,2,list_of(0)(1)(1)(2)(2)(2)(3)(3)(4)); }
-        TEST_CASE(3_sites) { runTest(3,3,list_of(0)(1)(1)(1)(2)(2)(2)(2)(2)(2)(3)(3)(3)); }
+        TEST_CASE(2_sites) { runTest(3,2,list_of(0)(1)(1)(2)(2)); }
+        TEST_CASE(3_sites) { runTest(3,3,list_of(0)(1)(1)(1)(2)); }
     }
 
-}
-//@+node:gcross.20110219101843.1943: *4* transverse Ising model
-TEST_SUITE(transverse_Ising_model) {
-
-    void runTest(
-          unsigned int const number_of_sites
-        , double coupling_strength
-        , OptimizerMode const& optimizer_mode
-        , vector<double> const& correct_energies
-        , double sanity_check_threshold = Chain::defaults.sanity_check_threshold
-    ) {
-        Chain chain(
-            constructTransverseIsingModelOperator(number_of_sites,coupling_strength),
-            ChainOptions()
-                .setOptimizerMode(optimizer_mode)
-                .setInitialBandwidthDimension(2u)
-                .setSiteConvergenceThreshold(1e-10)
-                .setSweepConvergenceThreshold(1e-9)
-                .setChainConvergenceThreshold(1e-9)
-                .setSanityCheckThreshold(sanity_check_threshold)
-        );
-        checkEnergies(
-            chain,
-            correct_energies,
-            1e-7,
-            optimizer_mode == OptimizerMode::largest_magnitude
-        );
-    }
-
-    TEST_SUITE(least_value) {
-        OptimizerMode const& mode = OptimizerMode::least_value;
-        TEST_CASE( 6_sites_0p1) { runTest( 6,0.1,mode,list_of
-            (-6.012504691)
-            (-4.1912659256)
-            (-4.13264494449)
-            (-4.0501210912)
-        ); }
-        TEST_CASE(10_sites_0p1) { runTest(10,0.1,mode,list_of
-            (-10.022510957)
-            (-8.2137057257)
-            (-8.18819723717)
-            (-8.1485537719)
-        ); }
-        TEST_CASE(10_sites_0p5) { runTest(10,0.5,mode,list_of
-            (-10.569659557)
-            (-9.5030059614)
-            (-9.32268792732)
-            (-9.0714705801)
-        ); }
-        TEST_CASE(10_sites_2p0) { runTest(10,2.0,mode,list_of
-            (-19.531007915)
-            (-19.5280782081)
-            (-17.3076728844)
-            (-17.3047431766)
-        ); }
-    }
-    TEST_SUITE(greatest_value) {
-        OptimizerMode const& mode = OptimizerMode::greatest_value;
-        TEST_CASE( 6_sites_0p1) { runTest( 6,0.1,mode,list_of
-            (6.012504691)
-            (4.1912659256)
-            (4.13264494449)
-            (4.0501210912)
-        ); }
-        TEST_CASE(10_sites_0p1) { runTest(10,0.1,mode,list_of
-            (10.022510957)
-            (8.2137057257)
-            (8.18819723717)
-            (8.1485537719)
-        ); }
-        TEST_CASE(10_sites_0p5) { runTest(10,0.5,mode,list_of
-            (10.569659557)
-            (9.5030059614)
-            (9.32268792732)
-            (9.0714705801)
-        ); }
-        TEST_CASE(10_sites_2p0) { runTest(10,2.0,mode,list_of
-            (19.531007915)
-            (19.5280782081)
-            (17.3076728844)
-            (17.3047431766)
-        ); }
-    }
-    TEST_SUITE(largest_magnitude) {
-        OptimizerMode const& mode = OptimizerMode::largest_magnitude;
-        TEST_CASE( 6_sites_0p1) { runTest( 6,0.1,mode,list_of
-            (6.012504691)
-            (6.012504691)
-            (4.1912659256)
-        ); }
-        TEST_CASE(10_sites_0p1) { runTest(10,0.1,mode,list_of
-            (10.022510957)
-            (10.022510957)
-            (8.2137057257)
-        ,   1e-10
-        ); }
-        TEST_CASE(10_sites_0p5) { runTest(10,0.5,mode,list_of
-            (10.569659557)
-            (10.569659557)
-            (9.5030059614)
-        ,   1e-10
-        ); }
-        TEST_CASE(10_sites_2p0) { runTest(10,2.0,mode,list_of
-            (19.531007915)
-            (19.531007915)
-            (19.5280782081)
-        ,   1e-10
-        ); }
-    }
 }
 //@-others
 
@@ -655,14 +546,15 @@ TEST_CASE(solveForEigenvaluesAndThenClearChain) {
         OperatorBuilder builder;
         builder.addSites(number_of_sites,PhysicalDimension(2));
         BOOST_FOREACH(unsigned int site_number, irange(0u,number_of_sites)) {
-            builder.addLocalExternalField(site_number,builder.lookupIdOf(squareMatrix(list_of(0)(0)(0)(1 << site_number))));
+            builder.addLocalExternalField(site_number,builder.lookupIdOf(squareMatrix(list_of(0)(0)(0)(1))));
         }
         Chain chain(builder.compile(),ChainOptions().setInitialBandwidthDimension(3));
         REPEAT(10) {
-            vector<double> eigenvalues = chain.solveForEigenvaluesAndThenClearChain(3);
-            ASSERT_EQ_VAL(eigenvalues.size(),3u);
-            BOOST_FOREACH(unsigned int const i, irange(0u,3u)) {
-                ASSERT_NEAR_ABS(eigenvalues[i],(double)i,1e-13);
+            vector<double> eigenvalues = chain.solveForEigenvaluesAndThenClearChain(4);
+            ASSERT_EQ_VAL(eigenvalues.size(),4u);
+            ASSERT_NEAR_ABS(eigenvalues[0],(double)0,1e-13);
+            BOOST_FOREACH(unsigned int const i, irange(1u,4u)) {
+                ASSERT_NEAR_ABS(eigenvalues[i],(double)1,1e-13);
             }
         }
     }
@@ -674,18 +566,22 @@ TEST_CASE(solveForEigenvaluesAndEigenvectorsAndThenClearChain) {
         OperatorBuilder builder;
         builder.addSites(number_of_sites,PhysicalDimension(2));
         BOOST_FOREACH(unsigned int site_number, irange(0u,number_of_sites)) {
-            builder.addLocalExternalField(site_number,builder.lookupIdOf(squareMatrix(list_of(0)(0)(0)(1 << site_number))));
+            builder.addLocalExternalField(site_number,builder.lookupIdOf(squareMatrix(list_of(0)(0)(0)(1))));
         }
         Operator op = builder.compile();
         Chain chain(op,ChainOptions().setInitialBandwidthDimension(3));
         REPEAT(10) {
-            vector<Solution> solutions(static_cast<BOOST_RV_REF(vector<Solution>)>(chain.solveForEigenvaluesAndEigenvectorsAndThenClearChain(3)));
-            ASSERT_EQ_VAL(solutions.size(),3u);
-            BOOST_FOREACH(unsigned int const i, irange(0u,3u)) {
-                ASSERT_NEAR_ABS(solutions[i].eigenvalue,(double)i,1e-13);
-                ASSERT_NEAR_ABS(computeExpectationValue(solutions[i].eigenvector,op),(double)i,1e-13);
+            vector<Solution> solutions(static_cast<BOOST_RV_REF(vector<Solution>)>(chain.solveForEigenvaluesAndEigenvectorsAndThenClearChain(4)));
+            ASSERT_EQ_VAL(solutions.size(),4u);
+            BOOST_FOREACH(unsigned int const i, irange(0u,4u)) {
+                if(i == 0) {
+                    ASSERT_NEAR_ABS(solutions[i].eigenvalue,(double)0,1e-13);
+                } else {
+                    ASSERT_NEAR_ABS(solutions[i].eigenvalue,(double)1,1e-13);
+                }
+                ASSERT_NEAR_ABS(computeExpectationValue(solutions[i].eigenvector,op),solutions[i].eigenvalue,1e-13);
                 ASSERT_NEAR_ABS(computeStateOverlap(solutions[i].eigenvector,solutions[i].eigenvector),c(1,0),1e-13);
-                BOOST_FOREACH(unsigned int const j, irange(i+1,3u)) {
+                BOOST_FOREACH(unsigned int const j, irange(i+1,4u)) {
                     ASSERT_NEAR_ABS(computeStateOverlap(solutions[i].eigenvector,solutions[j].eigenvector),c(0,0),1e-13);
                 }
             }

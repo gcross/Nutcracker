@@ -27,4 +27,8 @@ set(test-SOURCES
 add_executable(test EXCLUDE_FROM_ALL ${test-SOURCES})
 target_link_libraries(test Nutcracker illuminate-main illuminate)
 set_property(TARGET test PROPERTY RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR})
+
+add_executable(stress EXCLUDE_FROM_ALL stress test_utils)
+target_link_libraries(stress Nutcracker illuminate-main illuminate)
+set_property(TARGET stress PROPERTY RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR})
 #@-leo

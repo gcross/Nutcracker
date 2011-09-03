@@ -227,7 +227,7 @@ TEST_CASE(overlaps) {
             ASSERT_NEAR_REL(
                  state_overlap
                 ,computeProjectorOverlap(projector,state_2,active_site_number)
-                ,1e-14
+                ,1e-12
             )
         }
     }
@@ -269,7 +269,7 @@ TEST_CASE(projector_matrix) {
             ASSERT_NEAR_REL(
                  abs(overlap)
                 ,computeOverlapWithProjectors(projector_matrix,state[i])
-                ,1e-14
+                ,1e-12
             );
             if(i < number_of_sites-1) {
                 left_boundary =
