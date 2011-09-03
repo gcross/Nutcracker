@@ -115,12 +115,7 @@ void operator>>(Nutcracker::Protobuf::OperatorSite const& buffer, Nutcracker::Op
 }
 //@+node:gcross.20110902105950.2689: *3* State
 void operator<<(Nutcracker::Protobuf::State& buffer, Nutcracker::State const& state) {
-    using namespace Nutcracker;
-    buffer.clear_sites();
-    static_cast<Protobuf::StateSite&>(*buffer.add_sites()) << static_cast<StateSite<Middle> const&>(state.getFirstSite());
-    BOOST_FOREACH(StateSite<Right> const& state_site, state.getRestSites()) {
-        (*buffer.add_sites()) << state_site;
-    }
+    setState(buffer,state.getFirstSite(),state.getRestSites());
 }
 
 void operator>>(Nutcracker::Protobuf::State const& buffer, Nutcracker::State& tensor) {

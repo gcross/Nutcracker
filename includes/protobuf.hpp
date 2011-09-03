@@ -118,6 +118,18 @@ template<typename side> void operator>>(Nutcracker::Protobuf::StateSite const& b
     }
     tensor = boost::move(state_site_tensor);
 }
+//@+node:gcross.20110903120540.2687: ** Functions
+//@+others
+//@+node:gcross.20110903120540.2688: *3* setState
+template<typename RestSites> void setState(Nutcracker::Protobuf::State& buffer,Nutcracker::StateSite<Nutcracker::Middle> const& first_site, RestSites const& rest_sites) {
+    using namespace Nutcracker;
+    buffer.clear_sites();
+    static_cast<Protobuf::StateSite&>(*buffer.add_sites()) << first_site;
+    BOOST_FOREACH(StateSite<Right> const& state_site, rest_sites) {
+        (*buffer.add_sites()) << state_site;
+    }
+}
+//@-others
 //@-others
 
 #endif
