@@ -44,11 +44,11 @@ TEST_SUITE(correct_formats_are_installed) {
 //@+others
 //@+node:gcross.20110525200457.2441: *4* input
 TEST_CASE(Input) {
-    ASSERT_TRUE(equal(InputFormat::listNames(),list_of("hdf")("yaml")));
+    ASSERT_TRUE(equal(InputFormat::listNames(),list_of("hdf")("protobuf")("yaml")));
 }
 //@+node:gcross.20110525200457.2443: *4* output
 TEST_CASE(Output) {
-    ASSERT_TRUE(equal(InputFormat::listNames(),list_of("hdf")("yaml")));
+    ASSERT_TRUE(equal(InputFormat::listNames(),list_of("hdf")("protobuf")("yaml")));
 }
 //@-others
 
@@ -64,6 +64,8 @@ TEST_CASE(h5) { ASSERT_EQ(InputFormat::lookupExtension("h5"),&InputFormat::looku
 TEST_CASE(hdf) { ASSERT_EQ(InputFormat::lookupExtension("hdf"),&InputFormat::lookupName("hdf")); }
 TEST_CASE(hdf5) { ASSERT_EQ(InputFormat::lookupExtension("hdf5"),&InputFormat::lookupName("hdf")); }
 
+TEST_CASE(prb) { ASSERT_EQ(InputFormat::lookupExtension("prb"),&InputFormat::lookupName("protobuf")); }
+
 TEST_CASE(yaml) { ASSERT_EQ(InputFormat::lookupExtension("yaml"),&InputFormat::lookupName("yaml")); }
 
 }
@@ -73,6 +75,8 @@ TEST_SUITE(Output) {
 TEST_CASE(h5) { ASSERT_EQ(OutputFormat::lookupExtension("h5"),&OutputFormat::lookupName("hdf")); }
 TEST_CASE(hdf) { ASSERT_EQ(OutputFormat::lookupExtension("hdf"),&OutputFormat::lookupName("hdf")); }
 TEST_CASE(hdf5) { ASSERT_EQ(OutputFormat::lookupExtension("hdf5"),&OutputFormat::lookupName("hdf")); }
+
+TEST_CASE(prb) { ASSERT_EQ(OutputFormat::lookupExtension("prb"),&OutputFormat::lookupName("protobuf")); }
 
 TEST_CASE(yaml) { ASSERT_EQ(OutputFormat::lookupExtension("yaml"),&OutputFormat::lookupName("yaml")); }
 

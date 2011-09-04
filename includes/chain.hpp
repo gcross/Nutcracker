@@ -26,7 +26,9 @@
 #include <boost/iterator/iterator_facade.hpp>
 #include <boost/lambda/lambda.hpp>
 #include <boost/move/move.hpp>
+#include <boost/range/adaptor/transformed.hpp>
 #include <boost/signal.hpp>
+#include <boost/utility/result_of.hpp>
 
 #include "boundaries.hpp"
 #include "core.hpp"
@@ -41,6 +43,7 @@ namespace Nutcracker {
 
 //@+<< Usings >>
 //@+node:gcross.20110130170743.1667: ** << Usings >>
+using boost::adaptors::transformed;
 using boost::function;
 using boost::irange;
 using boost::iterator_facade;
@@ -304,6 +307,7 @@ public:
     const_iterator end() const { return const_iterator(this,number_of_sites); }
 
     template<typename Outputter> void writeStateTo(Outputter& out) const;
+    template<typename Callback> void callWithStateSites(Callback& callback) const;
 };
 
 template<> inline ExpectationBoundary<Left>& Chain::expectationBoundary<Left>() { return left_expectation_boundary; }
@@ -354,6 +358,11 @@ template<typename side> void Chain::absorb(
 
     expectationBoundary<side>() = boost::move(new_expectation_boundary);
     overlapBoundaries<side>() = boost::move(new_overlap_boundaries);
+}
+//@+node:gcross.20110903120540.2690: *4* callWithStateSites
+template<typename Callback> void Chain::callWithStateSites(Callback& callback) const {
+    assert(current_site_number == 0);
+    callback(state_site,right_neighbors | reversed | transformed(boost::bind(&Neighbor<Right>::state_site,_1)));
 }
 //@+node:gcross.20110202175920.1705: *4* move
 template<typename side> void Chain::move() {

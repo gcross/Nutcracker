@@ -36,10 +36,12 @@ const char* output_format_type_name = "output";
 FormatInstaller const FormatInstaller::_;
 //@+node:gcross.20110525201928.2448: ** Format installation
 namespace HDF { void installFormat(); }
+namespace Protobuf { void installFormat(); }
 void installYAMLFormat();
 
 FormatInstaller::FormatInstaller() {
     HDF::installFormat();
+    Protobuf::installFormat();
     installYAMLFormat();
     InputFormat::default_format = &InputFormat::lookupName("yaml");
     OutputFormat::default_format = &OutputFormat::lookupName("yaml");

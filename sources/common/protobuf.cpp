@@ -23,27 +23,35 @@
 #include <boost/range/adaptor/indirected.hpp>
 #include <boost/shared_ptr.hpp>
 #include <iterator>
+#include <fstream>
 
 #include "io.hpp"
 #include "protobuf.hpp"
 #include "states.hpp"
-
-using boost::adaptors::indirected;
-using boost::make_shared;
-using boost::shared_ptr;
 //@-<< Includes >>
 
 //@+<< Usings >>
 //@+node:gcross.20110901221152.2674: ** << Usings >>
+using boost::adaptors::indirected;
 using boost::container::vector;
 using boost::optional;
+using boost::make_shared;
+using boost::shared_ptr;
+using boost::signals::trackable;
+
+using std::cin;
+using std::cout;
+using std::ifstream;
+using std::ofstream;
 //@-<< Usings >>
+
+namespace Nutcracker { namespace Protobuf {
 
 //@+others
 //@+node:gcross.20110901221152.2675: ** I/O Operators
+//@+others
 //@+node:gcross.20110902105950.2704: *3* Operator
-void operator<<(Nutcracker::Protobuf::Operator& buffer, Nutcracker::Operator const& op) {
-    using namespace Nutcracker;
+void operator<<(OperatorBuffer& buffer, Operator const& op) {
     vector<shared_ptr<OperatorSite const> > unique_operator_sites;
     vector<unsigned int> sequence;
     deconstructOperatorTo(op,unique_operator_sites,sequence);
@@ -59,12 +67,11 @@ void operator<<(Nutcracker::Protobuf::Operator& buffer, Nutcracker::Operator con
     }
 }
 
-void operator>>(Nutcracker::Protobuf::Operator const& buffer, Nutcracker::Operator& op) {
-    using namespace Nutcracker;
+void operator>>(OperatorBuffer const& buffer, Operator& op) {
     vector<shared_ptr<OperatorSite const> > unique_operator_sites;
     vector<unsigned int> sequence;
     unique_operator_sites.reserve(buffer.sites_size());
-    BOOST_FOREACH(Protobuf::OperatorSite const& operator_site, buffer.sites()) {
+    BOOST_FOREACH(OperatorSiteBuffer const& operator_site, buffer.sites()) {
         shared_ptr<OperatorSite> operator_site_ptr = make_shared<OperatorSite>();
         operator_site >> *operator_site_ptr;
         unique_operator_sites.emplace_back(operator_site_ptr);
@@ -74,7 +81,7 @@ void operator>>(Nutcracker::Protobuf::Operator const& buffer, Nutcracker::Operat
     op = constructOperatorFrom(unique_operator_sites,sequence);
 }
 //@+node:gcross.20110902105950.2696: *3* OperatorSite
-void operator<<(Nutcracker::Protobuf::OperatorSite& buffer, Nutcracker::OperatorSite const& tensor) {
+void operator<<(OperatorSiteBuffer& buffer, OperatorSite const& tensor) {
     using namespace Nutcracker;
     buffer.set_number_of_matrices(tensor.numberOfMatrices());
     buffer.set_physical_dimension(tensor.physicalDimension());
@@ -96,7 +103,7 @@ void operator<<(Nutcracker::Protobuf::OperatorSite& buffer, Nutcracker::Operator
     }
 }
 
-void operator>>(Nutcracker::Protobuf::OperatorSite const& buffer, Nutcracker::OperatorSite& tensor) {
+void operator>>(OperatorSiteBuffer const& buffer, OperatorSite& tensor) {
     using namespace Nutcracker;
     unsigned int const number_of_matrices = buffer.number_of_matrices();
     PhysicalDimension const physical_dimension(buffer.physical_dimension());
@@ -114,12 +121,24 @@ void operator>>(Nutcracker::Protobuf::OperatorSite const& buffer, Nutcracker::Op
     tensor = boost::move(operator_site_tensor);
 }
 //@+node:gcross.20110902105950.2689: *3* State
-void operator<<(Nutcracker::Protobuf::State& buffer, Nutcracker::State const& state) {
+struct Protobuf_State_Chain_Callback {
+    StateBuffer& buffer;
+    Protobuf_State_Chain_Callback(StateBuffer& buffer) : buffer(buffer) {}
+    template<typename RestSites> void operator()(StateSite<Middle> const& first_site, RestSites const& rest_sites) {
+        setState(buffer,first_site,rest_sites);
+    }
+};
+
+void operator<<(StateBuffer& buffer, Chain const& chain) {
+    Protobuf_State_Chain_Callback callback(buffer);
+    chain.callWithStateSites(callback);
+}
+
+void operator<<(StateBuffer& buffer, State const& state) {
     setState(buffer,state.getFirstSite(),state.getRestSites());
 }
 
-void operator>>(Nutcracker::Protobuf::State const& buffer, Nutcracker::State& tensor) {
-    using namespace Nutcracker;
+void operator>>(StateBuffer const& buffer, State& tensor) {
     StateSite<Middle> first_site;
     vector<StateSite<Right> > rest_sites(buffer.sites_size()-1);
     buffer.sites(0) >> first_site;
@@ -129,4 +148,81 @@ void operator>>(Nutcracker::Protobuf::State const& buffer, Nutcracker::State& te
     tensor = State(boost::move(first_site),boost::move(rest_sites));
 }
 //@-others
+//@+node:gcross.20110903120540.2684: ** Formats
+//@+others
+//@+node:gcross.20110903120540.2685: *3* Input
+static Operator readOperator(optional<string> const& maybe_filename, optional<string> const& maybe_location) {
+    assert(!maybe_location);
+    OperatorBuffer buffer;
+    if(maybe_filename) {
+        ifstream in(maybe_filename->c_str());
+        buffer.ParseFromIstream(&in);
+    } else {
+        buffer.ParseFromIstream(&cin);
+    }
+
+    Operator op;
+    buffer >> op;
+    return boost::move(op);
+}
+//@+node:gcross.20110903120540.2686: *3* Output
+struct Outputter : public Destructable, public trackable {
+    Chain const& chain;
+    optional<string> const maybe_filename;
+    SimulationResultsBuffer buffer;
+
+    Outputter(
+        optional<string> const& maybe_filename
+      , bool output_states
+      , bool overwrite
+      , Chain& chain
+    )
+      : chain(chain)
+      , maybe_filename(maybe_filename)
+    {
+        buffer.set_sanity_check_threshold(chain.sanity_check_threshold);
+        buffer.set_sweep_convergence_threshold(chain.sweep_convergence_threshold);
+        buffer.set_chain_convergence_threshold(chain.chain_convergence_threshold);
+        buffer.set_site_convergence_threshold(chain.site_convergence_threshold);
+
+        chain.signalChainOptimized.connect(boost::bind(&Outputter::postSolution,this));
+    }
+
+    virtual ~Outputter() {
+        if(maybe_filename) {
+            ofstream out(maybe_filename->c_str(),ofstream::binary);
+            buffer.SerializeToOstream(&out);
+            out.flush();
+        } else {
+            buffer.SerializeToOstream(&cout);
+        }
+    }
+
+    void postSolution() {
+        SolutionBuffer& solution = *buffer.add_solutions();
+        solution.set_eigenvalue(chain.getEnergy());
+        StateBuffer& state = *solution.mutable_eigenvector();
+        state << chain;
+    }
+};
+
+auto_ptr<Destructable const> connectToChain(
+    optional<string> const& maybe_filename
+  , optional<string> const& maybe_location
+  , bool output_states
+  , bool overwrite
+  , Chain& chain
+) {
+    assert(!maybe_location);
+    return auto_ptr<Destructable const>(new Outputter(maybe_filename,output_states,overwrite,chain));
+}
+//@-others
+
+void installFormat() {
+    static InputFormat protobuf_input_format("protobuf","Google Protocol Buffers format",true,false,list_of("prb"),readOperator);
+    static OutputFormat protobuf_output_format("protobuf","Google Protocol Buffers format",true,false,list_of("prb"),true,connectToChain);
+}
+//@-others
+
+} }
 //@-leo

@@ -19,11 +19,26 @@
 
 //@+<< Includes >>
 //@+node:gcross.20110901221152.2686: ** << Includes >>
+#include <boost/local/function.hpp>
 #include <illuminate.hpp>
+#include <fstream>
 
+#include "io.hpp"
 #include "protobuf.hpp"
 
 #include "test_utils.hpp"
+
+using Nutcracker::OutputFormat;
+
+using Nutcracker::Protobuf::OperatorSiteBuffer;
+using Nutcracker::Protobuf::OperatorBuffer;
+using Nutcracker::Protobuf::SimulationResultsBuffer;
+using Nutcracker::Protobuf::SolutionBuffer;
+using Nutcracker::Protobuf::StateSiteBuffer;
+using Nutcracker::Protobuf::StateBuffer;
+
+using std::auto_ptr;
+using std::ifstream;
 //@-<< Includes >>
 
 //@+others
@@ -31,6 +46,79 @@
 TEST_SUITE(Protobuf) {
 
 //@+others
+//@+node:gcross.20110903120540.2693: *3* Format
+TEST_SUITE(Format) {
+
+//@+others
+//@+node:gcross.20110903120540.2694: *4* Output
+TEST_CASE(Output) {
+    RNG random;
+
+    OutputFormat const& output_format = OutputFormat::lookupName("protobuf");
+
+    REPEAT(20) {
+        TemporaryFilepath temporary_filepath(random.randomTemporaryFilepath("-Protobuf-Format-Output.prb"));
+
+        bool output_states = random.randomBoolean();
+
+        vector<double> levels;
+        vector<State> states;
+
+        unsigned int const number_of_levels = random(1,3);
+
+        {
+
+            Chain chain(constructTransverseIsingModelOperator(random(2,5),random));
+
+            void BOOST_LOCAL_FUNCTION_PARAMS(
+                const bind& chain,
+                const bind& output_states,
+                bind& levels,
+                bind& states
+            ) {
+                levels.push_back(chain.getEnergy());
+                if(output_states) states.push_back(chain.makeCopyOfState());
+            } BOOST_LOCAL_FUNCTION_NAME(postResult)
+
+            chain.signalChainOptimized.connect(postResult);
+
+            auto_ptr<Destructable const> outputter =
+                output_format(
+                    temporary_filepath->native(),
+                    none,
+                    output_states,
+                    false,
+                    chain
+                )
+            ;
+
+            chain.solveForMultipleLevels(number_of_levels);
+
+        }
+
+        SimulationResultsBuffer buffer;
+        {
+            ifstream in(temporary_filepath->c_str(),ifstream::binary);
+            buffer.ParseFromIstream(&in);
+        }
+
+        ASSERT_EQ(buffer.solutions_size(),number_of_levels);
+
+        BOOST_FOREACH(unsigned int i, irange(0u,number_of_levels)) {
+            SolutionBuffer const& solution = buffer.solutions(i);
+            ASSERT_EQ(solution.eigenvalue(),levels[i]);
+            if(output_states) {
+                ASSERT_TRUE(solution.has_eigenvector());
+                State state;
+                solution.eigenvector() >> state;
+                checkStatesEqual(state,states[i]);
+            }
+        }
+    }
+}
+//@-others
+
+}
 //@+node:gcross.20110902105950.2706: *3* Operator
 TEST_SUITE(Operator) {
 
@@ -39,7 +127,7 @@ TEST_SUITE(Operator) {
 TEST_CASE(external_field) {
     BOOST_FOREACH(unsigned int const number_of_sites, irange(4u,21u)) {
         Operator operator_1 = constructExternalFieldOperator(number_of_sites,Pauli::Z), operator_2;
-        Protobuf::Operator buffer;
+        OperatorBuffer buffer;
         buffer << operator_1;
         buffer >> operator_2;
         checkOperatorsEqual(operator_1,operator_2);
@@ -56,7 +144,7 @@ TEST_CASE(random) {
         Operator
             operator_1 = random.randomOperator(),
             operator_2 = random.randomOperator();
-        Protobuf::Operator buffer;
+        OperatorBuffer buffer;
         buffer << operator_1;
         buffer >> operator_2;
         checkOperatorsEqual(operator_1,operator_2);
@@ -73,7 +161,7 @@ TEST_CASE(OperatorSite) {
         OperatorSite
             tensor_1 = random.randomOperatorSite(),
             tensor_2 = random.randomOperatorSite();
-        Protobuf::OperatorSite buffer;
+        OperatorSiteBuffer buffer;
         buffer << tensor_1;
         buffer >> tensor_2;
         checkOperatorSitesEqual(tensor_1,tensor_2);
@@ -87,7 +175,7 @@ TEST_CASE(State) {
         State
             state_1 = random.randomState(),
             state_2 = random.randomState();
-        Protobuf::State buffer;
+        StateBuffer buffer;
         buffer << state_1;
         buffer >> state_2;
         checkStatesEqual(state_1,state_2);
@@ -113,7 +201,7 @@ TEST_CASE(data) {
             ,fillWithGenerator(random.randomComplexDouble)
             );
 
-        Protobuf::StateSite buffer;
+        StateSiteBuffer buffer;
         buffer << state_site_tensor_1;
 
         StateSite<None> state_site_tensor_2 = StateSite<None>
@@ -129,7 +217,7 @@ TEST_CASE(data) {
 }
 //@+node:gcross.20110901221152.2693: *4* normalization
 TEST_CASE(normalization) {
-    Protobuf::StateSite
+    StateSiteBuffer
         left_buffer,
         middle_buffer,
         right_buffer,

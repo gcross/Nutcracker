@@ -25,71 +25,67 @@
 #include <boost/none.hpp>
 #include "nutcracker.pb.h"
 
+#include "chain.hpp"
 #include "tensors.hpp"
 //@-<< Includes >>
 
+namespace Nutcracker { namespace Protobuf {
+
 //@+others
 //@+node:gcross.20110901221152.2653: ** I/O Operators
+//@+others
 //@+node:gcross.20110902105950.2692: *3* OperatorSite
-void operator<<(Nutcracker::Protobuf::OperatorSite& buffer, Nutcracker::OperatorSite const& tensor);
-void operator>>(Nutcracker::Protobuf::OperatorSite const& buffer, Nutcracker::OperatorSite& tensor);
+void operator<<(OperatorSiteBuffer& buffer, OperatorSite const& tensor);
+void operator>>(OperatorSiteBuffer const& buffer, OperatorSite& tensor);
 //@+node:gcross.20110902105950.2700: *3* Operator
-void operator<<(Nutcracker::Protobuf::Operator& buffer, Nutcracker::Operator const& op);
-void operator>>(Nutcracker::Protobuf::Operator const& buffer, Nutcracker::Operator& op);
+void operator<<(OperatorBuffer& buffer, Operator const& op);
+void operator>>(OperatorBuffer const& buffer, Operator& op);
 //@+node:gcross.20110901221152.2676: *3* State
-void operator<<(Nutcracker::Protobuf::State& buffer, Nutcracker::State const& state);
-void operator>>(Nutcracker::Protobuf::State const& buffer, Nutcracker::State& tensor);
+void operator<<(StateBuffer& buffer, Chain const& chain);
+void operator<<(StateBuffer& buffer, State const& state);
+void operator>>(StateBuffer const& buffer, State& tensor);
 //@+node:gcross.20110901221152.2654: *3* StateSite
-namespace Nutcracker {
+template<typename Side> struct normalizationForProtobufOf {};
 
-    namespace Protobuf {
+template<> struct normalizationForProtobufOf<Left> {
+    static boost::optional<Normalization> const get() { return LEFT; }
+};
 
-        template<typename Side> struct normalizationForProtobufOf {};
+template<> struct normalizationForProtobufOf<Middle> {
+    static boost::optional<Normalization> const get() { return MIDDLE; }
+};
 
-        template<> struct normalizationForProtobufOf<Left> {
-            static boost::optional<Normalization> const get() { return LEFT; }
-        };
-        
-        template<> struct normalizationForProtobufOf<Middle> {
-            static boost::optional<Normalization> const get() { return MIDDLE; }
-        };
-        
-        template<> struct normalizationForProtobufOf<Right> {
-            static boost::optional<Normalization> const get() { return RIGHT; }
-        };
-        
-        template<> struct normalizationForProtobufOf<None> {
-            static boost::optional<Normalization> const get() { return none; }
-        };
+template<> struct normalizationForProtobufOf<Right> {
+    static boost::optional<Normalization> const get() { return RIGHT; }
+};
+
+template<> struct normalizationForProtobufOf<None> {
+    static boost::optional<Normalization> const get() { return none; }
+};
 
 
-        template<typename side> void storeNormalizationInto(StateSite& buffer) {
-            boost::optional<Normalization> const& normalization = normalizationForProtobufOf<side>::get();
-            if(normalization) {
-                buffer.set_normalization(*normalization);
-            } else {
-                buffer.clear_normalization();
-            }
-        }
-
-        inline boost::optional<std::string> const& loadNormalizationFrom(StateSite const& buffer) {
-            if(buffer.has_normalization()) {
-                switch(buffer.normalization()) {
-                    case MIDDLE: return normalizationOf<Middle>::value;
-                    case LEFT: return normalizationOf<Left>::value;
-                    case RIGHT: return normalizationOf<Right>::value;
-                }
-            }
-            return normalizationOf<None>::value;
-        }
-
+template<typename side> void storeNormalizationInto(StateSiteBuffer& buffer) {
+    boost::optional<Normalization> const& normalization = normalizationForProtobufOf<side>::get();
+    if(normalization) {
+        buffer.set_normalization(*normalization);
+    } else {
+        buffer.clear_normalization();
     }
-
 }
 
-template<typename side> void operator<<(Nutcracker::Protobuf::StateSite& buffer, Nutcracker::StateSite<side> const& tensor) {
-    using namespace Nutcracker;
-    Protobuf::storeNormalizationInto<side>(buffer);
+inline boost::optional<std::string> const& loadNormalizationFrom(StateSiteBuffer const& buffer) {
+    if(buffer.has_normalization()) {
+        switch(buffer.normalization()) {
+            case MIDDLE: return normalizationOf<Middle>::value;
+            case LEFT: return normalizationOf<Left>::value;
+            case RIGHT: return normalizationOf<Right>::value;
+        }
+    }
+    return normalizationOf<None>::value;
+}
+
+template<typename side> void operator<<(StateSiteBuffer& buffer, StateSite<side> const& tensor) {
+    storeNormalizationInto<side>(buffer);
     buffer.set_physical_dimension(tensor.physicalDimension());
     buffer.set_left_dimension(tensor.leftDimension());
     buffer.set_right_dimension(tensor.rightDimension());
@@ -102,9 +98,8 @@ template<typename side> void operator<<(Nutcracker::Protobuf::StateSite& buffer,
     }
 }
 
-template<typename side> void operator>>(Nutcracker::Protobuf::StateSite const& buffer, Nutcracker::StateSite<side>& tensor) {
-    using namespace Nutcracker;
-    assertNormalizationIs<side>(Protobuf::loadNormalizationFrom(buffer));
+template<typename side> void operator>>(StateSiteBuffer const& buffer, StateSite<side>& tensor) {
+    assertNormalizationIs<side>(loadNormalizationFrom(buffer));
     PhysicalDimension const physical_dimension(buffer.physical_dimension());
     LeftDimension     const left_dimension    (buffer.left_dimension());
     RightDimension    const right_dimension   (buffer.right_dimension());
@@ -118,19 +113,21 @@ template<typename side> void operator>>(Nutcracker::Protobuf::StateSite const& b
     }
     tensor = boost::move(state_site_tensor);
 }
+//@-others
 //@+node:gcross.20110903120540.2687: ** Functions
 //@+others
 //@+node:gcross.20110903120540.2688: *3* setState
-template<typename RestSites> void setState(Nutcracker::Protobuf::State& buffer,Nutcracker::StateSite<Nutcracker::Middle> const& first_site, RestSites const& rest_sites) {
-    using namespace Nutcracker;
+template<typename RestSites> void setState(StateBuffer& buffer,StateSite<Nutcracker::Middle> const& first_site, RestSites const& rest_sites) {
     buffer.clear_sites();
-    static_cast<Protobuf::StateSite&>(*buffer.add_sites()) << first_site;
+    static_cast<StateSiteBuffer&>(*buffer.add_sites()) << first_site;
     BOOST_FOREACH(StateSite<Right> const& state_site, rest_sites) {
         (*buffer.add_sites()) << state_site;
     }
 }
 //@-others
 //@-others
+
+} }
 
 #endif
 //@-leo
