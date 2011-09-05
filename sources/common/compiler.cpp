@@ -55,32 +55,6 @@ using std::make_pair;
 //@+others
 //@+node:gcross.20110805222031.2355: ** Classes
 //@+node:gcross.20110805222031.2356: *3* OperatorBuilder
-//@+node:gcross.20110822214054.2515: *4* add(X)ExternalField
-OperatorBuilder& OperatorBuilder::addLocalExternalField(unsigned int site_number, unsigned int field_matrix_id, complex<double> scale_factor) {
-    return connect(site_number,getStartSignal(),getEndSignal(),field_matrix_id,scale_factor);
-}
-
-OperatorBuilder& OperatorBuilder::addGlobalExternalField(unsigned int field_matrix_id, complex<double> scale_factor) {
-    BOOST_FOREACH(unsigned int const site_number, irange(0u,numberOfSites())) {
-        addLocalExternalField(site_number,field_matrix_id,scale_factor);
-    }
-    return *this;
-}
-//@+node:gcross.20110822214054.2520: *4* add(X)NeighborCouplingField
-OperatorBuilder& OperatorBuilder::addLocalNeighborCouplingField(unsigned int left_site_number, unsigned int left_field_matrix_id, unsigned int right_field_matrix_id, complex<double> scale_factor) {
-    unsigned int const signal = allocateSignal();
-    connect(left_site_number,getStartSignal(),signal,left_field_matrix_id,scale_factor);
-    return connect(left_site_number+1,signal,getEndSignal(),right_field_matrix_id);
-}
-
-OperatorBuilder& OperatorBuilder::addGlobalNeighborCouplingField(unsigned int left_field_matrix_id, unsigned int right_field_matrix_id, complex<double> scale_factor) {
-    unsigned int const signal = allocateSignal();
-    BOOST_FOREACH(unsigned int const site_number, irange(0u,numberOfSites())) {
-        connect(site_number,getStartSignal(),signal,left_field_matrix_id,scale_factor);
-        connect(site_number,signal,getEndSignal(),right_field_matrix_id);
-    }
-    return *this;
-}
 //@+node:gcross.20110828205143.2631: *4* compile
 Operator OperatorBuilder::compile(bool optimize, bool add_start_and_end_loops) {
     OperatorSpecification source = generateSpecification(add_start_and_end_loops);
@@ -99,29 +73,6 @@ OperatorSpecification OperatorBuilder::generateSpecification(bool add_start_and_
     return boost::move(specification);
 }
 //@+node:gcross.20110828205143.2628: *3* StateBuilder
-//@+node:gcross.20110828205143.2639: *4* addWState
-StateBuilder& StateBuilder::addWState(unsigned int common_observation,unsigned int special_observation,complex<double> amplitude) {
-    complex<double> coefficient = amplitude/c(numberOfSites(),0);
-    if(numberOfSites() == 1u) {
-        connect(0u,getStartSignal(),getEndSignal(),lookupIdOfObservation(special_observation,sites[0u]),coefficient);
-        return *this;;
-    }
-    unsigned int const
-          signal_1 = allocateSignal()
-        , signal_2 = allocateSignal()
-        , last_site_number = numberOfSites()-1
-        ;
-    connect(0u,getStartSignal(),signal_1,lookupIdOfObservation(common_observation,sites[0u]));
-    connect(0u,getStartSignal(),signal_2,lookupIdOfObservation(special_observation,sites[0u]),coefficient);
-    connect(last_site_number,signal_1,getEndSignal(),lookupIdOfObservation(special_observation,sites[last_site_number]),coefficient);
-    connect(last_site_number,signal_2,getEndSignal(),lookupIdOfObservation(common_observation,sites[last_site_number]));
-    BOOST_FOREACH(unsigned int const site_number, irange(1u,last_site_number)) {
-        connect(site_number,signal_1,signal_1,lookupIdOfObservation(common_observation,sites[site_number]));
-        connect(site_number,signal_1,signal_2,lookupIdOfObservation(special_observation,sites[site_number]),coefficient);
-        connect(site_number,signal_2,signal_2,lookupIdOfObservation(common_observation,sites[site_number]));
-    }
-    return *this;
-}
 //@+node:gcross.20110828205143.2634: *4* compile
 State StateBuilder::compile(bool optimize) {
     StateSpecification source = generateSpecification();

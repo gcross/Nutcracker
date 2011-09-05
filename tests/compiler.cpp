@@ -298,92 +298,18 @@ TEST_CASE(null) {
 TEST_SUITE(OperatorBuilder) {
 
 //@+others
-//@+node:gcross.20110822214054.2517: *4* addGlobalExternalField
-TEST_CASE(addGlobalExternalField) {
-    BOOST_FOREACH(unsigned int const number_of_sites, irange(1u,5u)) {
-        checkOperatorsEqual(
-            OperatorBuilder()
-                .addSites(number_of_sites,PhysicalDimension(2u))
-                .addGlobalExternalField(OperatorBuilder::getZMatrixId())
-                .compile()
-            ,
-            constructExternalFieldOperator(number_of_sites,Pauli::Z)
-        );
-    }
-}
-//@+node:gcross.20110822214054.2521: *4* addGlobalNeighborCouplingField
-TEST_CASE(addGlobalNeighborCouplingField) {
-    RNG random;
-    BOOST_FOREACH(unsigned int const number_of_sites, irange(2u,6u)) {
-        Operator op =
-            OperatorBuilder()
-                .addSites(number_of_sites,PhysicalDimension(2u))
-                .addGlobalExternalField(OperatorBuilder::getZMatrixId())
-                .addGlobalNeighborCouplingField(OperatorBuilder::getXMatrixId(),OperatorBuilder::getXMatrixId(),0.5)
-                .compile();
-        ASSERT_EQ_VAL(op[0]->numberOfMatrices(),3u);
-        BOOST_FOREACH(unsigned int const site_number,irange(1u,number_of_sites-1)) {
-            ASSERT_EQ_VAL(op[site_number]->numberOfMatrices(),5u);
-        }
-        ASSERT_EQ_VAL(op[number_of_sites-1]->numberOfMatrices(),3u);
-        checkOperatorsEquivalent(
-            op,
-            constructTransverseIsingModelOperator(number_of_sites,0.5),
-            random
-        );
-    }
-}
-//@+node:gcross.20110822214054.2519: *4* addLocalExternalField
-TEST_CASE(addLocalExternalField) {
-    BOOST_FOREACH(unsigned int const number_of_sites, irange(1u,5u)) {
-        OperatorBuilder builder;
-        builder.addSites(number_of_sites,PhysicalDimension(2u));
-        BOOST_FOREACH(unsigned int const site_number, irange(0u,number_of_sites)) {
-            builder.addLocalExternalField(site_number,builder.getZMatrixId());
-        }
-        checkOperatorsEqual(
-            builder.compile(),
-            constructExternalFieldOperator(number_of_sites,Pauli::Z)
-        );
-    }
-}
-//@+node:gcross.20110822214054.2523: *4* addLocalNeighborCouplingField
-TEST_CASE(addLocalNeighborCouplingField) {
-    RNG random;
-    BOOST_FOREACH(unsigned int const number_of_sites, irange(2u,6u)) {
-        OperatorBuilder builder;
-        builder.addSites(number_of_sites,PhysicalDimension(2u));
-        BOOST_FOREACH(unsigned int const site_number, irange(0u,number_of_sites)) {
-            builder.addLocalExternalField(site_number,OperatorBuilder::getZMatrixId());
-            if(site_number+1 < number_of_sites) {
-                builder.addLocalNeighborCouplingField(site_number,builder.getXMatrixId(),builder.getXMatrixId(),0.5);
-            }
-        }
-        Operator op = builder.compile();
-        ASSERT_EQ_VAL(op[0]->numberOfMatrices(),3u);
-        BOOST_FOREACH(unsigned int const site_number,irange(1u,number_of_sites-1)) {
-            ASSERT_EQ_VAL(op[site_number]->numberOfMatrices(),5u);
-        }
-        ASSERT_EQ_VAL(op[number_of_sites-1]->numberOfMatrices(),3u);
-        checkOperatorsEquivalent(
-            op,
-            constructTransverseIsingModelOperator(number_of_sites,0.5),
-            random
-        );
-    }
-}
-//@+node:gcross.20110826085250.2532: *4* addTerm
-TEST_CASE(addTerm) {
+//@+node:gcross.20110826085250.2532: *4* addProductTerm
+TEST_CASE(addProductTerm) {
     RNG random;
     BOOST_FOREACH(unsigned int const number_of_sites, irange(2u,6u)) {
         OperatorBuilder builder;
         builder.addSites(number_of_sites,PhysicalDimension(2u));
         BOOST_FOREACH(unsigned int const site_number,irange(0u,number_of_sites)) {
-            vector<unsigned int> components;
-            REPEAT(site_number) { components.push_back(builder.getIMatrixId()); }
-            components.push_back(builder.getZMatrixId());
-            REPEAT(number_of_sites-site_number-1) { components.push_back(builder.getIMatrixId()); }
-            builder.addTerm(components);
+            vector<MatrixConstPtr> components;
+            REPEAT(site_number) { components.push_back(Pauli::I); }
+            components.push_back(Pauli::Z);
+            REPEAT(number_of_sites-site_number-1) { components.push_back(Pauli::I); }
+            builder.addProductTerm(components);
         }
         Operator op = builder.compile();
         ASSERT_EQ_VAL(op[0]->numberOfMatrices(),2u);
@@ -406,10 +332,10 @@ TEST_SUITE(generateSpecification) {
 TEST_CASE(single_connections) {
     OperatorBuilder builder;
     builder.addSite(2);
-    builder.connect(0u,0u,0u,builder.getIMatrixId());
-    builder.connect(0u,0u,1u,builder.getXMatrixId());
-    builder.connect(0u,0u,2u,builder.getYMatrixId());
-    builder.connect(0u,0u,3u,builder.getZMatrixId());
+    builder.connect(0u,0u,0u,Pauli::I);
+    builder.connect(0u,0u,1u,Pauli::X);
+    builder.connect(0u,0u,2u,Pauli::Y);
+    builder.connect(0u,0u,3u,Pauli::Z);
     TestingOperatorSpecification spec(builder.generateSpecification(false));
     SiteConnections correct_connections;
     correct_connections[make_pair(0u,0u)] = spec.getIMatrixId();
@@ -423,10 +349,10 @@ TEST_CASE(single_connections) {
 TEST_CASE(multiconnections) {
     OperatorBuilder builder;
     builder.addSite(2);
-    builder.connect(0u,0u,0u,builder.getIMatrixId());
-    builder.connect(0u,0u,0u,builder.getXMatrixId());
-    builder.connect(0u,0u,0u,builder.getYMatrixId());
-    builder.connect(0u,0u,0u,builder.getZMatrixId());
+    builder.connect(0u,0u,0u,Pauli::I);
+    builder.connect(0u,0u,0u,Pauli::X);
+    builder.connect(0u,0u,0u,Pauli::Y);
+    builder.connect(0u,0u,0u,Pauli::Z);
     TestingOperatorSpecification spec(builder.generateSpecification(false));
     SiteConnections correct_connections;
     MatrixConstPtr matrix = squareMatrix(list_of(c(2,0))(c(1,-1))(c(1,1))(c(0,0)));
@@ -450,6 +376,108 @@ TEST_CASE(standard_loops) {
 }
 //@-others
 
+}
+//@-others
+
+}
+//@+node:gcross.20110903210625.2708: *3* Operator terms
+TEST_SUITE(Operator_terms) {
+
+//@+others
+//@+node:gcross.20110822214054.2517: *4* GlobalExternalField
+TEST_CASE(GlobalExternalField) {
+    BOOST_FOREACH(unsigned int const number_of_sites, irange(1u,5u)) {
+        checkOperatorsEqual(
+            OperatorBuilder()
+                .addSites(number_of_sites,PhysicalDimension(2u))
+                .addTerm(GlobalExternalField(Pauli::Z))
+                .compile()
+            ,
+            constructExternalFieldOperator(number_of_sites,Pauli::Z)
+        );
+    }
+}
+//@+node:gcross.20110822214054.2521: *4* GlobalNeighborCouplingField
+TEST_CASE(GlobalNeighborCouplingField) {
+    RNG random;
+    BOOST_FOREACH(unsigned int const number_of_sites, irange(2u,6u)) {
+        Operator op =
+            OperatorBuilder()
+                .addSites(number_of_sites,PhysicalDimension(2u))
+                .addTerm(GlobalExternalField(Pauli::Z))
+                .addTerm(GlobalNeighborCouplingField(0.5*Pauli::X,Pauli::X))
+                .compile();
+        ASSERT_EQ_VAL(op[0]->numberOfMatrices(),3u);
+        BOOST_FOREACH(unsigned int const site_number,irange(1u,number_of_sites-1)) {
+            ASSERT_EQ_VAL(op[site_number]->numberOfMatrices(),5u);
+        }
+        ASSERT_EQ_VAL(op[number_of_sites-1]->numberOfMatrices(),3u);
+        checkOperatorsEquivalent(
+            op,
+            constructTransverseIsingModelOperator(number_of_sites,0.5),
+            random
+        );
+    }
+}
+//@+node:gcross.20110822214054.2519: *4* LocalExternalField
+TEST_CASE(LocalExternalField) {
+    BOOST_FOREACH(unsigned int const number_of_sites, irange(1u,5u)) {
+        OperatorBuilder builder;
+        builder.addSites(number_of_sites,PhysicalDimension(2u));
+        BOOST_FOREACH(unsigned int const site_number, irange(0u,number_of_sites)) {
+            builder += LocalExternalField(site_number,Pauli::Z);
+        }
+        checkOperatorsEqual(
+            builder.compile(),
+            constructExternalFieldOperator(number_of_sites,Pauli::Z)
+        );
+    }
+}
+//@+node:gcross.20110822214054.2523: *4* LocalNeighborCouplingField
+TEST_CASE(LocalNeighborCouplingField) {
+    RNG random;
+    BOOST_FOREACH(unsigned int const number_of_sites, irange(2u,6u)) {
+        OperatorBuilder builder;
+        builder.addSites(number_of_sites,PhysicalDimension(2u));
+        BOOST_FOREACH(unsigned int const site_number, irange(0u,number_of_sites)) {
+            builder += LocalExternalField(site_number,Pauli::Z);
+            if(site_number+1 < number_of_sites) {
+                builder += LocalNeighborCouplingField(site_number,0.5*Pauli::X,Pauli::X);
+            }
+        }
+        Operator op = builder.compile();
+        ASSERT_EQ_VAL(op[0]->numberOfMatrices(),3u);
+        BOOST_FOREACH(unsigned int const site_number,irange(1u,number_of_sites-1)) {
+            ASSERT_EQ_VAL(op[site_number]->numberOfMatrices(),5u);
+        }
+        ASSERT_EQ_VAL(op[number_of_sites-1]->numberOfMatrices(),3u);
+        checkOperatorsEquivalent(
+            op,
+            constructTransverseIsingModelOperator(number_of_sites,0.5),
+            random
+        );
+    }
+}
+//@+node:gcross.20110903210625.2711: *4* TransverseIsingField
+TEST_CASE(TransverseIsingField) {
+    RNG random;
+    BOOST_FOREACH(unsigned int const number_of_sites, irange(2u,6u)) {
+        Operator op =
+            OperatorBuilder()
+                .addSites(number_of_sites,PhysicalDimension(2u))
+                .addTerm(TransverseIsingField(Pauli::Z,0.5*Pauli::X,Pauli::X))
+                .compile();
+        ASSERT_EQ_VAL(op[0]->numberOfMatrices(),3u);
+        BOOST_FOREACH(unsigned int const site_number,irange(1u,number_of_sites-1)) {
+            ASSERT_EQ_VAL(op[site_number]->numberOfMatrices(),5u);
+        }
+        ASSERT_EQ_VAL(op[number_of_sites-1]->numberOfMatrices(),3u);
+        checkOperatorsEquivalent(
+            op,
+            constructTransverseIsingModelOperator(number_of_sites,0.5),
+            random
+        );
+    }
 }
 //@-others
 
@@ -1155,88 +1183,6 @@ TEST_CASE(transverse_ising) {
     }
 }
 //@-others
-}
-//@-others
-
-}
-//@+node:gcross.20110828205143.2640: *3* StateBuilder
-TEST_SUITE(StateBuilder) {
-
-//@+others
-//@+node:gcross.20110828205143.2641: *4* W_state
-TEST_CASE(W_state) {
-    RNG random;
-    
-    REPEAT(100) {
-        unsigned int number_of_sites = random(2,5);
-        vector<unsigned int> physical_dimensions(number_of_sites);
-        boost::transform(
-            random.randomUnsignedIntegerVector(number_of_sites),
-            physical_dimensions.begin(),
-            lambda::_1 + 1
-        );
-        vector<StateSite<None> > sites;
-        StateBuilder builder;
-        BOOST_FOREACH(unsigned int site_number, irange(0u,number_of_sites)) {
-            unsigned int const physical_dimension = physical_dimensions[0];
-            builder.addSite(physical_dimension);
-            VectorPtr v0 = make_shared<Vector>(physical_dimension,c(0,0));
-            (*v0)[0] = c(1,0);
-            VectorPtr v1 = make_shared<Vector>(physical_dimension,c(0,0));
-            (*v1)[1] = c(1,0);
-            if(site_number == 0u) {
-                sites.push_back(constructStateSite(
-                    PhysicalDimension(physical_dimension),
-                    LeftDimension(1),
-                    RightDimension(2),
-                    list_of(StateSiteLink(1,1,v0))
-                           (StateSiteLink(1,2,v1))
-                ));
-            } else if(site_number == number_of_sites-1) {
-                sites.push_back(constructStateSite(
-                    PhysicalDimension(physical_dimension),
-                    LeftDimension(2),
-                    RightDimension(1),
-                    list_of(StateSiteLink(2,1,v0))
-                           (StateSiteLink(1,1,v1))
-                ));
-            } else {
-                sites.push_back(constructStateSite(
-                    PhysicalDimension(physical_dimension),
-                    LeftDimension(2),
-                    RightDimension(2),
-                    list_of(StateSiteLink(1,1,v0))
-                           (StateSiteLink(1,2,v1))
-                           (StateSiteLink(2,2,v0))
-                ));
-            }
-        }
-        State state = builder.addWState().compile();
-        ASSERT_NEAR_ABS_VAL(computeStateOverlap(state,state),c(1,0),1e-13);
-        ASSERT_NEAR_ABS_VAL(computeStateOverlap(state,sites)/std::sqrt(computeStateOverlap(sites,sites)),c(1,0),1e-13);
-    }
-
-}
-//@+node:gcross.20110828205143.2642: *4* W_state_cancellation
-TEST_CASE(W_state_cancellation) {
-    RNG random;
-
-    REPEAT(100) {
-        unsigned int number_of_sites = random(2,5);
-        StateBuilder builder;
-        REPEAT(number_of_sites) {
-            builder.addSite(random(3,8));
-        }
-        builder.addWState();
-        State state_1 = builder.compile();
-        builder.addWState(0,2,c(+1,0));
-        builder.addWState(0,2,c(-1,0));
-        State state_2 = builder.compile();
-        ASSERT_NEAR_ABS_VAL(computeStateOverlap(state_1,state_1),c(1,0),1e-13);
-        ASSERT_NEAR_ABS_VAL(computeStateOverlap(state_1,state_2),c(1,0),1e-13);
-        ASSERT_NEAR_ABS_VAL(computeStateOverlap(state_2,state_1),c(1,0),1e-13);
-        ASSERT_NEAR_ABS_VAL(computeStateOverlap(state_2,state_2),c(1,0),1e-13);
-    }
 }
 //@-others
 

@@ -100,12 +100,11 @@ struct SiteNumberTooLarge : public std::logic_error {
 };
 //@+node:gcross.20110805222031.2389: *3* WrongDimensionForSite
 struct WrongDimensionForSite : public std::logic_error {
-    unsigned int site_number, site_dimension, matrix_id, matrix_dimension;
-    WrongDimensionForSite(unsigned int site_number, unsigned int site_dimension, unsigned int id, unsigned int dimension)
-      : std::logic_error((format("Attempted to add id %3% which has dimension %4% to site number %1% which has dimension %2%. (%4% != %2%)") % site_number % site_dimension % id % dimension).str())
+    unsigned int site_number, site_dimension, matrix_dimension;
+    WrongDimensionForSite(unsigned int site_number, unsigned int site_dimension, unsigned int dimension)
+      : std::logic_error((format("Attempted to add matrix which has dimension %3% to site number %1% which has dimension %2%. (%3% != %2%)") % site_number % site_dimension % dimension).str())
       , site_number(site_number)
       , site_dimension(site_dimension)
-      , matrix_id(matrix_id)
       , matrix_dimension(matrix_dimension)
     {}
 };
@@ -189,9 +188,12 @@ struct DataConstPtrComparisonPredicate : std::binary_function<DataConstPtr,DataC
     }
 };
 //@+node:gcross.20110826235932.2552: *5* [Type alises]
-protected:
+public:
 
 typedef DataTraits Traits;
+
+protected:
+
 typedef boost::container::map<DataConstPtr,unsigned int,DataConstPtrComparisonPredicate> DataIndex;
 typedef boost::container::vector<DataConstPtr> DataStore;
 //@+node:gcross.20110826235932.2553: *5* Constructors
@@ -306,6 +308,7 @@ struct MatrixDataTraits {
 
 //@+others
 //@+node:gcross.20110826235932.2602: *6* [Type aliases]
+typedef Matrix Data;
 typedef MatrixPtr DataPtr;
 typedef MatrixConstPtr DataConstPtr;
 //@+node:gcross.20110826235932.2605: *6* access
@@ -945,28 +948,32 @@ StateSpecification& operator=(BOOST_RV_REF(StateSpecification) other)
 };
 //@+node:gcross.20110828205143.2614: *3* Builder and specializations
 //@+node:gcross.20110826235932.2684: *4* Builder
-template<typename Specification, typename Facade> class Builder: public Specification::DataTable, public SignalTable {
+template<typename Specification, typename Facade> class Builder: public SignalTable {
 //@+others
 //@+node:gcross.20110826235932.2685: *5* [Move support]
 private:
 
 BOOST_COPYABLE_AND_MOVABLE(Builder)
 //@+node:gcross.20110826235932.2686: *5* [Type alises]
-protected:
-
-typedef boost::container::map<tuple<unsigned int,unsigned int,unsigned int>,complex<double> > UnmergedSiteConnections;
-
 public:
 
 typedef typename Specification::DataTable DataTable;
+typedef typename DataTable::Traits DataTraits;
+typedef typename DataTraits::Data Data;
+typedef typename DataTraits::DataPtr DataPtr;
+typedef typename DataTraits::DataConstPtr DataConstPtr;
+typedef typename Specification::SiteConstPtr SiteConstPtr;
+
+protected:
+
+typedef boost::container::map<std::pair<unsigned int,unsigned int>,boost::container::vector<DataConstPtr> > UnmergedSiteConnections;
 //@+node:gcross.20110826235932.2688: *5* Constructors
 public:
 
 Builder() {}
 
 Builder(BOOST_RV_REF(Builder) other)
-  : DataTable(static_cast<BOOST_RV_REF(DataTable)>(other))
-  , SignalTable(other)
+  : SignalTable(other)
   , connections(boost::move(other.connections))
 {}
 //@+node:gcross.20110826235932.2689: *5* Fields
@@ -979,6 +986,24 @@ vector<UnmergedSiteConnections> connections;
 public:
 
 //@+others
+//@+node:gcross.20110826235932.2700: *6* addProductTerm
+template<typename Components> Facade& addProductTerm(Components const& components) {
+    if(components.size() != numberOfSites()) throw WrongNumberOfSites(components.size(),numberOfSites());
+    unsigned int const signal = allocateSignal();
+    typename boost::range_iterator<Components const>::type component = components.begin();
+    connect(0u,getStartSignal(),signal,*component++);
+    BOOST_FOREACH(unsigned int const site_number, irange(1u,numberOfSites()-1)) {
+        connect(site_number,signal,signal,*component++);
+    }
+    connect(numberOfSites()-1,signal,getEndSignal(),*component++);
+    return static_cast<Facade&>(*this);
+}
+//@+node:gcross.20110903210625.2705: *6* addTerm
+template<typename Callback> Facade& addTerm(Callback const& callback)
+{
+    callback(static_cast<Facade&>(*this));
+    return static_cast<Facade&>(*this);
+}
 //@+node:gcross.20110826235932.2702: *6* addSite(s)
 Facade& addSite(unsigned int dimension) {
     sites.push_back(dimension);
@@ -990,36 +1015,18 @@ Facade& addSites(unsigned int number_of_sites, PhysicalDimension dimension) {
     REPEAT(number_of_sites) { addSite(*dimension); }
     return static_cast<Facade&>(*this);
 }
-//@+node:gcross.20110826235932.2700: *6* addTerm
-Facade& addTerm(vector<unsigned int> const& components) {
-    if(components.size() != numberOfSites()) throw WrongNumberOfSites(components.size(),numberOfSites());
-    unsigned int const signal = allocateSignal();
-    connect(0u,getStartSignal(),signal,components[0u]);
-    BOOST_FOREACH(unsigned int const site_number, irange(1u,numberOfSites()-1)) {
-        connect(site_number,signal,signal,components[site_number]);
-    }
-    connect(numberOfSites()-1,signal,getEndSignal(),components[numberOfSites()-1]);
-    return static_cast<Facade&>(*this);
-}
 //@+node:gcross.20110826235932.2698: *6* connect
 Facade& connect(
     unsigned int const site_number,
     unsigned int const left_signal,
     unsigned int const right_signal,
-    unsigned int const id,
-    complex<double> const scale_factor=c(1,0)
+    DataConstPtr data
 ) {
     if(site_number >= sites.size()) throw SiteNumberTooLarge(site_number,sites.size());
-    if(DataTable::getSizeOf(id) != sites[site_number])
-        throw WrongDimensionForSite(site_number,sites[site_number],id,DataTable::getSizeOf(id));
-    UnmergedSiteConnections& site_connections = connections[site_number];
-    UnmergedSiteConnections::key_type key(left_signal,right_signal,id);
-    UnmergedSiteConnections::iterator iter = site_connections.find(key);
-    if(iter != site_connections.end()) {
-        iter->second += scale_factor;
-    } else {
-        site_connections[key] = scale_factor;
-    }
+    DataTraits::assertCorrectlyFormed(data);
+    if(DataTraits::dimensionOf(data) != sites[site_number])
+        throw WrongDimensionForSite(site_number,sites[site_number],DataTraits::dimensionOf(data));
+    connections[site_number][std::make_pair(left_signal,right_signal)].push_back(data);
     return static_cast<Facade&>(*this);
 }
 //@+node:gcross.20110826235932.2704: *6* generateSpecification
@@ -1029,14 +1036,13 @@ Specification generateSpecification(bool add_start_and_end_loops=true) {
     Specification specification;
     specification.reserveSignalsBelow(next_free_signal);
     unsigned int site_number = 0u;
-    BOOST_FOREACH(UnmergedSiteConnections const& site_connections,connections) {
-        typedef unordered_map<pair<unsigned int,unsigned int>, vector<pair<unsigned int,complex<double> > > > IdsAndFactors;
-        IdsAndFactors ids_and_factors;
-        BOOST_FOREACH(UnmergedSiteConnections::const_reference p, site_connections) {
-            ids_and_factors[std::make_pair(p.first.get<0>(),p.first.get<1>())].push_back(std::make_pair(p.first.get<2>(),p.second));
-        }
-        BOOST_FOREACH(IdsAndFactors::const_reference p, ids_and_factors) {
-            specification.connect(site_number,p.first.first,p.first.second,specification.lookupIdFromTable(*this,DataTable::lookupIdOfWeightedSum(p.second)));
+    BOOST_FOREACH(UnmergedSiteConnections const& site_connections, connections) {
+        BOOST_FOREACH(typename UnmergedSiteConnections::const_reference p, site_connections) {
+            DataPtr total = DataTraits::createBlank(sites[site_number]);
+            BOOST_FOREACH(DataConstPtr const& data, p.second) {
+                *total += *data;
+            }
+            specification.connect(site_number,p.first.first,p.first.second,specification.lookupIdOf(total));
         }
         ++site_number;
     }
@@ -1048,12 +1054,12 @@ public:
 unsigned int numberOfSites() const { return sites.size(); }
 //@-others
 //@+node:gcross.20110826235932.2691: *5* Operators
+//@+node:gcross.20110903210625.2689: *6* =
 public:
 
 Facade& operator=(BOOST_COPY_ASSIGN_REF(Builder) other)
 {
     if (this != &other){
-        DataTable::operator=(other);
         SignalTable::operator=(other);
         connections = other.connections;
     }
@@ -1063,11 +1069,17 @@ Facade& operator=(BOOST_COPY_ASSIGN_REF(Builder) other)
 Facade& operator=(BOOST_RV_REF(Builder) other)
 {
     if (this != &other){
-        DataTable::operator=(static_cast<BOOST_RV_REF(DataTable)>(other));
         SignalTable::operator=(other);
         connections = boost::move(other.connections);
     }
     return static_cast<Facade&>(*this);
+}
+//@+node:gcross.20110903210625.2690: *6* +=
+public:
+
+template<typename Callback> Facade& operator+=(Callback const& callback)
+{
+    return addTerm(callback);
 }
 //@-others
 };
@@ -1107,14 +1119,6 @@ OperatorBuilder& operator=(BOOST_RV_REF(OperatorBuilder) other)
 {
     return Base::operator=(static_cast<BOOST_RV_REF(Base)>(other));
 }
-//@+node:gcross.20110822214054.2514: *5* Physics
-public:
-
-OperatorBuilder& addLocalExternalField(unsigned int site_number, unsigned int field_matrix_id, complex<double> scale_factor=c(1,0));
-OperatorBuilder& addGlobalExternalField(unsigned int field_matrix_id, complex<double> scale_factor=c(1,0));
-
-OperatorBuilder& addLocalNeighborCouplingField(unsigned int left_site_number, unsigned int left_field_matrix_id, unsigned int right_field_matrix_id, complex<double> scale_factor=c(1,0));
-OperatorBuilder& addGlobalNeighborCouplingField(unsigned int left_field_matrix_id, unsigned int right_field_matrix_id, complex<double> scale_factor=c(1,0));
 //@-others
 };
 //@+node:gcross.20110828205143.2621: *4* StateBuilder
@@ -1153,11 +1157,173 @@ StateBuilder& operator=(BOOST_RV_REF(StateBuilder) other)
 {
     return Base::operator=(static_cast<BOOST_RV_REF(Base)>(other));
 }
-//@+node:gcross.20110828205143.2625: *5* Physics
-public:
-
-StateBuilder& addWState(unsigned int common_observation=0,unsigned int special_observation=1,complex<double> amplitude=c(1,0));
 //@-others
+};
+//@+node:gcross.20110903210625.2691: *3* Terms
+//@+node:gcross.20110903210625.2702: *4* Base class
+template<typename BuilderType, typename Facade> struct Term {
+    typedef BuilderType Builder;
+
+    Term operator*(complex<double> const coefficient) const {
+        return Facade(static_cast<Facade&>(*this)) *= coefficient;
+    }
+    Facade& operator*=(complex<double> const coefficient) {
+        Facade& x = static_cast<Facade&>(*this);
+        x.multiplyBy(coefficient);
+        return x;
+    }
+};
+
+template<typename BuilderType, typename Facade> struct DataTerm : Term<BuilderType,Facade> {
+    typename BuilderType::DataConstPtr& data;
+
+    DataTerm(typename BuilderType::DataConstPtr& data) : data(data) {}
+
+    void multiplyBy(complex<double> const coefficient) {
+        data *= coefficient;
+    }    
+};
+//@+node:gcross.20110903210625.2712: *4* Generic classes
+//@+node:gcross.20110903210625.2713: *5* SumTerm
+template<typename Builder, typename Facade1, typename Facade2> struct SumTerm : Term<Builder,SumTerm<Builder,Facade1,Facade2> > {
+    Facade1 term1;
+    Facade2 term2;
+    SumTerm(Facade1 const& term1, Facade2 const& term2)
+      : term1(term1)
+      , term2(term2)
+    {}
+
+    void operator()(Builder& builder) const {
+        builder += term1;
+        builder += term2;
+    }
+
+    void multiplyBy(complex<double> const coefficient) {
+        term1 *= coefficient;
+    }
+};
+
+template<typename Builder, typename Facade1, typename Facade2> SumTerm<Builder,Facade1,Facade2> operator+(Facade1 const& facade1, Facade2 const& facade2) {
+    return SumTerm<Builder,Facade1,Facade2>(facade1,facade2);
+}
+//@+node:gcross.20110903210625.2692: *4* Operator
+//@+node:gcross.20110903210625.2693: *5* LocalExternalField
+struct LocalExternalField : DataTerm<OperatorBuilder,LocalExternalField> {
+    typedef DataTerm<OperatorBuilder,LocalExternalField> Base;
+
+    unsigned int site_number;
+    MatrixConstPtr field_matrix;
+
+    LocalExternalField(unsigned int site_number, MatrixConstPtr const& field_matrix)
+      : Base(this->field_matrix)
+      , site_number(site_number)
+      , field_matrix(field_matrix)
+    {}
+
+    void operator()(OperatorBuilder& builder) const {
+        builder.connect(site_number,builder.getStartSignal(),builder.getEndSignal(),field_matrix);
+    }
+};
+//@+node:gcross.20110903210625.2695: *5* GlobalExternalField
+struct GlobalExternalField : DataTerm<OperatorBuilder,GlobalExternalField> {
+    typedef DataTerm<OperatorBuilder,GlobalExternalField> Base;
+
+    MatrixConstPtr field_matrix;
+
+    GlobalExternalField(MatrixConstPtr const& field_matrix)
+      : Base(this->field_matrix)
+      , field_matrix(field_matrix)
+    {}
+
+    void operator()(OperatorBuilder& builder) const {
+        BOOST_FOREACH(unsigned int const site_number, irange(0u,builder.numberOfSites())) {
+            builder += LocalExternalField(site_number,field_matrix);
+        }
+    }
+};
+//@+node:gcross.20110903210625.2696: *5* LocalNeighborCouplingField
+struct LocalNeighborCouplingField : DataTerm<OperatorBuilder,LocalNeighborCouplingField> {
+    typedef DataTerm<OperatorBuilder,LocalNeighborCouplingField> Base;
+
+    unsigned int left_site_number;
+    MatrixConstPtr left_field_matrix, right_field_matrix;
+
+    LocalNeighborCouplingField(unsigned int left_site_number, MatrixConstPtr const& left_field_matrix, MatrixConstPtr const& right_field_matrix)
+      : Base(this->left_field_matrix)
+      , left_site_number(left_site_number)
+      , left_field_matrix(left_field_matrix)
+      , right_field_matrix(right_field_matrix)
+    {}
+
+    void operator()(OperatorBuilder& builder) const {
+        unsigned int const signal = builder.allocateSignal();
+        builder.connect(left_site_number,builder.getStartSignal(),signal,left_field_matrix);
+        builder.connect(left_site_number+1,signal,builder.getEndSignal(),right_field_matrix);
+    }
+};
+//@+node:gcross.20110903210625.2698: *5* GlobalNeighborCouplingField
+struct GlobalNeighborCouplingField : DataTerm<OperatorBuilder,GlobalNeighborCouplingField> {
+    typedef DataTerm<OperatorBuilder,GlobalNeighborCouplingField> Base;
+
+    MatrixConstPtr left_field_matrix, right_field_matrix;
+
+    GlobalNeighborCouplingField(MatrixConstPtr const& left_field_matrix, MatrixConstPtr const& right_field_matrix)
+      : Base(this->left_field_matrix)
+      , left_field_matrix(left_field_matrix)
+      , right_field_matrix(right_field_matrix)
+    {}
+
+    void operator()(OperatorBuilder& builder) const {
+        unsigned int const signal = builder.allocateSignal();
+        BOOST_FOREACH(unsigned int const site_number, irange(0u,builder.numberOfSites())) {
+            builder.connect(site_number,builder.getStartSignal(),signal,left_field_matrix);
+            builder.connect(site_number,signal,builder.getEndSignal(),right_field_matrix);
+        }
+    }
+};
+//@+node:gcross.20110903210625.2707: *5* TransverseIsingField
+struct TransverseIsingField : SumTerm<OperatorBuilder,GlobalExternalField,GlobalNeighborCouplingField> {
+    typedef SumTerm<OperatorBuilder,GlobalExternalField,GlobalNeighborCouplingField> Base;
+
+    TransverseIsingField(MatrixConstPtr const& external_field_matrix, MatrixConstPtr const& left_field_matrix, MatrixConstPtr const& right_field_matrix)
+      : Base(GlobalExternalField(external_field_matrix),GlobalNeighborCouplingField(left_field_matrix,right_field_matrix))
+    {}
+};
+//@+node:gcross.20110903210625.2699: *4* State
+//@+node:gcross.20110903210625.2701: *5* WStateTerm
+struct WStateTerm : DataTerm<StateBuilder,WStateTerm> {
+    typedef DataTerm<StateBuilder,WStateTerm> Base;
+
+    VectorConstPtr common_observation, special_observation;
+    bool normalized;
+
+    WStateTerm(VectorConstPtr const& common_observation, VectorConstPtr const& special_observation, bool normalized=true)
+      : Base(this->special_observation)
+      , common_observation(common_observation)
+      , special_observation(special_observation)
+    {}
+
+    void operator()(StateBuilder& builder) const {
+        if(builder.numberOfSites() == 1u) {
+            builder.connect(0u,builder.getStartSignal(),builder.getEndSignal(),special_observation);
+        } else {
+            VectorConstPtr normalized_special_observation = normalized ? (1.0/builder.numberOfSites()) * special_observation : special_observation;
+            unsigned int const
+                  signal_1 = builder.allocateSignal()
+                , signal_2 = builder.allocateSignal()
+                , last_site_number = builder.numberOfSites()-1
+                ;
+            builder.connect(0u,builder.getStartSignal(),signal_1,common_observation);
+            builder.connect(0u,builder.getStartSignal(),signal_2,special_observation);
+            builder.connect(last_site_number,signal_1,builder.getEndSignal(),special_observation);
+            builder.connect(last_site_number,signal_2,builder.getEndSignal(),common_observation);
+            BOOST_FOREACH(unsigned int const site_number, irange(1u,last_site_number)) {
+                builder.connect(site_number,signal_1,signal_1,common_observation);
+                builder.connect(site_number,signal_1,signal_2,special_observation);
+                builder.connect(site_number,signal_2,signal_2,common_observation);
+            }
+        }
+    }
 };
 //@-others
 

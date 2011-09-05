@@ -44,6 +44,7 @@
 #include <boost/range/irange.hpp>
 #include <boost/range/iterator_range.hpp>
 #include <boost/tuple/tuple.hpp>
+#include <boost/make_shared.hpp>
 #include <boost/move/move.hpp>
 #include <boost/none_t.hpp>
 #include <boost/numeric/ublas/matrix.hpp>
@@ -493,6 +494,30 @@ template<typename T> inline void moveArrayToFrom(T*& to, T*& from) {
 //@+node:gcross.20110815001337.2452: ** Values
 namespace Pauli {
     extern MatrixConstPtr const I, X, Y, Z;
+}
+//@+node:gcross.20110903210625.2704: ** Arithmetic Operators
+inline MatrixConstPtr operator+(MatrixConstPtr const& a, MatrixConstPtr const& b) {
+    return boost::make_shared<Matrix>(*a + *b);
+}
+
+inline MatrixConstPtr operator*(complex<double> c, MatrixConstPtr const& x) {
+    return boost::make_shared<Matrix>(c*(*x));
+}
+
+inline MatrixConstPtr operator*(MatrixConstPtr const& x, complex<double> c) {
+    return boost::make_shared<Matrix>(c*(*x));
+}
+
+inline VectorConstPtr operator+(VectorConstPtr const& a, VectorConstPtr const& b) {
+    return boost::make_shared<Vector>(*a + *b);
+}
+
+inline VectorConstPtr operator*(complex<double> c, VectorConstPtr const& x) {
+    return boost::make_shared<Vector>(c*(*x));
+}
+
+inline VectorConstPtr operator*(VectorConstPtr const& x, complex<double> c) {
+    return boost::make_shared<Vector>(c*(*x));
 }
 //@-others
 

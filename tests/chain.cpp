@@ -546,7 +546,7 @@ TEST_CASE(solveForEigenvalues) {
         OperatorBuilder builder;
         builder.addSites(number_of_sites,PhysicalDimension(2));
         BOOST_FOREACH(unsigned int site_number, irange(0u,number_of_sites)) {
-            builder.addLocalExternalField(site_number,builder.lookupIdOf(squareMatrix(list_of(0)(0)(0)(1))));
+            builder += LocalExternalField(site_number,squareMatrix(list_of(0)(0)(0)(1)));
         }
         Chain chain(builder.compile(),ChainOptions().setInitialBandwidthDimension(3));
         vector<double> eigenvalues = chain.solveForEigenvalues(4);
@@ -564,7 +564,7 @@ TEST_CASE(solveForMultipleLevelsAndThenClearChain) {
         OperatorBuilder builder;
         builder.addSites(number_of_sites,PhysicalDimension(2));
         BOOST_FOREACH(unsigned int site_number, irange(0u,number_of_sites)) {
-            builder.addLocalExternalField(site_number,builder.lookupIdOf(squareMatrix(list_of(0)(0)(0)(1))));
+            builder += LocalExternalField(site_number,squareMatrix(list_of(0)(0)(0)(1)));
         }
         Operator op = builder.compile();
         Chain chain(op,ChainOptions().setInitialBandwidthDimension(3));
