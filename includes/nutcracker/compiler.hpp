@@ -970,7 +970,15 @@ typedef boost::container::map<std::pair<unsigned int,unsigned int>,boost::contai
 //@+node:gcross.20110826235932.2688: *5* Constructors
 public:
 
-Builder() {}
+Builder(unsigned int number_of_sites, PhysicalDimension physical_dimension)
+  : sites(number_of_sites,*physical_dimension)
+  , connections(number_of_sites)
+{}
+
+template<typename Dimensions> Builder(Dimensions const& dimensions)
+  : sites(dimensions.begin(),dimensions.end())
+  , connections(sites.size())
+{}
 
 Builder(BOOST_RV_REF(Builder) other)
   : SignalTable(other)
@@ -979,7 +987,7 @@ Builder(BOOST_RV_REF(Builder) other)
 //@+node:gcross.20110826235932.2689: *5* Fields
 protected:
 
-vector<unsigned int> sites;
+vector<unsigned int> const sites;
 
 vector<UnmergedSiteConnections> connections;
 //@+node:gcross.20110826235932.2695: *5* Methods
@@ -1002,17 +1010,6 @@ template<typename Components> Facade& addProductTerm(Components const& component
 template<typename Callback> Facade& addTerm(Callback const& callback)
 {
     callback(static_cast<Facade&>(*this));
-    return static_cast<Facade&>(*this);
-}
-//@+node:gcross.20110826235932.2702: *6* addSite(s)
-Facade& addSite(unsigned int dimension) {
-    sites.push_back(dimension);
-    connections.emplace_back();
-    return static_cast<Facade&>(*this);
-}
-
-Facade& addSites(unsigned int number_of_sites, PhysicalDimension dimension) {
-    REPEAT(number_of_sites) { addSite(*dimension); }
     return static_cast<Facade&>(*this);
 }
 //@+node:gcross.20110826235932.2698: *6* connect
@@ -1102,7 +1099,13 @@ OperatorSpecification generateSpecification(bool add_start_and_end_loops=true);
 //@+node:gcross.20110817110920.2473: *5* Constructors
 public:
 
-OperatorBuilder() {}
+OperatorBuilder(unsigned int number_of_sites, PhysicalDimension physical_dimension)
+  : Base(number_of_sites,physical_dimension)
+{}
+
+template<typename Dimensions> OperatorBuilder(Dimensions const& dimensions)
+  : Base(dimensions)
+{}
 
 OperatorBuilder(BOOST_RV_REF(OperatorBuilder) other)
   : Base(static_cast<BOOST_RV_REF(Base)>(other))
@@ -1140,7 +1143,13 @@ StateSpecification generateSpecification();
 //@+node:gcross.20110828205143.2624: *5* Constructors
 public:
 
-StateBuilder() {}
+StateBuilder(unsigned int number_of_sites, PhysicalDimension physical_dimension)
+  : Base(number_of_sites,physical_dimension)
+{}
+
+template<typename Dimensions> StateBuilder(Dimensions const& dimensions)
+  : Base(dimensions)
+{}
 
 StateBuilder(BOOST_RV_REF(StateBuilder) other)
   : Base(static_cast<BOOST_RV_REF(Base)>(other))

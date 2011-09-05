@@ -302,8 +302,7 @@ TEST_SUITE(OperatorBuilder) {
 TEST_CASE(addProductTerm) {
     RNG random;
     BOOST_FOREACH(unsigned int const number_of_sites, irange(2u,6u)) {
-        OperatorBuilder builder;
-        builder.addSites(number_of_sites,PhysicalDimension(2u));
+        OperatorBuilder builder(number_of_sites,PhysicalDimension(2u));
         BOOST_FOREACH(unsigned int const site_number,irange(0u,number_of_sites)) {
             vector<MatrixConstPtr> components;
             REPEAT(site_number) { components.push_back(Pauli::I); }
@@ -330,8 +329,7 @@ TEST_SUITE(generateSpecification) {
 //@+others
 //@+node:gcross.20110821165641.2513: *5* single connections
 TEST_CASE(single_connections) {
-    OperatorBuilder builder;
-    builder.addSite(2);
+    OperatorBuilder builder(1,PhysicalDimension(2));
     builder.connect(0u,0u,0u,Pauli::I);
     builder.connect(0u,0u,1u,Pauli::X);
     builder.connect(0u,0u,2u,Pauli::Y);
@@ -347,8 +345,7 @@ TEST_CASE(single_connections) {
 }
 //@+node:gcross.20110821165641.2515: *5* multi-connections
 TEST_CASE(multiconnections) {
-    OperatorBuilder builder;
-    builder.addSite(2);
+    OperatorBuilder builder(1,PhysicalDimension(2));
     builder.connect(0u,0u,0u,Pauli::I);
     builder.connect(0u,0u,0u,Pauli::X);
     builder.connect(0u,0u,0u,Pauli::Y);
@@ -362,10 +359,7 @@ TEST_CASE(multiconnections) {
 }
 //@+node:gcross.20110821165641.2512: *5* standard loops
 TEST_CASE(standard_loops) {
-    OperatorBuilder builder;
-    REPEAT(5) {
-        builder.addSite(2);
-    }
+    OperatorBuilder builder(5,PhysicalDimension(2));
     TestingOperatorSpecification spec(builder.generateSpecification());
     SiteConnections correct_connections;
     correct_connections[make_pair(spec.getStartSignal(),spec.getStartSignal())] = spec.getIMatrixId();
@@ -388,8 +382,7 @@ TEST_SUITE(Operator_terms) {
 TEST_CASE(GlobalExternalField) {
     BOOST_FOREACH(unsigned int const number_of_sites, irange(1u,5u)) {
         checkOperatorsEqual(
-            OperatorBuilder()
-                .addSites(number_of_sites,PhysicalDimension(2u))
+            OperatorBuilder(number_of_sites,PhysicalDimension(2u))
                 .addTerm(GlobalExternalField(Pauli::Z))
                 .compile()
             ,
@@ -402,8 +395,7 @@ TEST_CASE(GlobalNeighborCouplingField) {
     RNG random;
     BOOST_FOREACH(unsigned int const number_of_sites, irange(2u,6u)) {
         Operator op =
-            OperatorBuilder()
-                .addSites(number_of_sites,PhysicalDimension(2u))
+            OperatorBuilder(number_of_sites,PhysicalDimension(2u))
                 .addTerm(GlobalExternalField(Pauli::Z))
                 .addTerm(GlobalNeighborCouplingField(0.5*Pauli::X,Pauli::X))
                 .compile();
@@ -422,8 +414,7 @@ TEST_CASE(GlobalNeighborCouplingField) {
 //@+node:gcross.20110822214054.2519: *4* LocalExternalField
 TEST_CASE(LocalExternalField) {
     BOOST_FOREACH(unsigned int const number_of_sites, irange(1u,5u)) {
-        OperatorBuilder builder;
-        builder.addSites(number_of_sites,PhysicalDimension(2u));
+        OperatorBuilder builder(number_of_sites,PhysicalDimension(2u));
         BOOST_FOREACH(unsigned int const site_number, irange(0u,number_of_sites)) {
             builder += LocalExternalField(site_number,Pauli::Z);
         }
@@ -437,8 +428,7 @@ TEST_CASE(LocalExternalField) {
 TEST_CASE(LocalNeighborCouplingField) {
     RNG random;
     BOOST_FOREACH(unsigned int const number_of_sites, irange(2u,6u)) {
-        OperatorBuilder builder;
-        builder.addSites(number_of_sites,PhysicalDimension(2u));
+        OperatorBuilder builder(number_of_sites,PhysicalDimension(2u));
         BOOST_FOREACH(unsigned int const site_number, irange(0u,number_of_sites)) {
             builder += LocalExternalField(site_number,Pauli::Z);
             if(site_number+1 < number_of_sites) {
@@ -463,8 +453,7 @@ TEST_CASE(TransverseIsingField) {
     RNG random;
     BOOST_FOREACH(unsigned int const number_of_sites, irange(2u,6u)) {
         Operator op =
-            OperatorBuilder()
-                .addSites(number_of_sites,PhysicalDimension(2u))
+            OperatorBuilder(number_of_sites,PhysicalDimension(2u))
                 .addTerm(TransverseIsingField(Pauli::Z,0.5*Pauli::X,Pauli::X))
                 .compile();
         ASSERT_EQ_VAL(op[0]->numberOfMatrices(),3u);

@@ -543,8 +543,7 @@ TEST_SUITE(external_field) {
 TEST_CASE(solveForEigenvalues) {
     RNG random;
     BOOST_FOREACH(unsigned int const number_of_sites, irange(3u,6u)) {
-        OperatorBuilder builder;
-        builder.addSites(number_of_sites,PhysicalDimension(2));
+        OperatorBuilder builder(number_of_sites,PhysicalDimension(2));
         BOOST_FOREACH(unsigned int site_number, irange(0u,number_of_sites)) {
             builder += LocalExternalField(site_number,squareMatrix(list_of(0)(0)(0)(1)));
         }
@@ -561,8 +560,7 @@ TEST_CASE(solveForEigenvalues) {
 TEST_CASE(solveForMultipleLevelsAndThenClearChain) {
     RNG random;
     BOOST_FOREACH(unsigned int const number_of_sites, irange(3u,6u)) {
-        OperatorBuilder builder;
-        builder.addSites(number_of_sites,PhysicalDimension(2));
+        OperatorBuilder builder(number_of_sites,PhysicalDimension(2));
         BOOST_FOREACH(unsigned int site_number, irange(0u,number_of_sites)) {
             builder += LocalExternalField(site_number,squareMatrix(list_of(0)(0)(0)(1)));
         }
