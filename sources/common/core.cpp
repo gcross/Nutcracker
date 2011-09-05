@@ -27,7 +27,7 @@
 
 //@+<< Includes >>
 //@+node:gcross.20110125120748.2118: ** << Includes >>
-#include "core.hpp"
+#include "nutcracker/core.hpp"
 //@-<< Includes >>
 
 namespace Nutcracker { namespace Core {

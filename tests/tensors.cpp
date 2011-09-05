@@ -27,10 +27,10 @@
 #include <illuminate.hpp>
 #include <sstream>
 
-#include "boundaries.hpp"
-#include "operators.hpp"
-#include "states.hpp"
-#include "utilities.hpp"
+#include "nutcracker/boundaries.hpp"
+#include "nutcracker/operators.hpp"
+#include "nutcracker/states.hpp"
+#include "nutcracker/utilities.hpp"
 
 #include "test_utils.hpp"
 

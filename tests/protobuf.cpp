@@ -23,8 +23,8 @@
 #include <illuminate.hpp>
 #include <fstream>
 
-#include "io.hpp"
-#include "protobuf.hpp"
+#include "nutcracker/io.hpp"
+#include "nutcracker/protobuf.hpp"
 
 #include "test_utils.hpp"
 

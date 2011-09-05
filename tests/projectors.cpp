@@ -24,7 +24,7 @@
 #include <complex>
 #include <illuminate.hpp>
 
-#include "projectors.hpp"
+#include "nutcracker/projectors.hpp"
 
 #include "test_utils.hpp"
 

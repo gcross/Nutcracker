@@ -25,9 +25,9 @@
 #include <iterator>
 #include <fstream>
 
-#include "io.hpp"
-#include "protobuf.hpp"
-#include "states.hpp"
+#include "nutcracker/io.hpp"
+#include "nutcracker/protobuf.hpp"
+#include "nutcracker/states.hpp"
 //@-<< Includes >>
 
 //@+<< Usings >>

@@ -23,9 +23,9 @@
 #include <complex>
 #include <illuminate.hpp>
 
-#include "operators.hpp"
-#include "optimizer.hpp"
-#include "states.hpp"
+#include "nutcracker/operators.hpp"
+#include "nutcracker/optimizer.hpp"
+#include "nutcracker/states.hpp"
 
 #include "test_utils.hpp"
 

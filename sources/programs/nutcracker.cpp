@@ -31,9 +31,9 @@
 #include <fstream>
 #include <numeric>
 
-#include "chain.hpp"
-#include "configuration.hpp"
-#include "io.hpp"
+#include "nutcracker/chain.hpp"
+#include "nutcracker/configuration.hpp"
+#include "nutcracker/io.hpp"
 
 namespace opts = boost::program_options;
 

@@ -26,8 +26,8 @@
 #include <boost/range/algorithm/fill.hpp>
 #include <boost/range/algorithm/transform.hpp>
 
-#include "core.hpp"
-#include "states.hpp"
+#include "nutcracker/core.hpp"
+#include "nutcracker/states.hpp"
 //@-<< Includes >>
 
 namespace Nutcracker {

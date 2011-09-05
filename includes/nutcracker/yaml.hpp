@@ -34,7 +34,7 @@
 #include <complex>
 #include <yaml-cpp/yaml.h>
 
-#include "operators.hpp"
+#include "nutcracker/operators.hpp"
 //@-<< Includes >>
 
 namespace Nutcracker {

@@ -33,9 +33,9 @@
 #include <boost/function.hpp>
 #include <map>
 
-#include "operators.hpp"
-#include "projectors.hpp"
-#include "states.hpp"
+#include "nutcracker/operators.hpp"
+#include "nutcracker/projectors.hpp"
+#include "nutcracker/states.hpp"
 //@-<< Includes >>
 
 namespace Nutcracker {

@@ -23,7 +23,7 @@
 #include <boost/range/algorithm/generate.hpp>
 #include <illuminate.hpp>
 
-#include "utilities.hpp"
+#include "nutcracker/utilities.hpp"
 
 #include "test_utils.hpp"
 

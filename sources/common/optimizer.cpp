@@ -34,10 +34,10 @@
 #include <boost/range/algorithm/copy.hpp>
 #include <cstring>
 
-#include "boundaries.hpp"
-#include "core.hpp"
-#include "optimizer.hpp"
-#include "projectors.hpp"
+#include "nutcracker/boundaries.hpp"
+#include "nutcracker/core.hpp"
+#include "nutcracker/optimizer.hpp"
+#include "nutcracker/projectors.hpp"
 //@-<< Includes >>
 
 //@+<< Usings >>

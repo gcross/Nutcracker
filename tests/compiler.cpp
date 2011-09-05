@@ -19,8 +19,8 @@
 
 //@+<< Includes >>
 //@+node:gcross.20110805222031.4667: ** << Includes >>
-#include "compiler.hpp"
-#include "utilities.hpp"
+#include "nutcracker/compiler.hpp"
+#include "nutcracker/utilities.hpp"
 
 #include "test_utils.hpp"
 

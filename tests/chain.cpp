@@ -36,10 +36,10 @@
 #include <sstream>
 #include <functional>
 
-#include "chain.hpp"
-#include "compiler.hpp"
-#include "operators.hpp"
-#include "utilities.hpp"
+#include "nutcracker/chain.hpp"
+#include "nutcracker/compiler.hpp"
+#include "nutcracker/operators.hpp"
+#include "nutcracker/utilities.hpp"
 
 #include "test_utils.hpp"
 

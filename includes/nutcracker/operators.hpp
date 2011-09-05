@@ -27,8 +27,8 @@
 #include <boost/range/algorithm/reverse_copy.hpp>
 #include <complex>
 
-#include "tensors.hpp"
-#include "utilities.hpp"
+#include "nutcracker/tensors.hpp"
+#include "nutcracker/utilities.hpp"
 //@-<< Includes >>
 
 namespace Nutcracker {

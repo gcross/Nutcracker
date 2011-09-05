@@ -24,8 +24,8 @@
 #include <illuminate.hpp>
 #include <iostream>
 
-#include "io.hpp"
-#include "yaml.hpp"
+#include "nutcracker/io.hpp"
+#include "nutcracker/yaml.hpp"
 
 #include "test_utils.hpp"
 

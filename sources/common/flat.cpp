@@ -27,7 +27,7 @@
 
 //@+<< Includes >>
 //@+node:gcross.20110510004855.2259: ** << Includes >>
-#include "flat.hpp"
+#include "nutcracker/flat.hpp"
 //@-<< Includes >>
 
 namespace Nutcracker {

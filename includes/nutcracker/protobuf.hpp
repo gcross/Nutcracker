@@ -25,8 +25,8 @@
 #include <boost/none.hpp>
 #include "nutcracker.pb.h"
 
-#include "chain.hpp"
-#include "tensors.hpp"
+#include "nutcracker/chain.hpp"
+#include "nutcracker/tensors.hpp"
 //@-<< Includes >>
 
 namespace Nutcracker { namespace Protobuf {

@@ -33,10 +33,10 @@
 #include <hdf++/temporary_memory_file.hpp>
 #include <illuminate.hpp>
 
-#include "chain.hpp"
-#include "hdf.hpp"
-#include "io.hpp"
-#include "tensors.hpp"
+#include "nutcracker/chain.hpp"
+#include "nutcracker/hdf.hpp"
+#include "nutcracker/io.hpp"
+#include "nutcracker/tensors.hpp"
 
 #include "test_utils.hpp"
 

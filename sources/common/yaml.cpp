@@ -35,9 +35,9 @@
 #include <iostream>
 #include <fstream>
 
-#include "chain.hpp"
-#include "io.hpp"
-#include "yaml.hpp"
+#include "nutcracker/chain.hpp"
+#include "nutcracker/io.hpp"
+#include "nutcracker/yaml.hpp"
 //@-<< Includes >>
 
 //@+<< Usings >>

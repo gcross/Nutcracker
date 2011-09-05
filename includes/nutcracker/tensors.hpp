@@ -41,7 +41,7 @@
 #include <ostream>
 #include <stdint.h>
 
-#include "utilities.hpp"
+#include "nutcracker/utilities.hpp"
 //@-<< Includes >>
 
 namespace Nutcracker {

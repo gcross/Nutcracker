@@ -21,7 +21,7 @@
 //@+node:gcross.20110511190907.3711: ** << Includes >>
 #include <boost/bind.hpp>
 
-#include "configuration.hpp"
+#include "nutcracker/configuration.hpp"
 //@-<< Includes >>
 
 namespace Nutcracker {

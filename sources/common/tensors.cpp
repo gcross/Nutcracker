@@ -24,8 +24,8 @@
 #include <map>
 #include <yaml-cpp/yaml.h>
 
-#include "tensors.hpp"
-#include "utilities.hpp"
+#include "nutcracker/tensors.hpp"
+#include "nutcracker/utilities.hpp"
 //@-<< Includes >>
 
 namespace Nutcracker {

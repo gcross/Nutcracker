@@ -27,7 +27,7 @@
 #include <stdint.h>
 #include <utility>
 
-#include "operators.hpp"
+#include "nutcracker/operators.hpp"
 //@-<< Includes >>
 
 namespace Nutcracker {

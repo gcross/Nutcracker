@@ -36,8 +36,8 @@
 #include <complex>
 #include <utility>
 
-#include "tensors.hpp"
-#include "utilities.hpp"
+#include "nutcracker/tensors.hpp"
+#include "nutcracker/utilities.hpp"
 //@-<< Includes >>
 
 namespace Nutcracker {

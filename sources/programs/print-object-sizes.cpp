@@ -21,7 +21,7 @@
 //@+node:gcross.20110511141322.2240: ** << Includes >>
 #include <iostream>
 
-#include "tensors.hpp"
+#include "nutcracker/tensors.hpp"
 
 using namespace Nutcracker;
 using namespace std;

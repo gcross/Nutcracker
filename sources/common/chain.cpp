@@ -34,11 +34,11 @@
 #include <numeric>
 #include <utility>
 
-#include "boundaries.hpp"
-#include "chain.hpp"
-#include "core.hpp"
-#include "optimizer.hpp"
-#include "utilities.hpp"
+#include "nutcracker/boundaries.hpp"
+#include "nutcracker/chain.hpp"
+#include "nutcracker/core.hpp"
+#include "nutcracker/optimizer.hpp"
+#include "nutcracker/utilities.hpp"
 //@-<< Includes >>
 
 namespace Nutcracker {

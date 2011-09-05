@@ -26,8 +26,8 @@
 #include <boost/random.hpp>
 #include <complex>
 
-#include "operators.hpp"
-#include "states.hpp"
+#include "nutcracker/operators.hpp"
+#include "nutcracker/states.hpp"
 
 using namespace Nutcracker;
 

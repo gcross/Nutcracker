@@ -29,10 +29,10 @@
 #include <boost/range/concepts.hpp>
 #include <boost/tuple/tuple.hpp>
 
-#include "boundaries.hpp"
-#include "core.hpp"
-#include "flat.hpp"
-#include "tensors.hpp"
+#include "nutcracker/boundaries.hpp"
+#include "nutcracker/core.hpp"
+#include "nutcracker/flat.hpp"
+#include "nutcracker/tensors.hpp"
 //@-<< Includes >>
 
 namespace Nutcracker {

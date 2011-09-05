@@ -30,7 +30,7 @@
 #include <complex>
 #include <illuminate.hpp>
 
-#include "flat.hpp"
+#include "nutcracker/flat.hpp"
 
 #include "test_utils.hpp"
 

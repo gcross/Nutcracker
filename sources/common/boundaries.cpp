@@ -27,8 +27,8 @@
 
 //@+<< Includes >>
 //@+node:gcross.20110214155808.1863: ** << Includes >>
-#include "boundaries.hpp"
-#include "core.hpp"
+#include "nutcracker/boundaries.hpp"
+#include "nutcracker/core.hpp"
 //@-<< Includes >>
 
 namespace Nutcracker {

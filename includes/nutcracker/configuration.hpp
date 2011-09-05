@@ -26,8 +26,8 @@
 #include <boost/program_options.hpp>
 #include <string>
 
-#include "chain.hpp"
-#include "io.hpp"
+#include "nutcracker/chain.hpp"
+#include "nutcracker/io.hpp"
 //@-<< Includes >>
 
 namespace Nutcracker {

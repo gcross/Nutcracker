@@ -37,8 +37,8 @@
 #include <boost/range/concepts.hpp>
 #include <boost/smart_ptr/scoped_array.hpp>
 
-#include "core.hpp"
-#include "tensors.hpp"
+#include "nutcracker/core.hpp"
+#include "nutcracker/tensors.hpp"
 //@-<< Includes >>
 
 namespace Nutcracker {

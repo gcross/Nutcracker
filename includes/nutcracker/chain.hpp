@@ -30,13 +30,13 @@
 #include <boost/signal.hpp>
 #include <boost/utility/result_of.hpp>
 
-#include "boundaries.hpp"
-#include "core.hpp"
-#include "operators.hpp"
-#include "optimizer.hpp"
-#include "projectors.hpp"
-#include "states.hpp"
-#include "tensors.hpp"
+#include "nutcracker/boundaries.hpp"
+#include "nutcracker/core.hpp"
+#include "nutcracker/operators.hpp"
+#include "nutcracker/optimizer.hpp"
+#include "nutcracker/projectors.hpp"
+#include "nutcracker/states.hpp"
+#include "nutcracker/tensors.hpp"
 //@-<< Includes >>
 
 namespace Nutcracker {

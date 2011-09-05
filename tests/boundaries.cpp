@@ -24,7 +24,7 @@
 #include <complex>
 #include <illuminate.hpp>
 
-#include "boundaries.hpp"
+#include "nutcracker/boundaries.hpp"
 
 #include "test_utils.hpp"
 

@@ -32,8 +32,8 @@
 #include <numeric>
 #include <string>
 
-#include "operators.hpp"
-#include "utilities.hpp"
+#include "nutcracker/operators.hpp"
+#include "nutcracker/utilities.hpp"
 //@-<< Includes >>
 
 namespace Nutcracker {

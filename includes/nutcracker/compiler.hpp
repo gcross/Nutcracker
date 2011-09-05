@@ -38,8 +38,8 @@
 #include <boost/unordered_map.hpp>
 #include <utility>
 
-#include "operators.hpp"
-#include "states.hpp"
+#include "nutcracker/operators.hpp"
+#include "nutcracker/states.hpp"
 //@-<< Includes >>
 
 namespace Nutcracker {

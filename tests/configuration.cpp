@@ -24,8 +24,8 @@
 #include <boost/program_options.hpp>
 #include <illuminate.hpp>
 
-#include "chain.hpp"
-#include "configuration.hpp"
+#include "nutcracker/chain.hpp"
+#include "nutcracker/configuration.hpp"
 
 #include "test_utils.hpp"
 

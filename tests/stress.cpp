@@ -22,7 +22,7 @@
 #include <boost/local/function.hpp>
 #include <illuminate.hpp>
 
-#include "chain.hpp"
+#include "nutcracker/chain.hpp"
 
 #include "test_utils.hpp"
 

@@ -23,7 +23,7 @@
 #include <complex>
 #include <illuminate.hpp>
 
-#include "states.hpp"
+#include "nutcracker/states.hpp"
 
 #include "test_utils.hpp"
 

@@ -24,7 +24,7 @@
 #include <boost/assign/list_of.hpp>
 #include <boost/range/algorithm/equal.hpp>
 
-#include "io.hpp"
+#include "nutcracker/io.hpp"
 
 using namespace Nutcracker;
 

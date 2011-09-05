@@ -30,7 +30,7 @@
 
 //@+<< Includes >>
 //@+node:gcross.20110214155808.1853: ** << Includes >>
-#include "tensors.hpp"
+#include "nutcracker/tensors.hpp"
 //@-<< Includes >>
 
 namespace Nutcracker {

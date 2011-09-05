@@ -29,7 +29,7 @@
 #include <boost/smart_ptr.hpp>
 #include <boost/unordered_set.hpp>
 
-#include "compiler.hpp"
+#include "nutcracker/compiler.hpp"
 //@-<< Includes >>
 
 namespace Nutcracker {

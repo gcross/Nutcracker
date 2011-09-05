@@ -27,10 +27,10 @@
 #include <boost/tuple/tuple.hpp>
 #include <utility>
 
-#include "boundaries.hpp"
-#include "core.hpp"
-#include "states.hpp"
-#include "tensors.hpp"
+#include "nutcracker/boundaries.hpp"
+#include "nutcracker/core.hpp"
+#include "nutcracker/states.hpp"
+#include "nutcracker/tensors.hpp"
 //@-<< Includes >>
 
 namespace Nutcracker {

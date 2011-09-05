@@ -23,8 +23,8 @@
 #include <boost/numeric/ublas/vector.hpp>
 #include <boost/range/algorithm/for_each.hpp>
 
-#include "core.hpp"
-#include "projectors.hpp"
+#include "nutcracker/core.hpp"
+#include "nutcracker/projectors.hpp"
 //@-<< Includes >>
 
 namespace Nutcracker {

@@ -36,9 +36,9 @@
 #include <hdf++/group_array.hpp>
 #include <vector>
 
-#include "states.hpp"
-#include "tensors.hpp"
-#include "utilities.hpp"
+#include "nutcracker/states.hpp"
+#include "nutcracker/tensors.hpp"
+#include "nutcracker/utilities.hpp"
 //@-<< Includes >>
 
 namespace Nutcracker { namespace HDF {

@@ -42,9 +42,9 @@
 #include <iomanip>
 #include <ostream>
 
-#include "chain.hpp"
-#include "hdf.hpp"
-#include "io.hpp"
+#include "nutcracker/chain.hpp"
+#include "nutcracker/hdf.hpp"
+#include "nutcracker/io.hpp"
 //@-<< Includes >>
 
 //@+<< Usings >>

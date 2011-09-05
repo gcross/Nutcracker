@@ -19,7 +19,7 @@
 
 //@+<< Includes >>
 //@+node:gcross.20110511190907.3552: ** << Includes >>
-#include "io.hpp"
+#include "nutcracker/io.hpp"
 //@-<< Includes >>
 
 namespace Nutcracker {
