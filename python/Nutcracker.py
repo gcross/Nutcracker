@@ -19,13 +19,15 @@
 
 #@+<< Imports >>
 #@+node:gcross.20110906104131.3052: ** << Imports >>
-from ctypes import c_char_p, c_uint32, c_void_p, POINTER
-from numpy import array, complex128
+import ctypes
+from ctypes import byref, c_char_p, c_uint32, POINTER
 #@-<< Imports >>
 
 #@+<< Initialize library bindings >>
 #@+node:gcross.20110906104131.3053: ** << Initialize library bindings >>
-import ctypes
+c_complex_double = ctypes.c_double * 2
+c_complex_double_p = POINTER(c_complex_double)
+
 import ctypes.util
 
 library = ctypes.cdll.LoadLibrary(ctypes.util.find_library("Nutcracker"))
@@ -73,6 +75,13 @@ def bind(name,argtypes,restype):
 #@+node:gcross.20110906130654.2873: *3* numpyBuffer
 def numpyBuffer(arr):
     return ctypes.addressof(c_void_p.from_buffer(arr))
+#@+node:gcross.20110906130654.2886: *3* toComplexDouble
+def toComplexDouble(x):
+    c = complex(x)
+    return c_complex_double(c.real,c.imag)
+#@+node:gcross.20110906130654.2885: *3* toComplexDoubleArray
+def toComplexDoubleArray(data):
+    return (c_complex_double * len(data))(*[toComplexDouble(x) for x in data])
 #@+node:gcross.20110906104131.3054: ** Classes
 #@+node:gcross.20110906104131.3055: *3* Vector
 class Vector:
@@ -82,10 +91,10 @@ class Vector:
 
     _add = bind("Nutcracker_Vector_add",[POINTER(C),POINTER(C)],POINTER(C))
     _free = bind("Nutcracker_Vector_free",[POINTER(C)],None)
-    _getElementAtIndex = bind("Nutcracker_Vector_getElementAtIndex",[POINTER(C),c_uint32,c_void_p],None)
+    _getElementAtIndex = bind("Nutcracker_Vector_getElementAtIndex",[POINTER(C),c_uint32,c_complex_double_p],None)
     _getSize = bind("Nutcracker_Vector_getSize",[POINTER(C)],c_uint32)
-    _multiply = bind("Nutcracker_Vector_multiply",[c_void_p,POINTER(C)],POINTER(C))
-    _new = bind("Nutcracker_Vector_new",[c_uint32,c_void_p],POINTER(C))
+    _multiply = bind("Nutcracker_Vector_multiply",[c_complex_double_p,POINTER(C)],POINTER(C))
+    _new = bind("Nutcracker_Vector_new",[c_uint32,c_complex_double_p],POINTER(C))
     _newBasis = bind("Nutcracker_Vector_newBasis",[c_uint32,c_uint32],POINTER(C))
     #@-<< Bindings >>
     #@+others
@@ -100,9 +109,9 @@ class Vector:
             del self._
     #@+node:gcross.20110906104131.3073: *4* __getitem__
     def __getitem__(self,index):
-        cdata = array(0,dtype=complex128,order="C")
-        self._getElementAtIndex(self._,index,numpyBuffer(cdata))
-        return complex128(cdata)
+        data = c_complex_double()
+        self._getElementAtIndex(self._,index,byref(data))
+        return complex(*data)
     #@+node:gcross.20110906104131.3064: *4* __init__
     def __init__(self,*args):
         assert(len(args) == 1 or len(args) == 2)
@@ -111,18 +120,14 @@ class Vector:
         elif type(args[0]) == POINTER(Vector.C):
             self._ = args[0]
         else:
-            data = array(args[0],dtype=complex128,order="C")
-            assert(data.ndim == 1)
-            self._ = self._new(len(data),numpyBuffer(data))
+            data = toComplexDoubleArray(args[0])
+            self._ = self._new(len(data),data)
     #@+node:gcross.20110906104131.3072: *4* __len__
     def __len__(self):
         return int(self._getSize(self._))
     #@+node:gcross.20110906104131.3066: *4* __mul__
     def __mul__(self,c):
-        assert(not isinstance(c,Vector))
-        cdata = array(c,dtype=complex128,order="C")
-        assert(cdata.ndim == 0)
-        return Vector(self._multiply(numpyBuffer(cdata),self._))
+        return Vector(self._multiply(toComplexDouble(c),self._))
     #@-others
 #@-others
 
