@@ -50,11 +50,8 @@ class VectorTests(unittest.TestCase):
         self.assertEqual(v[2],3+6j)
     #@+node:gcross.20110906130654.2884: *4* multiply
     def test_multiply(self):
-        v = Vector([1,2,3]) * (1+1j)
-        self.assertEqual(len(v),3)
-        self.assertEqual(v[0],1+1j)
-        self.assertEqual(v[1],2+2j)
-        self.assertEqual(v[2],3+3j)
+        self.assertEqual([1+1j,2+2j,3+3j],list(Vector([1,2,3]) * (1+1j)))
+        self.assertEqual([1+1j,2+2j,3+3j],list((1+1j) * Vector([1,2,3])))
     #@+node:gcross.20110906130654.2878: *4* new
     def test_new(self):
         v = Vector([1,2,3])

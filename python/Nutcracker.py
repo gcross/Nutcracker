@@ -85,7 +85,7 @@ def toComplexDouble(x):
 def toComplexDoubleArray(data):
     return (c_complex_double * len(data))(*[toComplexDouble(x) for x in data])
 #@+node:gcross.20110906104131.3054: ** Classes
-#@+<< base classes >>
+#@+<< Base classes >>
 #@+node:gcross.20110906130654.2925: *3* << Base classes >>
 #@+others
 #@+node:gcross.20110906130654.2926: *4* ArrayLike
@@ -113,90 +113,14 @@ class Handle:
             del self._
     #@-others
 #@-others
-#@-<< base classes >>
-#@+node:gcross.20110906130654.2939: *3* OperatorBuilder
-class OperatorBuilder(Handle,ArrayLike):
-    #@+<< Bindings >>
-    #@+node:gcross.20110906130654.2940: *4* << Bindings >>
-    class C(ctypes.Structure): pass
-
-    _dimensionOfSite = bind("Nutcracker_OperatorBuilder_dimensionOfSite",[POINTER(C),c_uint32],c_uint32)
-    _free = bind("Nutcracker_OperatorBuilder_free",[POINTER(C)],None)
-    _new = bind("Nutcracker_OperatorBuilder_new",[c_uint32,c_uint32_p],POINTER(C))
-    _newSimple = bind("Nutcracker_OperatorBuilder_newSimple",[c_uint32,c_uint32],POINTER(C))
-    _numberOfSites = bind("Nutcracker_OperatorBuilder_numberOfSites",[POINTER(C)],c_uint32)
-    #@-<< Bindings >>
-    #@+others
-    #@+node:gcross.20110906130654.2941: *4* __getitem__
-    def __getitem__(self,index):
-        return int(self._dimensionOfSite(self._,index))
-    #@+node:gcross.20110906130654.2942: *4* __init__
-    def __init__(self,*args):
-        assert(len(args) == 1 or len(args) == 2)
-        if(len(args)) == 2:
-            self._ = self._newSimple(args[0],args[1])
-        elif type(args[0]) == POINTER(self.C):
-            self._ = args[0]
-        else:
-            data = (c_uint32 * len(args[0]))(*args[0])
-            self._ = self._new(len(data),data)
-    #@+node:gcross.20110906130654.2943: *4* __len__
-    def __len__(self):
-        return int(self._numberOfSites(self._))
-    #@-others
-#@+node:gcross.20110906130654.2901: *3* State
-class State(Handle):
-    #@+<< Bindings >>
-    #@+node:gcross.20110906130654.2902: *4* << Bindings >>
-    class C(ctypes.Structure): pass
-
-    _free = bind("Nutcracker_State_free",[POINTER(C)],None)
-    _computeOverlap = bind("Nutcracker_State_computeOverlap",[POINTER(C),POINTER(C),c_complex_double_p],None)
-    #@-<< Bindings >>
-    #@+others
-    #@+node:gcross.20110906130654.2908: *4* __init__
-    def __init__(self,handle):
-        self._ = handle
-    #@+node:gcross.20110906130654.2910: *4* __mul__
-    def __mul__(self,other):
-        data = c_complex_double()
-        self._computeOverlap(self._,other._,byref(data))
-        return complex(*data)
-    #@-others
-#@+node:gcross.20110906130654.2915: *3* StateBuilder
-class StateBuilder(Handle,ArrayLike):
-    #@+<< Bindings >>
-    #@+node:gcross.20110906130654.2916: *4* << Bindings >>
-    class C(ctypes.Structure): pass
-
-    _dimensionOfSite = bind("Nutcracker_StateBuilder_dimensionOfSite",[POINTER(C),c_uint32],c_uint32)
-    _free = bind("Nutcracker_StateBuilder_free",[POINTER(C)],None)
-    _new = bind("Nutcracker_StateBuilder_new",[c_uint32,c_uint32_p],POINTER(C))
-    _newSimple = bind("Nutcracker_StateBuilder_newSimple",[c_uint32,c_uint32],POINTER(C))
-    _numberOfSites = bind("Nutcracker_StateBuilder_numberOfSites",[POINTER(C)],c_uint32)
-    #@-<< Bindings >>
-    #@+others
-    #@+node:gcross.20110906130654.2929: *4* __getitem__
-    def __getitem__(self,index):
-        return int(self._dimensionOfSite(self._,index))
-    #@+node:gcross.20110906130654.2917: *4* __init__
-    def __init__(self,*args):
-        assert(len(args) == 1 or len(args) == 2)
-        if(len(args)) == 2:
-            self._ = self._newSimple(args[0],args[1])
-        elif type(args[0]) == POINTER(self.C):
-            self._ = args[0]
-        else:
-            data = (c_uint32 * len(args[0]))(*args[0])
-            self._ = self._new(len(data),data)
-    #@+node:gcross.20110906130654.2919: *4* __len__
-    def __len__(self):
-        return int(self._numberOfSites(self._))
-    #@-others
-#@+node:gcross.20110906104131.3055: *3* Vector
+#@-<< Base classes >>
+#@+<< Vector/Matrix classes >>
+#@+node:gcross.20110906130654.2950: *3* << Vector/Matrix classes >>
+#@+others
+#@+node:gcross.20110906104131.3055: *4* Vector
 class Vector(Handle,ArrayLike):
     #@+<< Bindings >>
-    #@+node:gcross.20110906104131.3063: *4* << Bindings >>
+    #@+node:gcross.20110906104131.3063: *5* << Bindings >>
     class C(ctypes.Structure): pass
 
     _add = bind("Nutcracker_Vector_add",[POINTER(C),POINTER(C)],POINTER(C))
@@ -210,16 +134,16 @@ class Vector(Handle,ArrayLike):
     dont_free = False
     #@-<< Bindings >>
     #@+others
-    #@+node:gcross.20110906104131.3068: *4* __add__
+    #@+node:gcross.20110906104131.3068: *5* __add__
     def __add__(self,other):
         assert(isinstance(other,Vector))
         return Vector(self._add(self._,other._))
-    #@+node:gcross.20110906104131.3073: *4* __getitem__
+    #@+node:gcross.20110906104131.3073: *5* __getitem__
     def __getitem__(self,index):
         data = c_complex_double()
         self._getElementAtIndex(self._,index,byref(data))
         return complex(*data)
-    #@+node:gcross.20110906104131.3064: *4* __init__
+    #@+node:gcross.20110906104131.3064: *5* __init__
     def __init__(self,*args):
         assert(len(args) == 1 or len(args) == 2)
         if(len(args)) == 2:
@@ -229,22 +153,117 @@ class Vector(Handle,ArrayLike):
         else:
             data = toComplexDoubleArray(args[0])
             self._ = self._new(len(data),data)
-    #@+node:gcross.20110906104131.3072: *4* __len__
+    #@+node:gcross.20110906104131.3072: *5* __len__
     def __len__(self):
         return int(self._getSize(self._))
-    #@+node:gcross.20110906104131.3066: *4* __mul__
+    #@+node:gcross.20110906104131.3066: *5* __mul__
     def __mul__(self,c):
+        return Vector(self._multiply(toComplexDouble(c),self._))
+    #@+node:gcross.20110906155043.2972: *5* __rmul__
+    def __rmul__(self,c):
         return Vector(self._multiply(toComplexDouble(c),self._))
     #@-others
 
 #@+<< Constants >>
-#@+node:gcross.20110906130654.2898: *4* << Constants >>
+#@+node:gcross.20110906130654.2898: *5* << Constants >>
 Vector.qubit_up = Vector(POINTER(Vector.C).in_dll(library,"Nutcracker_Vector_Qubit_Up"))
 Vector.qubit_up.dont_free = True
 
 Vector.qubit_down = Vector(POINTER(Vector.C).in_dll(library,"Nutcracker_Vector_Qubit_Down"))
 Vector.qubit_down.dont_free = True
 #@-<< Constants >>
+#@-others
+#@-<< Vector/Matrix classes >>
+#@+<< State/Operator classes >>
+#@+node:gcross.20110906130654.2951: *3* << State/Operator classes >>
+#@+others
+#@+node:gcross.20110906130654.2901: *4* State
+class State(Handle):
+    #@+<< Bindings >>
+    #@+node:gcross.20110906130654.2902: *5* << Bindings >>
+    class C(ctypes.Structure): pass
+
+    _free = bind("Nutcracker_State_free",[POINTER(C)],None)
+    _computeOverlap = bind("Nutcracker_State_computeOverlap",[POINTER(C),POINTER(C),c_complex_double_p],None)
+    #@-<< Bindings >>
+    #@+others
+    #@+node:gcross.20110906130654.2908: *5* __init__
+    def __init__(self,handle):
+        self._ = handle
+    #@+node:gcross.20110906130654.2910: *5* __mul__
+    def __mul__(self,other):
+        data = c_complex_double()
+        self._computeOverlap(self._,other._,byref(data))
+        return complex(*data)
+    #@-others
+#@-others
+#@-<< State/Operator classes >>
+#@+<< Builder classes >>
+#@+node:gcross.20110906130654.2952: *3* << Builder classes >>
+#@+others
+#@+node:gcross.20110906130654.2939: *4* OperatorBuilder
+class OperatorBuilder(Handle,ArrayLike):
+    #@+<< Bindings >>
+    #@+node:gcross.20110906130654.2940: *5* << Bindings >>
+    class C(ctypes.Structure): pass
+
+    _dimensionOfSite = bind("Nutcracker_OperatorBuilder_dimensionOfSite",[POINTER(C),c_uint32],c_uint32)
+    _free = bind("Nutcracker_OperatorBuilder_free",[POINTER(C)],None)
+    _new = bind("Nutcracker_OperatorBuilder_new",[c_uint32,c_uint32_p],POINTER(C))
+    _newSimple = bind("Nutcracker_OperatorBuilder_newSimple",[c_uint32,c_uint32],POINTER(C))
+    _numberOfSites = bind("Nutcracker_OperatorBuilder_numberOfSites",[POINTER(C)],c_uint32)
+    #@-<< Bindings >>
+    #@+others
+    #@+node:gcross.20110906130654.2941: *5* __getitem__
+    def __getitem__(self,index):
+        return int(self._dimensionOfSite(self._,index))
+    #@+node:gcross.20110906130654.2942: *5* __init__
+    def __init__(self,*args):
+        assert(len(args) == 1 or len(args) == 2)
+        if(len(args)) == 2:
+            self._ = self._newSimple(args[0],args[1])
+        elif type(args[0]) == POINTER(self.C):
+            self._ = args[0]
+        else:
+            data = (c_uint32 * len(args[0]))(*args[0])
+            self._ = self._new(len(data),data)
+    #@+node:gcross.20110906130654.2943: *5* __len__
+    def __len__(self):
+        return int(self._numberOfSites(self._))
+    #@-others
+#@+node:gcross.20110906130654.2915: *4* StateBuilder
+class StateBuilder(Handle,ArrayLike):
+    #@+<< Bindings >>
+    #@+node:gcross.20110906130654.2916: *5* << Bindings >>
+    class C(ctypes.Structure): pass
+
+    _addProductTerm = bind("Nutcracker_StateBuilder_addProductTerm",[POINTER(Vector.C)],None)
+    _dimensionOfSite = bind("Nutcracker_StateBuilder_dimensionOfSite",[POINTER(C),c_uint32],c_uint32)
+    _free = bind("Nutcracker_StateBuilder_free",[POINTER(C)],None)
+    _new = bind("Nutcracker_StateBuilder_new",[c_uint32,c_uint32_p],POINTER(C))
+    _newSimple = bind("Nutcracker_StateBuilder_newSimple",[c_uint32,c_uint32],POINTER(C))
+    _numberOfSites = bind("Nutcracker_StateBuilder_numberOfSites",[POINTER(C)],c_uint32)
+    #@-<< Bindings >>
+    #@+others
+    #@+node:gcross.20110906130654.2929: *5* __getitem__
+    def __getitem__(self,index):
+        return int(self._dimensionOfSite(self._,index))
+    #@+node:gcross.20110906130654.2917: *5* __init__
+    def __init__(self,*args):
+        assert(len(args) == 1 or len(args) == 2)
+        if(len(args)) == 2:
+            self._ = self._newSimple(args[0],args[1])
+        elif type(args[0]) == POINTER(self.C):
+            self._ = args[0]
+        else:
+            data = (c_uint32 * len(args[0]))(*args[0])
+            self._ = self._new(len(data),data)
+    #@+node:gcross.20110906130654.2919: *5* __len__
+    def __len__(self):
+        return int(self._numberOfSites(self._))
+    #@-others
+#@-others
+#@-<< Builder classes >>
 #@-others
 
 #@+<< Export list >>
