@@ -96,6 +96,8 @@ class Vector:
     _multiply = bind("Nutcracker_Vector_multiply",[c_complex_double_p,POINTER(C)],POINTER(C))
     _new = bind("Nutcracker_Vector_new",[c_uint32,c_complex_double_p],POINTER(C))
     _newBasis = bind("Nutcracker_Vector_newBasis",[c_uint32,c_uint32],POINTER(C))
+
+    dont_free = False
     #@-<< Bindings >>
     #@+others
     #@+node:gcross.20110906104131.3068: *4* __add__
@@ -104,8 +106,9 @@ class Vector:
         return Vector(self._add(self._,other._))
     #@+node:gcross.20110906104131.3065: *4* __del__
     def __del__(self):
-        if(hasattr(self,"_")):
-            self._free(self._)
+        if hasattr(self,"_"):
+            if not self.dont_free:
+                self._free(self._)
             del self._
     #@+node:gcross.20110906104131.3073: *4* __getitem__
     def __getitem__(self,index):
@@ -137,6 +140,15 @@ class Vector:
         for i in reversed(range(0,len(self))):
             yield self[i]
     #@-others
+
+#@+<< Constants >>
+#@+node:gcross.20110906130654.2898: *4* << Constants >>
+Vector.qubit_up = Vector(POINTER(Vector.C).in_dll(library,"Nutcracker_Vector_Qubit_Up"))
+Vector.qubit_up.dont_free = True
+
+Vector.qubit_down = Vector(POINTER(Vector.C).in_dll(library,"Nutcracker_Vector_Qubit_Down"))
+Vector.qubit_down.dont_free = True
+#@-<< Constants >>
 #@-others
 
 #@+<< Export list >>

@@ -49,6 +49,10 @@ class VectorTests(unittest.TestCase):
         self.assertEqual(v[0],0)
         self.assertEqual(v[1],1)
         self.assertEqual(v[2],0)
+    #@+node:gcross.20110906130654.2899: *4* constants
+    def test_constants(self):
+        self.assertEqual([1,0],list(Vector.qubit_up))
+        self.assertEqual([0,1],list(Vector.qubit_down))
     #@-others
 #@-others
 
