@@ -56,6 +56,10 @@ NutcrackerOperator* Nutcracker_OperatorBuilder_compile(NutcrackerOperatorBuilder
 NutcrackerOperator* Nutcracker_OperatorBuilder_compileCustomized(NutcrackerOperatorBuilder* builder,bool optimize,bool add_start_and_end_loops) { BEGIN_ERROR_REGION {
     return new NutcrackerOperator(builder->compile(optimize,add_start_and_end_loops));
 } END_ERROR_REGION(NULL) }
+//@+node:gcross.20110906130654.2933: *3* dimensionOfSite
+uint32_t Nutcracker_OperatorBuilder_dimensionOfSite(NutcrackerOperatorBuilder const* builder, uint32_t site_number) { BEGIN_ERROR_REGION {
+    return builder->dimensionOfSite(site_number);
+} END_ERROR_REGION(0) }
 //@+node:gcross.20110903000806.2743: *3* free
 void Nutcracker_OperatorBuilder_free(NutcrackerOperatorBuilder* builder) { delete builder; }
 //@+node:gcross.20110905151655.2826: *3* new

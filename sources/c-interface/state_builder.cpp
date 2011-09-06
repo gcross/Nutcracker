@@ -51,6 +51,10 @@ NutcrackerState* Nutcracker_StateBuilder_compile(NutcrackerStateBuilder* builder
 NutcrackerState* Nutcracker_StateBuilder_compileCustomized(NutcrackerStateBuilder* builder,bool optimize) { BEGIN_ERROR_REGION {
     return new NutcrackerState(builder->compile(optimize));
 } END_ERROR_REGION(NULL) }
+//@+node:gcross.20110906130654.2920: *3* dimensionOfSite
+uint32_t Nutcracker_StateBuilder_dimensionOfSite(NutcrackerStateBuilder const* builder, uint32_t site_number) { BEGIN_ERROR_REGION {
+    return builder->dimensionOfSite(site_number);
+} END_ERROR_REGION(0) }
 //@+node:gcross.20110904235122.2864: *3* free
 void Nutcracker_StateBuilder_free(NutcrackerStateBuilder* builder) { delete builder; }
 //@+node:gcross.20110905151655.2828: *3* new

@@ -1013,6 +1013,10 @@ template<typename Callback> Facade& addTerm(Callback const& callback)
     callback(static_cast<Facade&>(*this));
     return static_cast<Facade&>(*this);
 }
+//@+node:gcross.20110906130654.2921: *6* dimensionOfSite
+unsigned int dimensionOfSite(unsigned int site_number) const {
+    return sites[site_number];
+}
 //@+node:gcross.20110826235932.2698: *6* connect
 Facade& connect(
     unsigned int const site_number,

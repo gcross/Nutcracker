@@ -90,7 +90,9 @@ NutcrackerOperatorBuilder* Nutcracker_OperatorBuilder_new(uint32_t number_of_sit
 NutcrackerOperatorBuilder* Nutcracker_OperatorBuilder_newSimple(uint32_t number_of_sites, uint32_t physical_dimension);
 
 void Nutcracker_OperatorBuilder_free(NutcrackerOperatorBuilder* builder);
+
 uint32_t Nutcracker_OperatorBuilder_numberOfSites(NutcrackerOperatorBuilder const* builder);
+uint32_t Nutcracker_OperatorBuilder_dimensionOfSite(NutcrackerOperatorBuilder const* builder, uint32_t site_number);
 
 void Nutcracker_OperatorBuilder_addProductTerm(NutcrackerOperatorBuilder* builder, NutcrackerMatrix const* const* components);
 void Nutcracker_OperatorBuilder_addTerm(NutcrackerOperatorBuilder* builder, NutcrackerOperatorTerm* term);
@@ -114,6 +116,7 @@ NutcrackerStateBuilder* Nutcracker_StateBuilder_newSimple(uint32_t number_of_sit
 void Nutcracker_StateBuilder_free(NutcrackerStateBuilder* builder);
 
 uint32_t Nutcracker_StateBuilder_numberOfSites(NutcrackerStateBuilder const* builder);
+uint32_t Nutcracker_StateBuilder_dimensionOfSite(NutcrackerStateBuilder const* builder, uint32_t site_number);
 
 void Nutcracker_StateBuilder_addProductTerm(NutcrackerStateBuilder* builder, NutcrackerVector const* const* components);
 void Nutcracker_StateBuilder_addTerm(NutcrackerStateBuilder* builder, NutcrackerStateTerm* term);
