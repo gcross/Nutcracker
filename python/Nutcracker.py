@@ -122,12 +122,20 @@ class Vector:
         else:
             data = toComplexDoubleArray(args[0])
             self._ = self._new(len(data),data)
+    #@+node:gcross.20110906130654.2887: *4* __iter__
+    def __iter__(self):
+        for i in range(0,len(self)):
+            yield self[i]
     #@+node:gcross.20110906104131.3072: *4* __len__
     def __len__(self):
         return int(self._getSize(self._))
     #@+node:gcross.20110906104131.3066: *4* __mul__
     def __mul__(self,c):
         return Vector(self._multiply(toComplexDouble(c),self._))
+    #@+node:gcross.20110906130654.2889: *4* __reversed__
+    def __reversed__(self):
+        for i in reversed(range(0,len(self))):
+            yield self[i]
     #@-others
 #@-others
 

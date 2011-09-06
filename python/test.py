@@ -15,6 +15,12 @@ from Nutcracker import *
 #@+node:gcross.20110906130654.2876: *3* Vector
 class VectorTests(unittest.TestCase):
     #@+others
+    #@+node:gcross.20110906130654.2890: *4* __iter__
+    def test___iter__(self):
+        self.assertEqual([1,2,3],list(Vector([1,2,3])))
+    #@+node:gcross.20110906130654.2892: *4* __reversed__
+    def test___reversed__(self):
+        self.assertEqual([3,2,1],list(reversed(Vector([1,2,3]))))
     #@+node:gcross.20110906130654.2882: *4* add
     def test_add(self):
         v = Vector([1,2,3]) + Vector([4j,5j,6j])
