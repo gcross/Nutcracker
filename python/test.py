@@ -12,6 +12,26 @@ from Nutcracker import *
 #@+others
 #@+node:gcross.20110906130654.2877: ** Tests
 #@+others
+#@+node:gcross.20110906130654.2947: *3* OperatorBuilder
+class OperatorBuilderTests(unittest.TestCase):
+    #@+others
+    #@+node:gcross.20110906130654.2948: *4* new
+    def test_new(self):
+        self.assertEqual([1,2,3],list(OperatorBuilder([1,2,3])))
+    #@+node:gcross.20110906130654.2949: *4* newSimple
+    def test_newSimple(self):
+        self.assertEqual([2]*3,list(OperatorBuilder(3,2)))
+    #@-others
+#@+node:gcross.20110906130654.2922: *3* StateBuilder
+class StateBuilderTests(unittest.TestCase):
+    #@+others
+    #@+node:gcross.20110906130654.2924: *4* new
+    def test_new(self):
+        self.assertEqual([1,2,3],list(StateBuilder([1,2,3])))
+    #@+node:gcross.20110906130654.2931: *4* newSimple
+    def test_newSimple(self):
+        self.assertEqual([2]*3,list(StateBuilder(3,2)))
+    #@-others
 #@+node:gcross.20110906130654.2876: *3* Vector
 class VectorTests(unittest.TestCase):
     #@+others
@@ -57,6 +77,8 @@ class VectorTests(unittest.TestCase):
 #@-others
 
 tests = [
+    OperatorBuilderTests,
+    StateBuilderTests,
     VectorTests,
 ]
 #@-others
