@@ -2,6 +2,7 @@
 #@+node:gcross.20110906104131.2941: * @file test.py
 #@+<< Import needed modules >>
 #@+node:gcross.20110906104131.2942: ** << Import needed modules >>
+import itertools
 from numpy import set_printoptions
 import os
 import unittest
@@ -12,6 +13,26 @@ from Nutcracker import *
 #@+others
 #@+node:gcross.20110906130654.2877: ** Tests
 #@+others
+#@+node:gcross.20110906155043.2996: *3* Matrix
+class MatrixTests(unittest.TestCase):
+    #@+others
+    #@+node:gcross.20110906155043.2998: *4* new
+    def test_new(self):
+        m = Matrix([[1,2],[3,4]])
+        self.assertEqual(len(m),2)
+        self.assertEqual([1,2,3,4],list(m))
+    #@+node:gcross.20110906155043.4810: *4* newDiagonal
+    def test_newDiagonal(self):
+        m = Matrix([1,2])
+        self.assertEqual(len(m),2)
+        self.assertEqual([1,0,0,2],list(m))
+    #@+node:gcross.20110906155043.4811: *4* constants
+    def test_constants(self):
+        self.assertEqual([1,0,0,1],list(Matrix.pauli_I))
+        self.assertEqual([0,1,1,0],list(Matrix.pauli_X))
+        self.assertEqual([0,-1j,1j,0],list(Matrix.pauli_Y))
+        self.assertEqual([1,0,0,-1],list(Matrix.pauli_Z))
+    #@-others
 #@+node:gcross.20110906130654.2947: *3* OperatorBuilder
 class OperatorBuilderTests(unittest.TestCase):
     #@+others
@@ -31,6 +52,20 @@ class StateBuilderTests(unittest.TestCase):
     #@+node:gcross.20110906130654.2931: *4* newSimple
     def test_newSimple(self):
         self.assertEqual([2]*3,list(StateBuilder(3,2)))
+    #@+node:gcross.20110906155043.2975: *4* orthogonal basis
+    def test_orthogonal_basis(self):
+        for number_of_sites in range(2,6):
+            states = [
+                StateBuilder(number_of_sites,2)
+                    .addProductTerm([Vector.qubit_up]*site_number + [Vector.qubit_down] + [Vector.qubit_up]*(number_of_sites-site_number-1))
+                    .compile()
+                for site_number in range(0,number_of_sites)
+            ]
+            for (i,j) in itertools.product(states,states):
+                if i is j:
+                    self.assertAlmostEqual(1,i * j)
+                else:
+                    self.assertAlmostEqual(0,i * j)
     #@-others
 #@+node:gcross.20110906130654.2876: *3* Vector
 class VectorTests(unittest.TestCase):
@@ -74,6 +109,7 @@ class VectorTests(unittest.TestCase):
 #@-others
 
 tests = [
+    MatrixTests,
     OperatorBuilderTests,
     StateBuilderTests,
     VectorTests,

@@ -83,6 +83,14 @@ NutcrackerMatrix* Nutcracker_Matrix_multiply(std::complex<double> const* c, Nutc
 #else
 NutcrackerMatrix* Nutcracker_Matrix_multiply(complex double const* x, NutcrackerMatrix const* y);
 #endif
+
+uint32_t Nutcracker_Matrix_getSize(NutcrackerMatrix const* x);
+
+#ifdef __cplusplus
+void Nutcracker_Matrix_getElementAtCoordinate(NutcrackerMatrix const* x, uint32_t i, uint32_t j, std::complex<double>* element);
+#else
+void Nutcracker_Matrix_getElementAtCoordinate(NutcrackerMatrix const* x, uint32_t i, uint32_t j, complex double* element);
+#endif
 //@+node:gcross.20110823131135.2552: *3* Operator
 void Nutcracker_Operator_free(NutcrackerOperator* op);
 //@+node:gcross.20110823131135.2559: *3* OperatorBuilder

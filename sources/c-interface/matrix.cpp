@@ -45,11 +45,19 @@ NutcrackerMatrix* Nutcracker_Matrix_add(NutcrackerMatrix const* x, NutcrackerMat
 }
 //@+node:gcross.20110904235122.2784: *3* free
 void Nutcracker_Matrix_free(NutcrackerMatrix* matrix) { delete matrix; }
+//@+node:gcross.20110906155043.3000: *3* getElementAtCoordinate
+void Nutcracker_Matrix_getElementAtCoordinate(NutcrackerMatrix const* x, uint32_t i, uint32_t j, std::complex<double>* element) { BEGIN_ERROR_REGION {
+    *element = (**x)(i,j);
+} END_ERROR_REGION() }
 //@+node:gcross.20110904235122.2785: *3* getPauli
 NutcrackerMatrix const* Nutcracker_Matrix_getPauliI() { return Nutcracker_Matrix_Pauli_I; }
 NutcrackerMatrix const* Nutcracker_Matrix_getPauliX() { return Nutcracker_Matrix_Pauli_X; }
 NutcrackerMatrix const* Nutcracker_Matrix_getPauliY() { return Nutcracker_Matrix_Pauli_Y; }
 NutcrackerMatrix const* Nutcracker_Matrix_getPauliZ() { return Nutcracker_Matrix_Pauli_Z; }
+//@+node:gcross.20110906155043.2977: *3* getSize
+uint32_t Nutcracker_Matrix_getSize(NutcrackerMatrix const* x) {
+    return (*x)->size1();
+}
 //@+node:gcross.20110904235122.2787: *3* multiply
 NutcrackerMatrix* Nutcracker_Matrix_multiply(std::complex<double> const* c, NutcrackerMatrix const* x) {
     using namespace Nutcracker;
