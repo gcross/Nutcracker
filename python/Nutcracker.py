@@ -122,12 +122,13 @@ class Matrix(Handle):
     #@+<< Bindings >>
     #@+node:gcross.20110906155043.2988: *5* << Bindings >>
     class C(ctypes.Structure): pass
+    C_P = POINTER(C)
 
-    _free = bind("Nutcracker_Matrix_free",[POINTER(C)],None)
-    _getElementAtCoordinate = bind("Nutcracker_Matrix_getElementAtCoordinate",[POINTER(C),c_uint32,c_uint32,c_complex_double_p],None)
-    _getSize = bind("Nutcracker_Matrix_getSize",[POINTER(C)],c_uint32)
-    _new = bind("Nutcracker_Matrix_new",[c_uint32,c_complex_double_p],POINTER(C))
-    _newDiagonal = bind("Nutcracker_Matrix_newDiagonal",[c_uint32,c_complex_double_p],POINTER(C))
+    _free = bind("Nutcracker_Matrix_free",[C_P],None)
+    _getElementAtCoordinate = bind("Nutcracker_Matrix_getElementAtCoordinate",[C_P,c_uint32,c_uint32,c_complex_double_p],None)
+    _getSize = bind("Nutcracker_Matrix_getSize",[C_P],c_uint32)
+    _new = bind("Nutcracker_Matrix_new",[c_uint32,c_complex_double_p],C_P)
+    _newDiagonal = bind("Nutcracker_Matrix_newDiagonal",[c_uint32,c_complex_double_p],C_P)
     #@-<< Bindings >>
     #@+others
     #@+node:gcross.20110906155043.2991: *5* __getitem__
@@ -138,7 +139,7 @@ class Matrix(Handle):
         return complex(*data)
     #@+node:gcross.20110906155043.2992: *5* __init__
     def __init__(self,data):
-        if isinstance(data,POINTER(self.C)):
+        if isinstance(data,self.C_P):
             self._ = data
         elif hasattr(data[0],"__len__"):
             dimension = len(data)
@@ -158,16 +159,16 @@ class Matrix(Handle):
 
 #@+<< Constants >>
 #@+node:gcross.20110906155043.2989: *5* << Constants >>
-Matrix.pauli_I = Matrix(POINTER(Matrix.C).in_dll(library,"Nutcracker_Matrix_Pauli_I"))
+Matrix.pauli_I = Matrix(Matrix.C_P.in_dll(library,"Nutcracker_Matrix_Pauli_I"))
 Matrix.pauli_I.dont_free = True
 
-Matrix.pauli_X = Matrix(POINTER(Matrix.C).in_dll(library,"Nutcracker_Matrix_Pauli_X"))
+Matrix.pauli_X = Matrix(Matrix.C_P.in_dll(library,"Nutcracker_Matrix_Pauli_X"))
 Matrix.pauli_X.dont_free = True
 
-Matrix.pauli_Y = Matrix(POINTER(Matrix.C).in_dll(library,"Nutcracker_Matrix_Pauli_Y"))
+Matrix.pauli_Y = Matrix(Matrix.C_P.in_dll(library,"Nutcracker_Matrix_Pauli_Y"))
 Matrix.pauli_Y.dont_free = True
 
-Matrix.pauli_Z = Matrix(POINTER(Matrix.C).in_dll(library,"Nutcracker_Matrix_Pauli_Z"))
+Matrix.pauli_Z = Matrix(Matrix.C_P.in_dll(library,"Nutcracker_Matrix_Pauli_Z"))
 Matrix.pauli_Z.dont_free = True
 #@-<< Constants >>
 #@+node:gcross.20110906104131.3055: *4* Vector
@@ -175,14 +176,15 @@ class Vector(Handle,ArrayLike):
     #@+<< Bindings >>
     #@+node:gcross.20110906104131.3063: *5* << Bindings >>
     class C(ctypes.Structure): pass
+    C_P = POINTER(C)
 
-    _add = bind("Nutcracker_Vector_add",[POINTER(C),POINTER(C)],POINTER(C))
-    _free = bind("Nutcracker_Vector_free",[POINTER(C)],None)
-    _getElementAtIndex = bind("Nutcracker_Vector_getElementAtIndex",[POINTER(C),c_uint32,c_complex_double_p],None)
-    _getSize = bind("Nutcracker_Vector_getSize",[POINTER(C)],c_uint32)
-    _multiply = bind("Nutcracker_Vector_multiply",[c_complex_double_p,POINTER(C)],POINTER(C))
-    _new = bind("Nutcracker_Vector_new",[c_uint32,c_complex_double_p],POINTER(C))
-    _newBasis = bind("Nutcracker_Vector_newBasis",[c_uint32,c_uint32],POINTER(C))
+    _add = bind("Nutcracker_Vector_add",[C_P,C_P],C_P)
+    _free = bind("Nutcracker_Vector_free",[C_P],None)
+    _getElementAtIndex = bind("Nutcracker_Vector_getElementAtIndex",[C_P,c_uint32,c_complex_double_p],None)
+    _getSize = bind("Nutcracker_Vector_getSize",[C_P],c_uint32)
+    _multiply = bind("Nutcracker_Vector_multiply",[c_complex_double_p,C_P],C_P)
+    _new = bind("Nutcracker_Vector_new",[c_uint32,c_complex_double_p],C_P)
+    _newBasis = bind("Nutcracker_Vector_newBasis",[c_uint32,c_uint32],C_P)
     #@-<< Bindings >>
     #@+others
     #@+node:gcross.20110906104131.3068: *5* __add__
@@ -199,7 +201,7 @@ class Vector(Handle,ArrayLike):
         assert(len(args) == 1 or len(args) == 2)
         if(len(args)) == 2:
             self._ = self._newBasis(args[0],args[1])
-        elif type(args[0]) == POINTER(self.C):
+        elif type(args[0]) == self.C_P:
             self._ = args[0]
         else:
             data = toComplexDoubleArray(args[0])
@@ -217,10 +219,10 @@ class Vector(Handle,ArrayLike):
 
 #@+<< Constants >>
 #@+node:gcross.20110906130654.2898: *5* << Constants >>
-Vector.qubit_up = Vector(POINTER(Vector.C).in_dll(library,"Nutcracker_Vector_Qubit_Up"))
+Vector.qubit_up = Vector(Vector.C_P.in_dll(library,"Nutcracker_Vector_Qubit_Up"))
 Vector.qubit_up.dont_free = True
 
-Vector.qubit_down = Vector(POINTER(Vector.C).in_dll(library,"Nutcracker_Vector_Qubit_Down"))
+Vector.qubit_down = Vector(Vector.C_P.in_dll(library,"Nutcracker_Vector_Qubit_Down"))
 Vector.qubit_down.dont_free = True
 #@-<< Constants >>
 #@-others
@@ -233,9 +235,10 @@ class State(Handle):
     #@+<< Bindings >>
     #@+node:gcross.20110906130654.2902: *5* << Bindings >>
     class C(ctypes.Structure): pass
+    C_P = POINTER(C)
 
-    _free = bind("Nutcracker_State_free",[POINTER(C)],None)
-    _computeOverlap = bind("Nutcracker_State_computeOverlap",[POINTER(C),POINTER(C),c_complex_double_p],None)
+    _free = bind("Nutcracker_State_free",[C_P],None)
+    _computeOverlap = bind("Nutcracker_State_computeOverlap",[C_P,C_P,c_complex_double_p],None)
     #@-<< Bindings >>
     #@+others
     #@+node:gcross.20110906130654.2908: *5* __init__
@@ -257,12 +260,13 @@ class OperatorBuilder(Handle,ArrayLike):
     #@+<< Bindings >>
     #@+node:gcross.20110906130654.2940: *5* << Bindings >>
     class C(ctypes.Structure): pass
+    C_P = POINTER(C)
 
-    _dimensionOfSite = bind("Nutcracker_OperatorBuilder_dimensionOfSite",[POINTER(C),c_uint32],c_uint32)
-    _free = bind("Nutcracker_OperatorBuilder_free",[POINTER(C)],None)
-    _new = bind("Nutcracker_OperatorBuilder_new",[c_uint32,c_uint32_p],POINTER(C))
-    _newSimple = bind("Nutcracker_OperatorBuilder_newSimple",[c_uint32,c_uint32],POINTER(C))
-    _numberOfSites = bind("Nutcracker_OperatorBuilder_numberOfSites",[POINTER(C)],c_uint32)
+    _dimensionOfSite = bind("Nutcracker_OperatorBuilder_dimensionOfSite",[C_P,c_uint32],c_uint32)
+    _free = bind("Nutcracker_OperatorBuilder_free",[C_P],None)
+    _new = bind("Nutcracker_OperatorBuilder_new",[c_uint32,c_uint32_p],C_P)
+    _newSimple = bind("Nutcracker_OperatorBuilder_newSimple",[c_uint32,c_uint32],C_P)
+    _numberOfSites = bind("Nutcracker_OperatorBuilder_numberOfSites",[C_P],c_uint32)
     #@-<< Bindings >>
     #@+others
     #@+node:gcross.20110906130654.2941: *5* __getitem__
@@ -273,7 +277,7 @@ class OperatorBuilder(Handle,ArrayLike):
         assert(len(args) == 1 or len(args) == 2)
         if(len(args)) == 2:
             self._ = self._newSimple(args[0],args[1])
-        elif type(args[0]) == POINTER(self.C):
+        elif type(args[0]) == self.C_P:
             self._ = args[0]
         else:
             data = (c_uint32 * len(args[0]))(*args[0])
@@ -287,14 +291,15 @@ class StateBuilder(Handle,ArrayLike):
     #@+<< Bindings >>
     #@+node:gcross.20110906130654.2916: *5* << Bindings >>
     class C(ctypes.Structure): pass
+    C_P = POINTER(C)
 
-    _addProductTerm = bind("Nutcracker_StateBuilder_addProductTerm",[POINTER(C),POINTER(POINTER(Vector.C))],None)
-    _compile = bind("Nutcracker_StateBuilder_compile",[POINTER(C)],POINTER(State.C))
-    _dimensionOfSite = bind("Nutcracker_StateBuilder_dimensionOfSite",[POINTER(C),c_uint32],c_uint32)
-    _free = bind("Nutcracker_StateBuilder_free",[POINTER(C)],None)
-    _new = bind("Nutcracker_StateBuilder_new",[c_uint32,c_uint32_p],POINTER(C))
-    _newSimple = bind("Nutcracker_StateBuilder_newSimple",[c_uint32,c_uint32],POINTER(C))
-    _numberOfSites = bind("Nutcracker_StateBuilder_numberOfSites",[POINTER(C)],c_uint32)
+    _addProductTerm = bind("Nutcracker_StateBuilder_addProductTerm",[C_P,POINTER(Vector.C_P)],None)
+    _compile = bind("Nutcracker_StateBuilder_compile",[C_P],State.C_P)
+    _dimensionOfSite = bind("Nutcracker_StateBuilder_dimensionOfSite",[C_P,c_uint32],c_uint32)
+    _free = bind("Nutcracker_StateBuilder_free",[C_P],None)
+    _new = bind("Nutcracker_StateBuilder_new",[c_uint32,c_uint32_p],C_P)
+    _newSimple = bind("Nutcracker_StateBuilder_newSimple",[c_uint32,c_uint32],C_P)
+    _numberOfSites = bind("Nutcracker_StateBuilder_numberOfSites",[C_P],c_uint32)
     #@-<< Bindings >>
     #@+others
     #@+node:gcross.20110906130654.2929: *5* __getitem__
@@ -305,7 +310,7 @@ class StateBuilder(Handle,ArrayLike):
         assert(len(args) == 1 or len(args) == 2)
         if(len(args)) == 2:
             self._ = self._newSimple(args[0],args[1])
-        elif type(args[0]) == POINTER(self.C):
+        elif type(args[0]) == self.C_P:
             self._ = args[0]
         else:
             data = (c_uint32 * len(args[0]))(*args[0])
@@ -315,7 +320,7 @@ class StateBuilder(Handle,ArrayLike):
         return int(self._numberOfSites(self._))
     #@+node:gcross.20110906155043.2973: *5* addProductTerm
     def addProductTerm(self,vectors):
-        data = (POINTER(Vector.C) * len(vectors))(*[x._ for x in vectors])
+        data = (Vector.C_P * len(vectors))(*[x._ for x in vectors])
         assert len(data) == len(self)
         self._addProductTerm(self._,data)
         return self
