@@ -36,6 +36,29 @@ class MatrixTests(unittest.TestCase):
 #@+node:gcross.20110906130654.2947: *3* OperatorBuilder
 class OperatorBuilderTests(unittest.TestCase):
     #@+others
+    #@+node:gcross.20110906155043.4822: *4* addProduct
+    def test_addProduct(self):
+        for number_of_sites in range(2,6):
+            builder = OperatorBuilder(number_of_sites,2)
+            for site_number in range(number_of_sites):
+                builder.addProductTerm(
+                    [Matrix.pauli_I]*site_number +
+                    [Matrix([0,site_number])] +
+                    [Matrix.pauli_I]*(number_of_sites-site_number-1)
+                )
+            operator = builder.compile()
+            for site_number in range(number_of_sites):
+                self.assertEqual(
+                    StateBuilder(number_of_sites,2)
+                        .addProductTerm(
+                            [Vector.qubit_up]*site_number +
+                            [Vector.qubit_down] +
+                            [Vector.qubit_up]*(number_of_sites-site_number-1)
+                         )
+                        .compile()
+                        * operator
+                   ,site_number
+                )
     #@+node:gcross.20110906130654.2948: *4* new
     def test_new(self):
         self.assertEqual([1,2,3],list(OperatorBuilder([1,2,3])))

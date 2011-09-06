@@ -230,6 +230,20 @@ Vector.qubit_down.dont_free = True
 #@+<< State/Operator classes >>
 #@+node:gcross.20110906130654.2951: *3* << State/Operator classes >>
 #@+others
+#@+node:gcross.20110906155043.4817: *4* Operator
+class Operator(Handle):
+    #@+<< Bindings >>
+    #@+node:gcross.20110906155043.4818: *5* << Bindings >>
+    class C(ctypes.Structure): pass
+    C_P = POINTER(C)
+
+    _free = bind("Nutcracker_Operator_free",[C_P],None)
+    #@-<< Bindings >>
+    #@+others
+    #@+node:gcross.20110906155043.4819: *5* __init__
+    def __init__(self,handle):
+        self._ = handle
+    #@-others
 #@+node:gcross.20110906130654.2901: *4* State
 class State(Handle):
     #@+<< Bindings >>
@@ -239,6 +253,7 @@ class State(Handle):
 
     _free = bind("Nutcracker_State_free",[C_P],None)
     _computeOverlap = bind("Nutcracker_State_computeOverlap",[C_P,C_P,c_complex_double_p],None)
+    _computeExpectation = bind("Nutcracker_State_computeExpectation",[C_P,Operator.C_P,c_complex_double_p],None)
     #@-<< Bindings >>
     #@+others
     #@+node:gcross.20110906130654.2908: *5* __init__
@@ -247,8 +262,16 @@ class State(Handle):
     #@+node:gcross.20110906130654.2910: *5* __mul__
     def __mul__(self,other):
         data = c_complex_double()
-        self._computeOverlap(self._,other._,byref(data))
+        if isinstance(other,State):
+            self._computeOverlap(self._,other._,byref(data))
+        elif isinstance(other,Operator):
+            self._computeExpectation(self._,other._,byref(data))
+        else:
+            raise TypeError("Can only multiple State objects by either Operator objects or other State objects.")
         return complex(*data)
+    #@+node:gcross.20110906155043.4821: *5* __rmul__
+    def __rmul__(self,other):
+        return self * other
     #@-others
 #@-others
 #@-<< State/Operator classes >>
@@ -262,6 +285,8 @@ class OperatorBuilder(Handle,ArrayLike):
     class C(ctypes.Structure): pass
     C_P = POINTER(C)
 
+    _addProductTerm = bind("Nutcracker_OperatorBuilder_addProductTerm",[C_P,POINTER(Matrix.C_P)],None)
+    _compile = bind("Nutcracker_OperatorBuilder_compile",[C_P],Operator.C_P)
     _dimensionOfSite = bind("Nutcracker_OperatorBuilder_dimensionOfSite",[C_P,c_uint32],c_uint32)
     _free = bind("Nutcracker_OperatorBuilder_free",[C_P],None)
     _new = bind("Nutcracker_OperatorBuilder_new",[c_uint32,c_uint32_p],C_P)
@@ -285,6 +310,15 @@ class OperatorBuilder(Handle,ArrayLike):
     #@+node:gcross.20110906130654.2943: *5* __len__
     def __len__(self):
         return int(self._numberOfSites(self._))
+    #@+node:gcross.20110906155043.4824: *5* addProductTerm
+    def addProductTerm(self,vectors):
+        data = (Matrix.C_P * len(vectors))(*[x._ for x in vectors])
+        assert len(data) == len(self)
+        self._addProductTerm(self._,data)
+        return self
+    #@+node:gcross.20110906155043.4826: *5* compile
+    def compile(self):
+        return Operator(self._compile(self._))
     #@-others
 #@+node:gcross.20110906130654.2915: *4* StateBuilder
 class StateBuilder(Handle,ArrayLike):
