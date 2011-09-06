@@ -71,8 +71,8 @@ struct NeighborSignalConflict : public std::logic_error {
       : std::logic_error((
             boost::format("The left signals at site %1%, %2%, do not match the right signals of its left neighbor, %3%.")
               % right_site_number
-              % rangeToString(left_site_right_signals)
               % rangeToString(right_site_left_signals)
+              % rangeToString(left_site_right_signals)
         ).str())
       , right_site_number(right_site_number)
       , left_site_right_signals(boost::begin(left_site_right_signals),boost::end(left_site_right_signals))
