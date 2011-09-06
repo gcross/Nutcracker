@@ -45,7 +45,11 @@ void Nutcracker_setError(char const* message) {
 }
 //@+node:gcross.20110903000806.2756: *3* getError
 char const* Nutcracker_getError() {
-    return Nutcracker::thread_local_error_string->c_str();
+    return
+        Nutcracker::thread_local_error_string.get() == NULL
+            ? NULL
+            : Nutcracker::thread_local_error_string->c_str()
+        ;
 }
 //@+node:gcross.20110903000806.2757: *3* clearError
 void Nutcracker_clearError() {

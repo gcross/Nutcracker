@@ -54,15 +54,15 @@ NutcrackerState* Nutcracker_StateBuilder_compileCustomized(NutcrackerStateBuilde
 //@+node:gcross.20110904235122.2864: *3* free
 void Nutcracker_StateBuilder_free(NutcrackerStateBuilder* builder) { delete builder; }
 //@+node:gcross.20110905151655.2828: *3* new
-NutcrackerStateBuilder* Nutcracker_StateBuilder_new(unsigned int number_of_sites, uint32_t* dimensions) {
+NutcrackerStateBuilder* Nutcracker_StateBuilder_new(uint32_t number_of_sites, uint32_t* dimensions) {
     return new NutcrackerStateBuilder(boost::make_iterator_range(dimensions,dimensions+number_of_sites));
 }
 //@+node:gcross.20110905151655.2830: *3* newSimple
-NutcrackerStateBuilder* Nutcracker_StateBuilder_newSimple(unsigned int number_of_sites, unsigned int physical_dimension) {
+NutcrackerStateBuilder* Nutcracker_StateBuilder_newSimple(uint32_t number_of_sites, uint32_t physical_dimension) {
     return new NutcrackerStateBuilder(number_of_sites,physical_dimension);
 }
 //@+node:gcross.20110904235122.2866: *3* numberOfSites
-unsigned int Nutcracker_StateBuilder_numberOfSites(NutcrackerStateBuilder const* builder) { return builder->numberOfSites(); }
+uint32_t Nutcracker_StateBuilder_numberOfSites(NutcrackerStateBuilder const* builder) { return builder->numberOfSites(); }
 //@-others
 
 }

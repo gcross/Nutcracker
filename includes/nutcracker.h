@@ -24,6 +24,9 @@
 //@+node:gcross.20110902235008.2738: ** << Includes >>
 #ifdef __cplusplus
 #include <complex>
+#else
+#include <comlex.h>
+#include <stdbool.h>
 #endif
 //@-<< Includes >>
 
@@ -43,9 +46,9 @@ typedef struct NutcrackerStateTerm NutcrackerStateTerm;
 typedef struct NutcrackerVector NutcrackerVector;
 //@+node:gcross.20110904235122.2789: ** Functions
 //@+node:gcross.20110902235008.2749: *3* Errors
-void Nutcracker_setError(char const* message);
-char const* Nutcracker_getError();
 void Nutcracker_clearError();
+char const* Nutcracker_getError();
+void Nutcracker_setError(char const* message);
 //@+node:gcross.20110904235122.2772: *3* Matrix
 void Nutcracker_Matrix_free(NutcrackerMatrix* matrix);
 
@@ -62,15 +65,15 @@ NutcrackerMatrix const* Nutcracker_Matrix_getPauliY();
 NutcrackerMatrix const* Nutcracker_Matrix_getPauliZ();
 
 #ifdef __cplusplus
-NutcrackerMatrix* Nutcracker_Matrix_new(unsigned int dimension, std::complex<double> const* data);
+NutcrackerMatrix* Nutcracker_Matrix_new(uint32_t dimension, std::complex<double> const* data);
 #else
-NutcrackerMatrix* Nutcracker_Matrix_new(unsigned int dimension, compex double const* data);
+NutcrackerMatrix* Nutcracker_Matrix_new(uint32_t dimension, compex double const* data);
 #endif
 
 #ifdef __cplusplus
-NutcrackerMatrix* Nutcracker_Matrix_newDiagonal(unsigned int dimension, std::complex<double> const* data);
+NutcrackerMatrix* Nutcracker_Matrix_newDiagonal(uint32_t dimension, std::complex<double> const* data);
 #else
-NutcrackerMatrix* Nutcracker_Matrix_newDiagonal(unsigned int dimension, compex double const* data);
+NutcrackerMatrix* Nutcracker_Matrix_newDiagonal(uint32_t dimension, compex double const* data);
 #endif
 
 NutcrackerMatrix* Nutcracker_Matrix_add(NutcrackerMatrix const* x, NutcrackerMatrix const* y);
@@ -83,14 +86,14 @@ NutcrackerMatrix* Nutcracker_Matrix_multiply(complex double const* x, Nutcracker
 //@+node:gcross.20110823131135.2552: *3* Operator
 void Nutcracker_Operator_free(NutcrackerOperator* op);
 //@+node:gcross.20110823131135.2559: *3* OperatorBuilder
-NutcrackerOperatorBuilder* Nutcracker_OperatorBuilder_new(unsigned int number_of_sites, uint32_t* dimensions);
-NutcrackerOperatorBuilder* Nutcracker_OperatorBuilder_newSimple(unsigned int number_of_sites, unsigned int physical_dimension);
+NutcrackerOperatorBuilder* Nutcracker_OperatorBuilder_new(uint32_t number_of_sites, uint32_t* dimensions);
+NutcrackerOperatorBuilder* Nutcracker_OperatorBuilder_newSimple(uint32_t number_of_sites, uint32_t physical_dimension);
 
 void Nutcracker_OperatorBuilder_free(NutcrackerOperatorBuilder* builder);
 
-void Nutcracker_OperatorBuilder_addSite(NutcrackerOperatorBuilder* builder, unsigned int dimension);
-void Nutcracker_OperatorBuilder_addSites(NutcrackerOperatorBuilder* builder, unsigned int number_of_sites, unsigned int dimension);
-unsigned int Nutcracker_OperatorBuilder_numberOfSites(NutcrackerOperatorBuilder const* builder);
+void Nutcracker_OperatorBuilder_addSite(NutcrackerOperatorBuilder* builder, uint32_t dimension);
+void Nutcracker_OperatorBuilder_addSites(NutcrackerOperatorBuilder* builder, uint32_t number_of_sites, uint32_t dimension);
+uint32_t Nutcracker_OperatorBuilder_numberOfSites(NutcrackerOperatorBuilder const* builder);
 
 void Nutcracker_OperatorBuilder_addProductTerm(NutcrackerOperatorBuilder* builder, NutcrackerMatrix const* const* components);
 void Nutcracker_OperatorBuilder_addTerm(NutcrackerOperatorBuilder* builder, NutcrackerOperatorTerm* term);
@@ -108,14 +111,14 @@ void Nutcracker_State_computeOverlap(NutcrackerState const* state1, NutcrackerSt
 void Nutcracker_State_computeExpectation(NutcrackerState const* state, NutcrackerOperator const* op, complex double* result);
 #endif
 //@+node:gcross.20110904235122.2838: *3* StateBuilder
-NutcrackerStateBuilder* Nutcracker_StateBuilder_new(unsigned int number_of_sites, uint32_t* dimensions);
-NutcrackerStateBuilder* Nutcracker_StateBuilder_newSimple(unsigned int number_of_sites, unsigned int physical_dimension);
+NutcrackerStateBuilder* Nutcracker_StateBuilder_new(uint32_t number_of_sites, uint32_t* dimensions);
+NutcrackerStateBuilder* Nutcracker_StateBuilder_newSimple(uint32_t number_of_sites, uint32_t physical_dimension);
 
 void Nutcracker_StateBuilder_free(NutcrackerStateBuilder* builder);
 
-void Nutcracker_StateBuilder_addSite(NutcrackerStateBuilder* builder, unsigned int dimension);
-void Nutcracker_StateBuilder_addSites(NutcrackerStateBuilder* builder, unsigned int number_of_sites, unsigned int dimension);
-unsigned int Nutcracker_StateBuilder_numberOfSites(NutcrackerStateBuilder const* builder);
+void Nutcracker_StateBuilder_addSite(NutcrackerStateBuilder* builder, uint32_t dimension);
+void Nutcracker_StateBuilder_addSites(NutcrackerStateBuilder* builder, uint32_t number_of_sites, uint32_t dimension);
+uint32_t Nutcracker_StateBuilder_numberOfSites(NutcrackerStateBuilder const* builder);
 
 void Nutcracker_StateBuilder_addProductTerm(NutcrackerStateBuilder* builder, NutcrackerVector const* const* components);
 void Nutcracker_StateBuilder_addTerm(NutcrackerStateBuilder* builder, NutcrackerStateTerm* term);
@@ -131,12 +134,12 @@ extern NutcrackerVector const
    ;
 
 #ifdef __cplusplus
-NutcrackerVector* Nutcracker_Vector_new(unsigned int physical_dimension, std::complex<double> const* data);
+NutcrackerVector* Nutcracker_Vector_new(uint32_t physical_dimension, std::complex<double> const* data);
 #else
-NutcrackerVector* Nutcracker_Vector_new(unsigned int physical_dimension, compex double const* data);
+NutcrackerVector* Nutcracker_Vector_new(uint32_t physical_dimension, complex double const* data);
 #endif
 
-NutcrackerVector* Nutcracker_Vector_newBasis(unsigned int physical_dimension, unsigned int observed_value);
+NutcrackerVector* Nutcracker_Vector_newBasis(uint32_t physical_dimension, uint32_t observed_value);
 
 NutcrackerVector* Nutcracker_Vector_add(NutcrackerVector const* x, NutcrackerVector const* y);
 
@@ -144,6 +147,14 @@ NutcrackerVector* Nutcracker_Vector_add(NutcrackerVector const* x, NutcrackerVec
 NutcrackerVector* Nutcracker_Vector_multiply(std::complex<double> const* c, NutcrackerVector const* x);
 #else
 NutcrackerVector* Nutcracker_Vector_multiply(complex double const* x, NutcrackerVector const* y);
+#endif
+
+uint32_t Nutcracker_Vector_getSize(NutcrackerVector const* x);
+
+#ifdef __cplusplus
+void Nutcracker_Vector_getElementAtIndex(NutcrackerVector const* x, uint32_t index, std::complex<double>* element);
+#else
+void Nutcracker_Vector_getElementAtIndex(NutcrackerVector const* x, uint32_t index, complex double* element);
 #endif
 //@-others
 

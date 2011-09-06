@@ -45,7 +45,7 @@ struct NutcrackerOperator : public Nutcracker::Operator {
 };
 //@+node:gcross.20110904213222.2783: *3* NutcrackerOperatorBuilder
 struct NutcrackerOperatorBuilder: public Nutcracker::OperatorBuilder {
-    NutcrackerOperatorBuilder(unsigned int number_of_sites, unsigned int physical_dimension)
+    NutcrackerOperatorBuilder(uint32_t number_of_sites, uint32_t physical_dimension)
       : Nutcracker::OperatorBuilder(number_of_sites,Nutcracker::PhysicalDimension(physical_dimension))
     {}
     
@@ -67,7 +67,7 @@ struct NutcrackerState : public Nutcracker::State {
 };
 //@+node:gcross.20110904235122.2842: *3* NutcrackerStateBuilder
 struct NutcrackerStateBuilder: public Nutcracker::StateBuilder {
-    NutcrackerStateBuilder(unsigned int number_of_sites, unsigned int physical_dimension)
+    NutcrackerStateBuilder(uint32_t number_of_sites, uint32_t physical_dimension)
       : Nutcracker::StateBuilder(number_of_sites,Nutcracker::PhysicalDimension(physical_dimension))
     {}
     

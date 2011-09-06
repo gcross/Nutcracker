@@ -56,14 +56,14 @@ NutcrackerMatrix* Nutcracker_Matrix_multiply(std::complex<double> const* c, Nutc
     return new NutcrackerMatrix((*c) * (*x));
 }
 //@+node:gcross.20110905174854.2851: *3* new
-NutcrackerMatrix* Nutcracker_Matrix_new(unsigned int dimension, std::complex<double> const* data) {
+NutcrackerMatrix* Nutcracker_Matrix_new(uint32_t dimension, std::complex<double> const* data) {
     using namespace Nutcracker;
     MatrixPtr matrix = make_shared<Matrix>(dimension,dimension);
     std::copy(data,data+dimension*dimension,matrix->data().begin());
     return new NutcrackerMatrix(matrix);
 }
 //@+node:gcross.20110905174854.2853: *3* newDiagonal
-NutcrackerMatrix* Nutcracker_Matrix_newDiagonal(unsigned int dimension, std::complex<double> const* diagonal) {
+NutcrackerMatrix* Nutcracker_Matrix_newDiagonal(uint32_t dimension, std::complex<double> const* diagonal) {
     return new NutcrackerMatrix(Nutcracker::diagonalMatrix(boost::make_iterator_range(diagonal,diagonal+dimension)));
 }
 //@-others

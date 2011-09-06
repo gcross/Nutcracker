@@ -59,15 +59,15 @@ NutcrackerOperator* Nutcracker_OperatorBuilder_compileCustomized(NutcrackerOpera
 //@+node:gcross.20110903000806.2743: *3* free
 void Nutcracker_OperatorBuilder_free(NutcrackerOperatorBuilder* builder) { delete builder; }
 //@+node:gcross.20110905151655.2826: *3* new
-NutcrackerOperatorBuilder* Nutcracker_OperatorBuilder_new(unsigned int number_of_sites, uint32_t* dimensions) {
+NutcrackerOperatorBuilder* Nutcracker_OperatorBuilder_new(uint32_t number_of_sites, uint32_t* dimensions) {
     return new NutcrackerOperatorBuilder(boost::make_iterator_range(dimensions,dimensions+number_of_sites));
 }
 //@+node:gcross.20110903000806.2742: *3* newSimple
-NutcrackerOperatorBuilder* Nutcracker_OperatorBuilder_newSimple(unsigned int number_of_sites, unsigned int physical_dimension) {
+NutcrackerOperatorBuilder* Nutcracker_OperatorBuilder_newSimple(uint32_t number_of_sites, uint32_t physical_dimension) {
     return new NutcrackerOperatorBuilder(number_of_sites,physical_dimension);
 }
 //@+node:gcross.20110903000806.2745: *3* numberOfSites
-unsigned int Nutcracker_OperatorBuilder_numberOfSites(NutcrackerOperatorBuilder const* builder) { return builder->numberOfSites(); }
+uint32_t Nutcracker_OperatorBuilder_numberOfSites(NutcrackerOperatorBuilder const* builder) { return builder->numberOfSites(); }
 //@-others
 
 }
