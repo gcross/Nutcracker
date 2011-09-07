@@ -66,6 +66,66 @@ class OperatorBuilderTests(unittest.TestCase):
     def test_newSimple(self):
         self.assertEqual([2]*3,list(OperatorBuilder(3,2)))
     #@-others
+#@+node:gcross.20110906155043.4848: *3* OperatorTerm
+class OperatorTermTests(unittest.TestCase):
+    #@+others
+    #@+node:gcross.20110906155043.4849: *4* LocalExternalField
+    def test_LocalExternalField(self):
+        for number_of_sites in range(2,6):
+            for site_number in range(number_of_sites):
+                field = LocalExternalField(site_number,Matrix.pauli_Z)
+                operator_1 = (
+                    OperatorBuilder(number_of_sites,2)
+                        .addTerm(field)
+                        .compile()
+                )
+                operator_2 = (
+                    OperatorBuilder(number_of_sites,2)
+                        .addTerm(1j*field)
+                        .compile()
+                )
+                for components in itertools.product(*((Vector.qubit_up,Vector.qubit_down),)*number_of_sites):
+                    state = (
+                        StateBuilder(number_of_sites,2)
+                            .addProductTerm(components)
+                            .compile()
+                    )
+                    if components[site_number] is Vector.qubit_up:
+                        correct_value = 1
+                    else:
+                        correct_value = -1
+                    self.assertAlmostEqual(state*operator_1,correct_value)
+                    self.assertAlmostEqual(state*operator_2,1j*correct_value)
+    #@+node:gcross.20110906155043.4877: *4* GlobalExternalField
+    def test_GlobalExternalField(self):
+        for number_of_sites in range(2,6):
+            field = GlobalExternalField(Matrix.pauli_Z)
+            operator_1 = (
+                OperatorBuilder(number_of_sites,2)
+                    .addTerm(field)
+                    .compile()
+            )
+            operator_2 = (
+                OperatorBuilder(number_of_sites,2)
+                    .addTerm(0.5*field)
+                    .compile()
+            )
+            for components in itertools.product(*((Vector.qubit_up,Vector.qubit_down),)*number_of_sites):
+                total = 0
+                for c in components:
+                    if c is Vector.qubit_up:
+                        total += 1
+                    else:
+                        assert c is Vector.qubit_down
+                        total -= 1
+                state = (
+                    StateBuilder(number_of_sites,2)
+                        .addProductTerm(components)
+                        .compile()
+                )
+                self.assertAlmostEqual(state*operator_1,total)
+                self.assertAlmostEqual(state*operator_2,0.5*total)
+    #@-others
 #@+node:gcross.20110906130654.2922: *3* StateBuilder
 class StateBuilderTests(unittest.TestCase):
     #@+others
@@ -134,6 +194,7 @@ class VectorTests(unittest.TestCase):
 tests = [
     MatrixTests,
     OperatorBuilderTests,
+    OperatorTermTests,
     StateBuilderTests,
     VectorTests,
 ]

@@ -7,6 +7,7 @@ add_library(Nutcracker SHARED
     matrix
     operator
     operator_builder
+    operator_term
     state
     state_builder
     vector

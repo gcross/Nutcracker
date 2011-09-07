@@ -35,13 +35,19 @@
 //@+node:gcross.20110906155043.4866: *3* << Base classes >>
 //@+others
 //@+node:gcross.20110906155043.4867: *4* NutcrackerTerm(Wrapper)
-template<typename Builder> struct NutcrackerTerm {
+template<typename Builder, typename Facade> struct NutcrackerTerm {
     typedef Builder BuilderType;
 
     virtual ~NutcrackerTerm() {}
     virtual void operator()(Builder& builder) const = 0;
     virtual void multiplyBy(std::complex<double> const coefficient) = 0;
-    virtual NutcrackerTerm* copy(std::complex<double> const coefficient) const = 0;
+    virtual Facade* copy() const = 0;
+
+    Facade* copyAndMultiplyBy(std::complex<double> const coefficient) const {
+        Facade* x = this->copy();
+        x->multiplyBy(coefficient);
+        return x;
+    }
 };
 
 template<typename Superclass, typename Term> struct NutcrackerTermWrapper : public Superclass, private Term {
@@ -57,7 +63,7 @@ template<typename Superclass, typename Term> struct NutcrackerTermWrapper : publ
     virtual void operator()(Builder& builder) const { return Term::operator()(builder); }
     virtual void multiplyBy(std::complex<double> const coefficient) { Term::multiplyBy(coefficient); }
 
-    virtual Superclass* copy(std::complex<double> const coefficient) const {
+    virtual Superclass* copy() const {
         return new NutcrackerTermWrapper(*this);
     }
 };
@@ -88,7 +94,7 @@ struct NutcrackerOperatorBuilder: public Nutcracker::OperatorBuilder {
     {}
 };
 //@+node:gcross.20110904213222.2786: *3* NutcrackerOperatorTerm
-struct NutcrackerOperatorTerm : public NutcrackerTerm<Nutcracker::OperatorBuilder> {};
+struct NutcrackerOperatorTerm : public NutcrackerTerm<Nutcracker::OperatorBuilder,NutcrackerOperatorTerm> {};
 
 template<typename Term> struct NutcrackerOperatorTermWrapper : public NutcrackerTermWrapper<NutcrackerOperatorTerm,Term> {
     typedef NutcrackerTermWrapper<NutcrackerOperatorTerm,Term>  Base;
@@ -114,7 +120,7 @@ struct NutcrackerStateBuilder: public Nutcracker::StateBuilder {
     {}
 };
 //@+node:gcross.20110904235122.2840: *3* NutcrackerStateTerm
-struct NutcrackerStateTerm : public NutcrackerTerm<Nutcracker::StateBuilder> {};
+struct NutcrackerStateTerm : public NutcrackerTerm<Nutcracker::StateBuilder,NutcrackerStateTerm> {};
 
 template<typename Term> struct NutcrackerStateTermWrapper : public NutcrackerTermWrapper<NutcrackerStateTerm,Term> {
     NutcrackerStateTermWrapper(Term const& term)

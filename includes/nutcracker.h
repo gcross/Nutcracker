@@ -107,6 +107,24 @@ void Nutcracker_OperatorBuilder_addTerm(NutcrackerOperatorBuilder* builder, Nutc
 
 NutcrackerOperator* Nutcracker_OperatorBuilder_compile(NutcrackerOperatorBuilder* builder);
 NutcrackerOperator* Nutcracker_OperatorBuilder_compileCustomized(NutcrackerOperatorBuilder* builder, bool optimize, bool add_start_and_end_loops);
+//@+node:gcross.20110906155043.4827: *3* OperatorTerm
+void Nutcracker_OperatorTerm_free(NutcrackerOperatorTerm* op);
+
+// NutcrackerOperatorTerm* Nutcracker_OperatorTerm_add(NutcrackerOperatorTerm const* x, NutcrackerOperatorTerm const* y);
+
+#ifdef __cplusplus
+NutcrackerOperatorTerm* Nutcracker_OperatorTerm_multiply(std::complex<double> const* c, NutcrackerOperatorTerm const* x);
+#else
+NutcrackerOperatorTerm* Nutcracker_OperatorTerm_multiply(complex double const* x, NutcrackerOperatorTerm const* y);
+#endif
+
+NutcrackerOperatorTerm* Nutcracker_OperatorTerm_create_LocalExternalField(uint32_t site_number, NutcrackerMatrix const* field_matrix);
+NutcrackerOperatorTerm* Nutcracker_OperatorTerm_create_GlobalExternalField(NutcrackerMatrix const* field_matrix);
+
+NutcrackerOperatorTerm* Nutcracker_OperatorTerm_create_LocalNeighborCouplingField(uint32_t site_number, NutcrackerMatrix const* left_field_matrix, NutcrackerMatrix const* right_field_matrix);
+NutcrackerOperatorTerm* Nutcracker_OperatorTerm_create_GlobalNeighborCouplingField(NutcrackerMatrix const* left_field_matrix, NutcrackerMatrix const* right_field_matrix);
+
+NutcrackerOperatorTerm* Nutcracker_OperatorTerm_create_TransverseIsingField(NutcrackerMatrix const* external_field_matrix, NutcrackerMatrix const* left_coupling_field_matrix, NutcrackerMatrix const* right_coupling_field_matrix);
 //@+node:gcross.20110904235122.2810: *3* State
 void Nutcracker_State_free(NutcrackerState* state);
 

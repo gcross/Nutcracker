@@ -58,6 +58,7 @@
 <v t="gcross.20110904235122.2777"><vh>@file matrix.cpp</vh></v>
 <v t="gcross.20110823131135.2582"><vh>@file operator.cpp</vh></v>
 <v t="gcross.20110823131135.2594"><vh>@file operator_builder.cpp</vh></v>
+<v t="gcross.20110906155043.4833"><vh>@file operator_term.cpp</vh></v>
 <v t="gcross.20110904235122.2804"><vh>@file state.cpp</vh></v>
 <v t="gcross.20110904235122.2855"><vh>@file state_builder.cpp</vh></v>
 <v t="gcross.20110904235122.2823"><vh>@file vector.cpp</vh></v>
