@@ -312,10 +312,18 @@ class OperatorTerm(Handle):
 def GlobalExternalField(field_matrix):
     return OperatorTerm(GlobalExternalField._(field_matrix._))
 GlobalExternalField._ = bindFunction("Nutcracker_OperatorTerm_create_GlobalExternalField",[Matrix.C_P],OperatorTerm.C_P)
+#@+node:gcross.20110906155043.4891: *5* GlobalNeighborCouplingField
+def GlobalNeighborCouplingField(left_field_matrix,right_field_matrix):
+    return OperatorTerm(GlobalNeighborCouplingField._(left_field_matrix._,right_field_matrix._))
+GlobalNeighborCouplingField._ = bindFunction("Nutcracker_OperatorTerm_create_GlobalNeighborCouplingField",[Matrix.C_P,Matrix.C_P],OperatorTerm.C_P)
 #@+node:gcross.20110906155043.4857: *5* LocalExternalField
 def LocalExternalField(site_number,field_matrix):
     return OperatorTerm(LocalExternalField._(site_number,field_matrix._))
 LocalExternalField._ = bindFunction("Nutcracker_OperatorTerm_create_LocalExternalField",[c_uint32,Matrix.C_P],OperatorTerm.C_P)
+#@+node:gcross.20110906155043.4887: *5* LocalNeighborCouplingField
+def LocalNeighborCouplingField(site_number,left_field_matrix,right_field_matrix):
+    return OperatorTerm(LocalNeighborCouplingField._(site_number,left_field_matrix._,right_field_matrix._))
+LocalNeighborCouplingField._ = bindFunction("Nutcracker_OperatorTerm_create_LocalNeighborCouplingField",[c_uint32,Matrix.C_P,Matrix.C_P],OperatorTerm.C_P)
 #@-others
 #@-others
 #@-<< Term classes >>
@@ -431,6 +439,8 @@ __all__ = [
 
     "LocalExternalField",
     "GlobalExternalField",
+    "LocalNeighborCouplingField",
+    "GlobalNeighborCouplingField",
 ]
 #@-<< Export list >>
 #@-leo

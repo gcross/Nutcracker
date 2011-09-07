@@ -69,33 +69,6 @@ class OperatorBuilderTests(unittest.TestCase):
 #@+node:gcross.20110906155043.4848: *3* OperatorTerm
 class OperatorTermTests(unittest.TestCase):
     #@+others
-    #@+node:gcross.20110906155043.4849: *4* LocalExternalField
-    def test_LocalExternalField(self):
-        for number_of_sites in range(2,6):
-            for site_number in range(number_of_sites):
-                field = LocalExternalField(site_number,Matrix.pauli_Z)
-                operator_1 = (
-                    OperatorBuilder(number_of_sites,2)
-                        .addTerm(field)
-                        .compile()
-                )
-                operator_2 = (
-                    OperatorBuilder(number_of_sites,2)
-                        .addTerm(1j*field)
-                        .compile()
-                )
-                for components in itertools.product(*((Vector.qubit_up,Vector.qubit_down),)*number_of_sites):
-                    state = (
-                        StateBuilder(number_of_sites,2)
-                            .addProductTerm(components)
-                            .compile()
-                    )
-                    if components[site_number] is Vector.qubit_up:
-                        correct_value = 1
-                    else:
-                        correct_value = -1
-                    self.assertAlmostEqual(state*operator_1,correct_value)
-                    self.assertAlmostEqual(state*operator_2,1j*correct_value)
     #@+node:gcross.20110906155043.4877: *4* GlobalExternalField
     def test_GlobalExternalField(self):
         for number_of_sites in range(2,6):
@@ -125,6 +98,88 @@ class OperatorTermTests(unittest.TestCase):
                 )
                 self.assertAlmostEqual(state*operator_1,total)
                 self.assertAlmostEqual(state*operator_2,0.5*total)
+    #@+node:gcross.20110906155043.4895: *4* GlobalNeighborCouplingField
+    def test_GlobalNeighborCouplingField(self):
+        for number_of_sites in range(2,6):
+            field = GlobalNeighborCouplingField(Matrix.pauli_Z,Matrix.pauli_Z)
+            operator_1 = (
+                OperatorBuilder(number_of_sites,2)
+                    .addTerm(field)
+                    .compile()
+            )
+            operator_2 = (
+                OperatorBuilder(number_of_sites,2)
+                    .addTerm(3.14*field)
+                    .compile()
+            )
+            for components in itertools.product(*((Vector.qubit_up,Vector.qubit_down),)*number_of_sites):
+                total = 0
+                for i in range(len(components)-1):
+                    if components[i] is components[i+1]:
+                        total += 1
+                    else:
+                        total -= 1
+                state = (
+                    StateBuilder(number_of_sites,2)
+                        .addProductTerm(components)
+                        .compile()
+                )
+                self.assertAlmostEqual(state*operator_1,total)
+                self.assertAlmostEqual(state*operator_2,3.14*total)
+    #@+node:gcross.20110906155043.4849: *4* LocalExternalField
+    def test_LocalExternalField(self):
+        for number_of_sites in range(2,6):
+            for site_number in range(number_of_sites):
+                field = LocalExternalField(site_number,Matrix.pauli_Z)
+                operator_1 = (
+                    OperatorBuilder(number_of_sites,2)
+                        .addTerm(field)
+                        .compile()
+                )
+                operator_2 = (
+                    OperatorBuilder(number_of_sites,2)
+                        .addTerm(1j*field)
+                        .compile()
+                )
+                for components in itertools.product(*((Vector.qubit_up,Vector.qubit_down),)*number_of_sites):
+                    state = (
+                        StateBuilder(number_of_sites,2)
+                            .addProductTerm(components)
+                            .compile()
+                    )
+                    if components[site_number] is Vector.qubit_up:
+                        correct_value = 1
+                    else:
+                        correct_value = -1
+                    self.assertAlmostEqual(state*operator_1,correct_value)
+                    self.assertAlmostEqual(state*operator_2,1j*correct_value)
+    #@+node:gcross.20110906155043.4889: *4* LocalNeighborCouplingField
+    def test_LocalNeighborCouplingField(self):
+        for number_of_sites in range(2,6):
+            for site_number in range(number_of_sites-1):
+                field = LocalNeighborCouplingField(site_number,Matrix.pauli_Z,Matrix.pauli_Z)
+                operator_1 = (
+                    OperatorBuilder(number_of_sites,2)
+                        .addTerm(field)
+                        .compile()
+                )
+                operator_2 = (
+                    OperatorBuilder(number_of_sites,2)
+                        .addTerm(2*field)
+                        .compile()
+                )
+                for components in itertools.product(*((Vector.qubit_up,Vector.qubit_down),)*number_of_sites):
+                    state = (
+                        StateBuilder(number_of_sites,2)
+                            .addProductTerm(components)
+                            .compile()
+                    )
+                    if components[site_number] is components[site_number+1]:
+                        correct_value = 1
+                    else:
+                        correct_value = -1
+                    self.assertAlmostEqual(state*operator_1,correct_value)
+                    self.assertAlmostEqual(state*operator_2,2*correct_value)
     #@-others
 #@+node:gcross.20110906130654.2922: *3* StateBuilder
 class StateBuilderTests(unittest.TestCase):
