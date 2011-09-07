@@ -1175,27 +1175,18 @@ StateBuilder& operator=(BOOST_RV_REF(StateBuilder) other)
 };
 //@+node:gcross.20110903210625.2691: *3* Terms
 //@+node:gcross.20110903210625.2702: *4* Base class
-template<typename BuilderType, typename Facade> struct Term {
-    typedef BuilderType Builder;
-
-    Term operator*(complex<double> const coefficient) const {
-        return Facade(static_cast<Facade&>(*this)) *= coefficient;
+template<typename Builder, typename Facade> struct Term {
+    Facade operator*(complex<double> const& coefficient) const {
+        Facade x = static_cast<Facade const&>(*this);
+        x *= coefficient;
+        return x;
     }
-    Facade& operator*=(complex<double> const coefficient) {
+
+    Facade& operator*=(complex<double> const& coefficient) {
         Facade& x = static_cast<Facade&>(*this);
         x.multiplyBy(coefficient);
         return x;
     }
-};
-
-template<typename BuilderType, typename Facade> struct DataTerm : Term<BuilderType,Facade> {
-    typename BuilderType::DataConstPtr& data;
-
-    DataTerm(typename BuilderType::DataConstPtr& data) : data(data) {}
-
-    void multiplyBy(complex<double> const coefficient) {
-        data *= coefficient;
-    }    
 };
 //@+node:gcross.20110903210625.2712: *4* Generic classes
 //@+node:gcross.20110903210625.2713: *5* SumTerm
@@ -1212,64 +1203,39 @@ template<typename Builder, typename Facade1, typename Facade2> struct SumTerm : 
         builder += term2;
     }
 
-    void multiplyBy(complex<double> const coefficient) {
-        term1 *= coefficient;
+    void multiplyBy(std::complex<double> const& coefficient) {
+        term1.multiplyBy(coefficient);
     }
 };
 
 template<typename Builder, typename Facade1, typename Facade2> SumTerm<Builder,Facade1,Facade2> operator+(Facade1 const& facade1, Facade2 const& facade2) {
     return SumTerm<Builder,Facade1,Facade2>(facade1,facade2);
 }
-//@+node:gcross.20110904213222.2776: *5* WrappedTerm
-template<typename Builder> class WrappedTerm : Term<Builder,WrappedTerm<Builder> > {
-protected:
-
-    boost::shared_ptr<void> wrapped;
-    boost::function<void (Builder&)> wrappedCall;
-    boost::function<void (complex<double>)> wrappedMultiplyBy;
-
-public:
-
-    template<typename Term> WrappedTerm(Term const& term) {
-        boost::shared_ptr<Term> const wrapped_term = boost::make_shared<Term>(term);
-        wrapped = wrapped_term;
-        wrappedCall = *wrapped_term;
-        wrappedMultiplyBy(boost::bind(&Term::multiplyBy,wrapped_term));
-    }
-
-    void operator()(Builder& builder) const { wrappedCall(builder); }
-    void multiplyBy(complex<double> const coefficient) { wrappedMultiplyBy(coefficient); }
-};
-
-typedef WrappedTerm<OperatorBuilder> WrappedOperatorTerm;
-typedef WrappedTerm<StateBuilder> WrappedStateTerm;
 //@+node:gcross.20110903210625.2692: *4* Operator
 //@+node:gcross.20110903210625.2693: *5* LocalExternalField
-struct LocalExternalField : DataTerm<OperatorBuilder,LocalExternalField> {
-    typedef DataTerm<OperatorBuilder,LocalExternalField> Base;
-
+struct LocalExternalField : Term<OperatorBuilder,LocalExternalField> {
     unsigned int site_number;
     MatrixConstPtr field_matrix;
 
     LocalExternalField(unsigned int site_number, MatrixConstPtr const& field_matrix)
-      : Base(this->field_matrix)
-      , site_number(site_number)
+      : site_number(site_number)
       , field_matrix(field_matrix)
     {}
 
     void operator()(OperatorBuilder& builder) const {
         builder.connect(site_number,builder.getStartSignal(),builder.getEndSignal(),field_matrix);
     }
+
+    void multiplyBy(std::complex<double> const& coefficient) {
+        field_matrix = field_matrix * coefficient;
+    }
 };
 //@+node:gcross.20110903210625.2695: *5* GlobalExternalField
-struct GlobalExternalField : DataTerm<OperatorBuilder,GlobalExternalField> {
-    typedef DataTerm<OperatorBuilder,GlobalExternalField> Base;
-
+struct GlobalExternalField : Term<OperatorBuilder,GlobalExternalField> {
     MatrixConstPtr field_matrix;
 
     GlobalExternalField(MatrixConstPtr const& field_matrix)
-      : Base(this->field_matrix)
-      , field_matrix(field_matrix)
+      : field_matrix(field_matrix)
     {}
 
     void operator()(OperatorBuilder& builder) const {
@@ -1277,17 +1243,18 @@ struct GlobalExternalField : DataTerm<OperatorBuilder,GlobalExternalField> {
             builder += LocalExternalField(site_number,field_matrix);
         }
     }
+
+    void multiplyBy(std::complex<double> const& coefficient) {
+        field_matrix = field_matrix * coefficient;
+    }
 };
 //@+node:gcross.20110903210625.2696: *5* LocalNeighborCouplingField
-struct LocalNeighborCouplingField : DataTerm<OperatorBuilder,LocalNeighborCouplingField> {
-    typedef DataTerm<OperatorBuilder,LocalNeighborCouplingField> Base;
-
+struct LocalNeighborCouplingField : Term<OperatorBuilder,LocalNeighborCouplingField> {
     unsigned int left_site_number;
     MatrixConstPtr left_field_matrix, right_field_matrix;
 
     LocalNeighborCouplingField(unsigned int left_site_number, MatrixConstPtr const& left_field_matrix, MatrixConstPtr const& right_field_matrix)
-      : Base(this->left_field_matrix)
-      , left_site_number(left_site_number)
+      : left_site_number(left_site_number)
       , left_field_matrix(left_field_matrix)
       , right_field_matrix(right_field_matrix)
     {}
@@ -1297,16 +1264,17 @@ struct LocalNeighborCouplingField : DataTerm<OperatorBuilder,LocalNeighborCoupli
         builder.connect(left_site_number,builder.getStartSignal(),signal,left_field_matrix);
         builder.connect(left_site_number+1,signal,builder.getEndSignal(),right_field_matrix);
     }
+
+    void multiplyBy(std::complex<double> const& coefficient) {
+        left_field_matrix = left_field_matrix * coefficient;
+    }
 };
 //@+node:gcross.20110903210625.2698: *5* GlobalNeighborCouplingField
-struct GlobalNeighborCouplingField : DataTerm<OperatorBuilder,GlobalNeighborCouplingField> {
-    typedef DataTerm<OperatorBuilder,GlobalNeighborCouplingField> Base;
-
+struct GlobalNeighborCouplingField : Term<OperatorBuilder,GlobalNeighborCouplingField> {
     MatrixConstPtr left_field_matrix, right_field_matrix;
 
     GlobalNeighborCouplingField(MatrixConstPtr const& left_field_matrix, MatrixConstPtr const& right_field_matrix)
-      : Base(this->left_field_matrix)
-      , left_field_matrix(left_field_matrix)
+      : left_field_matrix(left_field_matrix)
       , right_field_matrix(right_field_matrix)
     {}
 
@@ -1316,6 +1284,10 @@ struct GlobalNeighborCouplingField : DataTerm<OperatorBuilder,GlobalNeighborCoup
             builder.connect(site_number,builder.getStartSignal(),signal,left_field_matrix);
             builder.connect(site_number,signal,builder.getEndSignal(),right_field_matrix);
         }
+    }
+
+    void multiplyBy(std::complex<double> const& coefficient) {
+        left_field_matrix = left_field_matrix * coefficient;
     }
 };
 //@+node:gcross.20110903210625.2707: *5* TransverseIsingField
@@ -1328,15 +1300,12 @@ struct TransverseIsingField : SumTerm<OperatorBuilder,GlobalExternalField,Global
 };
 //@+node:gcross.20110903210625.2699: *4* State
 //@+node:gcross.20110903210625.2701: *5* WStateTerm
-struct WStateTerm : DataTerm<StateBuilder,WStateTerm> {
-    typedef DataTerm<StateBuilder,WStateTerm> Base;
-
+struct WStateTerm : Term<StateBuilder,WStateTerm> {
     VectorConstPtr common_observation, special_observation;
     bool normalized;
 
     WStateTerm(VectorConstPtr const& common_observation, VectorConstPtr const& special_observation, bool normalized=true)
-      : Base(this->special_observation)
-      , common_observation(common_observation)
+      : common_observation(common_observation)
       , special_observation(special_observation)
     {}
 
@@ -1360,6 +1329,10 @@ struct WStateTerm : DataTerm<StateBuilder,WStateTerm> {
                 builder.connect(site_number,signal_2,signal_2,common_observation);
             }
         }
+    }
+
+    void multiplyBy(std::complex<double> const& coefficient) {
+        special_observation = special_observation * coefficient;
     }
 };
 //@-others

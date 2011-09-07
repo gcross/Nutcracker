@@ -410,12 +410,20 @@ TEST_SUITE(Operator_terms) {
 //@+node:gcross.20110822214054.2517: *4* GlobalExternalField
 TEST_CASE(GlobalExternalField) {
     BOOST_FOREACH(unsigned int const number_of_sites, irange(1u,5u)) {
+        GlobalExternalField field_1(Pauli::Z), field_2 = field_1 * 0.5;
         checkOperatorsEqual(
             OperatorBuilder(number_of_sites,PhysicalDimension(2u))
-                .addTerm(GlobalExternalField(Pauli::Z))
+                .addTerm(field_1)
                 .compile()
             ,
             constructExternalFieldOperator(number_of_sites,Pauli::Z)
+        );
+        checkOperatorsEqual(
+            OperatorBuilder(number_of_sites,PhysicalDimension(2u))
+                .addTerm(field_2)
+                .compile()
+            ,
+            constructExternalFieldOperator(number_of_sites,0.5*Pauli::Z)
         );
     }
 }
@@ -426,7 +434,7 @@ TEST_CASE(GlobalNeighborCouplingField) {
         Operator op =
             OperatorBuilder(number_of_sites,PhysicalDimension(2u))
                 .addTerm(GlobalExternalField(Pauli::Z))
-                .addTerm(GlobalNeighborCouplingField(0.5*Pauli::X,Pauli::X))
+                .addTerm(GlobalNeighborCouplingField(Pauli::X,Pauli::X)*0.5)
                 .compile();
         ASSERT_EQ_VAL(op[0]->numberOfMatrices(),3u);
         BOOST_FOREACH(unsigned int const site_number,irange(1u,number_of_sites-1)) {
@@ -442,14 +450,16 @@ TEST_CASE(GlobalNeighborCouplingField) {
 }
 //@+node:gcross.20110822214054.2519: *4* LocalExternalField
 TEST_CASE(LocalExternalField) {
+    RNG random;
     BOOST_FOREACH(unsigned int const number_of_sites, irange(1u,5u)) {
+        complex<double> coefficient = random.randomComplexDouble();
         OperatorBuilder builder(number_of_sites,PhysicalDimension(2u));
         BOOST_FOREACH(unsigned int const site_number, irange(0u,number_of_sites)) {
-            builder += LocalExternalField(site_number,Pauli::Z);
+            builder += LocalExternalField(site_number,Pauli::Z) * coefficient;
         }
         checkOperatorsEqual(
             builder.compile(),
-            constructExternalFieldOperator(number_of_sites,Pauli::Z)
+            constructExternalFieldOperator(number_of_sites,Pauli::Z * coefficient)
         );
     }
 }
@@ -461,7 +471,7 @@ TEST_CASE(LocalNeighborCouplingField) {
         BOOST_FOREACH(unsigned int const site_number, irange(0u,number_of_sites)) {
             builder += LocalExternalField(site_number,Pauli::Z);
             if(site_number+1 < number_of_sites) {
-                builder += LocalNeighborCouplingField(site_number,0.5*Pauli::X,Pauli::X);
+                builder += LocalNeighborCouplingField(site_number,Pauli::X,Pauli::X)*0.5;
             }
         }
         Operator op = builder.compile();

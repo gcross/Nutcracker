@@ -31,6 +31,40 @@
 
 //@+others
 //@+node:gcross.20110904213222.2782: ** Classes
+//@+<< Base classes >>
+//@+node:gcross.20110906155043.4866: *3* << Base classes >>
+//@+others
+//@+node:gcross.20110906155043.4867: *4* NutcrackerTerm(Wrapper)
+template<typename Builder> struct NutcrackerTerm {
+    typedef Builder BuilderType;
+
+    virtual ~NutcrackerTerm() {}
+    virtual void operator()(Builder& builder) const = 0;
+    virtual void multiplyBy(std::complex<double> const coefficient) = 0;
+    virtual NutcrackerTerm* copy(std::complex<double> const coefficient) const = 0;
+};
+
+template<typename Superclass, typename Term> struct NutcrackerTermWrapper : public Superclass, private Term {
+    typedef typename Superclass::BuilderType Builder;
+
+    template<typename A> NutcrackerTermWrapper(A const& a) : Term(a) {}
+    template<typename A, typename B> NutcrackerTermWrapper(A const& a, B const& b) : Term(a,b) {}
+    template<typename A, typename B, typename C> NutcrackerTermWrapper(A const& a, B const& b, C const& c) : Term(a,b,c) {}
+    template<typename A, typename B, typename C, typename D> NutcrackerTermWrapper(A const& a, B const& b, C const& c, D const& d) : Term(a,b,c,d) {}
+
+    virtual ~NutcrackerTermWrapper() {}
+
+    virtual void operator()(Builder& builder) const { return Term::operator()(builder); }
+    virtual void multiplyBy(std::complex<double> const coefficient) { Term::multiplyBy(coefficient); }
+
+    virtual Superclass* copy(std::complex<double> const coefficient) const {
+        return new NutcrackerTermWrapper(*this);
+    }
+};
+//@-others
+//@-<< Base classes >>
+
+//@+others
 //@+node:gcross.20110904235122.2782: *3* NutcrackerMatrix
 struct NutcrackerMatrix : public Nutcracker::MatrixConstPtr {
     NutcrackerMatrix(Nutcracker::MatrixConstPtr const& matrix)
@@ -54,10 +88,14 @@ struct NutcrackerOperatorBuilder: public Nutcracker::OperatorBuilder {
     {}
 };
 //@+node:gcross.20110904213222.2786: *3* NutcrackerOperatorTerm
-struct NutcrackerOperatorTerm : public Nutcracker::WrappedOperatorTerm {
-    template<typename Term> NutcrackerOperatorTerm(Term const& term)
-      : Nutcracker::WrappedOperatorTerm(term)
-    {}
+struct NutcrackerOperatorTerm : public NutcrackerTerm<Nutcracker::OperatorBuilder> {};
+
+template<typename Term> struct NutcrackerOperatorTermWrapper : public NutcrackerTermWrapper<NutcrackerOperatorTerm,Term> {
+    typedef NutcrackerTermWrapper<NutcrackerOperatorTerm,Term>  Base;
+    template<typename A> NutcrackerOperatorTermWrapper(A const& a) : Base(a) {}
+    template<typename A, typename B> NutcrackerOperatorTermWrapper(A const& a, B const& b) : Base(a,b) {}
+    template<typename A, typename B, typename C> NutcrackerOperatorTermWrapper(A const& a, B const& b, C const& c) : Base(a,b,c) {}
+    template<typename A, typename B, typename C, typename D> NutcrackerOperatorTermWrapper(A const& a, B const& b, C const& c, D const& d) : Base(a,b,c,d) {}
 };
 //@+node:gcross.20110904235122.2812: *3* NutcrackerState
 struct NutcrackerState : public Nutcracker::State {
@@ -76,9 +114,11 @@ struct NutcrackerStateBuilder: public Nutcracker::StateBuilder {
     {}
 };
 //@+node:gcross.20110904235122.2840: *3* NutcrackerStateTerm
-struct NutcrackerStateTerm : public Nutcracker::WrappedStateTerm {
-    template<typename Term> NutcrackerStateTerm(Term const& term)
-      : Nutcracker::WrappedStateTerm(term)
+struct NutcrackerStateTerm : public NutcrackerTerm<Nutcracker::StateBuilder> {};
+
+template<typename Term> struct NutcrackerStateTermWrapper : public NutcrackerTermWrapper<NutcrackerStateTerm,Term> {
+    NutcrackerStateTermWrapper(Term const& term)
+      : NutcrackerTermWrapper<NutcrackerStateTerm,Term>(term)
     {}
 };
 //@+node:gcross.20110904235122.2834: *3* NutcrackerVector
@@ -87,6 +127,7 @@ struct NutcrackerVector : public Nutcracker::VectorConstPtr {
       : Nutcracker::VectorConstPtr(vector)
     {}
 };
+//@-others
 //@+node:gcross.20110904235122.2797: ** Macros
 //@+node:gcross.20110904235122.2796: *3* (X)_ERROR_REGION
 #define BEGIN_ERROR_REGION try {
