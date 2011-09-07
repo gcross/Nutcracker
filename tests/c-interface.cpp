@@ -19,6 +19,7 @@
 
 //@+<< Includes >>
 //@+node:gcross.20110905151655.2847: ** << Includes >>
+#include <boost/container/vector.hpp>
 #include <boost/foreach.hpp>
 #include <boost/range/algorithm/for_each.hpp>
 #include <boost/range/irange.hpp>
@@ -44,6 +45,17 @@ using std::vector;
 //@+node:gcross.20110905174854.2841: *3* c
 //! Convenience function that constructs the complex number x + iy.
 inline complex<double> c(double x, double y) { return complex<double>(x,y); }
+//@+node:gcross.20110906155043.4873: *3* simpleComponents
+template<typename T> boost::container::vector<T const*> simpleComponents(
+      unsigned int number_of_sites
+    , unsigned int site_number
+    , T const* common
+    , T const* special
+) {
+    boost::container::vector<T const*> components(number_of_sites,common);
+    components[site_number] = special;
+    return boost::move(components);
+}
 //@+node:gcross.20110905151655.2848: ** Tests
 TEST_SUITE(C_Interface) {
 //@+others
@@ -62,11 +74,9 @@ TEST_CASE(product) {
                 complex<double> const data[2] = {c(0,0),c(site_number,0)};
                 NutcrackerMatrix* non_trivial_matrix = Nutcracker_Matrix_newDiagonal(2,data);
                 BOOST_SCOPE_EXIT((non_trivial_matrix)) { Nutcracker_Matrix_free(non_trivial_matrix); } BOOST_SCOPE_EXIT_END
-                vector<NutcrackerMatrix const*> components;
-                REPEAT(site_number) { components.push_back(Nutcracker_Matrix_Pauli_I); }
-                components.push_back(non_trivial_matrix);
-                REPEAT(number_of_sites-site_number-1) { components.push_back(Nutcracker_Matrix_Pauli_I); }
-                Nutcracker_OperatorBuilder_addProductTerm(builder,&components.front());
+                Nutcracker_OperatorBuilder_addProductTerm(builder,&
+                    simpleComponents(number_of_sites,site_number,Nutcracker_Matrix_Pauli_I,non_trivial_matrix)
+                .front());
             }
             op = Nutcracker_OperatorBuilder_compile(builder);
             if(op == NULL) {
@@ -78,11 +88,9 @@ TEST_CASE(product) {
         BOOST_FOREACH(unsigned int const site_number,irange(0u,number_of_sites)) {
             NutcrackerStateBuilder* builder = Nutcracker_StateBuilder_newSimple(number_of_sites,2u);
             BOOST_SCOPE_EXIT((builder)) { Nutcracker_StateBuilder_free(builder); } BOOST_SCOPE_EXIT_END
-            vector<NutcrackerVector const*> components;
-            REPEAT(site_number) { components.push_back(Nutcracker_Vector_Qubit_Up); }
-            components.push_back(Nutcracker_Vector_Qubit_Down);
-            REPEAT(number_of_sites-site_number-1) { components.push_back(Nutcracker_Vector_Qubit_Up); }
-            Nutcracker_StateBuilder_addProductTerm(builder,&components.front());
+            Nutcracker_StateBuilder_addProductTerm(builder,&
+                simpleComponents(number_of_sites,site_number,Nutcracker_Vector_Qubit_Up,Nutcracker_Vector_Qubit_Down)
+            .front());
             NutcrackerState* state = Nutcracker_StateBuilder_compile(builder);
             ASSERT_TRUE(state != NULL);
             BOOST_SCOPE_EXIT((state)) { Nutcracker_State_free(state); } BOOST_SCOPE_EXIT_END
@@ -105,11 +113,9 @@ TEST_CASE(orthogonal_basis) {
         BOOST_FOREACH(unsigned int const site_number,irange(0u,number_of_sites)) {
             NutcrackerStateBuilder* builder = Nutcracker_StateBuilder_newSimple(number_of_sites,2u);
             BOOST_SCOPE_EXIT((builder)) { Nutcracker_StateBuilder_free(builder); } BOOST_SCOPE_EXIT_END
-            vector<NutcrackerVector const*> components;
-            REPEAT(site_number) { components.push_back(Nutcracker_Vector_Qubit_Up); }
-            components.push_back(Nutcracker_Vector_Qubit_Down);
-            REPEAT(number_of_sites-site_number-1) { components.push_back(Nutcracker_Vector_Qubit_Up); }
-            Nutcracker_StateBuilder_addProductTerm(builder,&components.front());
+            Nutcracker_StateBuilder_addProductTerm(builder,&
+                simpleComponents(number_of_sites,site_number,Nutcracker_Vector_Qubit_Up,Nutcracker_Vector_Qubit_Down)
+            .front());
             NutcrackerState* state = Nutcracker_StateBuilder_compile(builder);
             ASSERT_TRUE(state != NULL);
             states.push_back(state);
