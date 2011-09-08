@@ -16,6 +16,13 @@ from Nutcracker import *
 #@+node:gcross.20110906155043.2996: *3* Matrix
 class MatrixTests(unittest.TestCase):
     #@+others
+    #@+node:gcross.20110906155043.4984: *4* add
+    def test_add(self):
+        self.assertEqual([2,2,3,3],list(Matrix([1,-1]) + Matrix([[1,2],[3,4]])))
+    #@+node:gcross.20110906155043.4992: *4* multiply
+    def test_multiply(self):
+        self.assertEqual([1+1j,0,0,2+2j],list(Matrix([1,2]) * (1+1j)))
+        self.assertEqual([1+1j,0,0,2+2j],list((1+1j) * Matrix([1,2])))
     #@+node:gcross.20110906155043.2998: *4* new
     def test_new(self):
         m = Matrix([[1,2],[3,4]])

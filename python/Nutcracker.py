@@ -127,13 +127,19 @@ class Matrix(Handle):
     class C(ctypes.Structure): pass
     C_P = POINTER(C)
 
+    _add = bindMethod("Nutcracker_Matrix_add",[C_P,C_P],C_P)
     _free = bindMethod("Nutcracker_Matrix_free",[C_P],None)
     _getElementAtCoordinate = bindMethod("Nutcracker_Matrix_getElementAtCoordinate",[C_P,c_uint32,c_uint32,c_complex_double_p],None)
     _getSize = bindMethod("Nutcracker_Matrix_getSize",[C_P],c_uint32)
+    _multiply = bindMethod("Nutcracker_Matrix_multiply",[c_complex_double_p,C_P],C_P)
     _new = bindMethod("Nutcracker_Matrix_new",[c_uint32,c_complex_double_p],C_P)
     _newDiagonal = bindMethod("Nutcracker_Matrix_newDiagonal",[c_uint32,c_complex_double_p],C_P)
     #@-<< Bindings >>
     #@+others
+    #@+node:gcross.20110906155043.4986: *5* __add__
+    def __add__(self,other):
+        assert(isinstance(other,Matrix))
+        return Matrix(self._add(self._,other._))
     #@+node:gcross.20110906155043.2991: *5* __getitem__
     def __getitem__(self,index):
         i,j = index
@@ -152,12 +158,18 @@ class Matrix(Handle):
         else:
             data = toComplexDoubleArray(data)
             self._ = self._newDiagonal(len(data),data)
-    #@+node:gcross.20110906155043.2993: *5* __len__
-    def __len__(self):
-        return int(self._getSize(self._))
     #@+node:gcross.20110906155043.4812: *5* __iter__
     def __iter__(self):
         return (self[index] for index in itertools.product(*(range(len(self)),)*2))
+    #@+node:gcross.20110906155043.2993: *5* __len__
+    def __len__(self):
+        return int(self._getSize(self._))
+    #@+node:gcross.20110906155043.4988: *5* __mul__
+    def __mul__(self,c):
+        return Matrix(self._multiply(toComplexDouble(c),self._))
+    #@+node:gcross.20110906155043.4990: *5* __rmul__
+    def __rmul__(self,c):
+        return Matrix(self._multiply(toComplexDouble(c),self._))
     #@-others
 
 #@+<< Constants >>
