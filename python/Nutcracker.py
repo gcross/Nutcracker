@@ -290,10 +290,15 @@ class OperatorTerm(Handle):
     class C(ctypes.Structure): pass
     C_P = POINTER(C)
 
+    _add = bindMethod("Nutcracker_OperatorTerm_add",[C_P,C_P],C_P)
     _free = bindMethod("Nutcracker_OperatorTerm_free",[C_P],None)
     _multiply = bindMethod("Nutcracker_OperatorTerm_multiply",[c_complex_double_p,C_P],C_P)
     #@-<< Bindings >>
     #@+others
+    #@+node:gcross.20110906155043.4980: *6* __add__
+    def __add__(self,other):
+        assert isinstance(other,OperatorTerm)
+        return OperatorTerm(self._add(self._,other._))
     #@+node:gcross.20110906155043.4882: *6* __init__
     def __init__(self,handle):
         assert isinstance(handle,self.C_P)
@@ -324,6 +329,10 @@ LocalExternalField._ = bindFunction("Nutcracker_OperatorTerm_create_LocalExterna
 def LocalNeighborCouplingField(site_number,left_field_matrix,right_field_matrix):
     return OperatorTerm(LocalNeighborCouplingField._(site_number,left_field_matrix._,right_field_matrix._))
 LocalNeighborCouplingField._ = bindFunction("Nutcracker_OperatorTerm_create_LocalNeighborCouplingField",[c_uint32,Matrix.C_P,Matrix.C_P],OperatorTerm.C_P)
+#@+node:gcross.20110906155043.4897: *5* TransverseIsingField
+def TransverseIsingField(external_field_matrix,left_coupling_field_matrix,right_coupling_field_matrix):
+    return OperatorTerm(TransverseIsingField._(external_field_matrix._,left_coupling_field_matrix._,right_coupling_field_matrix._))
+TransverseIsingField._ = bindFunction("Nutcracker_OperatorTerm_create_TransverseIsingField",[Matrix.C_P,Matrix.C_P,Matrix.C_P],OperatorTerm.C_P)
 #@-others
 #@-others
 #@-<< Term classes >>
@@ -441,6 +450,7 @@ __all__ = [
     "GlobalExternalField",
     "LocalNeighborCouplingField",
     "GlobalNeighborCouplingField",
+    "TransverseIsingField",
 ]
 #@-<< Export list >>
 #@-leo

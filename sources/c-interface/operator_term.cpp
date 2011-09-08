@@ -19,7 +19,7 @@
 
 //@+<< Includes >>
 //@+node:gcross.20110906155043.4835: ** << Includes >>
-#include "common.hpp"
+#include "terms.hpp"
 
 #include "nutcracker/compiler.hpp"
 //@-<< Includes >>
@@ -28,10 +28,30 @@
 //@+node:gcross.20110906155043.4836: ** << Usings >>
 //@-<< Usings >>
 
+//@+<< Classes >>
+//@+node:gcross.20110906155043.4974: ** << Classes >>
+//@+others
+//@+node:gcross.20110906155043.4978: *3* NutcrackerOperatorSumTerm
+typedef NutcrackerSumTerm<NutcrackerOperatorTerm> NutcrackerOperatorSumTerm;
+//@+node:gcross.20110906155043.4977: *3* NutcrackerOperatorTermWrapper
+template<typename Term> struct NutcrackerOperatorTermWrapper : public NutcrackerTermWrapper<NutcrackerOperatorTerm,Term> {
+    typedef NutcrackerTermWrapper<NutcrackerOperatorTerm,Term>  Base;
+    template<typename A> NutcrackerOperatorTermWrapper(A const& a) : Base(a) {}
+    template<typename A, typename B> NutcrackerOperatorTermWrapper(A const& a, B const& b) : Base(a,b) {}
+    template<typename A, typename B, typename C> NutcrackerOperatorTermWrapper(A const& a, B const& b, C const& c) : Base(a,b,c) {}
+    template<typename A, typename B, typename C, typename D> NutcrackerOperatorTermWrapper(A const& a, B const& b, C const& c, D const& d) : Base(a,b,c,d) {}
+};
+//@-others
+//@-<< Classes >>
+
 extern "C" {
 
 //@+others
 //@+node:gcross.20110906155043.4837: ** Functions
+//@+node:gcross.20110906155043.4979: *3* add
+NutcrackerOperatorTerm* Nutcracker_OperatorTerm_add(NutcrackerOperatorTerm const* x, NutcrackerOperatorTerm const* y) {
+    return new NutcrackerOperatorSumTerm(x,y);
+}
 //@+node:gcross.20110906155043.4840: *3* create_GlobalExternalField
 NutcrackerOperatorTerm* Nutcracker_OperatorTerm_create_GlobalExternalField(NutcrackerMatrix const* field_matrix) {
     return new NutcrackerOperatorTermWrapper<Nutcracker::GlobalExternalField>(*field_matrix);

@@ -53,7 +53,10 @@
 <v t="gcross.20110125120748.2419"><vh>@file CMakeLists.txt</vh></v>
 <v t="gcross.20110823131135.2569"><vh>@path c-interface</vh>
 <v t="gcross.20110823131135.2599"><vh>@file CMakeLists.txt</vh></v>
+<v t="gcross.20110906155043.4972"><vh>Headers</vh>
 <v t="gcross.20110904213222.2777"><vh>@file common.hpp</vh></v>
+<v t="gcross.20110906155043.4953"><vh>@file terms.hpp</vh></v>
+</v>
 <v t="gcross.20110902235008.2729"><vh>@file errors.cpp</vh></v>
 <v t="gcross.20110904235122.2777"><vh>@file matrix.cpp</vh></v>
 <v t="gcross.20110823131135.2582"><vh>@file operator.cpp</vh></v>
@@ -305,5 +308,6 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 <t tx="gcross.20110823131135.2577"></t>
 <t tx="gcross.20110904224519.2700"></t>
 <t tx="gcross.20110906104131.2845"></t>
+<t tx="gcross.20110906155043.4972"></t>
 </tnodes>
 </leo_file>

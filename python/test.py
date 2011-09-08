@@ -180,6 +180,26 @@ class OperatorTermTests(unittest.TestCase):
                         correct_value = -1
                     self.assertAlmostEqual(state*operator_1,correct_value)
                     self.assertAlmostEqual(state*operator_2,2*correct_value)
+    #@+node:gcross.20110906155043.4982: *4* TransverseIsingField
+    def test_TransverseIsingField(self):
+        for number_of_sites in range(2,6):
+            operator_1 = (
+                OperatorBuilder(number_of_sites,2)
+                    .addTerm(TransverseIsingField(Matrix.pauli_Z,Matrix.pauli_X,Matrix.pauli_X))
+                    .compile()
+            )
+            operator_2 = (
+                OperatorBuilder(number_of_sites,2)
+                    .addTerm(GlobalExternalField(Matrix.pauli_Z)+GlobalNeighborCouplingField(Matrix.pauli_X,Matrix.pauli_X))
+                    .compile()
+            )
+            for components in itertools.product(*((Vector.qubit_up,Vector.qubit_down),)*number_of_sites):
+                state = (
+                    StateBuilder(number_of_sites,2)
+                        .addProductTerm(components)
+                        .compile()
+                )
+                self.assertAlmostEqual(state*operator_1,state*operator_2)
     #@-others
 #@+node:gcross.20110906130654.2922: *3* StateBuilder
 class StateBuilderTests(unittest.TestCase):

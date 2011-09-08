@@ -110,7 +110,7 @@ NutcrackerOperator* Nutcracker_OperatorBuilder_compileCustomized(NutcrackerOpera
 //@+node:gcross.20110906155043.4827: *3* OperatorTerm
 void Nutcracker_OperatorTerm_free(NutcrackerOperatorTerm* op);
 
-// NutcrackerOperatorTerm* Nutcracker_OperatorTerm_add(NutcrackerOperatorTerm const* x, NutcrackerOperatorTerm const* y);
+NutcrackerOperatorTerm* Nutcracker_OperatorTerm_add(NutcrackerOperatorTerm const* x, NutcrackerOperatorTerm const* y);
 
 #ifdef __cplusplus
 NutcrackerOperatorTerm* Nutcracker_OperatorTerm_multiply(std::complex<double> const* c, NutcrackerOperatorTerm const* x);
