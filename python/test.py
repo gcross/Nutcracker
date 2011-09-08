@@ -40,6 +40,45 @@ class MatrixTests(unittest.TestCase):
         self.assertEqual([0,-1j,1j,0],list(Matrix.pauli_Y))
         self.assertEqual([1,0,0,-1],list(Matrix.pauli_Z))
     #@-others
+#@+node:gcross.20110908152849.3004: *3* Operator
+class OperatorTests(unittest.TestCase):
+    #@+others
+    #@+node:gcross.20110908152849.3005: *4* simpleSolveForEigenvalues
+    def test_solveForEigenvalues(self):
+        for number_of_sites in range(3,6):
+            eigenvalues = (
+                OperatorBuilder(number_of_sites,2)
+                    .addTerm(GlobalExternalField(Matrix([0,1])))
+                    .compile()
+                    .simpleSolveForLeastEigenvalues(4)
+            )
+            self.assertAlmostEqual(eigenvalues[0],0)
+            self.assertAlmostEqual(eigenvalues[1],1)
+            self.assertAlmostEqual(eigenvalues[2],1)
+            self.assertAlmostEqual(eigenvalues[3],1)
+    #@+node:gcross.20110908152849.3008: *4* simpleSolveForEigenvaluesWithEigenvectors
+    def test_simpleSolveForEigenvaluesWithEigenvectors(self):
+        for number_of_sites in range(3,6):
+            operator = (
+                OperatorBuilder(number_of_sites,2)
+                    .addTerm(GlobalExternalField(Matrix([0,1])))
+                    .compile()
+            )
+            solutions = operator.simpleSolveForLeastEigenvaluesWithEigenvectors(4)
+            for eigenvalue, eigenvector in solutions:
+                self.assertAlmostEqual(eigenvector * operator,eigenvalue)
+            eigenvalues, eigenvectors = zip(*solutions)
+            self.assertAlmostEqual(eigenvalues[0],0)
+            self.assertAlmostEqual(eigenvalues[1],1)
+            self.assertAlmostEqual(eigenvalues[2],1)
+            self.assertAlmostEqual(eigenvalues[3],1)
+            for eigenvector1, eigenvector2 in itertools.product(eigenvectors,eigenvectors):
+                if eigenvector1 is eigenvector2:
+                    correct_value = 1
+                else:
+                    correct_value = 0
+                self.assertAlmostEqual(eigenvector1 * eigenvector2,correct_value)
+    #@-others
 #@+node:gcross.20110906130654.2947: *3* OperatorBuilder
 class OperatorBuilderTests(unittest.TestCase):
     #@+others
@@ -275,6 +314,7 @@ class VectorTests(unittest.TestCase):
 
 tests = [
     MatrixTests,
+    OperatorTests,
     OperatorBuilderTests,
     OperatorTermTests,
     StateBuilderTests,

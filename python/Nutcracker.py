@@ -19,8 +19,9 @@
 
 #@+<< Imports >>
 #@+node:gcross.20110906104131.3052: ** << Imports >>
+from collections import namedtuple
 import ctypes
-from ctypes import byref, c_char_p, c_uint32, POINTER
+from ctypes import byref, c_char_p, c_uint32, c_float, POINTER
 import itertools
 #@-<< Imports >>
 
@@ -117,8 +118,8 @@ class Handle:
     #@-others
 #@-others
 #@-<< Base classes >>
-#@+<< Vector/Matrix classes >>
-#@+node:gcross.20110906130654.2950: *3* << Vector/Matrix classes >>
+#@+<< Data classes >>
+#@+node:gcross.20110906130654.2950: *3* << Data classes >>
 #@+others
 #@+node:gcross.20110906155043.2987: *4* Matrix
 class Matrix(Handle):
@@ -186,6 +187,8 @@ Matrix.pauli_Y.dont_free = True
 Matrix.pauli_Z = Matrix(Matrix.C_P.in_dll(library,"Nutcracker_Matrix_Pauli_Z"))
 Matrix.pauli_Z.dont_free = True
 #@-<< Constants >>
+#@+node:gcross.20110908152849.2997: *4* Solution
+Solution = namedtuple('Solution',['eigenvalue','eigenvector'])
 #@+node:gcross.20110906104131.3055: *4* Vector
 class Vector(Handle,ArrayLike):
     #@+<< Bindings >>
@@ -241,7 +244,7 @@ Vector.qubit_down = Vector(Vector.C_P.in_dll(library,"Nutcracker_Vector_Qubit_Do
 Vector.qubit_down.dont_free = True
 #@-<< Constants >>
 #@-others
-#@-<< Vector/Matrix classes >>
+#@-<< Data classes >>
 #@+<< State/Operator classes >>
 #@+node:gcross.20110906130654.2951: *3* << State/Operator classes >>
 #@+others
@@ -253,11 +256,23 @@ class Operator(Handle):
     C_P = POINTER(C)
 
     _free = bindMethod("Nutcracker_Operator_free",[C_P],None)
+    _simpleSolveForLeastEigenvalues = bindMethod("Nutcracker_Operator_simpleSolveForLeastEigenvalues",[C_P,c_uint32,POINTER(c_float)],None)
     #@-<< Bindings >>
     #@+others
     #@+node:gcross.20110906155043.4819: *5* __init__
     def __init__(self,handle):
         self._ = handle
+    #@+node:gcross.20110908152849.2998: *5* simpleSolveForLeastEigenvalues
+    def simpleSolveForLeastEigenvalues(self,number_of_levels):
+        eigenvalues = (c_float * number_of_levels)()
+        self._simpleSolveForLeastEigenvalues(self._,number_of_levels,eigenvalues)
+        return [float(x) for x in eigenvalues]
+    #@+node:gcross.20110908152849.3000: *5* simpleSolveForLeastEigenvaluesWithEigenvectors
+    def simpleSolveForLeastEigenvaluesWithEigenvectors(self,number_of_levels):
+        eigenvalues = (c_float * number_of_levels)()
+        eigenvectors = (State.C_P * number_of_levels)()
+        self._simpleSolveForLeastEigenvaluesWithEigenvectors(self._,number_of_levels,eigenvalues,eigenvectors)
+        return [Solution(float(eigenvalue),State(eigenvector)) for eigenvalue,eigenvector in zip(eigenvalues,eigenvectors)]
     #@-others
 #@+node:gcross.20110906130654.2901: *4* State
 class State(Handle):
@@ -268,7 +283,6 @@ class State(Handle):
 
     _free = bindMethod("Nutcracker_State_free",[C_P],None)
     _computeOverlap = bindMethod("Nutcracker_State_computeOverlap",[C_P,C_P,c_complex_double_p],None)
-    _computeExpectation = bindMethod("Nutcracker_State_computeExpectation",[C_P,Operator.C_P,c_complex_double_p],None)
     #@-<< Bindings >>
     #@+others
     #@+node:gcross.20110906130654.2908: *5* __init__
@@ -289,6 +303,13 @@ class State(Handle):
         return self * other
     #@-others
 #@-others
+
+#@+<< Coupling bindings >>
+#@+node:gcross.20110908152849.3003: *4* << Coupling bindings >>
+State._computeExpectation = bindMethod("Nutcracker_State_computeExpectation",[State.C_P,Operator.C_P,c_complex_double_p],None)
+
+Operator._simpleSolveForLeastEigenvaluesWithEigenvectors = bindMethod("Nutcracker_Operator_simpleSolveForLeastEigenvaluesWithEigenvectors",[Operator.C_P,c_uint32,POINTER(c_float),POINTER(State.C_P)],None)
+#@-<< Coupling bindings >>
 #@-<< State/Operator classes >>
 #@+<< Term classes >>
 #@+node:gcross.20110906155043.4851: *3* << Term classes >>

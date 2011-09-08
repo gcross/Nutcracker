@@ -93,6 +93,9 @@ void Nutcracker_Matrix_getElementAtCoordinate(NutcrackerMatrix const* x, uint32_
 #endif
 //@+node:gcross.20110823131135.2552: *3* Operator
 void Nutcracker_Operator_free(NutcrackerOperator* op);
+
+void Nutcracker_Operator_simpleSolveForLeastEigenvalues(NutcrackerOperator const* op, uint32_t number_of_levels, float* eigenvalues);
+void Nutcracker_Operator_simpleSolveForLeastEigenvaluesWithEigenvectors(NutcrackerOperator const* op, uint32_t number_of_levels, float* eigenvalues, NutcrackerState** eigenvectors);
 //@+node:gcross.20110823131135.2559: *3* OperatorBuilder
 NutcrackerOperatorBuilder* Nutcracker_OperatorBuilder_new(uint32_t number_of_sites, uint32_t* dimensions);
 NutcrackerOperatorBuilder* Nutcracker_OperatorBuilder_newSimple(uint32_t number_of_sites, uint32_t physical_dimension);
