@@ -2,6 +2,7 @@
 #@+node:gcross.20110906104131.2941: * @file test.py
 #@+<< Import needed modules >>
 #@+node:gcross.20110906104131.2942: ** << Import needed modules >>
+import cPickle
 import itertools
 from numpy import set_printoptions
 import os
@@ -43,6 +44,25 @@ class MatrixTests(unittest.TestCase):
 #@+node:gcross.20110908152849.3004: *3* Operator
 class OperatorTests(unittest.TestCase):
     #@+others
+    #@+node:gcross.20110908221100.3045: *4* serialization
+    def test_serialization(self):
+        for number_of_sites in range(1,5):
+            operator_1 = (
+                OperatorBuilder(number_of_sites,2)
+                    .addTerm(GlobalExternalField(Matrix.pauli_Z))
+                    .compile()
+            )
+            operator_2 = cPickle.loads(cPickle.dumps(operator_1,cPickle.HIGHEST_PROTOCOL))
+            for components in itertools.product(*((Vector.qubit_up,Vector.qubit_down),)*number_of_sites):
+                state = (
+                    StateBuilder(number_of_sites,2)
+                        .addProductTerm(components)
+                        .compile()
+                )
+                self.assertAlmostEqual(
+                    state * operator_1,
+                    state * operator_2
+                )
     #@+node:gcross.20110908152849.3005: *4* simpleSolveForEigenvalues
     def test_solveForEigenvalues(self):
         for number_of_sites in range(3,6):
@@ -247,6 +267,20 @@ class OperatorTermTests(unittest.TestCase):
                 )
                 self.assertAlmostEqual(state*operator_1,state*operator_2)
     #@-others
+#@+node:gcross.20110909000037.3080: *3* State
+class StateTests(unittest.TestCase):
+    #@+others
+    #@+node:gcross.20110909000037.3082: *4* serialization
+    def test_serialization(self):
+        for number_of_sites in range(1,5):
+            state_1 = (
+                StateBuilder(number_of_sites,2)
+                    .addTerm(WTerm(Vector.qubit_up,Vector.qubit_down))
+                    .compile()
+            )
+            state_2 = cPickle.loads(cPickle.dumps(state_1,cPickle.HIGHEST_PROTOCOL))
+            self.assertAlmostEqual(state_1 * state_2,1)
+    #@-others
 #@+node:gcross.20110906130654.2922: *3* StateBuilder
 class StateBuilderTests(unittest.TestCase):
     #@+others
@@ -270,6 +304,44 @@ class StateBuilderTests(unittest.TestCase):
                     self.assertAlmostEqual(1,i * j)
                 else:
                     self.assertAlmostEqual(0,i * j)
+    #@-others
+#@+node:gcross.20110908234803.3048: *3* StateTerm
+class StateTermTests(unittest.TestCase):
+    #@+others
+    #@+node:gcross.20110908234803.3053: *4* ProductWithOneSiteDifferent
+    def test_ProductWithOneSiteDifferent(self):
+        for number_of_sites in range(2,6):
+            states_1 = [
+                StateBuilder(number_of_sites,2)
+                    .addTerm(ProductWithOneSiteDifferentTerm(site_number,Vector.qubit_up,Vector.qubit_down))
+                    .compile()
+                for site_number in range(0,number_of_sites)
+            ]
+            states_2 = [
+                StateBuilder(number_of_sites,2)
+                    .addProductTerm([Vector.qubit_up]*site_number + [Vector.qubit_down] + [Vector.qubit_up]*(number_of_sites-site_number-1))
+                    .compile()
+                for site_number in range(0,number_of_sites)
+            ]
+            for (i,j) in itertools.product(range(number_of_sites),range(number_of_sites)):
+                if i is j:
+                    correct_value = 1
+                else:
+                    correct_value = 0
+                self.assertAlmostEqual(states_1[i]*states_2[j],correct_value)
+    #@+node:gcross.20110909000037.3078: *4* W
+    def test_W(self):
+        for number_of_sites in range(2,6):
+            state_1 = (
+                StateBuilder(number_of_sites,2)
+                    .addTerm(WTerm(Vector.qubit_up,Vector.qubit_down))
+                    .compile()
+            )
+            builder = StateBuilder(number_of_sites,2)
+            for site_number in range(number_of_sites):
+                builder.addTerm(ProductWithOneSiteDifferentTerm(site_number,Vector.qubit_up,Vector.qubit_down))
+            state_2 = builder.compile()
+            self.assertAlmostEqual(state_1 * state_2,1)
     #@-others
 #@+node:gcross.20110906130654.2876: *3* Vector
 class VectorTests(unittest.TestCase):
@@ -317,7 +389,9 @@ tests = [
     OperatorTests,
     OperatorBuilderTests,
     OperatorTermTests,
+    StateTests,
     StateBuilderTests,
+    StateTermTests,
     VectorTests,
 ]
 #@-others

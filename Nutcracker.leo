@@ -62,8 +62,10 @@
 <v t="gcross.20110823131135.2582"><vh>@file operator.cpp</vh></v>
 <v t="gcross.20110823131135.2594"><vh>@file operator_builder.cpp</vh></v>
 <v t="gcross.20110906155043.4833"><vh>@file operator_term.cpp</vh></v>
+<v t="gcross.20110908221100.3008"><vh>@file serialization.cpp</vh></v>
 <v t="gcross.20110904235122.2804"><vh>@file state.cpp</vh></v>
 <v t="gcross.20110904235122.2855"><vh>@file state_builder.cpp</vh></v>
+<v t="gcross.20110908221100.3064"><vh>@file state_term.cpp</vh></v>
 <v t="gcross.20110904235122.2823"><vh>@file vector.cpp</vh></v>
 </v>
 <v t="gcross.20110124161335.1865"><vh>@path common</vh>

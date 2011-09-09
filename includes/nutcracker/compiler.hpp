@@ -1303,12 +1303,33 @@ struct TransverseIsingField : SumTerm<OperatorBuilder,GlobalExternalField,Global
     {}
 };
 //@+node:gcross.20110903210625.2699: *4* State
-//@+node:gcross.20110903210625.2701: *5* WStateTerm
-struct WStateTerm : Term<StateBuilder,WStateTerm> {
+//@+node:gcross.20110908221100.3081: *5* ProductWithOneSiteDifferentTerm
+struct ProductWithOneSiteDifferentTerm : Term<StateBuilder,ProductWithOneSiteDifferentTerm> {
+    unsigned int site_number;
+    VectorConstPtr common_observation, special_observation;
+
+    ProductWithOneSiteDifferentTerm(unsigned int site_number, VectorConstPtr const& common_observation, VectorConstPtr const& special_observation)
+      : site_number(site_number)
+      , common_observation(common_observation)
+      , special_observation(special_observation)
+    {}
+
+    void operator()(StateBuilder& builder) const {
+        vector<VectorConstPtr> components(builder.numberOfSites(),common_observation);
+        components[site_number] = special_observation;
+        builder.addProductTerm(components);
+    }
+
+    void multiplyBy(std::complex<double> const& coefficient) {
+        special_observation = special_observation * coefficient;
+    }
+};
+//@+node:gcross.20110903210625.2701: *5* WTerm
+struct WTerm : Term<StateBuilder,WTerm> {
     VectorConstPtr common_observation, special_observation;
     bool normalized;
 
-    WStateTerm(VectorConstPtr const& common_observation, VectorConstPtr const& special_observation, bool normalized=true)
+    WTerm(VectorConstPtr const& common_observation, VectorConstPtr const& special_observation, bool normalized=true)
       : common_observation(common_observation)
       , special_observation(special_observation)
     {}

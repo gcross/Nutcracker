@@ -21,7 +21,7 @@
 #@+node:gcross.20110906104131.3052: ** << Imports >>
 from collections import namedtuple
 import ctypes
-from ctypes import byref, c_char_p, c_uint32, c_float, POINTER
+from ctypes import byref, c_bool, c_char_p, c_float, c_uint32, c_void_p, create_string_buffer, POINTER
 import itertools
 #@-<< Imports >>
 
@@ -116,6 +116,49 @@ class Handle:
                 self._free(self._)
             del self._
     #@-others
+#@+node:gcross.20110908221100.3040: *4* Serializable
+class Serializable:
+    #@+others
+    #@+node:gcross.20110908221100.3042: *5* __getstate__
+    def __getstate__(self):
+        return Serialization(self._serialize(self._)).toBytes()
+    #@+node:gcross.20110908221100.3044: *5* __setstate__
+    def __setstate__(self,buffer):
+        self._ = self._deserialize(len(buffer),buffer)
+    #@-others
+#@+node:gcross.20110909000037.3056: *4* Builder
+class Builder:
+    #@+others
+    #@+node:gcross.20110909000037.3064: *5* __getitem__
+    def __getitem__(self,index):
+        return int(self._dimensionOfSite(self._,index))
+    #@+node:gcross.20110909000037.3066: *5* __init__
+    def __init__(self,*args):
+        assert(len(args) == 1 or len(args) == 2)
+        if(len(args)) == 2:
+            self._ = self._newSimple(args[0],args[1])
+        elif type(args[0]) == self.C_P:
+            self._ = args[0]
+        else:
+            data = (c_uint32 * len(args[0]))(*args[0])
+            self._ = self._new(len(data),data)
+    #@+node:gcross.20110909000037.3058: *5* __len__
+    def __len__(self):
+        return int(self._numberOfSites(self._))
+    #@+node:gcross.20110906155043.2973: *5* addProductTerm
+    def addProductTerm(self,vectors):
+        data = (self.Data.C_P * len(vectors))(*[x._ for x in vectors])
+        assert len(data) == len(self)
+        self._addProductTerm(self._,data)
+        return self
+    #@+node:gcross.20110909000037.3060: *5* addTerm
+    def addTerm(self,term):
+        self._addTerm(self._,term._)
+        return self
+    #@+node:gcross.20110906155043.2974: *5* compile
+    def compile(self):
+        return self.Result(self._compile(self._))
+    #@-others
 #@-others
 #@-<< Base classes >>
 #@+<< Data classes >>
@@ -187,6 +230,33 @@ Matrix.pauli_Y.dont_free = True
 Matrix.pauli_Z = Matrix(Matrix.C_P.in_dll(library,"Nutcracker_Matrix_Pauli_Z"))
 Matrix.pauli_Z.dont_free = True
 #@-<< Constants >>
+#@+node:gcross.20110908221100.3027: *4* Serialization
+class Serialization(Handle):
+    #@+<< Bindings >>
+    #@+node:gcross.20110908221100.3029: *5* << Bindings >>
+    class C(ctypes.Structure): pass
+    C_P = POINTER(C)
+
+    _free = bindMethod("Nutcracker_Serialization_free",[C_P],None)
+    _getSize = bindMethod("Nutcracker_Serialization_getSize",[C_P],c_uint32)
+    _write = bindMethod("Nutcracker_Serialization_write",[C_P,c_void_p],None)
+    #@-<< Bindings >>
+    #@+others
+    #@+node:gcross.20110908221100.3032: *5* __init__
+    def __init__(self,handle):
+        self._ = handle
+    #@+node:gcross.20110908221100.3034: *5* __len__
+    def __len__(self):
+        return int(self._getSize(self._))
+    #@+node:gcross.20110908221100.3036: *5* toBytes
+    def toBytes(self):
+        buffer = create_string_buffer(len(self))
+        self.write(buffer)
+        return buffer.raw
+    #@+node:gcross.20110908221100.3035: *5* write
+    def write(self,buffer):
+        self._write(self._,buffer)
+    #@-others
 #@+node:gcross.20110908152849.2997: *4* Solution
 Solution = namedtuple('Solution',['eigenvalue','eigenvector'])
 #@+node:gcross.20110906104131.3055: *4* Vector
@@ -249,13 +319,15 @@ Vector.qubit_down.dont_free = True
 #@+node:gcross.20110906130654.2951: *3* << State/Operator classes >>
 #@+others
 #@+node:gcross.20110906155043.4817: *4* Operator
-class Operator(Handle):
+class Operator(Handle,Serializable):
     #@+<< Bindings >>
     #@+node:gcross.20110906155043.4818: *5* << Bindings >>
     class C(ctypes.Structure): pass
     C_P = POINTER(C)
 
+    _deserialize = bindMethod("Nutcracker_Operator_deserialize",[c_uint32,c_void_p],C_P)
     _free = bindMethod("Nutcracker_Operator_free",[C_P],None)
+    _serialize = bindMethod("Nutcracker_Operator_serialize",[C_P],Serialization.C_P)
     _simpleSolveForLeastEigenvalues = bindMethod("Nutcracker_Operator_simpleSolveForLeastEigenvalues",[C_P,c_uint32,POINTER(c_float)],None)
     #@-<< Bindings >>
     #@+others
@@ -275,14 +347,16 @@ class Operator(Handle):
         return [Solution(float(eigenvalue),State(eigenvector)) for eigenvalue,eigenvector in zip(eigenvalues,eigenvectors)]
     #@-others
 #@+node:gcross.20110906130654.2901: *4* State
-class State(Handle):
+class State(Handle,Serializable):
     #@+<< Bindings >>
     #@+node:gcross.20110906130654.2902: *5* << Bindings >>
     class C(ctypes.Structure): pass
     C_P = POINTER(C)
 
-    _free = bindMethod("Nutcracker_State_free",[C_P],None)
     _computeOverlap = bindMethod("Nutcracker_State_computeOverlap",[C_P,C_P,c_complex_double_p],None)
+    _deserialize = bindMethod("Nutcracker_State_deserialize",[c_uint32,c_void_p],C_P)
+    _free = bindMethod("Nutcracker_State_free",[C_P],None)
+    _serialize = bindMethod("Nutcracker_State_serialize",[C_P],Serialization.C_P)
     #@-<< Bindings >>
     #@+others
     #@+node:gcross.20110906130654.2908: *5* __init__
@@ -367,13 +441,54 @@ def TransverseIsingField(external_field_matrix,left_coupling_field_matrix,right_
     return OperatorTerm(TransverseIsingField._(external_field_matrix._,left_coupling_field_matrix._,right_coupling_field_matrix._))
 TransverseIsingField._ = bindFunction("Nutcracker_OperatorTerm_create_TransverseIsingField",[Matrix.C_P,Matrix.C_P,Matrix.C_P],OperatorTerm.C_P)
 #@-others
+#@+node:gcross.20110908221100.3082: *4* State terms
+#@+<< class StateTerm >>
+#@+node:gcross.20110908221100.3089: *5* << class StateTerm >>
+class StateTerm(Handle):
+    #@+<< Bindings >>
+    #@+node:gcross.20110908221100.3090: *6* << Bindings >>
+    class C(ctypes.Structure): pass
+    C_P = POINTER(C)
+
+    _add = bindMethod("Nutcracker_StateTerm_add",[C_P,C_P],C_P)
+    _free = bindMethod("Nutcracker_StateTerm_free",[C_P],None)
+    _multiply = bindMethod("Nutcracker_StateTerm_multiply",[c_complex_double_p,C_P],C_P)
+    #@-<< Bindings >>
+    #@+others
+    #@+node:gcross.20110908221100.3091: *6* __add__
+    def __add__(self,other):
+        assert isinstance(other,OperatorTerm)
+        return OperatorTerm(self._add(self._,other._))
+    #@+node:gcross.20110908221100.3092: *6* __init__
+    def __init__(self,handle):
+        assert isinstance(handle,self.C_P)
+        self._ = handle
+    #@+node:gcross.20110908221100.3093: *6* __mul__
+    def __mul__(self,c):
+        return OperatorTerm(self._multiply(toComplexDouble(c),self._))
+    #@+node:gcross.20110908221100.3094: *6* __rmul__
+    def __rmul__(self,c):
+        return OperatorTerm(self._multiply(toComplexDouble(c),self._))
+    #@-others
+#@-<< class StateTerm >>
+
+#@+others
+#@+node:gcross.20110908234803.3047: *5* ProductWithOneSiteDifferentTerm
+def ProductWithOneSiteDifferentTerm(number_of_sites,common_observation,special_observation):
+    return StateTerm(ProductWithOneSiteDifferentTerm._(number_of_sites,common_observation._,special_observation._))
+ProductWithOneSiteDifferentTerm._ = bindFunction("Nutcracker_StateTerm_create_ProductWithOneSiteDifferent",[c_uint32,Vector.C_P,Vector.C_P],StateTerm.C_P)
+#@+node:gcross.20110909000037.3076: *5* W
+def WTerm(common_observation,special_observation,normalize=True):
+    return StateTerm(WTerm._(common_observation._,special_observation._,normalize))
+WTerm._ = bindFunction("Nutcracker_StateTerm_create_W",[Vector.C_P,Vector.C_P,c_bool],StateTerm.C_P)
+#@-others
 #@-others
 #@-<< Term classes >>
 #@+<< Builder classes >>
 #@+node:gcross.20110906130654.2952: *3* << Builder classes >>
 #@+others
 #@+node:gcross.20110906130654.2939: *4* OperatorBuilder
-class OperatorBuilder(Handle,ArrayLike):
+class OperatorBuilder(Handle,ArrayLike,Builder):
     #@+<< Bindings >>
     #@+node:gcross.20110906130654.2940: *5* << Bindings >>
     class C(ctypes.Structure): pass
@@ -388,45 +503,25 @@ class OperatorBuilder(Handle,ArrayLike):
     _newSimple = bindMethod("Nutcracker_OperatorBuilder_newSimple",[c_uint32,c_uint32],C_P)
     _numberOfSites = bindMethod("Nutcracker_OperatorBuilder_numberOfSites",[C_P],c_uint32)
     #@-<< Bindings >>
+    #@+<< Nested types >>
+    #@+node:gcross.20110909000037.3073: *5* << Nested types >>
+    Data = Matrix
+    Result = Operator
+    #@-<< Nested types >>
     #@+others
-    #@+node:gcross.20110906130654.2941: *5* __getitem__
-    def __getitem__(self,index):
-        return int(self._dimensionOfSite(self._,index))
-    #@+node:gcross.20110906130654.2942: *5* __init__
+    #@+node:gcross.20110909000037.3068: *5* __init__
     def __init__(self,*args):
-        assert(len(args) == 1 or len(args) == 2)
-        if(len(args)) == 2:
-            self._ = self._newSimple(args[0],args[1])
-        elif type(args[0]) == self.C_P:
-            self._ = args[0]
-        else:
-            data = (c_uint32 * len(args[0]))(*args[0])
-            self._ = self._new(len(data),data)
-    #@+node:gcross.20110906130654.2943: *5* __len__
-    def __len__(self):
-        return int(self._numberOfSites(self._))
-    #@+node:gcross.20110906155043.4824: *5* addProductTerm
-    def addProductTerm(self,vectors):
-        data = (Matrix.C_P * len(vectors))(*[x._ for x in vectors])
-        assert len(data) == len(self)
-        self._addProductTerm(self._,data)
-        return self
-    #@+node:gcross.20110906155043.4850: *5* addTerm
-    def addTerm(self,term):
-        self._addTerm(self._,term._)
-        return self
-    #@+node:gcross.20110906155043.4826: *5* compile
-    def compile(self):
-        return Operator(self._compile(self._))
+        Builder.__init__(self,*args)
     #@-others
 #@+node:gcross.20110906130654.2915: *4* StateBuilder
-class StateBuilder(Handle,ArrayLike):
+class StateBuilder(Handle,ArrayLike,Builder):
     #@+<< Bindings >>
     #@+node:gcross.20110906130654.2916: *5* << Bindings >>
     class C(ctypes.Structure): pass
     C_P = POINTER(C)
 
     _addProductTerm = bindMethod("Nutcracker_StateBuilder_addProductTerm",[C_P,POINTER(Vector.C_P)],None)
+    _addTerm = bindMethod("Nutcracker_StateBuilder_addTerm",[C_P,StateTerm.C_P],None)
     _compile = bindMethod("Nutcracker_StateBuilder_compile",[C_P],State.C_P)
     _dimensionOfSite = bindMethod("Nutcracker_StateBuilder_dimensionOfSite",[C_P,c_uint32],c_uint32)
     _free = bindMethod("Nutcracker_StateBuilder_free",[C_P],None)
@@ -434,32 +529,15 @@ class StateBuilder(Handle,ArrayLike):
     _newSimple = bindMethod("Nutcracker_StateBuilder_newSimple",[c_uint32,c_uint32],C_P)
     _numberOfSites = bindMethod("Nutcracker_StateBuilder_numberOfSites",[C_P],c_uint32)
     #@-<< Bindings >>
+    #@+<< Nested types >>
+    #@+node:gcross.20110909000037.3071: *5* << Nested types >>
+    Data = Vector
+    Result = State
+    #@-<< Nested types >>
     #@+others
-    #@+node:gcross.20110906130654.2929: *5* __getitem__
-    def __getitem__(self,index):
-        return int(self._dimensionOfSite(self._,index))
-    #@+node:gcross.20110906130654.2917: *5* __init__
+    #@+node:gcross.20110909000037.3070: *5* __init__
     def __init__(self,*args):
-        assert(len(args) == 1 or len(args) == 2)
-        if(len(args)) == 2:
-            self._ = self._newSimple(args[0],args[1])
-        elif type(args[0]) == self.C_P:
-            self._ = args[0]
-        else:
-            data = (c_uint32 * len(args[0]))(*args[0])
-            self._ = self._new(len(data),data)
-    #@+node:gcross.20110906130654.2919: *5* __len__
-    def __len__(self):
-        return int(self._numberOfSites(self._))
-    #@+node:gcross.20110906155043.2973: *5* addProductTerm
-    def addProductTerm(self,vectors):
-        data = (Vector.C_P * len(vectors))(*[x._ for x in vectors])
-        assert len(data) == len(self)
-        self._addProductTerm(self._,data)
-        return self
-    #@+node:gcross.20110906155043.2974: *5* compile
-    def compile(self):
-        return State(self._compile(self._))
+        Builder.__init__(self,*args)
     #@-others
 #@-others
 #@-<< Builder classes >>
@@ -484,6 +562,9 @@ __all__ = [
     "LocalNeighborCouplingField",
     "GlobalNeighborCouplingField",
     "TransverseIsingField",
+
+    "ProductWithOneSiteDifferentTerm",
+    "WTerm",
 ]
 #@-<< Export list >>
 #@-leo

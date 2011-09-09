@@ -34,8 +34,22 @@ extern "C" {
 
 //@+others
 //@+node:gcross.20110823131135.2589: ** Functions
+//@+node:gcross.20110908221100.3020: *3* deserialize
+NutcrackerOperator* Nutcracker_Operator_deserialize(uint32_t size, void const* data) { BEGIN_ERROR_REGION {
+    using namespace Nutcracker;
+    using namespace Nutcracker::Protobuf;
+    OperatorBuffer buffer;
+    buffer.ParseFromArray(data,size);
+    Operator op;
+    buffer >> op;
+    return new NutcrackerOperator(boost::move(op));
+} END_ERROR_REGION(NULL) }
 //@+node:gcross.20110903000806.2752: *3* free
 void Nutcracker_Operator_free(NutcrackerOperator* op) { delete op; }
+//@+node:gcross.20110908221100.3017: *3* serialize
+NutcrackerSerialization* Nutcracker_Operator_serialize(NutcrackerOperator const* op) { BEGIN_ERROR_REGION {
+    return NutcrackerSerialization::create<Nutcracker::Protobuf::OperatorBuffer>(*op);
+} END_ERROR_REGION(NULL) }
 //@+node:gcross.20110908152849.2994: *3* simpleSolveForLeastEigenvalues
 void Nutcracker_Operator_simpleSolveForLeastEigenvalues(NutcrackerOperator const* op, uint32_t number_of_levels, float* eigenvalues) {
     boost::copy(

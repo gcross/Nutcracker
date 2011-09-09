@@ -8,8 +8,10 @@ add_library(Nutcracker SHARED
     operator
     operator_builder
     operator_term
+    serialization
     state
     state_builder
+    state_term
     vector
 )
 target_link_libraries(Nutcracker Nutcracker++)

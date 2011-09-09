@@ -19,10 +19,14 @@
 
 //@+<< Includes >>
 //@+node:gcross.20110904213222.2780: ** << Includes >>
+#include <boost/scoped_ptr.hpp>
+#include <google/protobuf/message_lite.h>
+
 #include "nutcracker.h"
 
 #include "nutcracker/compiler.hpp"
 #include "nutcracker/operators.hpp"
+#include "nutcracker/protobuf.hpp"
 //@-<< Includes >>
 
 //@+<< Usings >>
@@ -77,6 +81,20 @@ struct NutcrackerOperatorBuilder: public Nutcracker::OperatorBuilder {
 };
 //@+node:gcross.20110904213222.2786: *3* NutcrackerOperatorTerm
 struct NutcrackerOperatorTerm : public NutcrackerTerm<Nutcracker::OperatorBuilder,NutcrackerOperatorTerm> {};
+//@+node:gcross.20110908221100.3013: *3* NutcrackerSerialization
+struct NutcrackerSerialization: boost::scoped_ptr<google::protobuf::MessageLite const> {
+    typedef boost::scoped_ptr<google::protobuf::MessageLite const> Base;
+
+    NutcrackerSerialization(google::protobuf::MessageLite const* message)
+      : Base(message)
+    {}
+
+    template<typename Message, typename Object> static NutcrackerSerialization* create(Object const& object) {
+        Message* message = new Message();
+        *message << object;
+        return new NutcrackerSerialization(message);
+    }
+};
 //@+node:gcross.20110904235122.2812: *3* NutcrackerState
 struct NutcrackerState : public Nutcracker::State {
     NutcrackerState(BOOST_RV_REF(Nutcracker::State) state)
