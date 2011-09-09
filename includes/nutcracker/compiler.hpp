@@ -998,13 +998,17 @@ public:
 //@+node:gcross.20110826235932.2700: *6* addProductTerm
 template<typename Components> Facade& addProductTerm(Components const& components) {
     if(components.size() != numberOfSites()) throw WrongNumberOfSites(components.size(),numberOfSites());
-    unsigned int const signal = allocateSignal();
-    typename boost::range_iterator<Components const>::type component = components.begin();
-    connect(0u,getStartSignal(),signal,*component++);
-    BOOST_FOREACH(unsigned int const site_number, irange(1u,numberOfSites()-1)) {
-        connect(site_number,signal,signal,*component++);
+    if(numberOfSites() == 1) {
+        connect(0u,getStartSignal(),getEndSignal(),*components.begin());
+    } else {
+        unsigned int const signal = allocateSignal();
+        typename boost::range_iterator<Components const>::type component = components.begin();
+        connect(0u,getStartSignal(),signal,*component++);
+        BOOST_FOREACH(unsigned int const site_number, irange(1u,numberOfSites()-1)) {
+            connect(site_number,signal,signal,*component++);
+        }
+        connect(numberOfSites()-1,signal,getEndSignal(),*component++);
     }
-    connect(numberOfSites()-1,signal,getEndSignal(),*component++);
     return static_cast<Facade&>(*this);
 }
 //@+node:gcross.20110903210625.2705: *6* addTerm
