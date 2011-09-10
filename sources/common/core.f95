@@ -3,6 +3,8 @@
 !@@language fortran90
 !@@tabwidth -2
 
+module nutcracker
+
 !@+<< License >>
 !@+node:gcross.20110220182654.2028: ** << License >>
 !@+at
@@ -17,6 +19,8 @@
 ! THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 !@@c
 !@-<< License >>
+
+contains
 
 !@+others
 !@+node:gcross.20100512172859.1739: ** Utility Functions
@@ -2687,9 +2691,10 @@ subroutine random_projector_matrix( &
   integer, intent(in) :: projector_length, number_of_projectors
   double complex, intent(out) :: &
     reflectors(projector_length,number_of_projectors), &
-    coefficients(number_of_projectors), &
+    coefficients(number_of_projectors)
+  integer, intent(out) :: &
+    rank, &
     swaps(min(number_of_projectors,projector_length))
-  integer, intent(out) :: rank
 
   integer :: i, j
 
@@ -2735,7 +2740,6 @@ function norm_denorm_going_left( &
   double precision :: s(bm)
   integer :: info, i, j
 
-  integer :: mysvd
   external :: zgemm
 
   denormalized_site_tensor = 0
@@ -2815,7 +2819,6 @@ function norm_denorm_going_right( &
   double precision :: s(bm)
   integer :: info, i, j
 
-  integer :: mysvd
   external :: zgemm
 
   denormalized_site_tensor = 0
@@ -2986,7 +2989,7 @@ function increase_bandwidth_between( &
     enlarged_tensor_1(new_bm,bl,dl), &
     enlarged_tensor_2(br,new_bm,dr)
 
-  integer :: info, norm_denorm_going_left
+  integer :: info
 
   call create_bandwidth_increase_matrix(bm,new_bm,bandwidth_increase_matrix)
 
@@ -3055,7 +3058,7 @@ subroutine form_norm_overlap_tensors( &
 
   double complex :: &
     left_norm_state_tensor_1(bm,bl,dl)
-  integer :: info, norm_denorm_going_right
+  integer :: info
 
   info = norm_denorm_going_right( &
     bl,bm,br, &
@@ -3090,4 +3093,6 @@ subroutine form_norm_overlap_tensors( &
 
 end subroutine
 !@-others
+
+end module nutcracker
 !@-leo

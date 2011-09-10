@@ -40,8 +40,10 @@ if(DOXYGEN_FOUND AND INKSCAPE)
 endif(DOXYGEN_FOUND AND INKSCAPE)
 #@+node:gcross.20110910153757.2920: ** Fortran ABI
 include(FortranCInterface)
+if(NOT FortranCInterface_MODULE_FOUND)
+    message(SEND_ERROR "Unable to detect the Fortran module ABI!")
+endif()
 FortranCInterface_VERIFY(CXX)
-
 FortranCInterface_HEADER("${CMAKE_CURRENT_BINARY_DIR}/_fortran_abi.h" MACRO_NAMESPACE "FORTRAN_ABI_")
 #@-others
 #@-leo
