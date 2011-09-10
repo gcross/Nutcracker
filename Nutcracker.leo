@@ -129,10 +129,6 @@
 <v t="gcross.20110805222031.4669"><vh>Tests</vh></v>
 </v>
 </v>
-<v t="gcross.20110906104131.2845"><vh>@path python</vh>
-<v t="gcross.20110906104131.2847"><vh>@file Nutcracker.py</vh></v>
-<v t="gcross.20110906104131.2941"><vh>@file test.py</vh></v>
-</v>
 <v t="gcross.20110823131135.2527"><vh>file template.h</vh>
 <v t="gcross.20110823131135.2528"><vh>&lt;&lt; License &gt;&gt;</vh></v>
 <v t="gcross.20110823131135.2529"><vh>&lt;&lt; Includes &gt;&gt;</vh></v>
@@ -309,7 +305,6 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 <t tx="gcross.20110823131135.2576">#include "common.hpp"</t>
 <t tx="gcross.20110823131135.2577"></t>
 <t tx="gcross.20110904224519.2700"></t>
-<t tx="gcross.20110906104131.2845"></t>
 <t tx="gcross.20110906155043.4972"></t>
 </tnodes>
 </leo_file>
