@@ -8,13 +8,15 @@
 <vnodes>
 <v t="gcross.20091113142219.1658"><vh>@chapters</vh></v>
 <v t="gcross.20110125120748.2417"><vh>@file CMakeLists.txt</vh></v>
-<v t="gcross.20110426163859.2445"><vh>@file Doxyfile.in</vh></v>
 <v t="gcross.20110220093853.2005"><vh>@path CMakeModules</vh>
 <v t="gcross.20110127123226.2818"><vh>@file FindARPACK.cmake</vh></v>
 <v t="gcross.20110220093853.2006"><vh>@file FindYamlCXX.cmake</vh></v>
 </v>
-<v t="gcross.20110501233304.2056"><vh>@path documentation</vh>
+<v t="gcross.20110910153757.2915"><vh>@path configuration</vh>
+<v t="gcross.20110910153757.2917"><vh>@file CMakeLists.txt</vh></v>
+<v t="gcross.20110426163859.2445"><vh>@file Doxyfile.in</vh></v>
 </v>
+<v t="gcross.20110501233304.2056"><vh>@path documentation</vh></v>
 <v t="gcross.20110904224519.2700"><vh>@path includes</vh>
 <v t="gcross.20110902235008.2736"><vh>@file nutcracker.h</vh></v>
 <v t="gcross.20110124161335.1866"><vh>@path nutcracker</vh>
@@ -306,5 +308,6 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 <t tx="gcross.20110823131135.2577"></t>
 <t tx="gcross.20110904224519.2700"></t>
 <t tx="gcross.20110906155043.4972"></t>
+<t tx="gcross.20110910153757.2915"></t>
 </tnodes>
 </leo_file>

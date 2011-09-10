@@ -77,6 +77,9 @@ SET(Boost_ADDITIONAL_VERSIONS "1.43" "1.43.0" "1.44" "1.44.0" "1.45" "1.45.0" "1
 find_package( Boost 1.46 COMPONENTS filesystem program_options signals system thread REQUIRED )
 link_directories ( ${Boost_LIBRARY_DIRS} )
 include_directories ( ${Boost_INCLUDE_DIRS} )
+#@+node:gcross.20110910153757.2916: *3* Doxygen & Inkscape
+find_package(Doxygen)
+find_program(INKSCAPE inkscape)
 #@+node:gcross.20110524225044.2475: *3* HDF++
 find_package( HDF++ 0.3 REQUIRED )
 include_directories ( ${HDF++_INCLUDE_DIRS} )
@@ -104,50 +107,10 @@ endif ()
 message (STATUS "Build type is " ${CMAKE_BUILD_TYPE})
 #@-<< Configure build type >>
 
-#@+<< Configure documentation >>
-#@+node:gcross.20110427003658.2449: ** << Configure documentation >>
-find_package(Doxygen)
-find_program(INKSCAPE inkscape)
-
-if(DOXYGEN_FOUND AND INKSCAPE)
-    configure_file(${CMAKE_SOURCE_DIR}/Doxyfile.in ${CMAKE_BINARY_DIR}/Doxyfile @ONLY)
-
-    file(GLOB svg-file-paths ${CMAKE_SOURCE_DIR}/documentation/images/*.svg)
-    foreach(svg-file-path ${svg-file-paths})
-        get_filename_component(image-name ${svg-file-path} NAME_WE)
-        set(eps-file-path ${CMAKE_BINARY_DIR}/doc/images/${image-name}.eps)
-        set(pdf-file-path ${CMAKE_BINARY_DIR}/doc/images/${image-name}.pdf)
-        set(png-file-path ${CMAKE_BINARY_DIR}/doc/images/${image-name}.png)
-        add_custom_command(
-            OUTPUT ${eps-file-path} ${pdf-file-path} ${png-file-path}
-            COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/doc/images
-            COMMAND
-                ${INKSCAPE}
-                    --without-gui
-                    --file=${svg-file-path}
-                    --export-eps=${eps-file-path}
-                    --export-png=${png-file-path}
-                    --export-pdf=${pdf-file-path}
-            DEPENDS ${image-file-path}
-            COMMENT "Generating EPS/PDF/PNG files for SVG image ${image-name}"
-            VERBATIM
-        )
-        set(doc-image-sources ${doc-image-sources} ${eps-file-path} ${pdf-file-path} ${png-file-path})
-    endforeach(svg-file-path)
-    add_custom_target(doc-images SOURCES ${doc-image-sources})
-
-    add_custom_target(doc
-        COMMAND ${DOXYGEN_EXECUTABLE} ${CMAKE_BINARY_DIR}/Doxyfile
-        DEPENDS ${doc-image-sources}
-        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-        COMMENT "Generating API documentation with Doxygen"
-        VERBATIM
-    )
-
-endif(DOXYGEN_FOUND AND INKSCAPE)
-#@-<< Configure documentation >>
-
 include_directories ("includes")
+
+add_subdirectory ("configuration")
+include_directories (${CMAKE_BINARY_DIR}/configuration)
 
 add_subdirectory ("sources")
 
