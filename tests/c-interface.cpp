@@ -135,6 +135,15 @@ TEST_CASE(orthogonal_basis) {
 }
 //@-others
 }
+//@+node:gcross.20110910181738.4782: *3* Version
+TEST_CASE(Version) {
+    unsigned int version_size = Nutcracker_Version_getSize();
+    vector<uint32_t> version(version_size);
+    Nutcracker_Version_write(&version.front());
+    BOOST_FOREACH(unsigned int const i, irange(0u,version_size)) {
+        EXPECT_EQ(version[i],Nutcracker_Version_getComponent(i));
+    }
+}
 //@-others
 }
 //@-others

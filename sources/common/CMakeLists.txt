@@ -23,6 +23,7 @@ add_library(Nutcracker++ SHARED
     states
     tensors
     utilities
+    version
     yaml
 
     ${PROTO_SRCS}

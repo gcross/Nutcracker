@@ -3,7 +3,7 @@
 cmake_minimum_required (VERSION 2.8)
 project (Nutcracker C CXX Fortran)
 
-set(VERSION 1.0)
+set(VERSION 1)
 
 #@+<< Settings >>
 #@+node:gcross.20110426132142.2444: ** << Settings >>

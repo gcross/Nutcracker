@@ -13,6 +13,7 @@ add_library(Nutcracker SHARED
     state_builder
     state_term
     vector
+    version
 )
 target_link_libraries(Nutcracker Nutcracker++)
 #@-leo

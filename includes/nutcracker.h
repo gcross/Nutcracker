@@ -208,6 +208,11 @@ void Nutcracker_Vector_getElementAtIndex(NutcrackerVector const* x, uint32_t ind
 #else
 void Nutcracker_Vector_getElementAtIndex(NutcrackerVector const* x, uint32_t index, complex double* element);
 #endif
+//@+node:gcross.20110910181738.4758: *3* Version
+uint32_t Nutcracker_Version_getComponent(uint32_t index);
+uint32_t Nutcracker_Version_getSize();
+char const* Nutcracker_Version_getString();
+void Nutcracker_Version_write(uint32_t* version);
 //@-others
 
 #ifdef __cplusplus

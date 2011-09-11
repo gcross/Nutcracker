@@ -15,6 +15,7 @@
 <v t="gcross.20110910153757.2915"><vh>@path configuration</vh>
 <v t="gcross.20110910153757.2917"><vh>@file CMakeLists.txt</vh></v>
 <v t="gcross.20110426163859.2445"><vh>@file Doxyfile.in</vh></v>
+<v t="gcross.20110910164923.2932"><vh>@file _config.h.in</vh></v>
 </v>
 <v t="gcross.20110501233304.2056"><vh>@path documentation</vh></v>
 <v t="gcross.20110904224519.2700"><vh>@path includes</vh>
@@ -35,6 +36,7 @@
 <v t="gcross.20110213161858.1810"><vh>@file states.hpp</vh></v>
 <v t="gcross.20110124161335.2009"><vh>@file tensors.hpp</vh></v>
 <v t="gcross.20110125202132.2156"><vh>@file utilities.hpp</vh></v>
+<v t="gcross.20110910164923.2927"><vh>@file version.hpp</vh></v>
 <v t="gcross.20110430163445.2593"><vh>@file yaml.hpp</vh></v>
 </v>
 </v>
@@ -69,6 +71,7 @@
 <v t="gcross.20110904235122.2855"><vh>@file state_builder.cpp</vh></v>
 <v t="gcross.20110908221100.3064"><vh>@file state_term.cpp</vh></v>
 <v t="gcross.20110904235122.2823"><vh>@file vector.cpp</vh></v>
+<v t="gcross.20110910181738.4763"><vh>@file version.cpp</vh></v>
 </v>
 <v t="gcross.20110124161335.1865"><vh>@path common</vh>
 <v t="gcross.20110125120748.2421"><vh>@file CMakeLists.txt</vh></v>
@@ -89,6 +92,7 @@
 <v t="gcross.20110213161858.1816"><vh>@file states.cpp</vh></v>
 <v t="gcross.20110215235924.1990"><vh>@file tensors.cpp</vh></v>
 <v t="gcross.20110125202132.2160"><vh>@file utilities.cpp</vh></v>
+<v t="gcross.20110910164923.2938"><vh>@file version.cpp</vh></v>
 <v t="gcross.20110430163445.2609"><vh>@file yaml.cpp</vh></v>
 </v>
 <v t="gcross.20110220141808.2711"><vh>@path programs</vh>
