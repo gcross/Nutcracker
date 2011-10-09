@@ -3,12 +3,13 @@
 #@+<< Imports >>
 #@+node:gcross.20111009135633.1138: ** << Imports >>
 import numpy
-from numpy import all, allclose, array, dot
+from numpy import all, allclose, array, dot, tensordot
 from numpy.random import rand
 from paycheck import *
 from random import randint
 import unittest
 
+from flatland.tensors import *
 from flatland.utils import *
 #@-<< Imports >>
 
@@ -39,7 +40,41 @@ class TestCase(unittest.TestCase):
     #@-others
 #@+node:gcross.20111009135633.2982: ** Tests
 #@+others
-#@+node:gcross.20111009135633.2983: *3* TestFormContractor
+#@+node:gcross.20111009193003.1168: *3* Tensors
+#@+node:gcross.20111009193003.1169: *4* StateSideSite
+class TestStateSideSite(TestCase):
+    #@+others
+    #@+node:gcross.20111009193003.1170: *5* formBoundary
+    @with_checker(number_of_calls=10)
+    def test_formBoundary(self):
+        site = \
+            StateSideSite(
+                clockwise_dimension = randint(1,5),
+                counterclockwise_dimension = randint(1,5),
+                inward_dimension = randint(1,5),
+                physical_dimension = randint(1,5),
+                randomize = True,
+            )
+        self.assertAllClose(
+            self.test_formBoundary.contract(site.data,site.data.conj()),
+            site.formBoundary().data
+        )
+
+    test_formBoundary.contract = \
+        formContractor(
+            ['T','T*'],
+            [
+                (('T',3),('T*',3)),
+            ],
+            [
+                [('T',0),('T*',0)],
+                [('T',1),('T*',1)],
+                [('T',2)],
+                [('T*',2)],
+            ]
+        )
+    #@-others
+#@+node:gcross.20111009135633.2983: *3* formContractor
 class TestFormContractor(TestCase):
     #@+others
     #@+node:gcross.20111009135633.2984: *4* test_trivial_case_xD
@@ -310,6 +345,7 @@ class TestFormContractor(TestCase):
 #@-others
 
 tests = [
+    TestStateSideSite,
     TestFormContractor,
 ]
 #@-others

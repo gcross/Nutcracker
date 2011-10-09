@@ -3,10 +3,14 @@
 #@+<< Imports >>
 #@+node:gcross.20111009135633.1135: ** << Imports >>
 from numpy import tensordot
+from numpy.random import rand
 #@-<< Imports >>
 
 #@+others
 #@+node:gcross.20111009135633.1130: ** Functions
+#@+node:gcross.20111009193003.3007: *3* crand
+def crand(*shape):
+    return rand(*shape)*2-1+rand(*shape)*2j-1j
 #@+node:gcross.20111009135633.1131: *3* formContractor
 def formContractor(order,joins,result_joins):
     observed_tensor_indices = {}
@@ -107,5 +111,9 @@ def formContractor(order,joins,result_joins):
 
 #@+<< Exports >>
 #@+node:gcross.20111009193003.1160: ** << Exports >>
+__all__ = [
+    "crand",
+    "formContractor",
+]
 #@-<< Exports >>
 #@-leo
