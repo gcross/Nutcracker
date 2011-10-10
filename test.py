@@ -41,6 +41,36 @@ class TestCase(unittest.TestCase):
 #@+node:gcross.20111009135633.2982: ** Tests
 #@+others
 #@+node:gcross.20111009193003.1168: *3* Tensors
+#@+node:gcross.20111009193003.5240: *4* StateCornerSite
+class TestStateCornerSite(TestCase):
+    #@+others
+    #@+node:gcross.20111009193003.5241: *5* formBoundary
+    @with_checker(number_of_calls=10)
+    def test_formBoundary(self):
+        site = \
+            StateCornerSite(
+                clockwise_dimension = randint(1,5),
+                counterclockwise_dimension = randint(1,5),
+                physical_dimension = randint(1,5),
+                randomize = True,
+            )
+        self.assertAllClose(
+            self.test_formBoundary.contract(site.data,site.data.conj()),
+            site.formBoundary().data
+        )
+
+    test_formBoundary.contract = \
+        formContractor(
+            ['T','T*'],
+            [
+                (('T',0),('T*',0)),
+            ],
+            [
+                [('T',1),('T*',1)],
+                [('T',2),('T*',2)],
+            ]
+        )
+    #@-others
 #@+node:gcross.20111009193003.1169: *4* StateSideSite
 class TestStateSideSite(TestCase):
     #@+others
@@ -345,6 +375,7 @@ class TestFormContractor(TestCase):
 #@-others
 
 tests = [
+    TestStateCornerSite,
     TestStateSideSite,
     TestFormContractor,
 ]

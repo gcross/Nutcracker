@@ -48,6 +48,27 @@ class Tensor(object):
             else:
                 self.data = ndarray(shape)
     #@-others
+#@+node:gcross.20111009193003.5243: *3* StateCornerBoundary
+class StateCornerBoundary(Tensor):
+    _dimensions = addDimensionSuffixTo("clockwise","counterclockwise")
+    #@+others
+    #@-others
+#@+node:gcross.20111009193003.5232: *3* StateCornerSite
+class StateCornerSite(Tensor):
+    _dimensions = addDimensionSuffixTo("physical","clockwise","counterclockwise")
+    #@+others
+    #@+node:gcross.20111009193003.5237: *4* formBoundary
+    def formBoundary(self):
+        return StateCornerBoundary(
+             tensordot(self.data,self.data.conj(),(0,0))
+            .transpose(0,2,1,3)
+            .reshape(
+                self.clockwise_dimension*self.clockwise_dimension,
+                self.counterclockwise_dimension*self.counterclockwise_dimension,
+             )
+            .copy()
+        )
+    #@-others
 #@+node:gcross.20111009193003.1166: *3* StateSideBoundary
 class StateSideBoundary(Tensor):
     _dimensions = addDimensionSuffixTo("clockwise","counterclockwise","inward","inward")
@@ -77,6 +98,8 @@ class StateSideSite(Tensor):
 #@+<< Exports >>
 #@+node:gcross.20111009193003.1171: ** << Exports >>
 __all__ = [
+    "StateCornerBoundary",
+    "StateCornerSite",
     "StateSideBoundary",
     "StateSideSite",
 ]
