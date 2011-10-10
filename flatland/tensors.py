@@ -2,7 +2,7 @@
 #@+node:gcross.20111009193003.1158: * @file tensors.py
 #@+<< Imports >>
 #@+node:gcross.20111009193003.1159: ** << Imports >>
-from numpy import inner, ndarray
+from numpy import inner, ndarray, tensordot
 
 from flatland.utils import crand, formContractor
 #@-<< Imports >>
@@ -55,12 +55,12 @@ class StateSideBoundary(Tensor):
     #@-others
 #@+node:gcross.20111009193003.1164: *3* StateSideSite
 class StateSideSite(Tensor):
-    _dimensions = addDimensionSuffixTo("clockwise","counterclockwise","inward","physical")
+    _dimensions = addDimensionSuffixTo("physical","clockwise","counterclockwise","inward")
     #@+others
     #@+node:gcross.20111009193003.1165: *4* formBoundary
     def formBoundary(self):
         return StateSideBoundary(
-             inner(self.data,self.data.conj())
+             tensordot(self.data,self.data.conj(),(0,0))
             .transpose(0,3,1,4,2,5)
             .reshape(
                 self.clockwise_dimension*self.clockwise_dimension,
