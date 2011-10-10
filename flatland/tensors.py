@@ -47,6 +47,15 @@ class Tensor(object):
                 self.data = crand(*shape)
             else:
                 self.data = ndarray(shape)
+    #@+node:gcross.20111009193003.5259: *4* trivial
+    @classmethod
+    def trivial(cls):
+        return cls(**{name: 1 for name in cls._dimensions})
+    #@-others
+#@+node:gcross.20111009193003.5252: *3* StateCenterSite
+class StateCenterSite(Tensor):
+    _dimensions = addDimensionSuffixTo("physical","right","up","left","down")
+    #@+others
     #@-others
 #@+node:gcross.20111009193003.5243: *3* StateCornerBoundary
 class StateCornerBoundary(Tensor):
@@ -73,6 +82,24 @@ class StateCornerSite(Tensor):
 class StateSideBoundary(Tensor):
     _dimensions = addDimensionSuffixTo("clockwise","counterclockwise","inward","inward")
     #@+others
+    #@+node:gcross.20111009193003.5244: *4* absorbCounterClockwiseCornerBoundary
+    def absorbCounterClockwiseCornerBoundary(self,corner):
+        return StateSideBoundary(
+             tensordot(self.data,corner.data,(1,0))
+            .transpose(0,3,1,2)
+        )
+    #@+node:gcross.20111009193003.5262: *4* absorbCounterClockwiseSideBoundary
+    def absorbCounterClockwiseSideBoundary(self,side):
+        return StateSideBoundary(
+             tensordot(self.data,side.data,(1,0))
+            .transpose(0,3,1,4,2,5)
+            .reshape(
+                self.clockwise_dimension,
+                side.counterclockwise_dimension,
+                self.inward_dimension*side.inward_dimension,
+                self.inward_dimension*side.inward_dimension,
+             )
+        )
     #@-others
 #@+node:gcross.20111009193003.1164: *3* StateSideSite
 class StateSideSite(Tensor):

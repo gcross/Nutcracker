@@ -71,6 +71,79 @@ class TestStateCornerSite(TestCase):
             ]
         )
     #@-others
+#@+node:gcross.20111009193003.5248: *4* StateSideBoundary
+class TestStateSideBoundary(TestCase):
+    #@+others
+    #@+node:gcross.20111009193003.5250: *5* absorbCounterClockwiseCornerBoundary
+    @with_checker(number_of_calls=10)
+    def test_absorbCounterClockwiseCornerBoundary(self):
+        side = \
+            StateSideBoundary(
+                clockwise_dimension = randint(1,5),
+                counterclockwise_dimension = randint(1,5),
+                inward_dimension = randint(1,5),
+                randomize = True,
+            )
+        corner = \
+            StateCornerBoundary(
+                clockwise_dimension = side.counterclockwise_dimension,
+                counterclockwise_dimension = side.counterclockwise_dimension,
+                randomize = True,
+            )
+        self.assertAllClose(
+            self.test_absorbCounterClockwiseCornerBoundary.contract(side.data,corner.data),
+            side.absorbCounterClockwiseCornerBoundary(corner).data
+        )
+
+    test_absorbCounterClockwiseCornerBoundary.contract = \
+        formContractor(
+            ['S','C'],
+            [
+                (('C',0),('S',1)),
+            ],
+            [
+                [('S',0)],
+                [('C',1)],
+                [('S',2)],
+                [('S',3)],
+            ]
+        )
+    #@+node:gcross.20111009193003.5264: *5* absorbCounterClockwiseSideBoundary
+    @with_checker(number_of_calls=10)
+    def test_absorbCounterClockwiseSideBoundary(self):
+        side1 = \
+            StateSideBoundary(
+                clockwise_dimension = randint(1,5),
+                counterclockwise_dimension = randint(1,5),
+                inward_dimension = randint(1,5),
+                randomize = True,
+            )
+        side2 = \
+            StateSideBoundary(
+                clockwise_dimension = side1.counterclockwise_dimension,
+                counterclockwise_dimension = randint(1,5),
+                inward_dimension = randint(1,5),
+                randomize = True,
+            )
+        self.assertAllClose(
+            self.test_absorbCounterClockwiseSideBoundary.contract(side1.data,side2.data),
+            side1.absorbCounterClockwiseSideBoundary(side2).data
+        )
+
+    test_absorbCounterClockwiseSideBoundary.contract = \
+        formContractor(
+            ['A','B'],
+            [
+                (('B',0),('A',1)),
+            ],
+            [
+                [('A',0)],
+                [('B',1)],
+                [('A',2),('B',2)],
+                [('A',3),('B',3)],
+            ]
+        )
+    #@-others
 #@+node:gcross.20111009193003.1169: *4* StateSideSite
 class TestStateSideSite(TestCase):
     #@+others
@@ -376,6 +449,7 @@ class TestFormContractor(TestCase):
 
 tests = [
     TestStateCornerSite,
+    TestStateSideBoundary,
     TestStateSideSite,
     TestFormContractor,
 ]
