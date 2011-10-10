@@ -50,16 +50,8 @@ class Tensor(object):
     #@-others
 #@+node:gcross.20111009193003.1166: *3* StateSideBoundary
 class StateSideBoundary(Tensor):
-    _dimensions = addDimensionSuffixTo("clockwise","counterclockwise","inward","inward_conjugate")
+    _dimensions = addDimensionSuffixTo("clockwise","counterclockwise","inward","inward")
     #@+others
-    #@+node:gcross.20111009193003.1167: *4* __init__
-    def __init__(*args,**keywords):
-        if "inward" in keywords:
-            if "inward_conjugate" in keywords:
-                raise ValueError("inward dimension and its conjugate dimension must have identical size")
-            else:
-                keywords["inward_conjugate"] = keywords["inward"]
-        Tensor.__init__(*args,**keywords)
     #@-others
 #@+node:gcross.20111009193003.1164: *3* StateSideSite
 class StateSideSite(Tensor):
