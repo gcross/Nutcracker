@@ -74,25 +74,28 @@ def formContractor(order,joins,result_joins):
         if len(arguments) != len(order):
             raise ValueError("wrong number of arguments;  expected {} but received {}",len(order),len(arguments))
         arguments = list(arguments)
-        join_ids_index = -2
+        join_ids_index = -1
         current_tensor = arguments.pop()
-        current_join_ids = argument_join_ids[-1]
+        current_join_ids = argument_join_ids[join_ids_index]
         while len(arguments) > 0:
+            join_ids_index -= 1
             next_tensor = arguments.pop()
             next_join_ids = argument_join_ids[join_ids_index]
-            join_ids_index -= 1
-            first_axes = []
-            second_axes = []
-            first_axis_index = 0
-            common_join_ids = set()
-            for join_id in current_join_ids:
-                if join_id in next_join_ids:
-                    common_join_ids.add(join_id)
-                    first_axes.append(first_axis_index)
-                    second_axes.append(next_join_ids.index(join_id))
-                first_axis_index += 1
-            current_tensor = tensordot(current_tensor,next_tensor,(first_axes,second_axes))
-            current_join_ids = [i for i in current_join_ids+next_join_ids if i not in common_join_ids]
+            try:
+                first_axes = []
+                second_axes = []
+                first_axis_index = 0
+                common_join_ids = set()
+                for join_id in current_join_ids:
+                    if join_id in next_join_ids:
+                        common_join_ids.add(join_id)
+                        first_axes.append(first_axis_index)
+                        second_axes.append(next_join_ids.index(join_id))
+                    first_axis_index += 1
+                current_tensor = tensordot(current_tensor,next_tensor,(first_axes,second_axes))
+                current_join_ids = [i for i in current_join_ids+next_join_ids if i not in common_join_ids]
+            except Exception as e:
+                raise ValueError("Error when joining tensor {}: '{}'".format(order[join_ids_index],str(e)))
         current_tensor = current_tensor.transpose([current_join_ids.index(i) for i in sum([list(x) for x in result_join_ids],[])])
         old_shape = current_tensor.shape
         new_shape = []

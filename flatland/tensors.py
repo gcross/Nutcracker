@@ -29,12 +29,17 @@ class Tensor(object):
                 setattr(self,name,dimension)
         else:
             randomize = False
+            fill = None
             for given_dimension_name in keywords.keys():
                 if given_dimension_name == "randomize":
-                    randomize = True
-                    continue
-                if given_dimension_name not in self._dimensions:
-                    raise ValueError("{} is not a recognized dimension for this tensor".format(given_dimension_name))
+                    randomize = keywords["randomize"]
+                elif given_dimension_name == "fill":
+                    fill = keywords["fill"]
+                elif given_dimension_name not in self._dimensions:
+                    if given_dimension_name + "_dimension" in self._dimensions:
+                        raise ValueError("you needed to type '{}_dimension' rather than '{}' in the list of keyword arguments to supply the {} dimension".format(*(given_dimension_name,)*3))
+                    else:
+                        raise ValueError("{} is not a recognized dimension for this tensor".format(given_dimension_name))
             shape = []
             for name in self._dimensions:
                 try:
@@ -43,14 +48,20 @@ class Tensor(object):
                     setattr(self,name,dimension)
                 except KeyError:
                     raise ValueError("missing a value for dimension {}".format(name))
+            if randomize and fill:
+                raise ValueError("you asked to fill the tensor both with random data *and* a given constant, which are contradictory requests")
             if randomize:
                 self.data = crand(*shape)
             else:
                 self.data = ndarray(shape)
+            if fill:
+                self.data[...] = fill
     #@+node:gcross.20111009193003.5259: *4* trivial
     @classmethod
     def trivial(cls):
-        return cls(**{name: 1 for name in cls._dimensions})
+        keywords = {name: 1 for name in cls._dimensions}
+        keywords["fill"] = 1
+        return cls(**keywords)
     #@-others
 #@+node:gcross.20111009193003.5252: *3* StateCenterSite
 class StateCenterSite(Tensor):
