@@ -308,6 +308,64 @@ class TestFormContractor(TestCase):
                 [[('A',1)],[('B',2)],[('C',0)]]
             )(A,B,C)
         )
+    #@+node:gcross.20111013080525.1215: *4* test_1
+    @with_checker(number_of_calls=10)
+    def test_1(self,
+        a = irange(1,10),
+        b = irange(1,10),
+        c = irange(1,10),
+        d = irange(1,10),
+        e = irange(1,10),
+        f = irange(1,10),
+    ):
+        A = crand(a,b,c)
+        B = crand(d,e,c,f)
+        AB = tensordot(A,B,(2,2)).transpose(0,2,1,3,4).reshape(a*d,b*e,f)
+        self.assertAllClose(
+            AB,
+            formContractor(
+                ['A','B'],
+                [
+                    (('A',2),('B',2)),
+                ],
+                [
+                    [('A',0),('B',0)],
+                    [('A',1),('B',1)],
+                    [('B',3)],
+                ]
+            )(A,B)
+        )
+    #@+node:gcross.20111013080525.1217: *4* test_2
+    @with_checker(number_of_calls=10)
+    def test_2(self,
+        a = irange(1,5),
+        b = irange(1,5),
+        c = irange(1,5),
+        d = irange(1,5),
+        e = irange(1,5),
+        f = irange(1,5),
+        g = irange(1,5),
+        h = irange(1,5),
+        i = irange(1,5),
+    ):
+        A = crand(a,b,c,d)
+        B = crand(e,f,d,h,i)
+        AB = tensordot(A,B,(3,2)).transpose(0,3,1,4,2,5,6).reshape(a*e,b*f,c*h,i)
+        self.assertAllClose(
+            AB,
+            formContractor(
+                ['A','B'],
+                [
+                    (('A',3),('B',2)),
+                ],
+                [
+                    [('A',0),('B',0)],
+                    [('A',1),('B',1)],
+                    [('A',2),('B',3)],
+                    [('B',4)],
+                ]
+            )(A,B)
+        )
     #@-others
 #@+node:gcross.20111009193003.1168: *3* Tensors
 #@+node:gcross.20111009193003.5240: *4* StateCornerSite
@@ -486,6 +544,138 @@ class TestStateSideBoundary(TestCase):
 #@+node:gcross.20111009193003.1169: *4* StateSideSite
 class TestStateSideSite(TestCase):
     #@+others
+    #@+node:gcross.20111013080525.1243: *5* absorbCenterSite_downward
+    @with_checker(number_of_calls=10)
+    def test_absorbCenterSite_upward(self):
+        site = \
+            StateSideSite(
+                physical_dimension = randint(1,5),
+                clockwise_dimension = randint(1,5),
+                counterclockwise_dimension = randint(1,5),
+                inward_dimension = randint(1,5),
+                randomize = True,
+            )
+        center = \
+            StateCenterSite(
+                physical_dimension = randint(1,5),
+                rightward_dimension = randint(1,5),
+                upward_dimension = randint(1,5),
+                leftward_dimension = randint(1,5),
+                downward_dimension = site.inward_dimension,
+                randomize = True,
+            )
+
+        self.assertAllClose(
+             tensordot(site.data,center.data,(3,4))
+            .transpose(0,3,1,6,2,4,5)
+            .reshape(
+                site.physical_dimension*center.physical_dimension,
+                site.clockwise_dimension*center.leftward_dimension,
+                site.counterclockwise_dimension*center.rightward_dimension,
+                center.upward_dimension,
+             )
+
+            ,site.absorbCenterSite(center,3).data
+        )
+    #@+node:gcross.20111013080525.1240: *5* absorbCenterSite_leftward
+    @with_checker(number_of_calls=10)
+    def test_absorbCenterSite_leftward(self):
+        site = \
+            StateSideSite(
+                physical_dimension = randint(1,5),
+                clockwise_dimension = randint(1,5),
+                counterclockwise_dimension = randint(1,5),
+                inward_dimension = randint(1,5),
+                randomize = True,
+            )
+        center = \
+            StateCenterSite(
+                physical_dimension = randint(1,5),
+                rightward_dimension = randint(1,5),
+                upward_dimension = randint(1,5),
+                leftward_dimension = site.inward_dimension,
+                downward_dimension = randint(1,5),
+                randomize = True,
+            )
+
+        self.assertAllClose(
+             tensordot(site.data,center.data,(3,3))
+            .transpose(0,3,1,5,2,6,4)
+            .reshape(
+                site.physical_dimension*center.physical_dimension,
+                site.clockwise_dimension*center.upward_dimension,
+                site.counterclockwise_dimension*center.downward_dimension,
+                center.rightward_dimension,
+             )
+
+            ,site.absorbCenterSite(center,2).data
+        )
+    #@+node:gcross.20111013080525.1236: *5* absorbCenterSite_rightward
+    @with_checker(number_of_calls=10)
+    def test_absorbCenterSite_rightward(self):
+        site = \
+            StateSideSite(
+                physical_dimension = randint(1,5),
+                clockwise_dimension = randint(1,5),
+                counterclockwise_dimension = randint(1,5),
+                inward_dimension = randint(1,5),
+                randomize = True,
+            )
+        center = \
+            StateCenterSite(
+                physical_dimension = randint(1,5),
+                rightward_dimension = randint(1,5),
+                upward_dimension = site.inward_dimension,
+                leftward_dimension = randint(1,5),
+                downward_dimension = randint(1,5),
+                randomize = True,
+            )
+
+        self.assertAllClose(
+             tensordot(site.data,center.data,(3,2))
+            .transpose(0,3,1,4,2,5,6)
+            .reshape(
+                site.physical_dimension*center.physical_dimension,
+                site.clockwise_dimension*center.rightward_dimension,
+                site.counterclockwise_dimension*center.leftward_dimension,
+                center.downward_dimension,
+             )
+
+            ,site.absorbCenterSite(center,1).data
+        )
+    #@+node:gcross.20111013080525.1238: *5* absorbCenterSite_upward
+    @with_checker(number_of_calls=10)
+    def test_absorbCenterSite_upward(self):
+        site = \
+            StateSideSite(
+                physical_dimension = randint(1,5),
+                clockwise_dimension = randint(1,5),
+                counterclockwise_dimension = randint(1,5),
+                inward_dimension = randint(1,5),
+                randomize = True,
+            )
+        center = \
+            StateCenterSite(
+                physical_dimension = randint(1,5),
+                rightward_dimension = site.inward_dimension,
+                upward_dimension = randint(1,5),
+                leftward_dimension = randint(1,5),
+                downward_dimension = randint(1,5),
+                randomize = True,
+            )
+
+        self.assertAllClose(
+             tensordot(site.data,center.data,(3,1))
+            .transpose(0,3,1,6,2,4,5)
+            .reshape(
+                site.physical_dimension*center.physical_dimension,
+                site.clockwise_dimension*center.downward_dimension,
+                site.counterclockwise_dimension*center.upward_dimension,
+                center.leftward_dimension,
+             )
+
+            ,site.absorbCenterSite(center,0).data
+        )
     #@+node:gcross.20111009193003.1170: *5* formBoundary
     @with_checker(number_of_calls=10)
     def test_formBoundary(self):

@@ -137,6 +137,24 @@ class StateSideBoundary(Tensor):
 class StateSideSite(Tensor):
     _dimensions = addDimensionSuffixTo("physical","clockwise","counterclockwise","inward")
     #@+others
+    #@+node:gcross.20111013080525.1234: *4* absorbCenterSite
+    def absorbCenterSite(self,center,direction):
+        return StateSideSite(self.absorbCenterSite.contractors[direction](self.data,center.data))
+
+    absorbCenterSite.contractors = [
+        formContractor(
+            ['S','C'],
+            [
+                (('S',3),('C',1+i)),
+            ],
+            [
+                [('S',0),('C',0)],
+                [('S',1),('C',1+(i-1)%4)],
+                [('S',2),('C',1+(i+1)%4)],
+                [('C',1+(i+2)%4),]
+            ]
+        ) for i in range(4)
+    ]
     #@+node:gcross.20111009193003.1165: *4* formBoundary
     def formBoundary(self):
         return StateSideBoundary(
