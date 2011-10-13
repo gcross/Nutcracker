@@ -742,7 +742,38 @@ class TestGrid(TestCase):
                 downward_dimension=grid.sides[3].inward_dimension,
                 randomize=True,
             )
+        grid.physical_dimension = grid.center.physical_dimension
+        grid.bandwidth_dimensions = [
+            grid.center.rightward_dimension,
+            grid.center.upward_dimension,
+            grid.center.leftward_dimension,
+            grid.center.downward_dimension,
+        ]
         return grid
+    #@+node:gcross.20111013165152.1231: *4* test_computeNormalization_random
+    @with_checker(number_of_calls=10)
+    def test_computeNormalization_random(self):
+        grid = self.randomGrid()
+        self.assertAlmostEqual(
+            self.test_computeNormalization_random.contract(*([grid.center.data,grid.center.data.conj()] + [x.formBoundary().data for x in grid.sides + grid.corners])),
+            grid.computeNormalization(),
+        )
+
+    test_computeNormalization_random.contract = \
+        formContractor(
+            (['O','O*'] + ['S{}'.format(i) for i in range(4)] + ['C{}'.format(i) for i in range(4)]),
+            ([(('S{}'.format(i),1),('C{}'.format(i),0)) for i in xrange(4)]
+            +[(('C{}'.format(i),1),('S{}'.format((i+1)%4),0)) for i in xrange(4)]
+            +[(('S{}'.format(i),2),('O',1+i)) for i in xrange(4)]
+            +[(('S{}'.format(i),3),('O*',1+i)) for i in xrange(4)]
+            +[(('O',0),('O*',0))]
+            ),
+            []
+        )
+    #@+node:gcross.20111013165152.1227: *4* test_computeNormalization_trivial
+    def test_computeNormalization_trivial(self):
+        for physical_dimension in range(1,5):
+            self.assertAlmostEqual(Grid(physical_dimension).computeNormalization(),1)
     #@+node:gcross.20111013080525.1263: *4* test_computeNormalizationConditionNumber_post_contract
     @with_checker(number_of_calls=10)
     def test_computeNormalizationConditionNumber_post_contract(self,

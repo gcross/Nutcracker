@@ -2,8 +2,8 @@
 #@+node:gcross.20111009193003.5253: * @file grid.py
 #@+<< Imports >>
 #@+node:gcross.20111009193003.5254: ** << Imports >>
-from numpy import array, identity, product, tensordot
 from numpy.linalg import cond
+from numpy import array, dot, identity, product, tensordot
 
 from tensors import StateCenterSite, StateCornerSite, StateSideSite
 #@-<< Imports >>
@@ -16,6 +16,7 @@ class Grid:
     #@+node:gcross.20111009193003.5258: *4* __init__
     def __init__(self,physical_dimension):
         self.physical_dimension = physical_dimension
+        self.bandwidth_dimensions = [1,1,1,1]
         self.sides = [StateSideSite.trivial()]*4
         self.corners = [StateCornerSite.trivial()]*4
         self.center = \
@@ -27,6 +28,16 @@ class Grid:
                 downward_dimension = 1,
             )
         self.center.data[:,0,0,0,0] = array([1] + [0]*(physical_dimension-1))
+    #@+node:gcross.20111013165152.1229: *4* computeNormalization
+    def computeNormalization(self):
+        return \
+            dot(
+                dot(
+                    self.center.data.reshape(self.physical_dimension,product(self.bandwidth_dimensions)),
+                    self.computeNormalizationSubmatrix()
+                ).ravel(),
+                self.center.data.conj().ravel()
+            )
     #@+node:gcross.20111013080525.1260: *4* computeNormalizationConditionNumber
     def computeNormalizationConditionNumber(self):
         return cond(self.computeNormalizationSubmatrix())
