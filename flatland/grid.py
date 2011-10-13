@@ -3,6 +3,7 @@
 #@+<< Imports >>
 #@+node:gcross.20111009193003.5254: ** << Imports >>
 from numpy import array, identity, product, tensordot
+from numpy.linalg import cond
 
 from tensors import StateCenterSite, StateCornerSite, StateSideSite
 #@-<< Imports >>
@@ -26,6 +27,9 @@ class Grid:
                 downward_dimension = 1,
             )
         self.center.data[:,0,0,0,0] = array([1] + [0]*(physical_dimension-1))
+    #@+node:gcross.20111013080525.1260: *4* computeNormalizationConditionNumber
+    def computeNormalizationConditionNumber(self):
+        return cond(self.computeNormalizationSubmatrix())
     #@+node:gcross.20111009193003.5260: *4* computeNormalizationMatrix
     def computeNormalizationMatrix(self):
         submatrix = self.computeNormalizationSubmatrix()

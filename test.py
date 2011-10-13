@@ -743,6 +743,20 @@ class TestGrid(TestCase):
                 randomize=True,
             )
         return grid
+    #@+node:gcross.20111013080525.1263: *4* test_computeNormalizationConditionNumber_post_contract
+    @with_checker(number_of_calls=10)
+    def test_computeNormalizationConditionNumber_post_contract(self,
+        physical_dimension = irange(1,5),
+        number_of_contractions = irange(0,5),
+    ):
+        grid = Grid(physical_dimension)
+        for _ in range(number_of_contractions):
+            grid.contract(randint(0,3))
+        self.assertAlmostEqual(grid.computeNormalizationConditionNumber(),1)
+    #@+node:gcross.20111013080525.1261: *4* test_computeNormalizationConditionNumber_trivial
+    def test_computeNormalizationConditionNumber_trivial(self):
+        for physical_dimension in range(1,5):
+            self.assertAlmostEqual(Grid(physical_dimension).computeNormalizationConditionNumber(),1)
     #@+node:gcross.20111010182600.1199: *4* test_computeNormalizationMatrix_random
     @with_checker(number_of_calls=10)
     def test_computeNormalizationMatrix_random(self):
@@ -763,6 +777,10 @@ class TestGrid(TestCase):
                 [('I',1)] + [('S{}'.format(i),3) for i in range(4)],
             ]
         )
+    #@+node:gcross.20111010182517.1196: *4* test_computeNormalizationMatrix_trivial
+    def test_computeNormalizationMatrix_trivial(self):
+        for physical_dimension in range(1,5):
+            self.assertAllClose(Grid(physical_dimension).computeNormalizationMatrix(),identity(physical_dimension))
     #@+node:gcross.20111013080525.1257: *4* test_contract_downward
     @with_checker(number_of_calls=10)
     def test_contract_downward(self):
