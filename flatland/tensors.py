@@ -77,8 +77,8 @@ class StateCornerBoundary(Tensor):
 class StateCornerSite(Tensor):
     _dimensions = addDimensionSuffixTo("physical","clockwise","counterclockwise")
     #@+others
-    #@+node:gcross.20111013080525.1203: *4* absorbCounterClockwiseSideSite
-    def absorbCounterClockwiseSideSite(self,side):
+    #@+node:gcross.20111013080525.1203: *4* absorbSideSiteAtCounterClockwise
+    def absorbSideSiteAtCounterClockwise(self,side):
         return StateCornerSite(
              tensordot(self.data,side.data,(2,1))
             .transpose(0,2,1,4,3)
@@ -88,8 +88,8 @@ class StateCornerSite(Tensor):
                 side.counterclockwise_dimension,
              )
         )
-    #@+node:gcross.20111013080525.1207: *4* absorbClockwiseSideSite
-    def absorbClockwiseSideSite(self,side):
+    #@+node:gcross.20111013080525.1207: *4* absorbSideSiteAtClockwise
+    def absorbSideSiteAtClockwise(self,side):
         return StateCornerSite(
              tensordot(self.data,side.data,(1,2))
             .transpose(0,2,3,1,4)

@@ -371,9 +371,9 @@ class TestFormContractor(TestCase):
 #@+node:gcross.20111009193003.5240: *4* StateCornerSite
 class TestStateCornerSite(TestCase):
     #@+others
-    #@+node:gcross.20111013080525.1205: *5* absorbCounterClockwiseSideSite
+    #@+node:gcross.20111013080525.1205: *5* absorbSideSiteAtCounterClockwise
     @with_checker(number_of_calls=10)
-    def test_absorbCounterClockwiseSideSite(self):
+    def test_absorbSideSiteAtCounterClockwise(self):
         corner = \
             StateCornerSite(
                 physical_dimension = randint(1,5),
@@ -390,11 +390,11 @@ class TestStateCornerSite(TestCase):
                 randomize = True,
             )
         self.assertAllClose(
-            self.test_absorbCounterClockwiseSideSite.contract(corner.data,site.data),
-            corner.absorbCounterClockwiseSideSite(site).data
+            self.test_absorbSideSiteAtCounterClockwise.contract(corner.data,site.data),
+            corner.absorbSideSiteAtCounterClockwise(site).data
         )
 
-    test_absorbCounterClockwiseSideSite.contract = \
+    test_absorbSideSiteAtCounterClockwise.contract = \
         formContractor(
             ['C','S'],
             [
@@ -406,9 +406,9 @@ class TestStateCornerSite(TestCase):
                 [('S',2)],
             ]
         )
-    #@+node:gcross.20111013080525.1209: *5* absorbClockwiseSideSite
+    #@+node:gcross.20111013080525.1209: *5* absorbSideSiteAtClockwise
     @with_checker(number_of_calls=10)
-    def test_absorbClockwiseSideSite(self):
+    def test_absorbSideSiteAtClockwise(self):
         corner = \
             StateCornerSite(
                 physical_dimension = randint(1,5),
@@ -425,11 +425,11 @@ class TestStateCornerSite(TestCase):
                 randomize = True,
             )
         self.assertAllClose(
-            self.test_absorbClockwiseSideSite.contract(corner.data,site.data),
-            corner.absorbClockwiseSideSite(site).data
+            self.test_absorbSideSiteAtClockwise.contract(corner.data,site.data),
+            corner.absorbSideSiteAtClockwise(site).data
         )
 
-    test_absorbClockwiseSideSite.contract = \
+    test_absorbSideSiteAtClockwise.contract = \
         formContractor(
             ['C','S'],
             [
