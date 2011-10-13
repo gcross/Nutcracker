@@ -65,7 +65,7 @@ class Tensor(object):
     #@-others
 #@+node:gcross.20111009193003.5252: *3* StateCenterSite
 class StateCenterSite(Tensor):
-    _dimensions = addDimensionSuffixTo("physical","right","up","left","down")
+    _dimensions = addDimensionSuffixTo("physical","rightward","upward","leftward","downward")
     #@+others
     #@-others
 #@+node:gcross.20111009193003.5243: *3* StateCornerBoundary

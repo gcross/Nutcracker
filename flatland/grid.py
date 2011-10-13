@@ -20,10 +20,10 @@ class Grid:
         self.center = \
             StateCenterSite(
                 physical_dimension = physical_dimension,
-                right_dimension = 1,
-                up_dimension = 1,
-                left_dimension = 1,
-                down_dimension = 1,
+                rightward_dimension = 1,
+                upward_dimension = 1,
+                leftward_dimension = 1,
+                downward_dimension = 1,
             )
         self.center.data[:,0,0,0,0] = array([1] + [0]*(physical_dimension-1))
     #@+node:gcross.20111009193003.5260: *4* computeNormalizationMatrix
