@@ -762,10 +762,10 @@ class TestGrid(TestCase):
     test_computeNormalization_random.contract = \
         formContractor(
             (['O','O*'] + ['S{}'.format(i) for i in range(4)] + ['C{}'.format(i) for i in range(4)]),
-            ([(('S{}'.format(i),1),('C{}'.format(i),0)) for i in xrange(4)]
-            +[(('C{}'.format(i),1),('S{}'.format((i+1)%4),0)) for i in xrange(4)]
-            +[(('S{}'.format(i),2),('O',1+i)) for i in xrange(4)]
-            +[(('S{}'.format(i),3),('O*',1+i)) for i in xrange(4)]
+            ([(('S{}'.format(i),1),('C{}'.format(i),0)) for i in range(4)]
+            +[(('C{}'.format(i),1),('S{}'.format((i+1)%4),0)) for i in range(4)]
+            +[(('S{}'.format(i),2),('O',1+i)) for i in range(4)]
+            +[(('S{}'.format(i),3),('O*',1+i)) for i in range(4)]
             +[(('O',0),('O*',0))]
             ),
             []
@@ -800,8 +800,8 @@ class TestGrid(TestCase):
     test_computeNormalizationMatrix_random.contract = \
         formContractor(
             (['I'] + ['S{}'.format(i) for i in range(4)] + ['C{}'.format(i) for i in range(4)]),
-            ([(('S{}'.format(i),1),('C{}'.format(i),0)) for i in xrange(4)]
-            +[(('C{}'.format(i),1),('S{}'.format((i+1)%4),0)) for i in xrange(4)]
+            ([(('S{}'.format(i),1),('C{}'.format(i),0)) for i in range(4)]
+            +[(('C{}'.format(i),1),('S{}'.format((i+1)%4),0)) for i in range(4)]
             ),
             [
                 [('I',0)] + [('S{}'.format(i),2) for i in range(4)],

@@ -119,7 +119,7 @@ def formContractor(order,joins,result_joins):
     return contract
 #@+node:gcross.20111013080525.3956: *3* multiplyTensorByMatrixAtIndex
 def multiplyTensorByMatrixAtIndex(tensor,matrix,index):
-    tensor_new_indices = range(tensor.ndim-1)
+    tensor_new_indices = list(range(tensor.ndim-1))
     tensor_new_indices.insert(index,tensor.ndim-1)
     return tensordot(tensor,matrix,(index,0)).transpose(tensor_new_indices)
 #@-others

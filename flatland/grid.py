@@ -5,8 +5,8 @@
 from numpy import array, dot, identity, product, tensordot
 from numpy.linalg import cond, svd
 
-from tensors import StateCenterSite, StateCornerSite, StateSideSite
-from utils import crand, multiplyTensorByMatrixAtIndex
+from flatland.tensors import StateCenterSite, StateCornerSite, StateSideSite
+from flatland.utils import crand, multiplyTensorByMatrixAtIndex
 #@-<< Imports >>
 
 #@+others
