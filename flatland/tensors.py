@@ -108,7 +108,6 @@ class StateCornerSite(Tensor):
                 self.clockwise_dimension*self.clockwise_dimension,
                 self.counterclockwise_dimension*self.counterclockwise_dimension,
              )
-            .copy()
         )
     #@-others
 #@+node:gcross.20111009193003.1166: *3* StateSideBoundary
@@ -149,7 +148,6 @@ class StateSideSite(Tensor):
                 self.inward_dimension,
                 self.inward_dimension
              )
-            .copy()
         )
     #@-others
 #@-others
