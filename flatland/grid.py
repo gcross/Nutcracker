@@ -2,10 +2,11 @@
 #@+node:gcross.20111009193003.5253: * @file grid.py
 #@+<< Imports >>
 #@+node:gcross.20111009193003.5254: ** << Imports >>
-from numpy.linalg import cond
 from numpy import array, dot, identity, product, tensordot
+from numpy.linalg import cond, svd
 
 from tensors import StateCenterSite, StateCornerSite, StateSideSite
+from utils import crand, multiplyTensorByMatrixAtIndex
 #@-<< Imports >>
 
 #@+others
@@ -71,6 +72,21 @@ class Grid:
         self.sides[direction] = self.sides[direction].absorbCenterSite(self.center,direction)
         self.corners[direction] = self.corners[direction].absorbSideSiteAtCounterClockwise(self.sides[(direction+1)%4])
         self.corners[(direction-1)%4] = self.corners[(direction-1)%4].absorbSideSiteAtClockwise(self.sides[(direction-1)%4])
+    #@+node:gcross.20111013080525.3958: *4* increaseBandwidthDimensionBy
+    def increaseBandwidthDimensionBy(self,increment,direction):
+        return self.increaseBandwidthDimensionTo(self.bandwidth_dimensions[direction]+increment,direction)
+    #@+node:gcross.20111013080525.1264: *4* increaseBandwidthDimensionTo
+    def increaseBandwidthDimensionTo(self,new_dimension,direction):
+        old_dimension = self.bandwidth_dimensions[direction]
+        if new_dimension < old_dimension:
+            raise ValueError("new dimension ({}) must be at least the old dimension ({})".format(new_dimension,old_dimension))
+        if new_dimension == old_dimension:
+            return
+        matrix, _, _ = svd(crand(new_dimension,old_dimension),full_matrices=False)
+        matrix = matrix.transpose()
+        self.center = StateCenterSite(multiplyTensorByMatrixAtIndex(self.center.data,matrix,1+direction))
+        self.sides[direction] = StateSideSite(multiplyTensorByMatrixAtIndex(self.sides[direction].data,matrix.conj(),3))
+        self.bandwidth_dimensions[direction] = new_dimension
     #@-others
 #@-others
 

@@ -872,6 +872,16 @@ class TestGrid(TestCase):
             self.assertAllClose(correct_side.data,actual_side.data)
         for correct_corner, actual_corner in zip(corners,grid.corners):
             self.assertAllClose(correct_corner.data,actual_corner.data)
+    #@+node:gcross.20111013165152.1225: *4* test_increaseBandwithBy
+    @with_checker(number_of_calls=10)
+    def test_increaseBandwidthBy(self,
+        direction = irange(0,3),
+        increment = irange(0,3),
+    ):
+        grid = self.randomGrid()
+        old_normalization = grid.computeNormalization()
+        grid.increaseBandwidthDimensionBy(increment,direction)
+        self.assertAlmostEqual(old_normalization,grid.computeNormalization())
     #@-others
 #@-others
 
