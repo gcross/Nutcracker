@@ -158,6 +158,7 @@ class StateSideSite(Tensor):
 #@+<< Exports >>
 #@+node:gcross.20111009193003.1171: ** << Exports >>
 __all__ = [
+    "StateCenterSite",
     "StateCornerBoundary",
     "StateCornerSite",
     "StateSideBoundary",
