@@ -2,6 +2,7 @@
 #@+node:gcross.20111009135633.1137: * @file test.py
 #@+<< Imports >>
 #@+node:gcross.20111009135633.1138: ** << Imports >>
+from copy import copy
 import numpy
 from numpy import all, allclose, array, dot, identity, tensordot
 from numpy.random import rand
@@ -709,6 +710,66 @@ class TestStateSideSite(TestCase):
 
             ,site.absorbCenterSite(center,0).data
         )
+    #@+node:gcross.20111013080525.1248: *5* contract_rightward
+    @with_checker(number_of_calls=10)
+    def test_contract_rightward(self):
+        grid = self.randomGrid()
+        sides = copy(grid.sides)
+        corners = copy(grid.corners)
+        center = grid.center
+        corners[0] = corners[0].absorbSideSiteAtCounterClockwise(sides[1])
+        corners[-1] = corners[-1].absorbSideSiteAtClockwise(sides[-1])
+        sides[0] = sides[0].absorbCenterSite(center,0)
+        grid.contract(0)
+        for correct_side, actual_side in zip(sides,grid.sides):
+            self.assertAllClose(correct_side.data,actual_side.data)
+        for correct_corner, actual_corner in zip(corners,grid.corners):
+            self.assertAllClose(correct_corner.data,actual_corner.data)
+    #@+node:gcross.20111013080525.1251: *5* contract_upward
+    @with_checker(number_of_calls=10)
+    def test_contract_upward(self):
+        grid = self.randomGrid()
+        sides = copy(grid.sides)
+        corners = copy(grid.corners)
+        center = grid.center
+        corners[1] = corners[1].absorbSideSiteAtCounterClockwise(sides[2])
+        corners[0] = corners[0].absorbSideSiteAtClockwise(sides[0])
+        sides[1] = sides[1].absorbCenterSite(center,1)
+        grid.contract(1)
+        for correct_side, actual_side in zip(sides,grid.sides):
+            self.assertAllClose(correct_side.data,actual_side.data)
+        for correct_corner, actual_corner in zip(corners,grid.corners):
+            self.assertAllClose(correct_corner.data,actual_corner.data)
+    #@+node:gcross.20111013080525.1253: *5* contract_leftward
+    @with_checker(number_of_calls=10)
+    def test_contract_leftward(self):
+        grid = self.randomGrid()
+        sides = copy(grid.sides)
+        corners = copy(grid.corners)
+        center = grid.center
+        corners[2] = corners[2].absorbSideSiteAtCounterClockwise(sides[3])
+        corners[1] = corners[1].absorbSideSiteAtClockwise(sides[1])
+        sides[2] = sides[2].absorbCenterSite(center,2)
+        grid.contract(2)
+        for correct_side, actual_side in zip(sides,grid.sides):
+            self.assertAllClose(correct_side.data,actual_side.data)
+        for correct_corner, actual_corner in zip(corners,grid.corners):
+            self.assertAllClose(correct_corner.data,actual_corner.data)
+    #@+node:gcross.20111013080525.1257: *5* contract_downward
+    @with_checker(number_of_calls=10)
+    def test_contract_downward(self):
+        grid = self.randomGrid()
+        sides = copy(grid.sides)
+        corners = copy(grid.corners)
+        center = grid.center
+        corners[3] = corners[3].absorbSideSiteAtCounterClockwise(sides[0])
+        corners[2] = corners[2].absorbSideSiteAtClockwise(sides[2])
+        sides[3] = sides[3].absorbCenterSite(center,3)
+        grid.contract(3)
+        for correct_side, actual_side in zip(sides,grid.sides):
+            self.assertAllClose(correct_side.data,actual_side.data)
+        for correct_corner, actual_corner in zip(corners,grid.corners):
+            self.assertAllClose(correct_corner.data,actual_corner.data)
     #@+node:gcross.20111009193003.1170: *5* formBoundary
     @with_checker(number_of_calls=10)
     def test_formBoundary(self):

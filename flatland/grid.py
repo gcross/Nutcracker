@@ -43,6 +43,11 @@ class Grid:
             .transpose(0,2,4,1,3,5)
             .reshape(final_dimension,final_dimension)
         )
+    #@+node:gcross.20111013080525.1244: *4* contract
+    def contract(self,direction):
+        self.sides[direction] = self.sides[direction].absorbCenterSite(self.center,direction)
+        self.corners[direction] = self.corners[direction].absorbSideSiteAtCounterClockwise(self.sides[(direction+1)%4])
+        self.corners[(direction-1)%4] = self.corners[(direction-1)%4].absorbSideSiteAtClockwise(self.sides[(direction-1)%4])
     #@-others
 #@-others
 
