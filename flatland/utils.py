@@ -30,6 +30,10 @@ def formContractor(order,joins,result_joins):
         observed_indices.add(index)
     #@-<< Tabulate all of the observed tensor indices >>
 
+    for tensor_id in observed_tensor_indices:
+        if tensor_id not in order:
+            raise ValueError("tensor {} does not appear in the list of arguments ({})".format(tensor_id,order))
+
     tensor_join_ids = {}
 
     #@+<< Check the observed tensor indices and initialize the map of tensor joins >>
@@ -73,6 +77,9 @@ def formContractor(order,joins,result_joins):
     def contract(*arguments):
         if len(arguments) != len(order):
             raise ValueError("wrong number of arguments;  expected {} but received {}",len(order),len(arguments))
+        for (i, (tensor_id, argument)) in enumerate(zip(order,arguments)):
+            if argument.ndim != len(tensor_join_ids[tensor_id]):
+                raise ValueError("argument {} ('{}') has rank {} when it was expected to have rank {}".format(i,order[i],argument.ndim,len(tensor_join_ids[tensor_id])))
         arguments = list(arguments)
         join_ids_index = -1
         current_tensor = arguments.pop()
