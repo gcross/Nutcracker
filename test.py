@@ -38,6 +38,39 @@ class TestCase(unittest.TestCase):
     #@+node:gcross.20111009135633.2981: *4* assertVanishing
     def assertVanishing(self,v):
         self.assertAlmostEqual(norm(v),0)
+    #@+node:gcross.20111013080525.1249: *4* randomGrid
+    @staticmethod
+    def randomGrid():
+        grid = Grid(1)
+        grid.sides = [
+            StateSideSite(
+                clockwise_dimension = randint(1,3),
+                counterclockwise_dimension = randint(1,3),
+                inward_dimension = randint(1,3),
+                physical_dimension = randint(1,3),
+                randomize = True
+            )
+            for _ in range(4)
+        ]
+        grid.corners = [
+            StateCornerSite(
+                clockwise_dimension = grid.sides[i].counterclockwise_dimension,
+                counterclockwise_dimension = grid.sides[(i+1)%4].clockwise_dimension,
+                physical_dimension = randint(1,3),
+                randomize = True
+            )
+            for i in range(4)
+        ]
+        grid.center = \
+            StateCenterSite(
+                physical_dimension=randint(1,3),
+                rightward_dimension=grid.sides[0].inward_dimension,
+                upward_dimension=grid.sides[1].inward_dimension,
+                leftward_dimension=grid.sides[2].inward_dimension,
+                downward_dimension=grid.sides[3].inward_dimension,
+                randomize=True,
+            )
+        return grid
     #@-others
 #@+node:gcross.20111009135633.2982: ** Tests
 #@+others
@@ -716,29 +749,9 @@ class TestGrid(TestCase):
     #@+node:gcross.20111010182600.1199: *4* test_computeNormalizationMatrix_random
     @with_checker(number_of_calls=10)
     def test_computeNormalizationMatrix_random(self):
-        physical_dimension = randint(1,3)
-        grid = Grid(physical_dimension)
-        grid.sides = [
-            StateSideSite(
-                clockwise_dimension = randint(1,3),
-                counterclockwise_dimension = randint(1,3),
-                inward_dimension = randint(1,3),
-                physical_dimension = randint(1,3),
-                randomize = True
-            )
-            for _ in range(4)
-        ]
-        grid.corners = [
-            StateCornerSite(
-                clockwise_dimension = grid.sides[i].counterclockwise_dimension,
-                counterclockwise_dimension = grid.sides[(i+1)%4].clockwise_dimension,
-                physical_dimension = randint(1,3),
-                randomize = True
-            )
-            for i in range(4)
-        ]
+        grid = self.randomGrid()
         self.assertAllClose(
-            self.test_computeNormalizationMatrix_random.contract(*([identity(physical_dimension)] + [x.formBoundary().data for x in grid.sides + grid.corners])),
+            self.test_computeNormalizationMatrix_random.contract(*([identity(grid.physical_dimension)] + [x.formBoundary().data for x in grid.sides + grid.corners])),
             grid.computeNormalizationMatrix(),
         )
 
