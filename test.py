@@ -853,6 +853,11 @@ class TestGrid(TestCase):
     @with_checker(number_of_calls=10)
     def test_contract_downward(self):
         grid = self.randomGrid()
+        for forward_direction in [1,3]:
+            forward_dimension = grid.bandwidthDimension(forward_direction)
+            reverse_dimension = grid.bandwidthDimension((forward_direction+2)%4)
+            if forward_dimension < reverse_dimension:
+                grid.increaseSingleDirectionBandwidthDimensionTo(reverse_dimension,forward_direction)
         sides = copy(grid.sides)
         corners = copy(grid.corners)
         center = grid.center
@@ -868,6 +873,11 @@ class TestGrid(TestCase):
     @with_checker(number_of_calls=10)
     def test_contract_leftward(self):
         grid = self.randomGrid()
+        for forward_direction in [0,2]:
+            forward_dimension = grid.bandwidthDimension(forward_direction)
+            reverse_dimension = grid.bandwidthDimension((forward_direction+2)%4)
+            if forward_dimension < reverse_dimension:
+                grid.increaseSingleDirectionBandwidthDimensionTo(reverse_dimension,forward_direction)
         sides = copy(grid.sides)
         corners = copy(grid.corners)
         center = grid.center
@@ -883,6 +893,11 @@ class TestGrid(TestCase):
     @with_checker(number_of_calls=10)
     def test_contract_rightward(self):
         grid = self.randomGrid()
+        for forward_direction in [0,2]:
+            forward_dimension = grid.bandwidthDimension(forward_direction)
+            reverse_dimension = grid.bandwidthDimension((forward_direction+2)%4)
+            if forward_dimension < reverse_dimension:
+                grid.increaseSingleDirectionBandwidthDimensionTo(reverse_dimension,forward_direction)
         sides = copy(grid.sides)
         corners = copy(grid.corners)
         center = grid.center
@@ -898,6 +913,11 @@ class TestGrid(TestCase):
     @with_checker(number_of_calls=10)
     def test_contract_upward(self):
         grid = self.randomGrid()
+        for forward_direction in [1,3]:
+            forward_dimension = grid.bandwidthDimension(forward_direction)
+            reverse_dimension = grid.bandwidthDimension((forward_direction+2)%4)
+            if forward_dimension < reverse_dimension:
+                grid.increaseSingleDirectionBandwidthDimensionTo(reverse_dimension,forward_direction)
         sides = copy(grid.sides)
         corners = copy(grid.corners)
         center = grid.center

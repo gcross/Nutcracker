@@ -73,6 +73,8 @@ class Grid:
         )
     #@+node:gcross.20111013080525.1244: *4* contract
     def contract(self,direction):
+        if self.bandwidthDimension(direction) != self.bandwidthDimension((direction+2)%4):
+            raise ValueError("The center tensor needs the dimensions of both the forward and reverse links along a direction to match in order to contract in that direction.  (direction = {}, forward bandwidth = {}, reverse bandwidth = {})".format(direction,self.bandwidthDimension(direction),self.bandwidthDimension((direction+2)%4)))
         self.sides[direction] = self.sides[direction].absorbCenterSite(self.center,direction)
         self.corners[direction] = self.corners[direction].absorbSideSiteAtCounterClockwise(self.sides[(direction+1)%4])
         self.corners[(direction-1)%4] = self.corners[(direction-1)%4].absorbSideSiteAtClockwise(self.sides[(direction-1)%4])
