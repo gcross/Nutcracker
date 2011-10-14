@@ -920,6 +920,15 @@ class TestGrid(TestCase):
         old_normalization = grid.computeNormalization()
         grid.increaseBandwidthDimensionBy(increment,direction)
         self.assertAlmostEqual(old_normalization,grid.computeNormalization())
+    #@+node:gcross.20111014113710.1231: *4* test_normalizeSide
+    @with_checker(number_of_calls=10)
+    def test_normalizeSide(self,
+        direction = irange(0,3),
+    ):
+        grid = self.randomGrid()
+        old_normalization = grid.computeNormalization()
+        grid.normalizeSide(direction)
+        self.assertAlmostEqual(old_normalization,grid.computeNormalization())
     #@-others
 #@-others
 
