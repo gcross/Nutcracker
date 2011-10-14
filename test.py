@@ -929,6 +929,41 @@ class TestGrid(TestCase):
             self.assertAllClose(correct_side.data,actual_side.data)
         for correct_corner, actual_corner in zip(corners,grid.corners):
             self.assertAllClose(correct_corner.data,actual_corner.data)
+    #@+node:gcross.20111014172511.1244: *4* test_increaseAxialBandwidthDimensionsBy
+    @with_checker
+    def test_increaseAxialBandwidthDimensionsBy(self,
+        direction = irange(0,3),
+        increment = irange(0,3),
+    ):
+        grid = self.randomGrid()
+
+        bandwidth_dimensions = list(grid.bandwidthDimensions())
+        bandwidth_dimensions[direction] += increment
+        bandwidth_dimensions[(direction+2)%4] += increment
+        old_normalization = grid.computeNormalization()
+
+        grid.increaseAxialBandwidthDimensionsBy(increment,direction)
+
+        self.assertEqual(grid.bandwidthDimensions(),grid.bandwidthDimensions())
+        self.assertAlmostEqual(old_normalization,grid.computeNormalization())
+    #@+node:gcross.20111014172511.1246: *4* test_increaseAxialBandwidthDimensionsTo
+    @with_checker
+    def test_increaseAxialBandwidthDimensionsTo(self,
+        direction = irange(0,3),
+        increment = irange(0,3),
+    ):
+        grid = self.randomGrid()
+
+        bandwidth_dimensions = list(grid.bandwidthDimensions())
+        bandwidth_dimensions[direction] = max(bandwidth_dimensions[direction],bandwidth_dimensions[(direction+2)%4])
+        bandwidth_dimensions[direction] += increment
+        bandwidth_dimensions[(direction+2)%4] = bandwidth_dimensions[direction]
+        old_normalization = grid.computeNormalization()
+
+        grid.increaseAxialBandwidthDimensionsTo(bandwidth_dimensions[direction],direction)
+
+        self.assertEqual(grid.bandwidthDimensions(),grid.bandwidthDimensions())
+        self.assertAlmostEqual(old_normalization,grid.computeNormalization())
     #@+node:gcross.20111013165152.1225: *4* test_increaseSingleDirectionBandwidthDimensionBy
     @with_checker
     def test_increaseSingleDirectionBandwidthDimensionBy(self,

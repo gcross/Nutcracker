@@ -78,6 +78,14 @@ class Grid:
         self.sides[direction] = self.sides[direction].absorbCenterSite(self.center,direction)
         self.corners[direction] = self.corners[direction].absorbSideSiteAtCounterClockwise(self.sides[(direction+1)%4])
         self.corners[(direction-1)%4] = self.corners[(direction-1)%4].absorbSideSiteAtClockwise(self.sides[(direction-1)%4])
+    #@+node:gcross.20111014172511.1240: *4* increaseAxialBandwidthDimensionsBy
+    def increaseAxialBandwidthDimensionsBy(self,increment,direction):
+        self.increaseSingleDirectionBandwidthDimensionBy(increment,direction)
+        self.increaseSingleDirectionBandwidthDimensionBy(increment,(direction+2)%4)
+    #@+node:gcross.20111014172511.1242: *4* increaseAxialBandwidthDimensionsTo
+    def increaseAxialBandwidthDimensionsTo(self,dimension,direction):
+        self.increaseSingleDirectionBandwidthDimensionTo(dimension,direction)
+        self.increaseSingleDirectionBandwidthDimensionTo(dimension,(direction+2)%4)
     #@+node:gcross.20111013080525.3958: *4* increaseSingleDirectionBandwidthDimensionBy
     def increaseSingleDirectionBandwidthDimensionBy(self,increment,direction):
         self.increaseSingleDirectionBandwidthDimensionTo(self.bandwidthDimension(direction)+increment,direction)
