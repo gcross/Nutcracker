@@ -118,6 +118,10 @@ def formContractor(order,joins,result_joins):
     #@-<< Form the contractor function >>
 
     return contract
+#@+node:gcross.20111014113710.1239: *3* mapFunctions
+def mapFunctions(functions,data):
+    for f, x in zip(functions,data):
+        yield f(x)
 #@+node:gcross.20111013080525.3956: *3* multiplyTensorByMatrixAtIndex
 def multiplyTensorByMatrixAtIndex(tensor,matrix,index):
     tensor_new_indices = list(range(tensor.ndim-1))
@@ -154,6 +158,7 @@ def normalizeAndDenormalize(tensor_1,index_1,tensor_2,index_2):
 __all__ = [
     "crand",
     "formContractor",
+    "mapFunctions",
     "multiplyTensorByMatrixAtIndex",
     "normalizeAndDenormalize",
 ]
