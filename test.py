@@ -42,10 +42,11 @@ class TestCase(unittest.TestCase):
     #@-others
 #@+node:gcross.20111009135633.2982: ** Tests
 #@+others
-#@+node:gcross.20111009135633.2983: *3* formContractor
+#@+node:gcross.20111013183808.3918: *3* Functions
+#@+node:gcross.20111009135633.2983: *4* formContractor
 class TestFormContractor(TestCase):
     #@+others
-    #@+node:gcross.20111009135633.2984: *4* test_trivial_case_xD
+    #@+node:gcross.20111009135633.2984: *5* test_trivial_case_xD
     @with_checker(number_of_calls=10)
     def test_trivial_case_1D(self,
         d = irange(1,10),
@@ -67,7 +68,7 @@ class TestFormContractor(TestCase):
     ):
         x = crand(*[randint(1,3) for _ in range(n)])
         self.assertAllEqual(x.ravel(),formContractor(['A'],[],[[('A',i) for i in range(n)]])(x))
-    #@+node:gcross.20111009135633.2988: *4* test_matvec
+    #@+node:gcross.20111009135633.2988: *5* test_matvec
     @with_checker(number_of_calls=10)
     def test_matvec(self,
         m = irange(1,10),
@@ -99,7 +100,7 @@ class TestFormContractor(TestCase):
                 [[('M',1)]]
             )(v,M)
         )
-    #@+node:gcross.20111009135633.2992: *4* test_matmat
+    #@+node:gcross.20111009135633.2992: *5* test_matmat
     @with_checker(number_of_calls=10)
     def test_matmat(self,
         m = irange(1,10),
@@ -167,7 +168,7 @@ class TestFormContractor(TestCase):
                 [[('A',1)],[('B',0)]]
             )(A,B)
         )
-    #@+node:gcross.20111009135633.2993: *4* test_r3r3
+    #@+node:gcross.20111009135633.2993: *5* test_r3r3
     @with_checker(number_of_calls=10)
     def test_r3r3(self,
         a = irange(1,10),
@@ -224,7 +225,7 @@ class TestFormContractor(TestCase):
                 [[('B',2),('B',1)],[('A',0)],[('A',1)]]
             )(A,B)
         )
-    #@+node:gcross.20111009135633.2997: *4* test_r3r2
+    #@+node:gcross.20111009135633.2997: *5* test_r3r2
     @with_checker(number_of_calls=10)
     def test_r3r2(self,
         a = irange(1,10),
@@ -260,7 +261,7 @@ class TestFormContractor(TestCase):
                 [[('A',0)],[('A',1),('B',1)]]
             )(A,B)
         )
-    #@+node:gcross.20111009135633.2999: *4* test_matmatmat
+    #@+node:gcross.20111009135633.2999: *5* test_matmatmat
     @with_checker(number_of_calls=10)
     def test_matmatmat(self,
         a = irange(1,10),
@@ -282,7 +283,7 @@ class TestFormContractor(TestCase):
                 [[('A',0)],[('C',1)]]
             )(A,B,C)
         )
-    #@+node:gcross.20111009135633.3000: *4* test_triangle
+    #@+node:gcross.20111009135633.3000: *5* test_triangle
     @with_checker(number_of_calls=10)
     def test_triangle(self,
         a = irange(1,10),
@@ -309,7 +310,7 @@ class TestFormContractor(TestCase):
                 [[('A',1)],[('B',2)],[('C',0)]]
             )(A,B,C)
         )
-    #@+node:gcross.20111013080525.1215: *4* test_1
+    #@+node:gcross.20111013080525.1215: *5* test_1
     @with_checker(number_of_calls=10)
     def test_1(self,
         a = irange(1,10),
@@ -336,7 +337,7 @@ class TestFormContractor(TestCase):
                 ]
             )(A,B)
         )
-    #@+node:gcross.20111013080525.1217: *4* test_2
+    #@+node:gcross.20111013080525.1217: *5* test_2
     @with_checker(number_of_calls=10)
     def test_2(self,
         a = irange(1,5),
