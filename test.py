@@ -933,7 +933,7 @@ class TestGrid(TestCase):
         grid = self.randomGrid(True)
         old_normalization = grid.computeNormalization()
         grid.normalizeSide(direction)
-        self.assertAlmostEqual(old_normalization,grid.computeNormalization())
+        self.assertAlmostEqual(old_normalization/grid.computeNormalization(),1)
     #@-others
 #@-others
 
