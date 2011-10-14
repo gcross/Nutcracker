@@ -76,11 +76,11 @@ class Grid:
         self.sides[direction] = self.sides[direction].absorbCenterSite(self.center,direction)
         self.corners[direction] = self.corners[direction].absorbSideSiteAtCounterClockwise(self.sides[(direction+1)%4])
         self.corners[(direction-1)%4] = self.corners[(direction-1)%4].absorbSideSiteAtClockwise(self.sides[(direction-1)%4])
-    #@+node:gcross.20111013080525.3958: *4* increaseBandwidthDimensionBy
-    def increaseBandwidthDimensionBy(self,increment,direction):
-        return self.increaseBandwidthDimensionTo(self.bandwidthDimension(direction)+increment,direction)
-    #@+node:gcross.20111013080525.1264: *4* increaseBandwidthDimensionTo
-    def increaseBandwidthDimensionTo(self,new_dimension,direction):
+    #@+node:gcross.20111013080525.3958: *4* increaseSingleDirectionBandwidthDimensionBy
+    def increaseSingleDirectionBandwidthDimensionBy(self,increment,direction):
+        self.increaseSingleDirectionBandwidthDimensionTo(self.bandwidthDimension(direction)+increment,direction)
+    #@+node:gcross.20111013080525.1264: *4* increaseSingleDirectionBandwidthDimensionTo
+    def increaseSingleDirectionBandwidthDimensionTo(self,new_dimension,direction):
         old_dimension = self.bandwidthDimension(direction)
         if new_dimension < old_dimension:
             raise ValueError("new dimension ({}) must be at least the old dimension ({})".format(new_dimension,old_dimension))
