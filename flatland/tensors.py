@@ -67,6 +67,12 @@ class Tensor(object):
 class StateCenterSite(Tensor):
     _dimensions = addDimensionSuffixTo("physical","rightward","upward","leftward","downward")
     #@+others
+    #@+node:gcross.20111014113710.1232: *4* bandwidthDimension
+    def bandwidthDimension(self,direction):
+        return self.data.shape[1+direction]
+    #@+node:gcross.20111014113710.1233: *4* bandwidthDimensions
+    def bandwidthDimensions(self):
+        return self.data.shape[1:]
     #@-others
 #@+node:gcross.20111009193003.5243: *3* StateCornerBoundary
 class StateCornerBoundary(Tensor):

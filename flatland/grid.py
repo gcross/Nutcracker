@@ -16,8 +16,6 @@ class Grid:
     #@+others
     #@+node:gcross.20111009193003.5258: *4* __init__
     def __init__(self,physical_dimension):
-        self.physical_dimension = physical_dimension
-        self.bandwidth_dimensions = [1,1,1,1]
         self.sides = [StateSideSite.trivial()]*4
         self.corners = [StateCornerSite.trivial()]*4
         self.center = \
@@ -29,12 +27,18 @@ class Grid:
                 downward_dimension = 1,
             )
         self.center.data[:,0,0,0,0] = array([1] + [0]*(physical_dimension-1))
+    #@+node:gcross.20111014113710.1235: *4* bandwidthDimension
+    def bandwidthDimension(self,direction):
+        return self.center.bandwidthDimension(direction)
+    #@+node:gcross.20111014113710.1237: *4* bandwidthDimensions
+    def bandwidthDimensions(self):
+        return self.center.bandwidthDimensions()
     #@+node:gcross.20111013165152.1229: *4* computeNormalization
     def computeNormalization(self):
         return \
             dot(
                 dot(
-                    self.center.data.reshape(self.physical_dimension,product(self.bandwidth_dimensions)),
+                    self.center.data.reshape(self.physical_dimension,product(self.bandwidthDimensions())),
                     self.computeNormalizationSubmatrix()
                 ).ravel(),
                 self.center.data.conj().ravel()
@@ -74,10 +78,10 @@ class Grid:
         self.corners[(direction-1)%4] = self.corners[(direction-1)%4].absorbSideSiteAtClockwise(self.sides[(direction-1)%4])
     #@+node:gcross.20111013080525.3958: *4* increaseBandwidthDimensionBy
     def increaseBandwidthDimensionBy(self,increment,direction):
-        return self.increaseBandwidthDimensionTo(self.bandwidth_dimensions[direction]+increment,direction)
+        return self.increaseBandwidthDimensionTo(self.bandwidthDimension(direction)+increment,direction)
     #@+node:gcross.20111013080525.1264: *4* increaseBandwidthDimensionTo
     def increaseBandwidthDimensionTo(self,new_dimension,direction):
-        old_dimension = self.bandwidth_dimensions[direction]
+        old_dimension = self.bandwidthDimension(direction)
         if new_dimension < old_dimension:
             raise ValueError("new dimension ({}) must be at least the old dimension ({})".format(new_dimension,old_dimension))
         if new_dimension == old_dimension:
@@ -86,13 +90,14 @@ class Grid:
         matrix = matrix.transpose()
         self.center = StateCenterSite(multiplyTensorByMatrixAtIndex(self.center.data,matrix,1+direction))
         self.sides[direction] = StateSideSite(multiplyTensorByMatrixAtIndex(self.sides[direction].data,matrix.conj(),3))
-        self.bandwidth_dimensions[direction] = new_dimension
     #@+node:gcross.20111014113710.1230: *4* normalizeSide
     def normalizeSide(self,direction):
         new_side_data, new_center_data = normalizeAndDenormalize(self.sides[direction].data,3,self.center.data,1+direction)
         self.sides[direction] = StateSideSite(new_side_data)
         self.center = StateCenterSite(new_center_data)
 
+    #@+node:gcross.20111014113710.1234: *4* physical_dimension
+    physical_dimension = property(lambda self: self.center.physical_dimension)
     #@-others
 #@-others
 

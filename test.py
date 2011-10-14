@@ -750,18 +750,24 @@ class TestGrid(TestCase):
     #@+others
     #@+node:gcross.20111013080525.1249: *4* randomGrid
     @staticmethod
-    def randomGrid():
+    def randomGrid(suitable_for_normalization=False):
         grid = Grid(1)
-        grid.sides = [
-            StateSideSite(
-                clockwise_dimension = randint(1,3),
-                counterclockwise_dimension = randint(1,3),
-                inward_dimension = randint(1,3),
-                physical_dimension = randint(1,3),
+        grid.sides = []
+        for _ in range(4):
+            clockwise_dimension = randint(1,3)
+            counterclockwise_dimension = randint(1,3)
+            physical_dimension = randint(1,3)
+            if suitable_for_normalization:
+                inward_dimension = randint(1,clockwise_dimension*counterclockwise_dimension*physical_dimension)
+            else:
+                inward_dimension = randint(1,3)
+            grid.sides.append(StateSideSite(
+                clockwise_dimension = clockwise_dimension,
+                counterclockwise_dimension = counterclockwise_dimension,
+                inward_dimension = inward_dimension,
+                physical_dimension = physical_dimension,
                 randomize = True
-            )
-            for _ in range(4)
-        ]
+            ))
         grid.corners = [
             StateCornerSite(
                 clockwise_dimension = grid.sides[i].counterclockwise_dimension,
@@ -780,13 +786,6 @@ class TestGrid(TestCase):
                 downward_dimension=grid.sides[3].inward_dimension,
                 randomize=True,
             )
-        grid.physical_dimension = grid.center.physical_dimension
-        grid.bandwidth_dimensions = [
-            grid.center.rightward_dimension,
-            grid.center.upward_dimension,
-            grid.center.leftward_dimension,
-            grid.center.downward_dimension,
-        ]
         return grid
     #@+node:gcross.20111013165152.1231: *4* test_computeNormalization_random
     @with_checker(number_of_calls=10)
@@ -925,7 +924,7 @@ class TestGrid(TestCase):
     def test_normalizeSide(self,
         direction = irange(0,3),
     ):
-        grid = self.randomGrid()
+        grid = self.randomGrid(True)
         old_normalization = grid.computeNormalization()
         grid.normalizeSide(direction)
         self.assertAlmostEqual(old_normalization,grid.computeNormalization())
