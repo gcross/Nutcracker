@@ -2,7 +2,8 @@
 #@+node:gcross.20111009135633.1129: * @file utils.py
 #@+<< Imports >>
 #@+node:gcross.20111009135633.1135: ** << Imports >>
-from numpy import tensordot
+from numpy import product, tensordot
+from numpy.linalg import svd
 from numpy.random import rand
 #@-<< Imports >>
 
@@ -122,6 +123,30 @@ def multiplyTensorByMatrixAtIndex(tensor,matrix,index):
     tensor_new_indices = list(range(tensor.ndim-1))
     tensor_new_indices.insert(index,tensor.ndim-1)
     return tensordot(tensor,matrix,(index,0)).transpose(tensor_new_indices)
+#@+node:gcross.20111013183808.3917: *3* normalizeAndDenormalize
+def normalizeAndDenormalize(tensor_1,index_1,tensor_2,index_2):
+    if tensor_1.shape[index_1] != tensor_2.shape[index_2]:
+        raise ValueError("The dimension to be normalized in the first tensor is not equal to the dimension to be unnormalized in the second tensor. ({} != {})".format(tensor_1.shape[index_1],tensor_2.shape[index_2]))
+    new_indices = list(range(tensor_1.ndim))
+    del new_indices[index_1]
+    new_indices.append(index_1)
+
+    old_shape = list(tensor_1.shape)
+    del old_shape[index_1]
+    new_shape = (product(old_shape),tensor_1.shape[index_1])
+    if new_shape[1] > new_shape[0]:
+        raise ValueError("The dimension to be normalized is larger than the product of the rest of the dimensions. ({} > {})".format(new_shape[1],new_shape[0]))
+    old_shape.append(tensor_1.shape[index_1])
+
+    u, s, v = svd(tensor_1.transpose(new_indices).reshape(new_shape),full_matrices=False)
+
+    old_indices = list(range(tensor_1.ndim-1))
+    old_indices.insert(index_1,tensor_1.ndim-1)
+
+    new_tensor_1 = u.reshape(old_shape).transpose(old_indices)
+    new_tensor_2 = multiplyTensorByMatrixAtIndex(tensor_2,v.transpose()*s,index_2)
+
+    return new_tensor_1, new_tensor_2
 #@-others
 
 #@+<< Exports >>
@@ -130,6 +155,7 @@ __all__ = [
     "crand",
     "formContractor",
     "multiplyTensorByMatrixAtIndex",
+    "normalizeAndDenormalize",
 ]
 #@-<< Exports >>
 #@-leo

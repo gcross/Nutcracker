@@ -4,7 +4,7 @@
 #@+node:gcross.20111009135633.1138: ** << Imports >>
 from copy import copy
 import numpy
-from numpy import all, allclose, array, dot, identity, tensordot
+from numpy import all, allclose, array, dot, identity, product, tensordot
 from numpy.random import rand
 from paycheck import *
 from random import randint
@@ -367,6 +367,43 @@ class TestFormContractor(TestCase):
                     [('B',4)],
                 ]
             )(A,B)
+        )
+    #@-others
+#@+node:gcross.20111013183808.3919: *4* normalizeAndDenormalize
+class TestNormalizeAndDenormalize(TestCase):
+    #@+others
+    #@+node:gcross.20111013183808.3920: *5* test_random
+    @with_checker
+    def test_random(self,
+        tensor_1_ndim = irange(1,5),
+        tensor_2_ndim = irange(1,5),
+    ):
+        index_1 = randint(0,tensor_1_ndim-1)
+        tensor_1_shape = [randint(1,5) for _ in range(tensor_1_ndim)]
+        tensor_1_shape_without_index = copy(tensor_1_shape)
+        del tensor_1_shape_without_index[index_1]
+        tensor_1_degrees_of_freedom = product(tensor_1_shape_without_index)
+        tensor_1_shape[index_1] = min(tensor_1_shape[index_1],tensor_1_degrees_of_freedom)
+        tensor_1 = crand(*tensor_1_shape)
+
+        index_2 = randint(0,tensor_2_ndim-1)
+        tensor_2_shape = [randint(1,5) for _ in range(tensor_2_ndim)]
+        tensor_2_shape[index_2] = tensor_1_shape[index_1]
+        tensor_2 = crand(*tensor_2_shape)
+
+        new_tensor_1, new_tensor_2 = normalizeAndDenormalize(tensor_1,index_1,tensor_2,index_2)
+        self.assertEqual(tensor_1.shape,new_tensor_1.shape)
+        self.assertEqual(tensor_2.shape,new_tensor_2.shape)
+
+        indices = list(range(tensor_1_ndim))
+        del indices[index_1]
+        self.assertAllClose(
+            tensordot(new_tensor_1,new_tensor_1.conj(),(indices,indices)),
+            identity(tensor_1.shape[index_1])
+        )
+        self.assertAllClose(
+            tensordot(tensor_1,tensor_2,(index_1,index_2)),
+            tensordot(new_tensor_1,new_tensor_2,(index_1,index_2))
         )
     #@-others
 #@+node:gcross.20111009193003.1168: *3* Tensors
@@ -888,6 +925,7 @@ class TestGrid(TestCase):
 
 tests = [
     TestFormContractor,
+    TestNormalizeAndDenormalize,
     TestStateCornerSite,
     TestStateSideBoundary,
     TestStateSideSite,
