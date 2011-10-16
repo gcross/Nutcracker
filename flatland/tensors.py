@@ -17,6 +17,17 @@ class MetaTensor(type):
         if "_dimensions" in data:
             dimensions = data["_dimensions"]
             data["_dimensions"] = [name + "_dimension" for name in dimensions]
+            repeated_dimensions = set()
+            index = 0
+            for name in dimensions:
+                if name not in repeated_dimensions:
+                    index_name = name + "_index"
+                    if index_name in data:
+                        repeated_dimensions.add(name)
+                        del data[index_name]
+                    else:
+                        data[index_name] = index
+                index += 1
         return type.__new__(cls,name,bases,data)
     #@-others
 #@+node:gcross.20111009193003.1162: *3* Tensor
