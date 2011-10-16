@@ -4,7 +4,7 @@
 #@+node:gcross.20111009193003.1159: ** << Imports >>
 from numpy import inner, ndarray, tensordot
 
-from flatland.utils import crand, formContractor
+from flatland.utils import crand, formContractor, mapFunctions, normalizeAndDenormalize
 #@-<< Imports >>
 
 #@+others
@@ -190,6 +190,12 @@ class StateSideSite(Tensor):
                 self.inward_dimension,
                 self.inward_dimension
              )
+        )
+    #@+node:gcross.20111016195932.1252: *5* normalizeSelfAndDenormalizeCenter
+    def normalizeSelfAndDenormalizeCenter(self,center,direction):
+        return mapFunctions(
+            (StateSideSite,StateCenterSite),
+            normalizeAndDenormalize(self.data,3,center.data,1+direction)
         )
     #@-others
 #@-others

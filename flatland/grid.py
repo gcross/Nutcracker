@@ -6,7 +6,7 @@ from numpy import array, dot, identity, product, tensordot
 from numpy.linalg import cond, svd
 
 from flatland.tensors import StateCenterSite, StateCornerSite, StateSideSite
-from flatland.utils import crand, mapFunctions, multiplyTensorByMatrixAtIndex, normalizeAndDenormalize
+from flatland.utils import crand, multiplyTensorByMatrixAtIndex
 #@-<< Imports >>
 
 #@+others
@@ -102,10 +102,7 @@ class Grid:
         self.sides[direction] = StateSideSite(multiplyTensorByMatrixAtIndex(self.sides[direction].data,matrix.conj(),3))
     #@+node:gcross.20111014113710.1230: *4* normalizeSide
     def normalizeSide(self,direction):
-        self.sides[direction], self.center = mapFunctions(
-            (StateSideSite,StateCenterSite),
-            normalizeAndDenormalize(self.sides[direction].data,3,self.center.data,1+direction)
-        )
+        self.sides[direction], self.center = self.sides[direction].normalizeSelfAndDenormalizeCenter(self.center,direction)
     #@+node:gcross.20111014113710.1234: *4* physical_dimension
     physical_dimension = property(lambda self: self.center.physical_dimension)
     #@-others
