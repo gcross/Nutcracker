@@ -8,14 +8,19 @@ from flatland.utils import crand, formContractor
 #@-<< Imports >>
 
 #@+others
-#@+node:gcross.20111009193003.1172: ** Functions
-#@+node:gcross.20111009193003.1173: *3* addDimensionSuffixTo
-def addDimensionSuffixTo(*args):
-    return [name + "_dimension" for name in args]
-#@+node:gcross.20111009193003.1161: ** Tensors
-#@+others
-#@+node:gcross.20111009193003.1162: *3* [base class Tensor]
-class Tensor(object):
+#@+node:gcross.20111016195932.1248: ** Classes
+#@+node:gcross.20111016195932.1249: *3* MetaTensor
+class MetaTensor(type):
+    #@+others
+    #@+node:gcross.20111009193003.1173: *4* __init__
+    def __new__(cls,name,bases,data):
+        if "_dimensions" in data:
+            dimensions = data["_dimensions"]
+            data["_dimensions"] = [name + "_dimension" for name in dimensions]
+        return type.__new__(cls,name,bases,data)
+    #@-others
+#@+node:gcross.20111009193003.1162: *3* Tensor
+class Tensor(metaclass=MetaTensor):
     #@+others
     #@+node:gcross.20111009193003.1163: *4* __init__
     def __init__(self,*args,**keywords):
@@ -63,27 +68,29 @@ class Tensor(object):
         keywords["fill"] = 1
         return cls(**keywords)
     #@-others
-#@+node:gcross.20111009193003.5252: *3* StateCenterSite
+#@+node:gcross.20111009193003.1161: *3* Tensors
+#@+others
+#@+node:gcross.20111009193003.5252: *4* StateCenterSite
 class StateCenterSite(Tensor):
-    _dimensions = addDimensionSuffixTo("physical","rightward","upward","leftward","downward")
+    _dimensions = ["physical","rightward","upward","leftward","downward"]
     #@+others
-    #@+node:gcross.20111014113710.1232: *4* bandwidthDimension
+    #@+node:gcross.20111014113710.1232: *5* bandwidthDimension
     def bandwidthDimension(self,direction):
         return self.data.shape[1+direction]
-    #@+node:gcross.20111014113710.1233: *4* bandwidthDimensions
+    #@+node:gcross.20111014113710.1233: *5* bandwidthDimensions
     def bandwidthDimensions(self):
         return self.data.shape[1:]
     #@-others
-#@+node:gcross.20111009193003.5243: *3* StateCornerBoundary
+#@+node:gcross.20111009193003.5243: *4* StateCornerBoundary
 class StateCornerBoundary(Tensor):
-    _dimensions = addDimensionSuffixTo("clockwise","counterclockwise")
+    _dimensions = ["clockwise","counterclockwise"]
     #@+others
     #@-others
-#@+node:gcross.20111009193003.5232: *3* StateCornerSite
+#@+node:gcross.20111009193003.5232: *4* StateCornerSite
 class StateCornerSite(Tensor):
-    _dimensions = addDimensionSuffixTo("physical","clockwise","counterclockwise")
+    _dimensions = ["physical","clockwise","counterclockwise"]
     #@+others
-    #@+node:gcross.20111013080525.1203: *4* absorbSideSiteAtCounterClockwise
+    #@+node:gcross.20111013080525.1203: *5* absorbSideSiteAtCounterClockwise
     def absorbSideSiteAtCounterClockwise(self,side):
         return StateCornerSite(
              tensordot(self.data,side.data,(2,1))
@@ -94,7 +101,7 @@ class StateCornerSite(Tensor):
                 side.counterclockwise_dimension,
              )
         )
-    #@+node:gcross.20111013080525.1207: *4* absorbSideSiteAtClockwise
+    #@+node:gcross.20111013080525.1207: *5* absorbSideSiteAtClockwise
     def absorbSideSiteAtClockwise(self,side):
         return StateCornerSite(
              tensordot(self.data,side.data,(1,2))
@@ -105,7 +112,7 @@ class StateCornerSite(Tensor):
                 self.counterclockwise_dimension*side.inward_dimension,
              )
         )
-    #@+node:gcross.20111009193003.5237: *4* formBoundary
+    #@+node:gcross.20111009193003.5237: *5* formBoundary
     def formBoundary(self):
         return StateCornerBoundary(
              tensordot(self.data,self.data.conj(),(0,0))
@@ -116,17 +123,17 @@ class StateCornerSite(Tensor):
              )
         )
     #@-others
-#@+node:gcross.20111009193003.1166: *3* StateSideBoundary
+#@+node:gcross.20111009193003.1166: *4* StateSideBoundary
 class StateSideBoundary(Tensor):
-    _dimensions = addDimensionSuffixTo("clockwise","counterclockwise","inward","inward")
+    _dimensions = ["clockwise","counterclockwise","inward","inward"]
     #@+others
-    #@+node:gcross.20111009193003.5244: *4* absorbCounterClockwiseCornerBoundary
+    #@+node:gcross.20111009193003.5244: *5* absorbCounterClockwiseCornerBoundary
     def absorbCounterClockwiseCornerBoundary(self,corner):
         return StateSideBoundary(
              tensordot(self.data,corner.data,(1,0))
             .transpose(0,3,1,2)
         )
-    #@+node:gcross.20111009193003.5262: *4* absorbCounterClockwiseSideBoundary
+    #@+node:gcross.20111009193003.5262: *5* absorbCounterClockwiseSideBoundary
     def absorbCounterClockwiseSideBoundary(self,side):
         return StateSideBoundary(
              tensordot(self.data,side.data,(1,0))
@@ -139,11 +146,11 @@ class StateSideBoundary(Tensor):
              )
         )
     #@-others
-#@+node:gcross.20111009193003.1164: *3* StateSideSite
+#@+node:gcross.20111009193003.1164: *4* StateSideSite
 class StateSideSite(Tensor):
-    _dimensions = addDimensionSuffixTo("physical","clockwise","counterclockwise","inward")
+    _dimensions = ["physical","clockwise","counterclockwise","inward"]
     #@+others
-    #@+node:gcross.20111013080525.1234: *4* absorbCenterSite
+    #@+node:gcross.20111013080525.1234: *5* absorbCenterSite
     def absorbCenterSite(self,center,direction):
         return StateSideSite(self.absorbCenterSite.contractors[direction](self.data,center.data))
 
@@ -161,7 +168,7 @@ class StateSideSite(Tensor):
             ]
         ) for i in range(4)
     ]
-    #@+node:gcross.20111009193003.1165: *4* formBoundary
+    #@+node:gcross.20111009193003.1165: *5* formBoundary
     def formBoundary(self):
         return StateSideBoundary(
              tensordot(self.data,self.data.conj(),(0,0))
