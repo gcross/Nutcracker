@@ -195,7 +195,7 @@ class StateSideSite(Tensor):
     def normalizeSelfAndDenormalizeCenter(self,center,direction):
         return mapFunctions(
             (StateSideSite,StateCenterSite),
-            normalizeAndDenormalize(self.data,3,center.data,1+direction)
+            normalizeAndDenormalize(self.data,self.inward_index,center.data,1+direction)
         )
     #@-others
 #@-others
