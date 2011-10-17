@@ -160,7 +160,7 @@ def normalize(tensor,index):
 #@+node:gcross.20111013183808.3917: *3* normalizeAndDenormalize
 def normalizeAndDenormalize(tensor_1,index_1,tensor_2,index_2):
     if tensor_1.shape[index_1] != tensor_2.shape[index_2]:
-        raise ValueError("The dimension to be normalized in the first tensor is not equal to the dimension to be unnormalized in the second tensor. ({} != {})".format(tensor_1.shape[index_1],tensor_2.shape[index_2]))
+        raise ValueError("The dimension to be normalized in the first tensor (index {}) is not equal to the dimension to be denormalized in the second tensor (index {}). ({} != {})".format(index_1,index_2,tensor_1.shape[index_1],tensor_2.shape[index_2]))
     new_tensor_1, inverse_normalizer = normalizeAndReturnInverseNormalizer(tensor_1,index_1)
     new_tensor_2 = multiplyTensorByMatrixAtIndex(tensor_2,inverse_normalizer,index_2)
 
