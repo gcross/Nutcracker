@@ -97,10 +97,6 @@ class Grid:
                 self.sides[direction],StateSideSite.inward_index,
                 new_dimension
             )
-    #@+node:gcross.20111014113710.1230: *4* normalizeSide
-    def normalizeSide(self,direction):
-        self.sides[direction], self.center = \
-            normalizeAndDenormalizeTensors(self.sides[direction],3,self.center,1+direction)
     #@+node:gcross.20111017110141.1265: *4* normalizeCornerAndDenormalizeClockwiseSide
     def normalizeCornerAndDenormalizeClockwiseSide(self,corner_index):
         self.corners[corner_index], self.sides[corner_index] = \
@@ -115,6 +111,10 @@ class Grid:
                 self.corners[corner_index],StateCornerSite.counterclockwise_index,
                 self.sides[CCW(corner_index)],StateSideSite.clockwise_index
             )
+    #@+node:gcross.20111014113710.1230: *4* normalizeSide
+    def normalizeSide(self,direction):
+        self.sides[direction], self.center = \
+            normalizeAndDenormalizeTensors(self.sides[direction],3,self.center,1+direction)
     #@+node:gcross.20111014113710.1234: *4* physical_dimension
     physical_dimension = property(lambda self: self.center.physical_dimension)
     #@-others
