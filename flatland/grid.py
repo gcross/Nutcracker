@@ -99,10 +99,8 @@ class Grid:
             )
     #@+node:gcross.20111014113710.1230: *4* normalizeSide
     def normalizeSide(self,direction):
-        self.sides[direction], self.center = mapFunctions(
-            (StateSideSite,StateCenterSite),
-            normalizeAndDenormalize(self.sides[direction].data,3,self.center.data,1+direction)
-        )
+        self.sides[direction], self.center = \
+            normalizeAndDenormalizeTensors(self.sides[direction],3,self.center,1+direction)
     #@+node:gcross.20111014113710.1234: *4* physical_dimension
     physical_dimension = property(lambda self: self.center.physical_dimension)
     #@-others

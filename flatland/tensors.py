@@ -193,10 +193,7 @@ class StateSideSite(Tensor):
         )
     #@+node:gcross.20111016195932.1252: *5* normalizeSelfAndDenormalizeCenter
     def normalizeSelfAndDenormalizeCenter(self,center,direction):
-        return mapFunctions(
-            (StateSideSite,StateCenterSite),
-            normalizeAndDenormalize(self.data,self.inward_index,center.data,1+direction)
-        )
+        return normalizeAndDenormalizeTensors(self,self.inward_index,center,1+direction)
     #@-others
 #@-others
 #@-others

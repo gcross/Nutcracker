@@ -165,6 +165,12 @@ def normalizeAndDenormalize(tensor_1,index_1,tensor_2,index_2):
     new_tensor_2 = multiplyTensorByMatrixAtIndex(tensor_2,inverse_normalizer,index_2)
 
     return new_tensor_1, new_tensor_2
+#@+node:gcross.20111017110141.1262: *3* normalizeAndDenormalizeTensors
+def normalizeAndDenormalizeTensors(tensor_1,index_1,tensor_2,index_2):
+    return mapFunctions(
+        (type(tensor_1),type(tensor_2)),
+        normalizeAndDenormalize(tensor_1.data,index_1,tensor_2.data,index_2)
+    )
 #@+node:gcross.20111014182232.1247: *3* normalizeAndReturnInverseNormalizer
 def normalizeAndReturnInverseNormalizer(tensor,index):
     new_indices = list(range(tensor.ndim))
@@ -202,6 +208,7 @@ __all__ = [
     "multiplyTensorByMatrixAtIndex",
     "normalize",
     "normalizeAndDenormalize",
+    "normalizeAndDenormalizeTensors",
     "normalizeAndReturnInverseNormalizer",
     "OPP",
 ]
