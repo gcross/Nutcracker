@@ -124,6 +124,21 @@ def formContractor(order,joins,result_joins):
     #@-<< Form the contractor function >>
 
     return contract
+#@+node:gcross.20111017110141.1258: *3* increaseDimensionBetween
+def increaseDimensionBetween(tensor_1,index_1,tensor_2,index_2,new_dimension):
+    if tensor_1.shape[index_1] != tensor_2.shape[index_2]:
+        raise ValueError("dimension {} of tensor 1 has different size than dimension {} ({} != {})".format(index_1,index_2,tensor_1.shape[index_1],tensor_2.shape[index_2]))
+    old_dimension = tensor_1.shape[index_1]
+    if new_dimension < old_dimension:
+        raise ValueError("new dimension ({}) must be at least the old dimension ({})".format(new_dimension,old_dimension))
+    if new_dimension == old_dimension:
+        tensor_1, tensor_2
+    matrix, _, _ = svd(crand(new_dimension,old_dimension),full_matrices=False)
+    matrix = matrix.transpose()
+    return (
+        multiplyTensorByMatrixAtIndex(tensor_1,matrix,index_1),
+        multiplyTensorByMatrixAtIndex(tensor_2,matrix.conj(),index_2),
+    )
 #@+node:gcross.20111014113710.1239: *3* mapFunctions
 def mapFunctions(functions,data):
     for f, x in zip(functions,data):
@@ -175,6 +190,7 @@ __all__ = [
     "crand",
     "CW",
     "formContractor",
+    "increaseDimensionBetween",
     "mapFunctions",
     "multiplyTensorByMatrixAtIndex",
     "normalize",
