@@ -9,9 +9,15 @@ from numpy.random import rand
 
 #@+others
 #@+node:gcross.20111009135633.1130: ** Functions
+#@+node:gcross.20111014183107.1246: *3* CCW
+def CCW(i):
+    return (i+1)%4
 #@+node:gcross.20111009193003.3007: *3* crand
 def crand(*shape):
     return rand(*shape)*2-1+rand(*shape)*2j-1j
+#@+node:gcross.20111014183107.1248: *3* CW
+def CW(i):
+    return (i-1)%4
 #@+node:gcross.20111009135633.1131: *3* formContractor
 def formContractor(order,joins,result_joins):
     observed_tensor_indices = {}
@@ -157,18 +163,24 @@ def normalizeAndReturnInverseNormalizer(tensor,index):
     old_indices.insert(index,tensor.ndim-1)
 
     return u.reshape(old_shape).transpose(old_indices), s*v.transpose()
+#@+node:gcross.20111014183107.1249: *3* OPP
+def OPP(i):
+    return (i+2)%4
 #@-others
 
 #@+<< Exports >>
 #@+node:gcross.20111009193003.1160: ** << Exports >>
 __all__ = [
+    "CCW",
     "crand",
+    "CW",
     "formContractor",
     "mapFunctions",
     "multiplyTensorByMatrixAtIndex",
     "normalize",
     "normalizeAndDenormalize",
     "normalizeAndReturnInverseNormalizer",
+    "OPP",
 ]
 #@-<< Exports >>
 #@-leo

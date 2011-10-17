@@ -771,7 +771,7 @@ class TestGrid(TestCase):
         grid.corners = [
             StateCornerSite(
                 clockwise_dimension = grid.sides[i].counterclockwise_dimension,
-                counterclockwise_dimension = grid.sides[(i+1)%4].clockwise_dimension,
+                counterclockwise_dimension = grid.sides[CCW(i)].clockwise_dimension,
                 physical_dimension = randint(1,3),
                 randomize = True
             )
@@ -800,7 +800,7 @@ class TestGrid(TestCase):
         formContractor(
             (['O','O*'] + ['S{}'.format(i) for i in range(4)] + ['C{}'.format(i) for i in range(4)]),
             ([(('S{}'.format(i),1),('C{}'.format(i),0)) for i in range(4)]
-            +[(('C{}'.format(i),1),('S{}'.format((i+1)%4),0)) for i in range(4)]
+            +[(('C{}'.format(i),1),('S{}'.format(CCW(i)),0)) for i in range(4)]
             +[(('S{}'.format(i),2),('O',1+i)) for i in range(4)]
             +[(('S{}'.format(i),3),('O*',1+i)) for i in range(4)]
             +[(('O',0),('O*',0))]
@@ -838,7 +838,7 @@ class TestGrid(TestCase):
         formContractor(
             (['I'] + ['S{}'.format(i) for i in range(4)] + ['C{}'.format(i) for i in range(4)]),
             ([(('S{}'.format(i),1),('C{}'.format(i),0)) for i in range(4)]
-            +[(('C{}'.format(i),1),('S{}'.format((i+1)%4),0)) for i in range(4)]
+            +[(('C{}'.format(i),1),('S{}'.format(CCW(i)),0)) for i in range(4)]
             ),
             [
                 [('I',0)] + [('S{}'.format(i),2) for i in range(4)],
@@ -855,7 +855,7 @@ class TestGrid(TestCase):
         grid = self.randomGrid()
         for forward_direction in [1,3]:
             forward_dimension = grid.bandwidthDimension(forward_direction)
-            reverse_dimension = grid.bandwidthDimension((forward_direction+2)%4)
+            reverse_dimension = grid.bandwidthDimension(OPP(forward_direction))
             if forward_dimension < reverse_dimension:
                 grid.increaseSingleDirectionBandwidthDimensionTo(reverse_dimension,forward_direction)
         sides = copy(grid.sides)
@@ -875,7 +875,7 @@ class TestGrid(TestCase):
         grid = self.randomGrid()
         for forward_direction in [0,2]:
             forward_dimension = grid.bandwidthDimension(forward_direction)
-            reverse_dimension = grid.bandwidthDimension((forward_direction+2)%4)
+            reverse_dimension = grid.bandwidthDimension(OPP(forward_direction))
             if forward_dimension < reverse_dimension:
                 grid.increaseSingleDirectionBandwidthDimensionTo(reverse_dimension,forward_direction)
         sides = copy(grid.sides)
@@ -895,7 +895,7 @@ class TestGrid(TestCase):
         grid = self.randomGrid()
         for forward_direction in [0,2]:
             forward_dimension = grid.bandwidthDimension(forward_direction)
-            reverse_dimension = grid.bandwidthDimension((forward_direction+2)%4)
+            reverse_dimension = grid.bandwidthDimension(OPP(forward_direction))
             if forward_dimension < reverse_dimension:
                 grid.increaseSingleDirectionBandwidthDimensionTo(reverse_dimension,forward_direction)
         sides = copy(grid.sides)
@@ -915,7 +915,7 @@ class TestGrid(TestCase):
         grid = self.randomGrid()
         for forward_direction in [1,3]:
             forward_dimension = grid.bandwidthDimension(forward_direction)
-            reverse_dimension = grid.bandwidthDimension((forward_direction+2)%4)
+            reverse_dimension = grid.bandwidthDimension(OPP(forward_direction))
             if forward_dimension < reverse_dimension:
                 grid.increaseSingleDirectionBandwidthDimensionTo(reverse_dimension,forward_direction)
         sides = copy(grid.sides)
@@ -939,7 +939,7 @@ class TestGrid(TestCase):
 
         bandwidth_dimensions = list(grid.bandwidthDimensions())
         bandwidth_dimensions[direction] += increment
-        bandwidth_dimensions[(direction+2)%4] += increment
+        bandwidth_dimensions[OPP(direction)] += increment
         old_normalization = grid.computeNormalization()
 
         grid.increaseAxialBandwidthDimensionsBy(increment,direction)
@@ -955,9 +955,9 @@ class TestGrid(TestCase):
         grid = self.randomGrid()
 
         bandwidth_dimensions = list(grid.bandwidthDimensions())
-        bandwidth_dimensions[direction] = max(bandwidth_dimensions[direction],bandwidth_dimensions[(direction+2)%4])
+        bandwidth_dimensions[direction] = max(bandwidth_dimensions[direction],bandwidth_dimensions[OPP(direction)])
         bandwidth_dimensions[direction] += increment
-        bandwidth_dimensions[(direction+2)%4] = bandwidth_dimensions[direction]
+        bandwidth_dimensions[OPP(direction)] = bandwidth_dimensions[direction]
         old_normalization = grid.computeNormalization()
 
         grid.increaseAxialBandwidthDimensionsTo(bandwidth_dimensions[direction],direction)

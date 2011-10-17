@@ -6,7 +6,7 @@ from numpy import array, dot, identity, product, tensordot
 from numpy.linalg import cond, svd
 
 from flatland.tensors import StateCenterSite, StateCornerSite, StateSideSite
-from flatland.utils import crand, multiplyTensorByMatrixAtIndex
+from flatland.utils import *
 #@-<< Imports >>
 
 #@+others
@@ -73,19 +73,19 @@ class Grid:
         )
     #@+node:gcross.20111013080525.1244: *4* contract
     def contract(self,direction):
-        if self.bandwidthDimension(direction) != self.bandwidthDimension((direction+2)%4):
-            raise ValueError("The center tensor needs the dimensions of both the forward and reverse links along a direction to match in order to contract in that direction.  (direction = {}, forward bandwidth = {}, reverse bandwidth = {})".format(direction,self.bandwidthDimension(direction),self.bandwidthDimension((direction+2)%4)))
+        if self.bandwidthDimension(direction) != self.bandwidthDimension(OPP(direction)):
+            raise ValueError("The center tensor needs the dimensions of both the forward and reverse links along a direction to match in order to contract in that direction.  (direction = {}, forward bandwidth = {}, reverse bandwidth = {})".format(direction,self.bandwidthDimension(direction),self.bandwidthDimension(OPP(direction))))
         self.sides[direction] = self.sides[direction].absorbCenterSite(self.center,direction)
-        self.corners[direction] = self.corners[direction].absorbSideSiteAtCounterClockwise(self.sides[(direction+1)%4])
-        self.corners[(direction-1)%4] = self.corners[(direction-1)%4].absorbSideSiteAtClockwise(self.sides[(direction-1)%4])
+        self.corners[direction] = self.corners[direction].absorbSideSiteAtCounterClockwise(self.sides[CCW(direction)])
+        self.corners[CW(direction)] = self.corners[CW(direction)].absorbSideSiteAtClockwise(self.sides[CW(direction)])
     #@+node:gcross.20111014172511.1240: *4* increaseAxialBandwidthDimensionsBy
     def increaseAxialBandwidthDimensionsBy(self,increment,direction):
         self.increaseSingleDirectionBandwidthDimensionBy(increment,direction)
-        self.increaseSingleDirectionBandwidthDimensionBy(increment,(direction+2)%4)
+        self.increaseSingleDirectionBandwidthDimensionBy(increment,OPP(direction))
     #@+node:gcross.20111014172511.1242: *4* increaseAxialBandwidthDimensionsTo
     def increaseAxialBandwidthDimensionsTo(self,dimension,direction):
         self.increaseSingleDirectionBandwidthDimensionTo(dimension,direction)
-        self.increaseSingleDirectionBandwidthDimensionTo(dimension,(direction+2)%4)
+        self.increaseSingleDirectionBandwidthDimensionTo(dimension,OPP(direction))
     #@+node:gcross.20111013080525.3958: *4* increaseSingleDirectionBandwidthDimensionBy
     def increaseSingleDirectionBandwidthDimensionBy(self,increment,direction):
         self.increaseSingleDirectionBandwidthDimensionTo(self.bandwidthDimension(direction)+increment,direction)
@@ -102,7 +102,10 @@ class Grid:
         self.sides[direction] = StateSideSite(multiplyTensorByMatrixAtIndex(self.sides[direction].data,matrix.conj(),3))
     #@+node:gcross.20111014113710.1230: *4* normalizeSide
     def normalizeSide(self,direction):
-        self.sides[direction], self.center = self.sides[direction].normalizeSelfAndDenormalizeCenter(self.center,direction)
+        self.sides[direction], self.center = mapFunctions(
+            (StateSideSite,StateCenterSite),
+            normalizeAndDenormalize(self.sides[direction].data,3,self.center.data,1+direction)
+        )
     #@+node:gcross.20111014113710.1234: *4* physical_dimension
     physical_dimension = property(lambda self: self.center.physical_dimension)
     #@-others

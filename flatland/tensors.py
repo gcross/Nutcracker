@@ -4,7 +4,7 @@
 #@+node:gcross.20111009193003.1159: ** << Imports >>
 from numpy import inner, ndarray, tensordot
 
-from flatland.utils import crand, formContractor, mapFunctions, normalizeAndDenormalize
+from flatland.utils import *
 #@-<< Imports >>
 
 #@+others
@@ -173,9 +173,9 @@ class StateSideSite(Tensor):
             ],
             [
                 [('S',0),('C',0)],
-                [('S',1),('C',1+(i-1)%4)],
-                [('S',2),('C',1+(i+1)%4)],
-                [('C',1+(i+2)%4),]
+                [('S',1),('C',1+CW(i))],
+                [('S',2),('C',1+CCW(i))],
+                [('C',1+OPP(i)),]
             ]
         ) for i in range(4)
     ]
