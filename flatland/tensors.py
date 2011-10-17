@@ -133,6 +133,12 @@ class StateCornerSite(Tensor):
                 self.counterclockwise_dimension*self.counterclockwise_dimension,
              )
         )
+    #@+node:gcross.20111017110141.1252: *5* normalizeSelfAndDenormalizeClockwiseSide
+    def normalizeSelfAndDenormalizeClockwiseSide(self,side):
+        return normalizeAndDenormalizeTensors(self,self.clockwise_index,side,side.counterclockwise_index)
+    #@+node:gcross.20111017110141.1264: *5* normalizeSelfAndDenormalizeCounterClockwiseSide
+    def normalizeSelfAndDenormalizeCounterClockwiseSide(self,side):
+        return normalizeAndDenormalizeTensors(self,self.counterclockwise_index,side,side.clockwise_index)
     #@-others
 #@+node:gcross.20111009193003.1166: *4* StateSideBoundary
 class StateSideBoundary(Tensor):
