@@ -139,6 +139,12 @@ def increaseDimensionBetween(tensor_1,index_1,tensor_2,index_2,new_dimension):
         multiplyTensorByMatrixAtIndex(tensor_1,matrix,index_1),
         multiplyTensorByMatrixAtIndex(tensor_2,matrix.conj(),index_2),
     )
+#@+node:gcross.20111017110141.1260: *3* increaseDimensionBetweenTensors
+def increaseDimensionBetweenTensors(tensor_1,index_1,tensor_2,index_2,new_dimension):
+    return mapFunctions(
+        (type(tensor_1),type(tensor_2)),
+        increaseDimensionBetween(tensor_1.data,index_1,tensor_2.data,index_2,new_dimension)
+    )
 #@+node:gcross.20111014113710.1239: *3* mapFunctions
 def mapFunctions(functions,data):
     for f, x in zip(functions,data):
@@ -191,6 +197,7 @@ __all__ = [
     "CW",
     "formContractor",
     "increaseDimensionBetween",
+    "increaseDimensionBetweenTensors",
     "mapFunctions",
     "multiplyTensorByMatrixAtIndex",
     "normalize",
