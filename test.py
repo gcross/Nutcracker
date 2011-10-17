@@ -750,17 +750,14 @@ class TestGrid(TestCase):
     #@+others
     #@+node:gcross.20111013080525.1249: *4* randomGrid
     @staticmethod
-    def randomGrid(suitable_for_normalization=False):
+    def randomGrid():
         grid = Grid(1)
         grid.sides = []
         for _ in range(4):
             clockwise_dimension = randint(1,3)
             counterclockwise_dimension = randint(1,3)
             physical_dimension = randint(1,3)
-            if suitable_for_normalization:
-                inward_dimension = randint(1,clockwise_dimension*counterclockwise_dimension*physical_dimension)
-            else:
-                inward_dimension = randint(1,3)
+            inward_dimension = randint(1,3)
             grid.sides.append(StateSideSite(
                 clockwise_dimension = clockwise_dimension,
                 counterclockwise_dimension = counterclockwise_dimension,
@@ -1001,7 +998,11 @@ class TestGrid(TestCase):
     def test_normalizeSide(self,
         direction = irange(0,3),
     ):
-        grid = self.randomGrid(True)
+        grid = self.randomGrid()
+        if grid.sides[direction].inward_dimension > product(grid.sides[direction].data.shape[:-1]):
+            new_shape = list(grid.sides[direction].data.shape)
+            new_shape[StateSideSite.physical_index] = new_shape[StateSideSite.inward_index]
+            grid.sides[direction] = StateSideSite(crand(*new_shape))
         old_normalization = grid.computeNormalization()
         grid.normalizeSide(direction)
         self.assertIsNormalized(grid.sides[direction].data,StateSideSite.inward_index)
