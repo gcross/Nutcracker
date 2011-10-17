@@ -36,6 +36,11 @@ class TestCase(unittest.TestCase):
         v2 = array(v2)
         self.assertEqual(v1.shape,v2.shape)
         self.assertTrue(all(v1 == v2))
+    #@+node:gcross.20111017110141.1255: *4* assertIsNormalized
+    def assertIsNormalized(self,tensor,index):
+        indices = list(range(tensor.ndim))
+        del indices[index]
+        self.assertAllClose(tensordot(tensor,tensor.conj(),(indices,indices)),identity(tensor.shape[index]))
     #@+node:gcross.20111009135633.2981: *4* assertVanishing
     def assertVanishing(self,v):
         self.assertAlmostEqual(norm(v),0)
@@ -395,12 +400,7 @@ class TestNormalizeAndDenormalize(TestCase):
         self.assertEqual(tensor_1.shape,new_tensor_1.shape)
         self.assertEqual(tensor_2.shape,new_tensor_2.shape)
 
-        indices = list(range(tensor_1_ndim))
-        del indices[index_1]
-        self.assertAllClose(
-            tensordot(new_tensor_1,new_tensor_1.conj(),(indices,indices)),
-            identity(tensor_1.shape[index_1])
-        )
+        self.assertIsNormalized(new_tensor_1,index_1)
         self.assertAllClose(
             tensordot(tensor_1,tensor_2,(index_1,index_2)),
             tensordot(new_tensor_1,new_tensor_2,(index_1,index_2))
@@ -1004,6 +1004,7 @@ class TestGrid(TestCase):
         grid = self.randomGrid(True)
         old_normalization = grid.computeNormalization()
         grid.normalizeSide(direction)
+        self.assertIsNormalized(grid.sides[direction].data,StateSideSite.inward_index)
         self.assertAlmostEqual(old_normalization/grid.computeNormalization(),1)
     #@-others
 #@-others
