@@ -72,12 +72,13 @@ class Grid:
             .reshape(final_dimension,final_dimension)
         )
     #@+node:gcross.20111013080525.1244: *4* contract
-    def contract(self,direction):
-        if self.bandwidthDimension(direction) != self.bandwidthDimension(OPP(direction)):
-            raise ValueError("The center tensor needs the dimensions of both the forward and reverse links along a direction to match in order to contract in that direction.  (direction = {}, forward bandwidth = {}, reverse bandwidth = {})".format(direction,self.bandwidthDimension(direction),self.bandwidthDimension(OPP(direction))))
-        self.sides[direction] = self.sides[direction].absorbCenterSite(self.center,direction)
-        self.corners[direction] = self.corners[direction].absorbSideSiteAtCounterClockwise(self.sides[CCW(direction)])
-        self.corners[CW(direction)] = self.corners[CW(direction)].absorbSideSiteAtClockwise(self.sides[CW(direction)])
+    def contract(self,*directions):
+        for direction in directions:
+            if self.bandwidthDimension(direction) != self.bandwidthDimension(OPP(direction)):
+                raise ValueError("The center tensor needs the dimensions of both the forward and reverse links along a direction to match in order to contract in that direction.  (direction = {}, forward bandwidth = {}, reverse bandwidth = {})".format(direction,self.bandwidthDimension(direction),self.bandwidthDimension(OPP(direction))))
+            self.sides[direction] = self.sides[direction].absorbCenterSite(self.center,direction)
+            self.corners[direction] = self.corners[direction].absorbSideSiteAtCounterClockwise(self.sides[CCW(direction)])
+            self.corners[CW(direction)] = self.corners[CW(direction)].absorbSideSiteAtClockwise(self.sides[CW(direction)])
     #@+node:gcross.20111014172511.1240: *4* increaseAxialBandwidthDimensionsBy
     def increaseAxialBandwidthDimensionsBy(self,increment,direction):
         self.increaseSingleDirectionBandwidthDimensionBy(increment,direction)
@@ -97,6 +98,9 @@ class Grid:
                 self.sides[direction],StateSideSite.inward_index,
                 new_dimension
             )
+    #@+node:gcross.20111017110141.1278: *4* normalizeAllSides
+    def normalizeAllSides(self):
+        self.normalizeSides(*range(4))
     #@+node:gcross.20111017110141.1265: *4* normalizeCornerAndDenormalizeClockwiseSide
     def normalizeCornerAndDenormalizeClockwiseSide(self,corner_index):
         self.corners[corner_index], self.sides[corner_index] = \
@@ -115,6 +119,10 @@ class Grid:
     def normalizeSide(self,direction):
         self.sides[direction], self.center = \
             normalizeAndDenormalizeTensors(self.sides[direction],3,self.center,1+direction)
+    #@+node:gcross.20111017110141.1277: *4* normalizeSides
+    def normalizeSides(self,*directions):
+        for direction in directions:
+            self.normalizeSide(direction)
     #@+node:gcross.20111014113710.1234: *4* physical_dimension
     physical_dimension = property(lambda self: self.center.physical_dimension)
     #@-others
