@@ -48,19 +48,19 @@ class TestCase(unittest.TestCase):
 #@+node:gcross.20111009135633.2982: ** Tests
 #@+others
 #@+node:gcross.20111013183808.3918: *3* Functions
-#@+node:gcross.20111022200315.1268: *4* compressSelfConnectedTensor
+#@+node:gcross.20111022200315.1282: *4* compressSelfConnectedTensor
 class TestCompressSelfConnectedTensor(TestCase):
     #@+others
-    #@+node:gcross.20111022200315.1269: *5* test_matrix_invariant_under_unfiltered
+    #@+node:gcross.20111022200315.1283: *5* test_matrix_invariant_under_keep_all
     @with_checker(number_of_calls=10)
-    def test_matrix_invariant_under_unfiltered(self,
+    def test_matrix_invariant_under_keep_all(self,
         tensor_ndim = irange(2,5),
     ):
         index = randint(0,tensor_ndim-1)
         tensor_shape = [randint(1,5) for _ in range(tensor_ndim)]
         tensor = crand(*tensor_shape)
 
-        compressed_tensor = compressSelfConnectedTensor(tensor,index,len)
+        compressed_tensor = compressSelfConnectedTensor(tensor,index,keep=tensor_shape[index])
 
         self.assertEqual(
             withoutIndex(tensor.shape,index),
@@ -70,16 +70,16 @@ class TestCompressSelfConnectedTensor(TestCase):
             tensordot(tensor,tensor.conj(),(index,index)),
             tensordot(compressed_tensor,compressed_tensor.conj(),(index,index))
         )
-    #@+node:gcross.20111022200315.1273: *5* test_matrix_invariant_under_zero_filtered
+    #@+node:gcross.20111022200315.1284: *5* test_matrix_invariant_under_threshold_zero
     @with_checker(number_of_calls=10)
-    def test_matrix_invariant_under_zero_filtered(self,
+    def test_matrix_invariant_under_threshold_zero(self,
         tensor_ndim = irange(2,5),
     ):
         index = randint(0,tensor_ndim-1)
         tensor_shape = [randint(1,5) for _ in range(tensor_ndim)]
         tensor = crand(*tensor_shape)
 
-        compressed_tensor = compressSelfConnectedTensor(tensor,index,lambda arr: firstIndexBelowMagnitude(arr,1e-13))
+        compressed_tensor = compressSelfConnectedTensor(tensor,index,threshold=0)
 
         self.assertTrue(compressed_tensor.shape[index] <= tensor.shape[index])
         self.assertEqual(
@@ -447,6 +447,49 @@ class TestNormalizeAndDenormalize(TestCase):
         self.assertAllClose(
             tensordot(tensor_1,tensor_2,(index_1,index_2)),
             tensordot(new_tensor_1,new_tensor_2,(index_1,index_2))
+        )
+    #@-others
+#@+node:gcross.20111022200315.1268: *4* truncateSelfConnectedTensor
+class TestTruncateSelfConnectedTensor(TestCase):
+    #@+others
+    #@+node:gcross.20111022200315.1269: *5* test_matrix_invariant_under_unfiltered
+    @with_checker(number_of_calls=10)
+    def test_matrix_invariant_under_unfiltered(self,
+        tensor_ndim = irange(2,5),
+    ):
+        index = randint(0,tensor_ndim-1)
+        tensor_shape = [randint(1,5) for _ in range(tensor_ndim)]
+        tensor = crand(*tensor_shape)
+
+        truncated_tensor = truncateSelfConnectedTensor(tensor,index,len)
+
+        self.assertEqual(
+            withoutIndex(tensor.shape,index),
+            withoutIndex(truncated_tensor.shape,index)
+        )
+        self.assertAllClose(
+            tensordot(tensor,tensor.conj(),(index,index)),
+            tensordot(truncated_tensor,truncated_tensor.conj(),(index,index))
+        )
+    #@+node:gcross.20111022200315.1273: *5* test_matrix_invariant_under_zero_filtered
+    @with_checker(number_of_calls=10)
+    def test_matrix_invariant_under_zero_filtered(self,
+        tensor_ndim = irange(2,5),
+    ):
+        index = randint(0,tensor_ndim-1)
+        tensor_shape = [randint(1,5) for _ in range(tensor_ndim)]
+        tensor = crand(*tensor_shape)
+
+        truncated_tensor = truncateSelfConnectedTensor(tensor,index,lambda arr: firstIndexBelowMagnitude(arr,1e-10))
+
+        self.assertTrue(truncated_tensor.shape[index] <= tensor.shape[index])
+        self.assertEqual(
+            withoutIndex(tensor.shape,index),
+            withoutIndex(truncated_tensor.shape,index)
+        )
+        self.assertAllClose(
+            tensordot(tensor,tensor.conj(),(index,index)),
+            tensordot(truncated_tensor,truncated_tensor.conj(),(index,index))
         )
     #@-others
 #@+node:gcross.20111009193003.1168: *3* Tensors
@@ -1089,9 +1132,12 @@ tests = [
     TestCompressSelfConnectedTensor,
     TestFormContractor,
     TestNormalizeAndDenormalize,
+    TestTruncateSelfConnectedTensor,
+
     TestStateCornerSite,
     TestStateSideBoundary,
     TestStateSideSite,
+
     TestGrid,
 ]
 #@-others

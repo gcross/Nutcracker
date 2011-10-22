@@ -20,16 +20,16 @@ def appended(vector,entry):
 #@+node:gcross.20111014183107.1246: *3* CCW
 def CCW(i):
     return (i+1)%4
-#@+node:gcross.20111022200315.1265: *3* compressSelfConnectedTensor
-def compressSelfConnectedTensor(tensor,index,filter):
-    reshaped_tensor, inverseTransformation = transposeAndReshapeAndReturnInverseTransformation(tensor,index)
-    evals, evecs = eigh(tensordot(reshaped_tensor,reshaped_tensor.conj(),(1,1)))
-    sorted_indices = evals.argsort()[::-1]
-    evals = evals[sorted_indices]
-    evecs = evecs[:,sorted_indices]
-    evals[evals < 0] = 0
-    keep = filter(evals) if callable(filter) else filter
-    return inverseTransformation(sqrt(evals[:keep])*evecs[:,:keep])
+#@+node:gcross.20111022200315.1278: *3* compressSelfConnectedTensor
+def compressSelfConnectedTensor(tensor,index,keep=None,threshold=None):
+    if keep is None and threshold is None or (keep is not None and threshold is not None):
+        raise ValueError("either keep or threshold (but not both) needs to be specified")
+    if keep is not None:
+        return truncateSelfConnectedTensor(tensor,index,lambda _: keep)
+    if threshold is not None:
+        if threshold == 0:
+            threshold = 1e-10
+        return truncateSelfConnectedTensor(tensor,index,lambda arr: firstIndexBelowMagnitude(arr,threshold))
 #@+node:gcross.20111009193003.3007: *3* crand
 def crand(*shape):
     return rand(*shape)*2-1+rand(*shape)*2j-1j
@@ -227,6 +227,16 @@ def transposeAndReshapeAndReturnInverseTransformation(tensor,index):
         return tensor.reshape(inverse_shape).transpose(inverse_indices)
 
     return tensor.transpose(new_indices).reshape(new_shape), inverseTransformer
+#@+node:gcross.20111022200315.1265: *3* truncateSelfConnectedTensor
+def truncateSelfConnectedTensor(tensor,index,filter):
+    reshaped_tensor, inverseTransformation = transposeAndReshapeAndReturnInverseTransformation(tensor,index)
+    evals, evecs = eigh(tensordot(reshaped_tensor,reshaped_tensor.conj(),(1,1)))
+    sorted_indices = evals.argsort()[::-1]
+    evals = evals[sorted_indices]
+    evecs = evecs[:,sorted_indices]
+    evals[evals < 0] = 0
+    keep = filter(evals) if callable(filter) else filter
+    return inverseTransformation(sqrt(evals[:keep])*evecs[:,:keep])
 #@+node:gcross.20111022200315.1270: *3* withoutIndex
 def withoutIndex(vector,index):
     copy_of_vector = list(vector)
@@ -256,6 +266,7 @@ __all__ = [
     "normalizeAndReturnInverseNormalizer",
     "OPP",
     "transposeAndReshapeAndReturnInverseTransformation",
+    "truncateSelfConnectedTensor",
     "withoutIndex",
 ]
 #@-<< Exports >>
