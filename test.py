@@ -48,6 +48,49 @@ class TestCase(unittest.TestCase):
 #@+node:gcross.20111009135633.2982: ** Tests
 #@+others
 #@+node:gcross.20111013183808.3918: *3* Functions
+#@+node:gcross.20111022200315.1268: *4* compressSelfConnectedTensor
+class TestCompressSelfConnectedTensor(TestCase):
+    #@+others
+    #@+node:gcross.20111022200315.1269: *5* test_matrix_invariant_under_unfiltered
+    @with_checker(number_of_calls=10)
+    def test_matrix_invariant_under_unfiltered(self,
+        tensor_ndim = irange(2,5),
+    ):
+        index = randint(0,tensor_ndim-1)
+        tensor_shape = [randint(1,5) for _ in range(tensor_ndim)]
+        tensor = crand(*tensor_shape)
+
+        compressed_tensor = compressSelfConnectedTensor(tensor,index,len)
+
+        self.assertEqual(
+            withoutIndex(tensor.shape,index),
+            withoutIndex(compressed_tensor.shape,index)
+        )
+        self.assertAllClose(
+            tensordot(tensor,tensor.conj(),(index,index)),
+            tensordot(compressed_tensor,compressed_tensor.conj(),(index,index))
+        )
+    #@+node:gcross.20111022200315.1273: *5* test_matrix_invariant_under_zero_filtered
+    @with_checker(number_of_calls=10)
+    def test_matrix_invariant_under_zero_filtered(self,
+        tensor_ndim = irange(2,5),
+    ):
+        index = randint(0,tensor_ndim-1)
+        tensor_shape = [randint(1,5) for _ in range(tensor_ndim)]
+        tensor = crand(*tensor_shape)
+
+        compressed_tensor = compressSelfConnectedTensor(tensor,index,lambda arr: firstIndexBelowMagnitude(arr,1e-13))
+
+        self.assertTrue(compressed_tensor.shape[index] <= tensor.shape[index])
+        self.assertEqual(
+            withoutIndex(tensor.shape,index),
+            withoutIndex(compressed_tensor.shape,index)
+        )
+        self.assertAllClose(
+            tensordot(tensor,tensor.conj(),(index,index)),
+            tensordot(compressed_tensor,compressed_tensor.conj(),(index,index))
+        )
+    #@-others
 #@+node:gcross.20111009135633.2983: *4* formContractor
 class TestFormContractor(TestCase):
     #@+others
@@ -1043,6 +1086,7 @@ class TestGrid(TestCase):
 #@-others
 
 tests = [
+    TestCompressSelfConnectedTensor,
     TestFormContractor,
     TestNormalizeAndDenormalize,
     TestStateCornerSite,

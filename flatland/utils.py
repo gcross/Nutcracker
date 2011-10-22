@@ -3,8 +3,8 @@
 #@+<< Imports >>
 #@+node:gcross.20111009135633.1135: ** << Imports >>
 from copy import copy
-from numpy import product, tensordot
-from numpy.linalg import svd
+from numpy import product, sqrt, tensordot
+from numpy.linalg import eigh, svd
 from numpy.random import rand
 #@-<< Imports >>
 
@@ -20,12 +20,32 @@ def appended(vector,entry):
 #@+node:gcross.20111014183107.1246: *3* CCW
 def CCW(i):
     return (i+1)%4
+#@+node:gcross.20111022200315.1265: *3* compressSelfConnectedTensor
+def compressSelfConnectedTensor(tensor,index,filter):
+    reshaped_tensor, inverseTransformation = transposeAndReshapeAndReturnInverseTransformation(tensor,index)
+    evals, evecs = eigh(tensordot(reshaped_tensor,reshaped_tensor.conj(),(1,1)))
+    sorted_indices = evals.argsort()[::-1]
+    evals = evals[sorted_indices]
+    evecs = evecs[:,sorted_indices]
+    evals[evals < 0] = 0
+    keep = filter(evals) if callable(filter) else filter
+    return inverseTransformation(sqrt(evals[:keep])*evecs[:,:keep])
 #@+node:gcross.20111009193003.3007: *3* crand
 def crand(*shape):
     return rand(*shape)*2-1+rand(*shape)*2j-1j
 #@+node:gcross.20111014183107.1248: *3* CW
 def CW(i):
     return (i-1)%4
+#@+node:gcross.20111022200315.1274: *3* firstIndexBelowMagnitude
+def firstIndexBelowMagnitude(arr,magnitude):
+    index = 0
+    for x in arr:
+        if abs(x) < magnitude:
+            return index
+        index += 1
+#@+node:gcross.20111022200315.1276: *3* firstIndexWithNonZeroMagnitude
+def firstIndexWithNonZeroMagnitude(arr):
+    return firstIndexBelowMagnitude(arr,1e-13)
 #@+node:gcross.20111009135633.1131: *3* formContractor
 def formContractor(order,joins,result_joins):
     observed_tensor_indices = {}
@@ -222,7 +242,9 @@ __all__ = [
     "appended",
     "CCW",
     "crand",
+    "compressSelfConnectedTensor",
     "CW",
+    "firstIndexBelowMagnitude",
     "formContractor",
     "increaseDimensionBetween",
     "increaseDimensionBetweenTensors",
