@@ -2,6 +2,7 @@
 #@+node:gcross.20111009135633.1129: * @file utils.py
 #@+<< Imports >>
 #@+node:gcross.20111009135633.1135: ** << Imports >>
+from copy import copy
 from numpy import product, tensordot
 from numpy.linalg import svd
 from numpy.random import rand
@@ -173,6 +174,18 @@ def normalizeAndDenormalizeTensors(tensor_1,index_1,tensor_2,index_2):
     )
 #@+node:gcross.20111014182232.1247: *3* normalizeAndReturnInverseNormalizer
 def normalizeAndReturnInverseNormalizer(tensor,index):
+    new_tensor, inverseTransformation = transposeAndReshapeAndReturnInverseTransformation(tensor,index)
+    if new_tensor.shape[1] > new_tensor.shape[0]:
+        raise ValueError("The dimension to be normalized is larger than the product of the rest of the dimensions. ({} > {})".format(new_tensor.shape[1],new_tensor.shape[0]))
+
+    u, s, v = svd(new_tensor,full_matrices=False)
+
+    return inverseTransformation(u), s*v.transpose()
+#@+node:gcross.20111014183107.1249: *3* OPP
+def OPP(i):
+    return (i+2)%4
+#@+node:gcross.20111022200315.1264: *3* transposeAndReshapeAndReturnInverseTransformation
+def transposeAndReshapeAndReturnInverseTransformation(tensor,index):
     new_indices = list(range(tensor.ndim))
     del new_indices[index]
     new_indices.append(index)
@@ -180,19 +193,16 @@ def normalizeAndReturnInverseNormalizer(tensor,index):
     old_shape = list(tensor.shape)
     del old_shape[index]
     new_shape = (product(old_shape),tensor.shape[index])
-    if new_shape[1] > new_shape[0]:
-        raise ValueError("The dimension to be normalized is larger than the product of the rest of the dimensions. ({} > {})".format(new_shape[1],new_shape[0]))
-    old_shape.append(tensor.shape[index])
 
-    u, s, v = svd(tensor.transpose(new_indices).reshape(new_shape),full_matrices=False)
+    inverse_indices = list(range(tensor.ndim-1))
+    inverse_indices.insert(index,tensor.ndim-1)
 
-    old_indices = list(range(tensor.ndim-1))
-    old_indices.insert(index,tensor.ndim-1)
+    def inverseTransformer(tensor):
+        inverse_shape = copy(old_shape)
+        inverse_shape.append(tensor.shape[1])
+        return tensor.reshape(inverse_shape).transpose(inverse_indices)
 
-    return u.reshape(old_shape).transpose(old_indices), s*v.transpose()
-#@+node:gcross.20111014183107.1249: *3* OPP
-def OPP(i):
-    return (i+2)%4
+    return tensor.transpose(new_indices).reshape(new_shape), inverseTransformer
 #@-others
 
 #@+<< Exports >>
@@ -211,6 +221,7 @@ __all__ = [
     "normalizeAndDenormalizeTensors",
     "normalizeAndReturnInverseNormalizer",
     "OPP",
+    "transposeAndReshapeAndReturnInverseTransformation",
 ]
 #@-<< Exports >>
 #@-leo
