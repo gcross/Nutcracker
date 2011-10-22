@@ -235,7 +235,7 @@ def truncateSelfConnectedTensor(tensor,index,filter):
     evals = evals[sorted_indices]
     evecs = evecs[:,sorted_indices]
     evals[evals < 0] = 0
-    keep = filter(evals) if callable(filter) else filter
+    keep = filter(evals/evals[0] if evals[0] != 0 else evals) if callable(filter) else filter
     return inverseTransformation(sqrt(evals[:keep])*evecs[:,:keep])
 #@+node:gcross.20111022200315.1270: *3* withoutIndex
 def withoutIndex(vector,index):
