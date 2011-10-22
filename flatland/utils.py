@@ -10,6 +10,13 @@ from numpy.random import rand
 
 #@+others
 #@+node:gcross.20111009135633.1130: ** Functions
+#@+node:gcross.20111022200315.1271: *3* appended
+def appended(vector,entry):
+    copy_of_vector = list(vector)
+    if copy_of_vector is vector:
+        copy_of_vector = copy(vector)
+    copy_of_vector.append(entry)
+    return copy_of_vector
 #@+node:gcross.20111014183107.1246: *3* CCW
 def CCW(i):
     return (i+1)%4
@@ -186,28 +193,33 @@ def OPP(i):
     return (i+2)%4
 #@+node:gcross.20111022200315.1264: *3* transposeAndReshapeAndReturnInverseTransformation
 def transposeAndReshapeAndReturnInverseTransformation(tensor,index):
-    new_indices = list(range(tensor.ndim))
-    del new_indices[index]
+    new_indices = withoutIndex(range(tensor.ndim),index)
     new_indices.append(index)
 
-    old_shape = list(tensor.shape)
-    del old_shape[index]
+    old_shape = withoutIndex(tensor.shape,index)
     new_shape = (product(old_shape),tensor.shape[index])
 
     inverse_indices = list(range(tensor.ndim-1))
     inverse_indices.insert(index,tensor.ndim-1)
 
     def inverseTransformer(tensor):
-        inverse_shape = copy(old_shape)
-        inverse_shape.append(tensor.shape[1])
+        inverse_shape = appended(old_shape,tensor.shape[1])
         return tensor.reshape(inverse_shape).transpose(inverse_indices)
 
     return tensor.transpose(new_indices).reshape(new_shape), inverseTransformer
+#@+node:gcross.20111022200315.1270: *3* withoutIndex
+def withoutIndex(vector,index):
+    copy_of_vector = list(vector)
+    if copy_of_vector is vector:
+        copy_of_vector = copy(vector)
+    del copy_of_vector[index]
+    return copy_of_vector
 #@-others
 
 #@+<< Exports >>
 #@+node:gcross.20111009193003.1160: ** << Exports >>
 __all__ = [
+    "appended",
     "CCW",
     "crand",
     "CW",
@@ -222,6 +234,7 @@ __all__ = [
     "normalizeAndReturnInverseNormalizer",
     "OPP",
     "transposeAndReshapeAndReturnInverseTransformation",
+    "withoutIndex",
 ]
 #@-<< Exports >>
 #@-leo
