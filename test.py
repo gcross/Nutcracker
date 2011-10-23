@@ -902,6 +902,38 @@ class TestGrid(TestCase):
         grid.compressCorner(direction,threshold=0)
         self.assertLessEqual(grid.corners[direction].physical_dimension,old_physical_dimension)
         self.assertAlmostEqual(old_normalization/grid.computeNormalization(),1)
+    #@+node:gcross.20111022200315.1298: *4* test_compressSide_keep_all
+    @with_checker(number_of_calls=10)
+    def test_compressSide_keep_all(self,
+        direction = irange(0,3),
+    ):
+        grid = self.randomGrid()
+        old_normalization = grid.computeNormalization()
+        number_to_keep = product(withoutIndex(grid.sides[direction].data.shape,StateSideSite.physical_index))
+        grid.compressSide(direction,keep=number_to_keep)
+        self.assertEqual(grid.sides[direction].physical_dimension,number_to_keep)
+        self.assertAlmostEqual(old_normalization/grid.computeNormalization(),1)
+    #@+node:gcross.20111022200315.1300: *4* test_compressSide_keep_some
+    @with_checker(number_of_calls=10)
+    def test_compressSide_keep_some(self,
+        direction = irange(0,3),
+    ):
+        grid = self.randomGrid()
+        old_normalization = grid.computeNormalization()
+        number_to_keep = randint(1,product(withoutIndex(grid.sides[direction].data.shape,StateSideSite.physical_index)))
+        grid.compressSide(direction,keep=number_to_keep)
+        self.assertEqual(grid.sides[direction].physical_dimension,number_to_keep)
+    #@+node:gcross.20111022200315.1294: *4* test_compressSide_threshold_zero
+    @with_checker(number_of_calls=10)
+    def test_compressSide_threshold_zero(self,
+        direction = irange(0,3),
+    ):
+        grid = self.randomGrid()
+        old_physical_dimension = grid.sides[direction].physical_dimension
+        old_normalization = grid.computeNormalization()
+        grid.compressSide(direction,threshold=0)
+        self.assertLessEqual(grid.sides[direction].physical_dimension,old_physical_dimension)
+        self.assertAlmostEqual(old_normalization/grid.computeNormalization(),1)
     #@+node:gcross.20111013165152.1231: *4* test_computeNormalization_random
     @with_checker(number_of_calls=10)
     def test_computeNormalization_random(self):
