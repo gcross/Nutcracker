@@ -33,6 +33,14 @@ class Grid:
     #@+node:gcross.20111014113710.1237: *4* bandwidthDimensions
     def bandwidthDimensions(self):
         return self.center.bandwidthDimensions()
+    #@+node:gcross.20111022200315.1302: *4* compressAllCorners
+    def compressAllCorners(self,keep=None,threshold=None):
+        for direction in range(4):
+            self.compressCorner(direction,keep=keep,threshold=threshold)
+    #@+node:gcross.20111022200315.1304: *4* compressAllSides
+    def compressAllSides(self,keep=None,threshold=None):
+        for direction in range(4):
+            self.compressSide(direction,keep=keep,threshold=threshold)
     #@+node:gcross.20111022200315.1285: *4* compressCorner
     def compressCorner(self,direction,keep=None,threshold=None):
         self.corners[direction] = \
