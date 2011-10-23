@@ -1079,20 +1079,6 @@ class TestGrid(TestCase):
 
         self.assertEqual(grid.bandwidthDimensions(),grid.bandwidthDimensions())
         self.assertAlmostEqual(old_normalization,grid.computeNormalization())
-    #@+node:gcross.20111014113710.1231: *4* test_normalizeSide
-    @with_checker(number_of_calls=10)
-    def test_normalizeSide(self,
-        direction = irange(0,3),
-    ):
-        grid = self.randomGrid()
-        if grid.sides[direction].inward_dimension > product(grid.sides[direction].data.shape[:-1]):
-            new_shape = list(grid.sides[direction].data.shape)
-            new_shape[StateSideSite.physical_index] = new_shape[StateSideSite.inward_index]
-            grid.sides[direction] = StateSideSite(crand(*new_shape))
-        old_normalization = grid.computeNormalization()
-        grid.normalizeSide(direction)
-        self.assertIsNormalized(grid.sides[direction].data,StateSideSite.inward_index)
-        self.assertAlmostEqual(old_normalization/grid.computeNormalization(),1)
     #@+node:gcross.20111017110141.1273: *4* test_normalizeCornerAndDenormalizeClockwiseSide
     @with_checker(number_of_calls=10)
     def test_normalizeCornerAndDenormalizeClockwiseSide(self,
@@ -1124,6 +1110,20 @@ class TestGrid(TestCase):
         old_normalization = grid.computeNormalization()
         grid.normalizeCornerAndDenormalizeCounterClockwiseSide(direction)
         self.assertIsNormalized(grid.corners[direction].data,StateCornerSite.counterclockwise_index)
+        self.assertAlmostEqual(old_normalization/grid.computeNormalization(),1)
+    #@+node:gcross.20111014113710.1231: *4* test_normalizeSide
+    @with_checker(number_of_calls=10)
+    def test_normalizeSide(self,
+        direction = irange(0,3),
+    ):
+        grid = self.randomGrid()
+        if grid.sides[direction].inward_dimension > product(grid.sides[direction].data.shape[:-1]):
+            new_shape = list(grid.sides[direction].data.shape)
+            new_shape[StateSideSite.physical_index] = new_shape[StateSideSite.inward_index]
+            grid.sides[direction] = StateSideSite(crand(*new_shape))
+        old_normalization = grid.computeNormalization()
+        grid.normalizeSide(direction)
+        self.assertIsNormalized(grid.sides[direction].data,StateSideSite.inward_index)
         self.assertAlmostEqual(old_normalization/grid.computeNormalization(),1)
     #@-others
 #@-others
