@@ -22,14 +22,17 @@ def CCW(i):
     return (i+1)%4
 #@+node:gcross.20111022200315.1278: *3* compressSelfConnectedTensor
 def compressSelfConnectedTensor(tensor,index,keep=None,threshold=None):
+    return truncateSelfConnectedTensor(tensor,index,constructFilterFrom(keep=keep,threshold=threshold))
+#@+node:gcross.20111022200315.1309: *3* computeFilterFrom
+def constructFilterFrom(keep=None,threshold=None):
     if keep is None and threshold is None or (keep is not None and threshold is not None):
         raise ValueError("either keep or threshold (but not both) needs to be specified")
     if keep is not None:
-        return truncateSelfConnectedTensor(tensor,index,keep)
+        return keep
     if threshold is not None:
         if threshold == 0:
             threshold = 1e-10
-        return truncateSelfConnectedTensor(tensor,index,lambda arr: firstIndexBelowMagnitude(arr,threshold))
+        return lambda arr: firstIndexBelowMagnitude(arr,threshold)
 #@+node:gcross.20111009193003.3007: *3* crand
 def crand(*shape):
     return rand(*shape)*2-1+rand(*shape)*2j-1j
