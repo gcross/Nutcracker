@@ -37,6 +37,15 @@ class Grid:
     def compressAllCorners(self,keep=None,threshold=None):
         for direction in range(4):
             self.compressCorner(direction,keep=keep,threshold=threshold)
+    #@+node:gcross.20111024143336.1341: *4* compressAllSideCenterConnections
+    def compressAllSideCenterConnections(self,keep=None,threshold=None):
+        for direction in range(4):
+            self.compressConnectionBetweenSideAndCenter(direction,keep=keep,threshold=threshold)
+    #@+node:gcross.20111024143336.1308: *4* compressAllSideCornerConnections
+    def compressAllSideCornerConnections(self,keep=None,threshold=None):
+        for direction in range(4):
+            self.compressConnectionBetweenSideAndClockwiseCorner(direction,keep=keep,threshold=threshold)
+            self.compressConnectionBetweenSideAndCounterClockwiseCorner(direction,keep=keep,threshold=threshold)
     #@+node:gcross.20111022200315.1304: *4* compressAllSides
     def compressAllSides(self,keep=None,threshold=None):
         for direction in range(4):
@@ -74,6 +83,12 @@ class Grid:
                 keep=keep,
                 threshold=threshold
             )
+    #@+node:gcross.20111024143336.1309: *4* compressEverything
+    def compressEverything(self,keep=None,threshold=None):
+        self.compressAllCorners(keep,threshold)
+        self.compressAllSides(keep,threshold)
+        self.compressAllSideCornerConnections(keep,threshold)
+        self.compressAllSideCenterConnections(keep,threshold)
     #@+node:gcross.20111022200315.1292: *4* compressSide
     def compressSide(self,direction,keep=None,threshold=None):
         self.sides[direction] = \
@@ -165,6 +180,13 @@ class Grid:
                 self.corners[corner_index],StateCornerSite.counterclockwise_index,
                 self.sides[CCW(corner_index)],StateSideSite.clockwise_index
             )
+    #@+node:gcross.20111024143336.1312: *4* normalizeEverything
+    def normalizeEverything(self):
+        for _ in range(10):
+            for direction in range(4):
+                self.normalizeCornerAndDenormalizeClockwiseSide(direction)
+                self.normalizeCornerAndDenormalizeCounterClockwiseSide(direction)
+        self.normalizeAllSides()
     #@+node:gcross.20111014113710.1230: *4* normalizeSide
     def normalizeSide(self,direction):
         self.sides[direction], self.center = \
