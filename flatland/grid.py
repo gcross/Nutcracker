@@ -41,6 +41,22 @@ class Grid:
     def compressAllSides(self,keep=None,threshold=None):
         for direction in range(4):
             self.compressSide(direction,keep=keep,threshold=threshold)
+    #@+node:gcross.20111022200315.1338: *4* compressConnectionBetweenSideAndClockwiseCorner
+    def compressConnectionBetweenSideAndClockwiseCorner(self,direction,keep=None,threshold=None):
+        self.sides[direction], self.corners[CW(direction)] = \
+            compressConnectionBetweenTensors(
+                self.sides[direction],StateSideSite.clockwise_index,
+                self.corners[CW(direction)],StateCornerSite.counterclockwise_index,
+                keep=keep,threshold=threshold,
+            )
+    #@+node:gcross.20111022200315.1336: *4* compressConnectionBetweenSideAndCounterClockwiseCorner
+    def compressConnectionBetweenSideAndCounterClockwiseCorner(self,direction,keep=None,threshold=None):
+        self.sides[direction], self.corners[direction] = \
+            compressConnectionBetweenTensors(
+                self.sides[direction],StateSideSite.counterclockwise_index,
+                self.corners[direction],StateCornerSite.clockwise_index,
+                keep=keep,threshold=threshold,
+            )
     #@+node:gcross.20111022200315.1285: *4* compressCorner
     def compressCorner(self,direction,keep=None,threshold=None):
         self.corners[direction] = \
