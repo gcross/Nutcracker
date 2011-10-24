@@ -163,6 +163,78 @@ class TestCompressConnectionToSelf(TestCase):
             tensordot(compressed_tensor,compressed_tensor.conj(),(index,index))
         )
     #@-others
+#@+node:gcross.20111024143336.1329: *4* compressConnectionUsingFirstTensorBetween
+class TestCompressConnectionUsingFirstTensorBetween(TestCase):
+    #@+others
+    #@+node:gcross.20111024143336.1330: *5* test_join_invariant_under_keep_all
+    @with_checker(number_of_calls=10)
+    def test_join_invariant_under_keep_all(self,
+        tensor_1_ndim = irange(1,5),
+        tensor_2_ndim = irange(1,5),
+    ):
+        index_1 = randint(0,tensor_1_ndim-1)
+        tensor_1_shape = [randint(1,5) for _ in range(tensor_1_ndim)]
+        tensor_1 = crand(*tensor_1_shape)
+
+        index_2 = randint(0,tensor_2_ndim-1)
+        tensor_2_shape = [randint(1,5) for _ in range(tensor_2_ndim)]
+        tensor_2_shape[index_2] = tensor_1_shape[index_1]
+        tensor_2 = crand(*tensor_2_shape)
+
+        compressed_tensor_1, compressed_tensor_2 = \
+            compressConnectionUsingFirstTensorOnlyBetween(tensor_1,index_1,tensor_2,index_2,keep=len)
+
+        self.assertEqual(
+            compressed_tensor_1.shape[index_1],
+            compressed_tensor_2.shape[index_2],
+        )
+        self.assertEqual(
+            withoutIndex(compressed_tensor_1.shape,index_1),
+            withoutIndex(tensor_1.shape,index_1),
+        )
+        self.assertEqual(
+            withoutIndex(compressed_tensor_2.shape,index_2),
+            withoutIndex(tensor_2.shape,index_2),
+        )
+        self.assertAllClose(
+            tensordot(tensor_1,tensor_2,(index_1,index_2)),
+            tensordot(compressed_tensor_1,compressed_tensor_2,(index_1,index_2)),
+        )
+    #@+node:gcross.20111024143336.1331: *5* test_join_invariant_under_threshold_zero
+    @with_checker(number_of_calls=10)
+    def test_join_invariant_under_threshold_zero(self,
+        tensor_1_ndim = irange(1,5),
+        tensor_2_ndim = irange(1,5),
+    ):
+        index_1 = randint(0,tensor_1_ndim-1)
+        tensor_1_shape = [randint(1,5) for _ in range(tensor_1_ndim)]
+        tensor_1 = crand(*tensor_1_shape)
+
+        index_2 = randint(0,tensor_2_ndim-1)
+        tensor_2_shape = [randint(1,5) for _ in range(tensor_2_ndim)]
+        tensor_2_shape[index_2] = tensor_1_shape[index_1]
+        tensor_2 = crand(*tensor_2_shape)
+
+        compressed_tensor_1, compressed_tensor_2 = \
+            compressConnectionUsingFirstTensorOnlyBetween(tensor_1,index_1,tensor_2,index_2,threshold=0)
+
+        self.assertEqual(
+            compressed_tensor_1.shape[index_1],
+            compressed_tensor_2.shape[index_2],
+        )
+        self.assertLessEqual(
+            withoutIndex(compressed_tensor_1.shape,index_1),
+            withoutIndex(tensor_1.shape,index_1),
+        )
+        self.assertLessEqual(
+            withoutIndex(compressed_tensor_2.shape,index_2),
+            withoutIndex(tensor_2.shape,index_2),
+        )
+        self.assertAllClose(
+            tensordot(tensor_1,tensor_2,(index_1,index_2)),
+            tensordot(compressed_tensor_1,compressed_tensor_2,(index_1,index_2)),
+        )
+    #@-others
 #@+node:gcross.20111009135633.2983: *4* formContractor
 class TestFormContractor(TestCase):
     #@+others
@@ -1345,6 +1417,7 @@ class TestGrid(TestCase):
 tests = [
     TestCompressConnectionBetween,
     TestCompressConnectionToSelf,
+    TestCompressConnectionUsingFirstTensorBetween,
     TestFormContractor,
     TestNormalizeAndDenormalize,
     TestTruncateConnectionToSelf,

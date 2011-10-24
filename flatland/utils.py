@@ -35,6 +35,15 @@ def compressConnectionToSelf(tensor,index,keep=None,threshold=None):
 #@+node:gcross.20111022200315.1332: *3* compressConnectionToSelfTensor
 def compressConnectionToSelfTensor(tensor,index,keep=None,threshold=None):
     return type(tensor)(compressConnectionToSelf(tensor.data,index,keep,threshold))
+#@+node:gcross.20111024143336.1321: *3* compressConnectionUsingFirstTensorOnlyBetween
+def compressConnectionUsingFirstTensorOnlyBetween(tensor_1,index_1,tensor_2,index_2,keep=None,threshold=None):
+    return truncateConnectionUsingFirstTensorOnlyBetween(tensor_1,index_1,tensor_2,index_2,constructFilterFrom(keep=keep,threshold=threshold))
+#@+node:gcross.20111024143336.1325: *3* compressConnectionUsingFirstTensorOnlyBetweenTensors
+def compressConnectionUsingFirstTensorOnlyBetweenTensors(tensor_1,index_1,tensor_2,index_2,keep=None,threshold=None):
+    return mapFunctions(
+        (type(tensor_1),type(tensor_2)),
+        compressConnectionUsingFirstTensorOnlyBetween(tensor_1.data,index_1,tensor_2.data,index_2,keep,threshold)
+    )
 #@+node:gcross.20111022200315.1309: *3* computeFilterFrom
 def constructFilterFrom(keep=None,threshold=None):
     if keep is None and threshold is None or (keep is not None and threshold is not None):
@@ -261,6 +270,16 @@ def truncateConnectionToSelf(tensor,index,filter):
     evals[evals < 0] = 0
     keep = filter(evals/evals[0] if evals[0] != 0 else evals) if callable(filter) else filter
     return inverseTransformation(sqrt(evals[:keep])*evecs[:,:keep])
+#@+node:gcross.20111024143336.1315: *3* truncateConnectionUsingFirstTensorOnlyBetween
+def truncateConnectionUsingFirstTensorOnlyBetween(tensor_1,index_1,tensor_2,index_2,filter):
+    reshaped_tensor_1, inverseTransformation_1 = transposeAndReshapeAndReturnInverseTransformation(tensor_1,index_1)
+    u, s, v = svd(reshaped_tensor_1,full_matrices=False)
+    s[s < 0] = 0
+    keep = filter(s/s[0] if s[0] != 0 else s) if callable(filter) else filter
+    return (
+        inverseTransformation_1(u[:,:keep]),
+        multiplyTensorByMatrixAtIndex(tensor_2,s[:keep].reshape(1,keep)*v[:keep].transpose(),index_2)
+    )
 #@+node:gcross.20111022200315.1270: *3* withoutIndex
 def withoutIndex(vector,index):
     copy_of_vector = list(vector)
@@ -280,6 +299,8 @@ __all__ = [
     "compressConnectionBetweenTensors",
     "compressConnectionToSelf",
     "compressConnectionToSelfTensor",
+    "compressConnectionUsingFirstTensorOnlyBetween",
+    "compressConnectionUsingFirstTensorOnlyBetweenTensors",
     "CW",
     "firstIndexBelowMagnitude",
     "formContractor",
@@ -295,6 +316,7 @@ __all__ = [
     "transposeAndReshapeAndReturnInverseTransformation",
     "truncateConnectionBetween",
     "truncateConnectionToSelf",
+    "truncateConnectionUsingFirstTensorOnlyBetween",
     "withoutIndex",
 ]
 #@-<< Exports >>
