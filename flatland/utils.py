@@ -20,6 +20,9 @@ def appended(vector,entry):
 #@+node:gcross.20111014183107.1246: *3* CCW
 def CCW(i):
     return (i+1)%4
+#@+node:gcross.20111022200315.1311: *3* compressConnectionBetweenTensors
+def compressConnectionBetweenTensors(tensor_1,index_1,tensor_2,index_2,keep=None,threshold=None):
+    return truncateConnectionBetweenTensors(tensor_1,index_1,tensor_2,index_2,constructFilterFrom(keep=keep,threshold=threshold))
 #@+node:gcross.20111022200315.1278: *3* compressSelfConnectedTensor
 def compressSelfConnectedTensor(tensor,index,keep=None,threshold=None):
     return truncateSelfConnectedTensor(tensor,index,constructFilterFrom(keep=keep,threshold=threshold))
@@ -230,6 +233,15 @@ def transposeAndReshapeAndReturnInverseTransformation(tensor,index):
         return tensor.reshape(inverse_shape).transpose(inverse_indices)
 
     return tensor.transpose(new_indices).reshape(new_shape), inverseTransformer
+#@+node:gcross.20111022200315.1306: *3* truncateConnectionBetweenTensors
+def truncateConnectionBetweenTensors(tensor_1,index_1,tensor_2,index_2,filter):
+    reshaped_tensor_1, inverseTransformation_1 = transposeAndReshapeAndReturnInverseTransformation(tensor_1,index_1)
+    reshaped_tensor_2, inverseTransformation_2 = transposeAndReshapeAndReturnInverseTransformation(tensor_2,index_2)
+    u, s, v = svd(tensordot(reshaped_tensor_1,reshaped_tensor_2,(1,1)),full_matrices=False)
+    s[s < 0] = 0
+    keep = filter(s/s[0] if s[0] != 0 else s) if callable(filter) else filter
+    s = sqrt(s[:keep]).reshape(1,keep)
+    return (inverseTransformation_1(s*u[:,:keep]),inverseTransformation_2(s*(v.transpose()[:,:keep])))
 #@+node:gcross.20111022200315.1265: *3* truncateSelfConnectedTensor
 def truncateSelfConnectedTensor(tensor,index,filter):
     reshaped_tensor, inverseTransformation = transposeAndReshapeAndReturnInverseTransformation(tensor,index)
@@ -255,6 +267,7 @@ __all__ = [
     "appended",
     "CCW",
     "crand",
+    "compressConnectionBetweenTensors",
     "compressSelfConnectedTensor",
     "CW",
     "firstIndexBelowMagnitude",
@@ -269,6 +282,7 @@ __all__ = [
     "normalizeAndReturnInverseNormalizer",
     "OPP",
     "transposeAndReshapeAndReturnInverseTransformation",
+    "truncateConnectionBetweenTensors",
     "truncateSelfConnectedTensor",
     "withoutIndex",
 ]
