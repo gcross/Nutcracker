@@ -1014,6 +1014,42 @@ class TestGrid(TestCase):
                 randomize=True,
             )
         return grid
+    #@+node:gcross.20111024143336.1335: *4* test_compressConnectionBetweenSideAndCenter_keep_all
+    @with_checker(number_of_calls=10)
+    def test_compressConnectionBetweenSideAndCenter_threshold_zero(self,
+        direction = irange(0,3),
+    ):
+        grid = self.randomGrid()
+        old_connection_dimension = grid.sides[direction].inward_dimension
+        old_normalization = grid.computeNormalization()
+        grid.compressConnectionBetweenSideAndCenter(direction,keep=len)
+        self.assertLessEqual(grid.sides[direction].inward_dimension,old_connection_dimension)
+        self.assertAlmostEqual(old_normalization/grid.computeNormalization(),1)
+    #@+node:gcross.20111024143336.1337: *4* test_compressConnectionBetweenSideAndCenter_keep_some
+    @with_checker(number_of_calls=10)
+    def test_compressConnectionBetweenSideAndCenter_keep_some(self,
+        direction = irange(0,3),
+    ):
+        grid = self.randomGrid()
+        number_to_keep = randint(1,min(
+            product(withoutIndex(grid.sides[direction].data.shape,StateSideSite.inward_index)),
+            grid.sides[direction].inward_dimension
+        ))
+        grid.compressConnectionBetweenSideAndCenter(direction,keep=number_to_keep)
+        self.assertEqual(number_to_keep,grid.sides[direction].inward_dimension)
+        self.assertEqual(number_to_keep,grid.center.bandwidthDimension(direction))
+        grid.computeNormalization()
+    #@+node:gcross.20111024143336.1339: *4* test_compressConnectionBetweenSideAndCenter_threshold_zero
+    @with_checker(number_of_calls=10)
+    def test_compressConnectionBetweenSideAndCenter_threshold_zero(self,
+        direction = irange(0,3),
+    ):
+        grid = self.randomGrid()
+        old_connection_dimension = grid.sides[direction].inward_dimension
+        old_normalization = grid.computeNormalization()
+        grid.compressConnectionBetweenSideAndCenter(direction,threshold=0)
+        self.assertLessEqual(grid.sides[direction].inward_dimension,old_connection_dimension)
+        self.assertAlmostEqual(old_normalization/grid.computeNormalization(),1)
     #@+node:gcross.20111024143336.1299: *4* test_compressConnectionBetweenSideAndClockwiseCorner_keep_all
     @with_checker(number_of_calls=10)
     def test_compressConnectionBetweenSideAndClockwiseCorner_threshold_zero(self,
