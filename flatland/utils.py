@@ -20,12 +20,21 @@ def appended(vector,entry):
 #@+node:gcross.20111014183107.1246: *3* CCW
 def CCW(i):
     return (i+1)%4
-#@+node:gcross.20111022200315.1311: *3* compressConnectionBetweenTensors
+#@+node:gcross.20111022200315.1311: *3* compressConnectionBetween
+def compressConnectionBetween(tensor_1,index_1,tensor_2,index_2,keep=None,threshold=None):
+    return truncateConnectionBetween(tensor_1,index_1,tensor_2,index_2,constructFilterFrom(keep=keep,threshold=threshold))
+#@+node:gcross.20111022200315.1330: *3* compressConnectionBetweenTensors
 def compressConnectionBetweenTensors(tensor_1,index_1,tensor_2,index_2,keep=None,threshold=None):
-    return truncateConnectionBetweenTensors(tensor_1,index_1,tensor_2,index_2,constructFilterFrom(keep=keep,threshold=threshold))
-#@+node:gcross.20111022200315.1278: *3* compressSelfConnectedTensor
-def compressSelfConnectedTensor(tensor,index,keep=None,threshold=None):
-    return truncateSelfConnectedTensor(tensor,index,constructFilterFrom(keep=keep,threshold=threshold))
+    return mapFunctions(
+        (type(tensor_1),type(tensor_2)),
+        compressConnectionBetween(tensor_1.data,index_1,tensor_2.data,index_2,keep,threshold)
+    )
+#@+node:gcross.20111022200315.1278: *3* compressConnectionToSelf
+def compressConnectionToSelf(tensor,index,keep=None,threshold=None):
+    return truncateConnectionToSelf(tensor,index,constructFilterFrom(keep=keep,threshold=threshold))
+#@+node:gcross.20111022200315.1332: *3* compressConnectionToSelfTensor
+def compressConnectionToSelfTensor(tensor,index,keep=None,threshold=None):
+    return type(tensor)(compressConnectionToSelf(tensor.data,index,keep,threshold))
 #@+node:gcross.20111022200315.1309: *3* computeFilterFrom
 def constructFilterFrom(keep=None,threshold=None):
     if keep is None and threshold is None or (keep is not None and threshold is not None):
@@ -233,8 +242,8 @@ def transposeAndReshapeAndReturnInverseTransformation(tensor,index):
         return tensor.reshape(inverse_shape).transpose(inverse_indices)
 
     return tensor.transpose(new_indices).reshape(new_shape), inverseTransformer
-#@+node:gcross.20111022200315.1306: *3* truncateConnectionBetweenTensors
-def truncateConnectionBetweenTensors(tensor_1,index_1,tensor_2,index_2,filter):
+#@+node:gcross.20111022200315.1306: *3* truncateConnectionBetween
+def truncateConnectionBetween(tensor_1,index_1,tensor_2,index_2,filter):
     reshaped_tensor_1, inverseTransformation_1 = transposeAndReshapeAndReturnInverseTransformation(tensor_1,index_1)
     reshaped_tensor_2, inverseTransformation_2 = transposeAndReshapeAndReturnInverseTransformation(tensor_2,index_2)
     u, s, v = svd(tensordot(reshaped_tensor_1,reshaped_tensor_2,(1,1)),full_matrices=False)
@@ -242,8 +251,8 @@ def truncateConnectionBetweenTensors(tensor_1,index_1,tensor_2,index_2,filter):
     keep = filter(s/s[0] if s[0] != 0 else s) if callable(filter) else filter
     s = sqrt(s[:keep]).reshape(1,keep)
     return (inverseTransformation_1(s*u[:,:keep]),inverseTransformation_2(s*(v.transpose()[:,:keep])))
-#@+node:gcross.20111022200315.1265: *3* truncateSelfConnectedTensor
-def truncateSelfConnectedTensor(tensor,index,filter):
+#@+node:gcross.20111022200315.1265: *3* truncateConnectionToSelf
+def truncateConnectionToSelf(tensor,index,filter):
     reshaped_tensor, inverseTransformation = transposeAndReshapeAndReturnInverseTransformation(tensor,index)
     evals, evecs = eigh(tensordot(reshaped_tensor,reshaped_tensor.conj(),(1,1)))
     sorted_indices = evals.argsort()[::-1]
@@ -267,8 +276,10 @@ __all__ = [
     "appended",
     "CCW",
     "crand",
+    "compressConnectionBetween",
     "compressConnectionBetweenTensors",
-    "compressSelfConnectedTensor",
+    "compressConnectionToSelf",
+    "compressConnectionToSelfTensor",
     "CW",
     "firstIndexBelowMagnitude",
     "formContractor",
@@ -282,8 +293,8 @@ __all__ = [
     "normalizeAndReturnInverseNormalizer",
     "OPP",
     "transposeAndReshapeAndReturnInverseTransformation",
-    "truncateConnectionBetweenTensors",
-    "truncateSelfConnectedTensor",
+    "truncateConnectionBetween",
+    "truncateConnectionToSelf",
     "withoutIndex",
 ]
 #@-<< Exports >>

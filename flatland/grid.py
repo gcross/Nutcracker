@@ -44,24 +44,20 @@ class Grid:
     #@+node:gcross.20111022200315.1285: *4* compressCorner
     def compressCorner(self,direction,keep=None,threshold=None):
         self.corners[direction] = \
-            StateCornerSite(
-                compressSelfConnectedTensor(
-                    self.corners[direction].data,
-                    StateCornerSite.physical_index,
-                    keep=keep,
-                    threshold=threshold
-                )
+            compressConnectionToSelfTensor(
+                self.corners[direction],
+                StateCornerSite.physical_index,
+                keep=keep,
+                threshold=threshold
             )
     #@+node:gcross.20111022200315.1292: *4* compressSide
     def compressSide(self,direction,keep=None,threshold=None):
         self.sides[direction] = \
-            StateSideSite(
-                compressSelfConnectedTensor(
-                    self.sides[direction].data,
-                    StateSideSite.physical_index,
-                    keep=keep,
-                    threshold=threshold
-                )
+            compressConnectionToSelfTensor(
+                self.sides[direction],
+                StateSideSite.physical_index,
+                keep=keep,
+                threshold=threshold
             )
     #@+node:gcross.20111013165152.1229: *4* computeNormalization
     def computeNormalization(self):

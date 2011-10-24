@@ -48,8 +48,8 @@ class TestCase(unittest.TestCase):
 #@+node:gcross.20111009135633.2982: ** Tests
 #@+others
 #@+node:gcross.20111013183808.3918: *3* Functions
-#@+node:gcross.20111022200315.1323: *4* compressConnectionBetweenTensors
-class TestCompressConnectionBetweenTensors(TestCase):
+#@+node:gcross.20111022200315.1323: *4* compressConnectionBetween
+class TestCompressConnectionBetween(TestCase):
     #@+others
     #@+node:gcross.20111022200315.1324: *5* test_matrix_invariant_under_keep_all
     @with_checker(number_of_calls=10)
@@ -67,7 +67,7 @@ class TestCompressConnectionBetweenTensors(TestCase):
         tensor_2 = crand(*tensor_2_shape)
 
         compressed_tensor_1, compressed_tensor_2 = \
-            compressConnectionBetweenTensors(tensor_1,index_1,tensor_2,index_2,keep=len)
+            compressConnectionBetween(tensor_1,index_1,tensor_2,index_2,keep=len)
 
         self.assertEqual(
             compressed_tensor_1.shape[index_1],
@@ -101,7 +101,7 @@ class TestCompressConnectionBetweenTensors(TestCase):
         tensor_2 = crand(*tensor_2_shape)
 
         compressed_tensor_1, compressed_tensor_2 = \
-            compressConnectionBetweenTensors(tensor_1,index_1,tensor_2,index_2,threshold=0)
+            compressConnectionBetween(tensor_1,index_1,tensor_2,index_2,threshold=0)
 
         self.assertEqual(
             compressed_tensor_1.shape[index_1],
@@ -120,8 +120,8 @@ class TestCompressConnectionBetweenTensors(TestCase):
             tensordot(compressed_tensor_1,compressed_tensor_2,(index_1,index_2)),
         )
     #@-others
-#@+node:gcross.20111022200315.1282: *4* compressSelfConnectedTensor
-class TestCompressSelfConnectedTensor(TestCase):
+#@+node:gcross.20111022200315.1282: *4* compressConnectionToSelf
+class TestCompressConnectionToSelf(TestCase):
     #@+others
     #@+node:gcross.20111022200315.1283: *5* test_matrix_invariant_under_keep_all
     @with_checker(number_of_calls=10)
@@ -132,7 +132,7 @@ class TestCompressSelfConnectedTensor(TestCase):
         tensor_shape = [randint(1,5) for _ in range(tensor_ndim)]
         tensor = crand(*tensor_shape)
 
-        compressed_tensor = compressSelfConnectedTensor(tensor,index,keep=len)
+        compressed_tensor = compressConnectionToSelf(tensor,index,keep=len)
 
         self.assertEqual(
             withoutIndex(tensor.shape,index),
@@ -151,7 +151,7 @@ class TestCompressSelfConnectedTensor(TestCase):
         tensor_shape = [randint(1,5) for _ in range(tensor_ndim)]
         tensor = crand(*tensor_shape)
 
-        compressed_tensor = compressSelfConnectedTensor(tensor,index,threshold=0)
+        compressed_tensor = compressConnectionToSelf(tensor,index,threshold=0)
 
         self.assertTrue(compressed_tensor.shape[index] <= tensor.shape[index])
         self.assertEqual(
@@ -521,8 +521,8 @@ class TestNormalizeAndDenormalize(TestCase):
             tensordot(new_tensor_1,new_tensor_2,(index_1,index_2))
         )
     #@-others
-#@+node:gcross.20111022200315.1268: *4* truncateSelfConnectedTensor
-class TestTruncateSelfConnectedTensor(TestCase):
+#@+node:gcross.20111022200315.1268: *4* truncateConnectionToSelf
+class TestTruncateConnectionToSelf(TestCase):
     #@+others
     #@+node:gcross.20111022200315.1269: *5* test_matrix_invariant_under_unfiltered
     @with_checker(number_of_calls=10)
@@ -533,7 +533,7 @@ class TestTruncateSelfConnectedTensor(TestCase):
         tensor_shape = [randint(1,5) for _ in range(tensor_ndim)]
         tensor = crand(*tensor_shape)
 
-        truncated_tensor = truncateSelfConnectedTensor(tensor,index,len)
+        truncated_tensor = truncateConnectionToSelf(tensor,index,len)
 
         self.assertEqual(
             withoutIndex(tensor.shape,index),
@@ -552,7 +552,7 @@ class TestTruncateSelfConnectedTensor(TestCase):
         tensor_shape = [randint(1,5) for _ in range(tensor_ndim)]
         tensor = crand(*tensor_shape)
 
-        truncated_tensor = truncateSelfConnectedTensor(tensor,index,lambda arr: firstIndexBelowMagnitude(arr,1e-10))
+        truncated_tensor = truncateConnectionToSelf(tensor,index,lambda arr: firstIndexBelowMagnitude(arr,1e-10))
 
         self.assertTrue(truncated_tensor.shape[index] <= tensor.shape[index])
         self.assertEqual(
@@ -1265,11 +1265,11 @@ class TestGrid(TestCase):
 #@-others
 
 tests = [
-    TestCompressConnectionBetweenTensors,
-    TestCompressSelfConnectedTensor,
+    TestCompressConnectionBetween,
+    TestCompressConnectionToSelf,
     TestFormContractor,
     TestNormalizeAndDenormalize,
-    TestTruncateSelfConnectedTensor,
+    TestTruncateConnectionToSelf,
 
     TestStateCornerSite,
     TestStateSideBoundary,
