@@ -25,7 +25,7 @@ def compressSelfConnectedTensor(tensor,index,keep=None,threshold=None):
     if keep is None and threshold is None or (keep is not None and threshold is not None):
         raise ValueError("either keep or threshold (but not both) needs to be specified")
     if keep is not None:
-        return truncateSelfConnectedTensor(tensor,index,lambda _: keep)
+        return truncateSelfConnectedTensor(tensor,index,keep)
     if threshold is not None:
         if threshold == 0:
             threshold = 1e-10

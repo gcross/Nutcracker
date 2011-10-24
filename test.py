@@ -60,7 +60,7 @@ class TestCompressSelfConnectedTensor(TestCase):
         tensor_shape = [randint(1,5) for _ in range(tensor_ndim)]
         tensor = crand(*tensor_shape)
 
-        compressed_tensor = compressSelfConnectedTensor(tensor,index,keep=tensor_shape[index])
+        compressed_tensor = compressSelfConnectedTensor(tensor,index,keep=len)
 
         self.assertEqual(
             withoutIndex(tensor.shape,index),
