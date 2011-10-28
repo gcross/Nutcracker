@@ -157,10 +157,10 @@ class Grid:
         self.increaseSingleDirectionBandwidthDimensionTo(self.bandwidthDimension(direction)+increment,direction)
     #@+node:gcross.20111013080525.1264: *4* increaseSingleDirectionBandwidthDimensionTo
     def increaseSingleDirectionBandwidthDimensionTo(self,new_dimension,direction):
-        self.center, self.sides[direction] = \
-            increaseDimensionBetweenTensors(
-                self.center,1+direction,
+        self.sides[direction], self.center = \
+            increaseDimensionUsingFirstTensorOnlyBetweenTensors(
                 self.sides[direction],StateSideSite.inward_index,
+                self.center,1+direction,
                 new_dimension
             )
     #@+node:gcross.20111017110141.1278: *4* normalizeAllSides

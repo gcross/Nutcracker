@@ -3,8 +3,8 @@
 #@+<< Imports >>
 #@+node:gcross.20111009135633.1135: ** << Imports >>
 from copy import copy
-from numpy import product, sqrt, tensordot
-from numpy.linalg import eigh, qr, svd
+from numpy import dot, ndarray, product, sqrt, tensordot
+from numpy.linalg import eigh, norm, qr, svd
 from numpy.random import rand
 #@-<< Imports >>
 
@@ -176,8 +176,8 @@ def formContractor(order,joins,result_joins):
     #@-<< Form the contractor function >>
 
     return contract
-#@+node:gcross.20111017110141.1258: *3* increaseDimensionBetween
-def increaseDimensionBetween(tensor_1,index_1,tensor_2,index_2,new_dimension):
+#@+node:gcross.20111017110141.1258: *3* increaseDimensionNaivelyBetween
+def increaseDimensionNaivelyBetween(tensor_1,index_1,tensor_2,index_2,new_dimension):
     if tensor_1.shape[index_1] != tensor_2.shape[index_2]:
         raise ValueError("dimension {} of tensor 1 has different size than dimension {} ({} != {})".format(index_1,index_2,tensor_1.shape[index_1],tensor_2.shape[index_2]))
     old_dimension = tensor_1.shape[index_1]
@@ -191,11 +191,49 @@ def increaseDimensionBetween(tensor_1,index_1,tensor_2,index_2,new_dimension):
         multiplyTensorByMatrixAtIndex(tensor_1,matrix,index_1),
         multiplyTensorByMatrixAtIndex(tensor_2,matrix.conj(),index_2),
     )
-#@+node:gcross.20111017110141.1260: *3* increaseDimensionBetweenTensors
-def increaseDimensionBetweenTensors(tensor_1,index_1,tensor_2,index_2,new_dimension):
+#@+node:gcross.20111017110141.1260: *3* increaseDimensionNaivelyBetweenTensors
+def increaseDimensionNaivelyBetweenTensors(tensor_1,index_1,tensor_2,index_2,new_dimension):
     return mapFunctions(
         (type(tensor_1),type(tensor_2)),
-        increaseDimensionBetween(tensor_1.data,index_1,tensor_2.data,index_2,new_dimension)
+        increaseDimensionNaivelyBetween(tensor_1.data,index_1,tensor_2.data,index_2,new_dimension)
+    )
+#@+node:gcross.20111028110210.1317: *3* increaseDimensionUsingFirstTensorOnlyBetween
+def increaseDimensionUsingFirstTensorOnlyBetween(tensor_1,index_1,tensor_2,index_2,new_dimension):
+    if tensor_1.shape[index_1] != tensor_2.shape[index_2]:
+        raise ValueError("dimension {} of tensor 1 has different size than dimension {} ({} != {})".format(index_1,index_2,tensor_1.shape[index_1],tensor_2.shape[index_2]))
+    old_dimension = tensor_1.shape[index_1]
+    if new_dimension < old_dimension:
+        raise ValueError("new dimension ({}) must be at least the old dimension ({})".format(new_dimension,old_dimension))
+    if new_dimension == old_dimension:
+        return tensor_1, tensor_2
+    maximum_dimension = product(withoutIndex(tensor_1.shape,index_1))
+    if new_dimension > maximum_dimension:
+        raise ValueError("new dimension ({}) cannot be greater than the product of the rest of its dimensions ({})".format(new_dimension,maximum_dimension))
+    reshaped_tensor_1, inverseTransformation_1 = transposeAndReshapeAndReturnInverseTransformation(tensor_1,index_1)
+
+    q, r = qr(reshaped_tensor_1)
+
+    vlen = q.shape[0]
+    new_q = ndarray(shape=(vlen,new_dimension),dtype=q.dtype)
+    new_q[:,:old_dimension] = q
+    for d in range(old_dimension,new_dimension):
+        vn = 0
+        while vn < 1e-15:
+            v = crand(vlen)
+            v -= dot(new_q[:,:d],dot(v,new_q[:,:d].conj()))
+            vn = norm(v)
+        new_q[:,d] = v / vn
+
+    expander, _ = qr(crand(new_dimension,new_dimension))
+    return (
+        inverseTransformation_1(dot(new_q,expander[:,:].transpose().conj())),
+        multiplyTensorByMatrixAtIndex(tensor_2,dot(r.transpose(),expander[:,:old_dimension].transpose()),index_2),
+    )
+#@+node:gcross.20111028110210.1334: *3* increaseDimensionUsingFirstTensorOnlyBetweenTensors
+def increaseDimensionUsingFirstTensorOnlyBetweenTensors(tensor_1,index_1,tensor_2,index_2,new_dimension):
+    return mapFunctions(
+        (type(tensor_1),type(tensor_2)),
+        increaseDimensionUsingFirstTensorOnlyBetween(tensor_1.data,index_1,tensor_2.data,index_2,new_dimension)
     )
 #@+node:gcross.20111014113710.1239: *3* mapFunctions
 def mapFunctions(functions,data):
@@ -304,8 +342,10 @@ __all__ = [
     "CW",
     "firstIndexBelowMagnitude",
     "formContractor",
-    "increaseDimensionBetween",
-    "increaseDimensionBetweenTensors",
+    "increaseDimensionNaivelyBetween",
+    "increaseDimensionNaivelyBetweenTensors",
+    "increaseDimensionUsingFirstTensorOnlyBetween",
+    "increaseDimensionUsingFirstTensorOnlyBetweenTensors",
     "mapFunctions",
     "multiplyTensorByMatrixAtIndex",
     "normalize",

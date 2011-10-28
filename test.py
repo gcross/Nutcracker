@@ -20,6 +20,41 @@ from flatland.utils import *
 #@+node:gcross.20111009135633.2987: *3* crand
 def crand(*shape):
     return rand(*shape)*2-1+rand(*shape)*2j-1j
+#@+node:gcross.20111028110210.1335: *3* ensurePhysicalDimensionSufficientlyLarge
+def ensurePhysicalDimensionSufficientlyLarge(tensor,index,dimension):
+    if dimension > product(withoutIndex(tensor.data.shape,index)):
+        new_shape = list(tensor.data.shape)
+        new_shape[0] = dimension
+        return type(tensor)(crand(*new_shape))
+    else:
+        return tensor
+#@+node:gcross.20111028110210.1337: *3* ensurePhysicalDimensionSufficientlyLargeToNormalize
+def ensurePhysicalDimensionSufficientlyLargeToNormalize(tensor,index):
+    return ensurePhysicalDimensionSufficientlyLarge(tensor,index,tensor.data.shape[index])
+#@+node:gcross.20111028110210.1324: *3* randomIndex
+def randomIndex(ndim):
+    return randint(0,ndim-1)
+#@+node:gcross.20111028110210.1323: *3* randomShape
+def randomShape(ndim):
+    return [randint(1,5) for _ in range(ndim)]
+#@+node:gcross.20111028110210.1328: *3* randomShapeAgreeingWith
+def randomShapeAgreeingWith(ndim,index,other_dimension):
+    shape = randomShape(ndim)
+    shape[index] = other_dimension
+    return shape
+#@+node:gcross.20111028110210.1320: *3* randomTensor
+def randomTensor(ndim):
+    return crand(*randomShape(ndim))
+#@+node:gcross.20111028110210.1330: *3* randomTensorAgreeingWith
+def randomTensorAgreeingWith(ndim,index,other_dimension):
+    return crand(*randomShapeAgreeingWith(ndim,index,other_dimension))
+#@+node:gcross.20111028110210.1322: *3* randomTensorAndIndex
+def randomTensorAndIndex(ndim):
+    return randomTensor(ndim), randomIndex(ndim)
+#@+node:gcross.20111028110210.1326: *3* randomTensorAndIndexAgreeingWith
+def randomTensorAndIndexAgreeingWith(ndim,other_dimension):
+    index = randomIndex(ndim)
+    return randomTensorAgreeingWith(ndim,index,other_dimension), index
 #@+node:gcross.20111009135633.2977: ** Classes
 #@+node:gcross.20111009135633.2978: *3* TestCase
 class TestCase(unittest.TestCase):
@@ -559,6 +594,44 @@ class TestFormContractor(TestCase):
                     [('B',4)],
                 ]
             )(A,B)
+        )
+    #@-others
+#@+node:gcross.20111028110210.1318: *4* increaseDimensionUsingFirstTensorOnlyBetween
+class TestIncreaseDimensionUsingFirstTensorOnlyBetween(TestCase):
+    #@+others
+    #@+node:gcross.20111028110210.1319: *5* test_invariant_when_new_dimension_same_as_old
+    @with_checker
+    def test_invariant_when_new_dimension_same_as_old(self,
+        m=irange(2,5),
+        n=irange(1,5),
+    ):
+        tensor_1, index_1 = randomTensorAndIndex(m)
+        old_dimension = tensor_1.shape[index_1]
+        tensor_2, index_2 = randomTensorAndIndexAgreeingWith(n,old_dimension)
+        new_tensor_1, new_tensor_2 = increaseDimensionUsingFirstTensorOnlyBetween(tensor_1,index_1,tensor_2,index_2,old_dimension)
+        self.assertAllClose(
+            tensordot(tensor_1,tensor_2,(index_1,index_2)),
+            tensordot(new_tensor_1,new_tensor_2,(index_1,index_2)),
+        )
+    #@+node:gcross.20111028110210.1332: *5* test_invariant_when_new_dimension_more_than_old
+    @with_checker
+    def test_invariant_when_new_dimension_more_than_old(self,
+        m=irange(2,5),
+        n=irange(1,5),
+    ):
+        index_1 = randomIndex(m)
+        tensor_1_shape = randomShape(m)
+        tensor_1_shape[index_1] = randint(1,product(withoutIndex(tensor_1_shape,index_1)))
+        tensor_1 = crand(*tensor_1_shape)
+        old_dimension = tensor_1.shape[index_1]
+        tensor_2, index_2 = randomTensorAndIndexAgreeingWith(n,old_dimension)
+        new_dimension = randint(old_dimension,product(withoutIndex(tensor_1.shape,index_1)))
+        new_tensor_1, new_tensor_2 = increaseDimensionUsingFirstTensorOnlyBetween(tensor_1,index_1,tensor_2,index_2,new_dimension)
+        self.assertEqual(new_tensor_1.shape[index_1],new_dimension)
+        self.assertEqual(new_tensor_2.shape[index_2],new_dimension)
+        self.assertAllClose(
+            tensordot(tensor_1,tensor_2,(index_1,index_2)),
+            tensordot(new_tensor_1,new_tensor_2,(index_1,index_2)),
         )
     #@-others
 #@+node:gcross.20111013183808.3919: *4* normalizeAndDenormalize
@@ -1259,9 +1332,16 @@ class TestGrid(TestCase):
     def test_contract_downward(self):
         grid = self.randomGrid()
         for forward_direction in [1,3]:
+            reverse_direction = OPP(forward_direction)
             forward_dimension = grid.bandwidthDimension(forward_direction)
-            reverse_dimension = grid.bandwidthDimension(OPP(forward_direction))
+            reverse_dimension = grid.bandwidthDimension(reverse_direction)
             if forward_dimension < reverse_dimension:
+                grid.sides[forward_direction] = \
+                    ensurePhysicalDimensionSufficientlyLarge(
+                        grid.sides[forward_direction],
+                        StateSideSite.inward_index,
+                        reverse_dimension
+                    )
                 grid.increaseSingleDirectionBandwidthDimensionTo(reverse_dimension,forward_direction)
         sides = copy(grid.sides)
         corners = copy(grid.corners)
@@ -1279,9 +1359,16 @@ class TestGrid(TestCase):
     def test_contract_leftward(self):
         grid = self.randomGrid()
         for forward_direction in [0,2]:
+            reverse_direction = OPP(forward_direction)
             forward_dimension = grid.bandwidthDimension(forward_direction)
-            reverse_dimension = grid.bandwidthDimension(OPP(forward_direction))
+            reverse_dimension = grid.bandwidthDimension(reverse_direction)
             if forward_dimension < reverse_dimension:
+                grid.sides[forward_direction] = \
+                    ensurePhysicalDimensionSufficientlyLarge(
+                        grid.sides[forward_direction],
+                        StateSideSite.inward_index,
+                        reverse_dimension
+                    )
                 grid.increaseSingleDirectionBandwidthDimensionTo(reverse_dimension,forward_direction)
         sides = copy(grid.sides)
         corners = copy(grid.corners)
@@ -1299,9 +1386,16 @@ class TestGrid(TestCase):
     def test_contract_rightward(self):
         grid = self.randomGrid()
         for forward_direction in [0,2]:
+            reverse_direction = OPP(forward_direction)
             forward_dimension = grid.bandwidthDimension(forward_direction)
-            reverse_dimension = grid.bandwidthDimension(OPP(forward_direction))
+            reverse_dimension = grid.bandwidthDimension(reverse_direction)
             if forward_dimension < reverse_dimension:
+                grid.sides[forward_direction] = \
+                    ensurePhysicalDimensionSufficientlyLarge(
+                        grid.sides[forward_direction],
+                        StateSideSite.inward_index,
+                        reverse_dimension
+                    )
                 grid.increaseSingleDirectionBandwidthDimensionTo(reverse_dimension,forward_direction)
         sides = copy(grid.sides)
         corners = copy(grid.corners)
@@ -1319,9 +1413,16 @@ class TestGrid(TestCase):
     def test_contract_upward(self):
         grid = self.randomGrid()
         for forward_direction in [1,3]:
+            reverse_direction = OPP(forward_direction)
             forward_dimension = grid.bandwidthDimension(forward_direction)
-            reverse_dimension = grid.bandwidthDimension(OPP(forward_direction))
+            reverse_dimension = grid.bandwidthDimension(reverse_direction)
             if forward_dimension < reverse_dimension:
+                grid.sides[forward_direction] = \
+                    ensurePhysicalDimensionSufficientlyLarge(
+                        grid.sides[forward_direction],
+                        StateSideSite.inward_index,
+                        reverse_dimension
+                    )
                 grid.increaseSingleDirectionBandwidthDimensionTo(reverse_dimension,forward_direction)
         sides = copy(grid.sides)
         corners = copy(grid.corners)
@@ -1345,6 +1446,20 @@ class TestGrid(TestCase):
         bandwidth_dimensions = list(grid.bandwidthDimensions())
         bandwidth_dimensions[direction] += increment
         bandwidth_dimensions[OPP(direction)] += increment
+
+        grid.sides[direction] = \
+            ensurePhysicalDimensionSufficientlyLarge(
+                grid.sides[direction],
+                StateSideSite.inward_index,
+                bandwidth_dimensions[direction]
+            )
+        grid.sides[OPP(direction)] = \
+            ensurePhysicalDimensionSufficientlyLarge(
+                grid.sides[OPP(direction)],
+                StateSideSite.inward_index,
+                bandwidth_dimensions[OPP(direction)]
+            )
+
         old_normalization = grid.computeNormalization()
 
         grid.increaseAxialBandwidthDimensionsBy(increment,direction)
@@ -1363,6 +1478,20 @@ class TestGrid(TestCase):
         bandwidth_dimensions[direction] = max(bandwidth_dimensions[direction],bandwidth_dimensions[OPP(direction)])
         bandwidth_dimensions[direction] += increment
         bandwidth_dimensions[OPP(direction)] = bandwidth_dimensions[direction]
+
+        grid.sides[direction] = \
+            ensurePhysicalDimensionSufficientlyLarge(
+                grid.sides[direction],
+                StateSideSite.inward_index,
+                bandwidth_dimensions[direction]
+            )
+        grid.sides[OPP(direction)] = \
+            ensurePhysicalDimensionSufficientlyLarge(
+                grid.sides[OPP(direction)],
+                StateSideSite.inward_index,
+                bandwidth_dimensions[OPP(direction)]
+            )
+
         old_normalization = grid.computeNormalization()
 
         grid.increaseAxialBandwidthDimensionsTo(bandwidth_dimensions[direction],direction)
@@ -1379,6 +1508,14 @@ class TestGrid(TestCase):
 
         bandwidth_dimensions = list(grid.bandwidthDimensions())
         bandwidth_dimensions[direction] += increment
+
+        grid.sides[direction] = \
+            ensurePhysicalDimensionSufficientlyLarge(
+                grid.sides[direction],
+                StateSideSite.inward_index,
+                bandwidth_dimensions[direction]
+            )
+
         old_normalization = grid.computeNormalization()
 
         grid.increaseSingleDirectionBandwidthDimensionBy(increment,direction)
@@ -1395,6 +1532,14 @@ class TestGrid(TestCase):
 
         bandwidth_dimensions = list(grid.bandwidthDimensions())
         bandwidth_dimensions[direction] += increment
+
+        grid.sides[direction] = \
+            ensurePhysicalDimensionSufficientlyLarge(
+                grid.sides[direction],
+                StateSideSite.inward_index,
+                bandwidth_dimensions[direction]
+            )
+
         old_normalization = grid.computeNormalization()
 
         grid.increaseSingleDirectionBandwidthDimensionTo(bandwidth_dimensions[direction],direction)
@@ -1407,12 +1552,11 @@ class TestGrid(TestCase):
         direction = irange(0,3),
     ):
         grid = self.randomGrid()
-        shape_without_normalization_dimension = list(grid.corners[direction].data.shape)
-        del shape_without_normalization_dimension[StateCornerSite.clockwise_index]
-        if grid.corners[direction].clockwise_dimension > product(shape_without_normalization_dimension):
-            new_shape = list(grid.corners[direction].data.shape)
-            new_shape[StateCornerSite.physical_index] = new_shape[StateCornerSite.clockwise_index]
-            grid.corners[direction] = StateCornerSite(crand(*new_shape))
+        grid.corners[direction] = \
+            ensurePhysicalDimensionSufficientlyLargeToNormalize(
+                grid.corners[direction],
+                StateCornerSite.clockwise_index
+            )
         old_normalization = grid.computeNormalization()
         grid.normalizeCornerAndDenormalizeClockwiseSide(direction)
         self.assertIsNormalized(grid.corners[direction].data,StateCornerSite.clockwise_index)
@@ -1423,12 +1567,11 @@ class TestGrid(TestCase):
         direction = irange(0,3),
     ):
         grid = self.randomGrid()
-        shape_without_normalization_dimension = list(grid.corners[direction].data.shape)
-        del shape_without_normalization_dimension[StateCornerSite.counterclockwise_index]
-        if grid.corners[direction].counterclockwise_dimension > product(shape_without_normalization_dimension):
-            new_shape = list(grid.corners[direction].data.shape)
-            new_shape[StateCornerSite.physical_index] = new_shape[StateCornerSite.counterclockwise_index]
-            grid.corners[direction] = StateCornerSite(crand(*new_shape))
+        grid.corners[direction] = \
+            ensurePhysicalDimensionSufficientlyLargeToNormalize(
+                grid.corners[direction],
+                StateCornerSite.counterclockwise_index
+            )
         old_normalization = grid.computeNormalization()
         grid.normalizeCornerAndDenormalizeCounterClockwiseSide(direction)
         self.assertIsNormalized(grid.corners[direction].data,StateCornerSite.counterclockwise_index)
@@ -1439,10 +1582,11 @@ class TestGrid(TestCase):
         direction = irange(0,3),
     ):
         grid = self.randomGrid()
-        if grid.sides[direction].inward_dimension > product(grid.sides[direction].data.shape[:-1]):
-            new_shape = list(grid.sides[direction].data.shape)
-            new_shape[StateSideSite.physical_index] = new_shape[StateSideSite.inward_index]
-            grid.sides[direction] = StateSideSite(crand(*new_shape))
+        grid.sides[direction] = \
+            ensurePhysicalDimensionSufficientlyLargeToNormalize(
+                grid.sides[direction],
+                StateSideSite.inward_index
+            )
         old_normalization = grid.computeNormalization()
         grid.normalizeSide(direction)
         self.assertIsNormalized(grid.sides[direction].data,StateSideSite.inward_index)
@@ -1455,6 +1599,7 @@ tests = [
     TestCompressConnectionToSelf,
     TestCompressConnectionUsingFirstTensorBetween,
     TestFormContractor,
+    TestIncreaseDimensionUsingFirstTensorOnlyBetween,
     TestNormalizeAndDenormalize,
     TestTruncateConnectionToSelf,
 
