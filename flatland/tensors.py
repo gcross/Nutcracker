@@ -2,7 +2,7 @@
 #@+node:gcross.20111009193003.1158: * @file tensors.py
 #@+<< Imports >>
 #@+node:gcross.20111009193003.1159: ** << Imports >>
-from numpy import inner, ndarray, tensordot
+from numpy import complex128, inner, ndarray, tensordot
 
 from flatland.utils import *
 #@-<< Imports >>
@@ -69,7 +69,7 @@ class Tensor(metaclass=MetaTensor):
             if randomize:
                 self.data = crand(*shape)
             else:
-                self.data = ndarray(shape)
+                self.data = ndarray(shape,dtype=complex128)
             if fill:
                 self.data[...] = fill
     #@+node:gcross.20111009193003.5259: *4* trivial
