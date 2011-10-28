@@ -184,7 +184,7 @@ def increaseDimensionBetween(tensor_1,index_1,tensor_2,index_2,new_dimension):
     if new_dimension < old_dimension:
         raise ValueError("new dimension ({}) must be at least the old dimension ({})".format(new_dimension,old_dimension))
     if new_dimension == old_dimension:
-        tensor_1, tensor_2
+        return tensor_1, tensor_2
     matrix, _ = qr(crand(new_dimension,old_dimension))
     matrix = matrix.transpose()
     return (
