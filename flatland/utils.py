@@ -4,7 +4,7 @@
 #@+node:gcross.20111009135633.1135: ** << Imports >>
 from copy import copy
 from numpy import product, sqrt, tensordot
-from numpy.linalg import eigh, svd
+from numpy.linalg import eigh, qr, svd
 from numpy.random import rand
 #@-<< Imports >>
 
@@ -185,7 +185,7 @@ def increaseDimensionBetween(tensor_1,index_1,tensor_2,index_2,new_dimension):
         raise ValueError("new dimension ({}) must be at least the old dimension ({})".format(new_dimension,old_dimension))
     if new_dimension == old_dimension:
         tensor_1, tensor_2
-    matrix, _, _ = svd(crand(new_dimension,old_dimension),full_matrices=False)
+    matrix, _ = qr(crand(new_dimension,old_dimension))
     matrix = matrix.transpose()
     return (
         multiplyTensorByMatrixAtIndex(tensor_1,matrix,index_1),
@@ -229,9 +229,9 @@ def normalizeAndReturnInverseNormalizer(tensor,index):
     if new_tensor.shape[1] > new_tensor.shape[0]:
         raise ValueError("The dimension to be normalized is larger than the product of the rest of the dimensions. ({} > {})".format(new_tensor.shape[1],new_tensor.shape[0]))
 
-    u, s, v = svd(new_tensor,full_matrices=False)
+    q, r = qr(new_tensor)
 
-    return inverseTransformation(u), s*v.transpose()
+    return inverseTransformation(q), r.transpose()
 #@+node:gcross.20111014183107.1249: *3* OPP
 def OPP(i):
     return (i+2)%4
