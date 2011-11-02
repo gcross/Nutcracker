@@ -273,6 +273,9 @@ def normalizeAndReturnInverseNormalizer(tensor,index):
 #@+node:gcross.20111014183107.1249: *3* OPP
 def OPP(i):
     return (i+2)%4
+#@+node:gcross.20111101164302.1330: *3* otimes
+def otimes(A,B,axes=0):
+    return tensordot(A,B,axes).transpose(0,2,1,3).reshape(*[A.shape[i]*B.shape[i] for i in range(2)])
 #@+node:gcross.20111022200315.1264: *3* transposeAndReshapeAndReturnInverseTransformation
 def transposeAndReshapeAndReturnInverseTransformation(tensor,index):
     new_indices = withoutIndex(range(tensor.ndim),index)
