@@ -81,6 +81,34 @@ class Tensor(metaclass=MetaTensor):
     #@-others
 #@+node:gcross.20111009193003.1161: *3* Tensors
 #@+others
+#@+node:gcross.20111009193003.5243: *4* CornerBoundary
+class CornerBoundary(Tensor):
+    _dimensions = ["clockwise","counterclockwise"]
+    #@+others
+    #@-others
+#@+node:gcross.20111009193003.1166: *4* NormalizationSideBoundary
+class NormalizationSideBoundary(Tensor):
+    _dimensions = ["clockwise","counterclockwise","inward","inward"]
+    #@+others
+    #@+node:gcross.20111009193003.5244: *5* absorbCounterClockwiseCornerBoundary
+    def absorbCounterClockwiseCornerBoundary(self,corner):
+        return NormalizationSideBoundary(
+             tensordot(self.data,corner.data,(self.counterclockwise_index,corner.clockwise_index))
+            .transpose(0,3,1,2)
+        )
+    #@+node:gcross.20111009193003.5262: *5* absorbCounterClockwiseSideBoundary
+    def absorbCounterClockwiseSideBoundary(self,side):
+        return NormalizationSideBoundary(
+             tensordot(self.data,side.data,(self.counterclockwise_index,side.clockwise_index))
+            .transpose(0,3,1,4,2,5)
+            .reshape(
+                self.clockwise_dimension,
+                side.counterclockwise_dimension,
+                self.inward_dimension*side.inward_dimension,
+                self.inward_dimension*side.inward_dimension,
+             )
+        )
+    #@-others
 #@+node:gcross.20111009193003.5252: *4* StateCenterSite
 class StateCenterSite(Tensor):
     _dimensions = ["physical","rightward","upward","leftward","downward"]
@@ -92,11 +120,6 @@ class StateCenterSite(Tensor):
     def bandwidthDimensions(self):
         return self.data.shape[1:]
     #@-others
-#@+node:gcross.20111009193003.5243: *4* StateCornerBoundary
-class StateCornerBoundary(Tensor):
-    _dimensions = ["clockwise","counterclockwise"]
-    #@+others
-    #@-others
 #@+node:gcross.20111009193003.5232: *4* StateCornerSite
 class StateCornerSite(Tensor):
     _dimensions = ["physical","clockwise","counterclockwise"]
@@ -104,7 +127,7 @@ class StateCornerSite(Tensor):
     #@+node:gcross.20111013080525.1207: *5* absorbSideSiteAtClockwise
     def absorbSideSiteAtClockwise(self,side):
         return StateCornerSite(
-             tensordot(self.data,side.data,(1,2))
+             tensordot(self.data,side.data,(self.clockwise_index,side.counterclockwise_index))
             .transpose(0,2,3,1,4)
             .reshape(
                 self.physical_dimension*side.physical_dimension,
@@ -115,7 +138,7 @@ class StateCornerSite(Tensor):
     #@+node:gcross.20111013080525.1203: *5* absorbSideSiteAtCounterClockwise
     def absorbSideSiteAtCounterClockwise(self,side):
         return StateCornerSite(
-             tensordot(self.data,side.data,(2,1))
+             tensordot(self.data,side.data,(self.counterclockwise_index,side.clockwise_index))
             .transpose(0,2,1,4,3)
             .reshape(
                 self.physical_dimension*side.physical_dimension,
@@ -123,10 +146,10 @@ class StateCornerSite(Tensor):
                 side.counterclockwise_dimension,
              )
         )
-    #@+node:gcross.20111009193003.5237: *5* formBoundary
-    def formBoundary(self):
-        return StateCornerBoundary(
-             tensordot(self.data,self.data.conj(),(0,0))
+    #@+node:gcross.20111009193003.5237: *5* formNormalizationBoundary
+    def formNormalizationBoundary(self):
+        return CornerBoundary(
+             tensordot(self.data,self.data.conj(),(self.physical_index,)*2)
             .transpose(0,2,1,3)
             .reshape(
                 self.clockwise_dimension*self.clockwise_dimension,
@@ -140,29 +163,6 @@ class StateCornerSite(Tensor):
     def normalizeSelfAndDenormalizeCounterClockwiseSide(self,side):
         return normalizeAndDenormalizeTensors(self,self.counterclockwise_index,side,side.clockwise_index)
     #@-others
-#@+node:gcross.20111009193003.1166: *4* StateSideBoundary
-class StateSideBoundary(Tensor):
-    _dimensions = ["clockwise","counterclockwise","inward","inward"]
-    #@+others
-    #@+node:gcross.20111009193003.5244: *5* absorbCounterClockwiseCornerBoundary
-    def absorbCounterClockwiseCornerBoundary(self,corner):
-        return StateSideBoundary(
-             tensordot(self.data,corner.data,(1,0))
-            .transpose(0,3,1,2)
-        )
-    #@+node:gcross.20111009193003.5262: *5* absorbCounterClockwiseSideBoundary
-    def absorbCounterClockwiseSideBoundary(self,side):
-        return StateSideBoundary(
-             tensordot(self.data,side.data,(1,0))
-            .transpose(0,3,1,4,2,5)
-            .reshape(
-                self.clockwise_dimension,
-                side.counterclockwise_dimension,
-                self.inward_dimension*side.inward_dimension,
-                self.inward_dimension*side.inward_dimension,
-             )
-        )
-    #@-others
 #@+node:gcross.20111009193003.1164: *4* StateSideSite
 class StateSideSite(Tensor):
     _dimensions = ["physical","clockwise","counterclockwise","inward"]
@@ -170,25 +170,10 @@ class StateSideSite(Tensor):
     #@+node:gcross.20111013080525.1234: *5* absorbCenterSite
     def absorbCenterSite(self,center,direction):
         return StateSideSite(self.absorbCenterSite.contractors[direction](self.data,center.data))
-
-    absorbCenterSite.contractors = [
-        formContractor(
-            ['S','C'],
-            [
-                (('S',3),('C',1+i)),
-            ],
-            [
-                [('S',0),('C',0)],
-                [('S',1),('C',1+CW(i))],
-                [('S',2),('C',1+CCW(i))],
-                [('C',1+OPP(i)),]
-            ]
-        ) for i in range(4)
-    ]
-    #@+node:gcross.20111009193003.1165: *5* formBoundary
-    def formBoundary(self):
-        return StateSideBoundary(
-             tensordot(self.data,self.data.conj(),(0,0))
+    #@+node:gcross.20111009193003.1165: *5* formNormalizationBoundary
+    def formNormalizationBoundary(self):
+        return NormalizationSideBoundary(
+             tensordot(self.data,self.data.conj(),(self.physical_index,)*2)
             .transpose(0,3,1,4,2,5)
             .reshape(
                 self.clockwise_dimension*self.clockwise_dimension,
@@ -201,16 +186,34 @@ class StateSideSite(Tensor):
     def normalizeSelfAndDenormalizeCenter(self,center,direction):
         return normalizeAndDenormalizeTensors(self,self.inward_index,center,1+direction)
     #@-others
+
+#@+<< absorbCenterSite contractors >>
+#@+node:gcross.20111101164302.1349: *5* << absorbCenterSite contractors >>
+StateSideSite.absorbCenterSite.contractors = [
+    formContractor(
+        ['S','C'],
+        [
+            (('S',StateSideSite.inward_index),('C',1+i)),
+        ],
+        [
+            [('S',StateSideSite.physical_index),('C',StateCenterSite.physical_index)],
+            [('S',StateSideSite.clockwise_index),('C',1+CW(i))],
+            [('S',StateSideSite.counterclockwise_index),('C',1+CCW(i))],
+            [('C',1+OPP(i)),]
+        ]
+    ) for i in range(4)
+]
+#@-<< absorbCenterSite contractors >>
 #@-others
 #@-others
 
 #@+<< Exports >>
 #@+node:gcross.20111009193003.1171: ** << Exports >>
 __all__ = [
+    "CornerBoundary",
+    "NormalizationSideBoundary",
     "StateCenterSite",
-    "StateCornerBoundary",
     "StateCornerSite",
-    "StateSideBoundary",
     "StateSideSite",
 ]
 #@-<< Exports >>

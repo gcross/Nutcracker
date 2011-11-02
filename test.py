@@ -783,9 +783,9 @@ class TestStateCornerSite(TestCase):
                 [('C',2),('S',3)],
             ]
         )
-    #@+node:gcross.20111009193003.5241: *5* formBoundary
+    #@+node:gcross.20111009193003.5241: *5* formNormalizationBoundary
     @with_checker(number_of_calls=10)
-    def test_formBoundary(self):
+    def test_formNormalizationBoundary(self):
         site = \
             StateCornerSite(
                 clockwise_dimension = randint(1,5),
@@ -794,11 +794,11 @@ class TestStateCornerSite(TestCase):
                 randomize = True,
             )
         self.assertAllClose(
-            self.test_formBoundary.contract(site.data,site.data.conj()),
-            site.formBoundary().data
+            self.test_formNormalizationBoundary.contract(site.data,site.data.conj()),
+            site.formNormalizationBoundary().data
         )
 
-    test_formBoundary.contract = \
+    test_formNormalizationBoundary.contract = \
         formContractor(
             ['T','T*'],
             [
@@ -810,21 +810,21 @@ class TestStateCornerSite(TestCase):
             ]
         )
     #@-others
-#@+node:gcross.20111009193003.5248: *4* StateSideBoundary
-class TestStateSideBoundary(TestCase):
+#@+node:gcross.20111009193003.5248: *4* NormalizationSideBoundary
+class TestNormalizationSideBoundary(TestCase):
     #@+others
     #@+node:gcross.20111009193003.5250: *5* absorbCounterClockwiseCornerBoundary
     @with_checker(number_of_calls=10)
     def test_absorbCounterClockwiseCornerBoundary(self):
         side = \
-            StateSideBoundary(
+            NormalizationSideBoundary(
                 clockwise_dimension = randint(1,5),
                 counterclockwise_dimension = randint(1,5),
                 inward_dimension = randint(1,5),
                 randomize = True,
             )
         corner = \
-            StateCornerBoundary(
+            CornerBoundary(
                 clockwise_dimension = side.counterclockwise_dimension,
                 counterclockwise_dimension = side.counterclockwise_dimension,
                 randomize = True,
@@ -851,14 +851,14 @@ class TestStateSideBoundary(TestCase):
     @with_checker(number_of_calls=10)
     def test_absorbCounterClockwiseSideBoundary(self):
         side1 = \
-            StateSideBoundary(
+            NormalizationSideBoundary(
                 clockwise_dimension = randint(1,5),
                 counterclockwise_dimension = randint(1,5),
                 inward_dimension = randint(1,5),
                 randomize = True,
             )
         side2 = \
-            StateSideBoundary(
+            NormalizationSideBoundary(
                 clockwise_dimension = side1.counterclockwise_dimension,
                 counterclockwise_dimension = randint(1,5),
                 inward_dimension = randint(1,5),
@@ -1018,9 +1018,9 @@ class TestStateSideSite(TestCase):
 
             ,site.absorbCenterSite(center,0).data
         )
-    #@+node:gcross.20111009193003.1170: *5* formBoundary
+    #@+node:gcross.20111009193003.1170: *5* formNormalizationBoundary
     @with_checker(number_of_calls=10)
-    def test_formBoundary(self):
+    def test_formNormalizationBoundary(self):
         site = \
             StateSideSite(
                 clockwise_dimension = randint(1,5),
@@ -1030,11 +1030,11 @@ class TestStateSideSite(TestCase):
                 randomize = True,
             )
         self.assertAllClose(
-            self.test_formBoundary.contract(site.data,site.data.conj()),
-            site.formBoundary().data
+            self.test_formNormalizationBoundary.contract(site.data,site.data.conj()),
+            site.formNormalizationBoundary().data
         )
 
-    test_formBoundary.contract = \
+    test_formNormalizationBoundary.contract = \
         formContractor(
             ['T','T*'],
             [
@@ -1048,13 +1048,13 @@ class TestStateSideSite(TestCase):
             ]
         )
     #@-others
-#@+node:gcross.20111009193003.5265: *3* Grid
-class TestGrid(TestCase):
+#@+node:gcross.20111009193003.5265: *3* NormalizationGrid
+class TestNormalizationGrid(TestCase):
     #@+others
-    #@+node:gcross.20111013080525.1249: *4* randomGrid
+    #@+node:gcross.20111013080525.1249: *4* randomNormalizationGrid
     @staticmethod
-    def randomGrid():
-        grid = Grid(1)
+    def randomNormalizationGrid():
+        grid = NormalizationGrid(1)
         grid.sides = []
         for _ in range(4):
             clockwise_dimension = randint(1,3)
@@ -1092,7 +1092,7 @@ class TestGrid(TestCase):
     def test_compressConnectionBetweenSideAndCenter_threshold_zero(self,
         direction = irange(0,3),
     ):
-        grid = self.randomGrid()
+        grid = self.randomNormalizationGrid()
         old_connection_dimension = grid.sides[direction].inward_dimension
         old_normalization = grid.computeNormalization()
         grid.compressConnectionBetweenSideAndCenter(direction,keep=len)
@@ -1103,7 +1103,7 @@ class TestGrid(TestCase):
     def test_compressConnectionBetweenSideAndCenter_keep_some(self,
         direction = irange(0,3),
     ):
-        grid = self.randomGrid()
+        grid = self.randomNormalizationGrid()
         number_to_keep = randint(1,min(
             product(withoutIndex(grid.sides[direction].data.shape,StateSideSite.inward_index)),
             grid.sides[direction].inward_dimension
@@ -1117,7 +1117,7 @@ class TestGrid(TestCase):
     def test_compressConnectionBetweenSideAndCenter_threshold_zero(self,
         direction = irange(0,3),
     ):
-        grid = self.randomGrid()
+        grid = self.randomNormalizationGrid()
         old_connection_dimension = grid.sides[direction].inward_dimension
         old_normalization = grid.computeNormalization()
         grid.compressConnectionBetweenSideAndCenter(direction,threshold=0)
@@ -1128,7 +1128,7 @@ class TestGrid(TestCase):
     def test_compressConnectionBetweenSideAndClockwiseCorner_threshold_zero(self,
         direction = irange(0,3),
     ):
-        grid = self.randomGrid()
+        grid = self.randomNormalizationGrid()
         old_connection_dimension = grid.sides[direction].clockwise_dimension
         old_normalization = grid.computeNormalization()
         grid.compressConnectionBetweenSideAndClockwiseCorner(direction,keep=len)
@@ -1139,7 +1139,7 @@ class TestGrid(TestCase):
     def test_compressConnectionBetweenSideAndClockwiseCorner_keep_some(self,
         direction = irange(0,3),
     ):
-        grid = self.randomGrid()
+        grid = self.randomNormalizationGrid()
         number_to_keep = \
             randint(1,
                 min(
@@ -1156,7 +1156,7 @@ class TestGrid(TestCase):
     def test_compressConnectionBetweenSideAndClockwiseCorner_threshold_zero(self,
         direction = irange(0,3),
     ):
-        grid = self.randomGrid()
+        grid = self.randomNormalizationGrid()
         old_connection_dimension = grid.sides[direction].clockwise_dimension
         old_normalization = grid.computeNormalization()
         grid.compressConnectionBetweenSideAndClockwiseCorner(direction,threshold=0)
@@ -1167,7 +1167,7 @@ class TestGrid(TestCase):
     def test_compressConnectionBetweenSideAndCounterClockwiseCorner_threshold_zero(self,
         direction = irange(0,3),
     ):
-        grid = self.randomGrid()
+        grid = self.randomNormalizationGrid()
         old_connection_dimension = grid.sides[direction].counterclockwise_dimension
         old_normalization = grid.computeNormalization()
         grid.compressConnectionBetweenSideAndCounterClockwiseCorner(direction,keep=len)
@@ -1178,7 +1178,7 @@ class TestGrid(TestCase):
     def test_compressConnectionBetweenSideAndCounterClockwiseCorner_keep_some(self,
         direction = irange(0,3),
     ):
-        grid = self.randomGrid()
+        grid = self.randomNormalizationGrid()
         number_to_keep = \
             randint(1,
                 min(
@@ -1195,7 +1195,7 @@ class TestGrid(TestCase):
     def test_compressConnectionBetweenSideAndCounterClockwiseCorner_threshold_zero(self,
         direction = irange(0,3),
     ):
-        grid = self.randomGrid()
+        grid = self.randomNormalizationGrid()
         old_connection_dimension = grid.sides[direction].counterclockwise_dimension
         old_normalization = grid.computeNormalization()
         grid.compressConnectionBetweenSideAndCounterClockwiseCorner(direction,threshold=0)
@@ -1206,7 +1206,7 @@ class TestGrid(TestCase):
     def test_compressCorner_keep_all(self,
         direction = irange(0,3),
     ):
-        grid = self.randomGrid()
+        grid = self.randomNormalizationGrid()
         old_normalization = grid.computeNormalization()
         number_to_keep = product(withoutIndex(grid.corners[direction].data.shape,StateCornerSite.physical_index))
         grid.compressCorner(direction,keep=number_to_keep)
@@ -1217,7 +1217,7 @@ class TestGrid(TestCase):
     def test_compressCorner_keep_some(self,
         direction = irange(0,3),
     ):
-        grid = self.randomGrid()
+        grid = self.randomNormalizationGrid()
         old_normalization = grid.computeNormalization()
         number_to_keep = randint(1,product(withoutIndex(grid.corners[direction].data.shape,StateCornerSite.physical_index)))
         grid.compressCorner(direction,keep=number_to_keep)
@@ -1227,7 +1227,7 @@ class TestGrid(TestCase):
     def test_compressCorner_threshold_zero(self,
         direction = irange(0,3),
     ):
-        grid = self.randomGrid()
+        grid = self.randomNormalizationGrid()
         old_physical_dimension = grid.corners[direction].physical_dimension
         old_normalization = grid.computeNormalization()
         grid.compressCorner(direction,threshold=0)
@@ -1238,7 +1238,7 @@ class TestGrid(TestCase):
     def test_compressSide_keep_all(self,
         direction = irange(0,3),
     ):
-        grid = self.randomGrid()
+        grid = self.randomNormalizationGrid()
         old_normalization = grid.computeNormalization()
         number_to_keep = product(withoutIndex(grid.sides[direction].data.shape,StateSideSite.physical_index))
         grid.compressSide(direction,keep=number_to_keep)
@@ -1249,7 +1249,7 @@ class TestGrid(TestCase):
     def test_compressSide_keep_some(self,
         direction = irange(0,3),
     ):
-        grid = self.randomGrid()
+        grid = self.randomNormalizationGrid()
         old_normalization = grid.computeNormalization()
         number_to_keep = randint(1,product(withoutIndex(grid.sides[direction].data.shape,StateSideSite.physical_index)))
         grid.compressSide(direction,keep=number_to_keep)
@@ -1259,7 +1259,7 @@ class TestGrid(TestCase):
     def test_compressSide_threshold_zero(self,
         direction = irange(0,3),
     ):
-        grid = self.randomGrid()
+        grid = self.randomNormalizationGrid()
         old_physical_dimension = grid.sides[direction].physical_dimension
         old_normalization = grid.computeNormalization()
         grid.compressSide(direction,threshold=0)
@@ -1268,9 +1268,9 @@ class TestGrid(TestCase):
     #@+node:gcross.20111013165152.1231: *4* test_computeNormalization_random
     @with_checker(number_of_calls=10)
     def test_computeNormalization_random(self):
-        grid = self.randomGrid()
+        grid = self.randomNormalizationGrid()
         self.assertAlmostEqual(
-            self.test_computeNormalization_random.contract(*([grid.center.data,grid.center.data.conj()] + [x.formBoundary().data for x in grid.sides + grid.corners])),
+            self.test_computeNormalization_random.contract(*([grid.center.data,grid.center.data.conj()] + [x.formNormalizationBoundary().data for x in grid.sides + grid.corners])),
             grid.computeNormalization(),
         )
 
@@ -1288,27 +1288,27 @@ class TestGrid(TestCase):
     #@+node:gcross.20111013165152.1227: *4* test_computeNormalization_trivial
     def test_computeNormalization_trivial(self):
         for physical_dimension in range(1,5):
-            self.assertAlmostEqual(Grid(physical_dimension).computeNormalization(),1)
+            self.assertAlmostEqual(NormalizationGrid(physical_dimension).computeNormalization(),1)
     #@+node:gcross.20111013080525.1263: *4* test_computeNormalizationConditionNumber_post_contract
     @with_checker(number_of_calls=10)
     def test_computeNormalizationConditionNumber_post_contract(self,
         physical_dimension = irange(1,5),
         number_of_contractions = irange(0,5),
     ):
-        grid = Grid(physical_dimension)
+        grid = NormalizationGrid(physical_dimension)
         for _ in range(number_of_contractions):
             grid.contract(randint(0,3))
         self.assertAlmostEqual(grid.computeNormalizationConditionNumber(),1)
     #@+node:gcross.20111013080525.1261: *4* test_computeNormalizationConditionNumber_trivial
     def test_computeNormalizationConditionNumber_trivial(self):
         for physical_dimension in range(1,5):
-            self.assertAlmostEqual(Grid(physical_dimension).computeNormalizationConditionNumber(),1)
+            self.assertAlmostEqual(NormalizationGrid(physical_dimension).computeNormalizationConditionNumber(),1)
     #@+node:gcross.20111010182600.1199: *4* test_computeNormalizationMatrix_random
     @with_checker(number_of_calls=10)
     def test_computeNormalizationMatrix_random(self):
-        grid = self.randomGrid()
+        grid = self.randomNormalizationGrid()
         self.assertAllClose(
-            self.test_computeNormalizationMatrix_random.contract(*([identity(grid.physical_dimension)] + [x.formBoundary().data for x in grid.sides + grid.corners])),
+            self.test_computeNormalizationMatrix_random.contract(*([identity(grid.physical_dimension)] + [x.formNormalizationBoundary().data for x in grid.sides + grid.corners])),
             grid.computeNormalizationMatrix(),
         )
 
@@ -1326,11 +1326,11 @@ class TestGrid(TestCase):
     #@+node:gcross.20111010182517.1196: *4* test_computeNormalizationMatrix_trivial
     def test_computeNormalizationMatrix_trivial(self):
         for physical_dimension in range(1,5):
-            self.assertAllClose(Grid(physical_dimension).computeNormalizationMatrix(),identity(physical_dimension))
+            self.assertAllClose(NormalizationGrid(physical_dimension).computeNormalizationMatrix(),identity(physical_dimension))
     #@+node:gcross.20111013080525.1257: *4* test_contract_downward
     @with_checker(number_of_calls=10)
     def test_contract_downward(self):
-        grid = self.randomGrid()
+        grid = self.randomNormalizationGrid()
         for forward_direction in [1,3]:
             reverse_direction = OPP(forward_direction)
             forward_dimension = grid.bandwidthDimension(forward_direction)
@@ -1357,7 +1357,7 @@ class TestGrid(TestCase):
     #@+node:gcross.20111013080525.1253: *4* test_contract_leftward
     @with_checker(number_of_calls=10)
     def test_contract_leftward(self):
-        grid = self.randomGrid()
+        grid = self.randomNormalizationGrid()
         for forward_direction in [0,2]:
             reverse_direction = OPP(forward_direction)
             forward_dimension = grid.bandwidthDimension(forward_direction)
@@ -1384,7 +1384,7 @@ class TestGrid(TestCase):
     #@+node:gcross.20111013080525.1248: *4* test_contract_rightward
     @with_checker(number_of_calls=10)
     def test_contract_rightward(self):
-        grid = self.randomGrid()
+        grid = self.randomNormalizationGrid()
         for forward_direction in [0,2]:
             reverse_direction = OPP(forward_direction)
             forward_dimension = grid.bandwidthDimension(forward_direction)
@@ -1411,7 +1411,7 @@ class TestGrid(TestCase):
     #@+node:gcross.20111013080525.1251: *4* test_contract_upward
     @with_checker(number_of_calls=10)
     def test_contract_upward(self):
-        grid = self.randomGrid()
+        grid = self.randomNormalizationGrid()
         for forward_direction in [1,3]:
             reverse_direction = OPP(forward_direction)
             forward_dimension = grid.bandwidthDimension(forward_direction)
@@ -1441,7 +1441,7 @@ class TestGrid(TestCase):
         direction = irange(0,3),
         increment = irange(0,3),
     ):
-        grid = self.randomGrid()
+        grid = self.randomNormalizationGrid()
 
         bandwidth_dimensions = list(grid.bandwidthDimensions())
         bandwidth_dimensions[direction] += increment
@@ -1472,7 +1472,7 @@ class TestGrid(TestCase):
         direction = irange(0,3),
         increment = irange(0,3),
     ):
-        grid = self.randomGrid()
+        grid = self.randomNormalizationGrid()
 
         bandwidth_dimensions = list(grid.bandwidthDimensions())
         bandwidth_dimensions[direction] = max(bandwidth_dimensions[direction],bandwidth_dimensions[OPP(direction)])
@@ -1504,7 +1504,7 @@ class TestGrid(TestCase):
         direction = irange(0,3),
         increment = irange(0,3),
     ):
-        grid = self.randomGrid()
+        grid = self.randomNormalizationGrid()
 
         bandwidth_dimensions = list(grid.bandwidthDimensions())
         bandwidth_dimensions[direction] += increment
@@ -1528,7 +1528,7 @@ class TestGrid(TestCase):
         direction = irange(0,3),
         increment = irange(0,3),
     ):
-        grid = self.randomGrid()
+        grid = self.randomNormalizationGrid()
 
         bandwidth_dimensions = list(grid.bandwidthDimensions())
         bandwidth_dimensions[direction] += increment
@@ -1551,7 +1551,7 @@ class TestGrid(TestCase):
     def test_normalizeCornerAndDenormalizeClockwiseSide(self,
         direction = irange(0,3),
     ):
-        grid = self.randomGrid()
+        grid = self.randomNormalizationGrid()
         grid.corners[direction] = \
             ensurePhysicalDimensionSufficientlyLargeToNormalize(
                 grid.corners[direction],
@@ -1566,7 +1566,7 @@ class TestGrid(TestCase):
     def test_normalizeCornerAndDenormalizeCounterClockwiseSide(self,
         direction = irange(0,3),
     ):
-        grid = self.randomGrid()
+        grid = self.randomNormalizationGrid()
         grid.corners[direction] = \
             ensurePhysicalDimensionSufficientlyLargeToNormalize(
                 grid.corners[direction],
@@ -1581,7 +1581,7 @@ class TestGrid(TestCase):
     def test_normalizeSide(self,
         direction = irange(0,3),
     ):
-        grid = self.randomGrid()
+        grid = self.randomNormalizationGrid()
         grid.sides[direction] = \
             ensurePhysicalDimensionSufficientlyLargeToNormalize(
                 grid.sides[direction],
@@ -1604,10 +1604,10 @@ tests = [
     TestTruncateConnectionToSelf,
 
     TestStateCornerSite,
-    TestStateSideBoundary,
+    TestNormalizationSideBoundary,
     TestStateSideSite,
 
-    TestGrid,
+    TestNormalizationGrid,
 ]
 #@-others
 

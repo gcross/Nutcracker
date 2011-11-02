@@ -11,8 +11,8 @@ from flatland.utils import *
 
 #@+others
 #@+node:gcross.20111009193003.5256: ** Classes
-#@+node:gcross.20111009193003.5257: *3* Grid
-class Grid:
+#@+node:gcross.20111009193003.5257: *3* NormalizationGrid
+class NormalizationGrid:
     #@+others
     #@+node:gcross.20111009193003.5258: *4* __init__
     def __init__(self,physical_dimension):
@@ -125,7 +125,7 @@ class Grid:
         )
     #@+node:gcross.20111013080525.1259: *4* computeNormalizationSubmatrix
     def computeNormalizationSubmatrix(self):
-        side_boundaries = [side.formBoundary().absorbCounterClockwiseCornerBoundary(corner.formBoundary()) for (side,corner) in zip(self.sides,self.corners)]
+        side_boundaries = [side.formNormalizationBoundary().absorbCounterClockwiseCornerBoundary(corner.formNormalizationBoundary()) for (side,corner) in zip(self.sides,self.corners)]
         final_dimension = product([side.inward_dimension for side in self.sides])
         return (
              tensordot(
@@ -203,7 +203,7 @@ class Grid:
 #@+<< Exports >>
 #@+node:gcross.20111009193003.5255: ** << Exports >>
 __all__ = [
-    "Grid",
+    "NormalizationGrid",
 ]
 #@-<< Exports >>
 #@-leo
