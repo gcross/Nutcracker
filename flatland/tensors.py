@@ -190,7 +190,7 @@ class CornerBoundary(Tensor):
     #@-others
 #@+node:gcross.20111009193003.1166: *4* NormalizationSideBoundary
 class NormalizationSideBoundary(Tensor):
-    _dimensions = ["clockwise","counterclockwise","inward_conjugate","inward"]
+    _dimensions = ["clockwise","counterclockwise","inward","inward_conjugate"]
     #@+others
     #@+node:gcross.20111009193003.5244: *5* absorbCounterClockwiseCornerBoundary
     def absorbCounterClockwiseCornerBoundary(self,corner):
