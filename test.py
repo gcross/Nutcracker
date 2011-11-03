@@ -738,13 +738,14 @@ class TestNormalizationSideBoundary(TestCase):
         formContractor(
             ['S','C'],
             [
-                (('C',0),('S',1)),
+                (('C',CornerBoundary.clockwise_index),('S',NormalizationSideBoundary.counterclockwise_index)),
             ],
             [
-                [('S',0)],
-                [('C',1)],
-                [('S',2)],
-                [('S',3)],
+                {"clockwise":[('S',NormalizationSideBoundary.clockwise_index)]
+                ,"counterclockwise":[('C',CornerBoundary.counterclockwise_index)]
+                ,"inward":[('S',NormalizationSideBoundary.inward_index)]
+                ,"inward_conjugate":[('S',NormalizationSideBoundary.inward_conjugate_index)]
+                }[name] for name in NormalizationSideBoundary._dimensions
             ]
         )
     #@+node:gcross.20111009193003.5264: *5* absorbCounterClockwiseSideBoundary
@@ -773,13 +774,14 @@ class TestNormalizationSideBoundary(TestCase):
         formContractor(
             ['A','B'],
             [
-                (('B',0),('A',1)),
+                (('B',NormalizationSideBoundary.clockwise_index),('A',NormalizationSideBoundary.counterclockwise_index)),
             ],
             [
-                [('A',0)],
-                [('B',1)],
-                [('A',2),('B',2)],
-                [('A',3),('B',3)],
+                {"clockwise":[('A',NormalizationSideBoundary.clockwise_index)]
+                ,"counterclockwise":[('B',NormalizationSideBoundary.counterclockwise_index)]
+                ,"inward":[(x,NormalizationSideBoundary.inward_index) for x in ('A','B')]
+                ,"inward_conjugate":[(x,NormalizationSideBoundary.inward_conjugate_index) for x in ('A','B')]
+                }[name] for name in NormalizationSideBoundary._dimensions
             ]
         )
     #@-others
@@ -813,12 +815,13 @@ class TestStateCornerSite(TestCase):
         formContractor(
             ['C','S'],
             [
-                (('C',2),('S',1)),
+                (('C',StateCornerSite.counterclockwise_index),('S',StateSideSite.clockwise_index)),
             ],
             [
-                [('C',0),('S',0)],
-                [('C',1),('S',3)],
-                [('S',2)],
+                {"physical":[('C',StateCornerSite.physical_index),('S',StateSideSite.physical_index)]
+                ,"clockwise":[('C',StateCornerSite.clockwise_index),('S',StateSideSite.inward_index)]
+                ,"counterclockwise":[('S',StateSideSite.counterclockwise_index)]
+                }[name] for name in StateCornerSite._dimensions
             ]
         )
     #@+node:gcross.20111013080525.1209: *5* absorbSideSiteAtClockwise
@@ -848,12 +851,13 @@ class TestStateCornerSite(TestCase):
         formContractor(
             ['C','S'],
             [
-                (('C',1),('S',2)),
+                (('C',StateCornerSite.clockwise_index),('S',StateSideSite.counterclockwise_index)),
             ],
             [
-                [('C',0),('S',0)],
-                [('S',1)],
-                [('C',2),('S',3)],
+                {"physical":[('C',StateCornerSite.physical_index),('S',StateSideSite.physical_index)]
+                ,"counterclockwise":[('C',StateCornerSite.counterclockwise_index),('S',StateSideSite.inward_index)]
+                ,"clockwise":[('S',StateSideSite.clockwise_index)]
+                }[name] for name in StateCornerSite._dimensions
             ]
         )
     #@+node:gcross.20111009193003.5241: *5* formNormalizationBoundary
@@ -873,23 +877,23 @@ class TestStateCornerSite(TestCase):
 
     test_formNormalizationBoundary.contract = \
         formContractor(
-            ['T','T*'],
+            ['S','S*'],
             [
-                (('T',0),('T*',0)),
+                [('S'+c,StateCornerSite.physical_index) for c in ('','*')]
             ],
             [
-                [('T',1),('T*',1)],
-                [('T',2),('T*',2)],
+                [('S'+c,getattr(StateCornerSite,name+'_index')) for c in ('','*')]
+                for name in CornerBoundary._dimensions
             ]
         )
     #@-others
 #@+node:gcross.20111009193003.1169: *4* StateSideSite
 class TestStateSideSite(TestCase):
     #@+others
-    #@+node:gcross.20111013080525.1243: *5* absorbCenterSite_downward
-    @with_checker(number_of_calls=10)
-    def test_absorbCenterSite_upward(self):
-        site = \
+    #@+node:gcross.20111103110300.1383: *5* absorbCenterSite
+    @with_checker(number_of_calls=100)
+    def test_absorbCenterSite(self,direction=irange(0,3)):
+        side = \
             StateSideSite(
                 physical_dimension = randint(1,5),
                 clockwise_dimension = randint(1,5),
@@ -897,126 +901,33 @@ class TestStateSideSite(TestCase):
                 inward_dimension = randint(1,5),
                 randomize = True,
             )
-        center = \
-            StateCenterSite(
-                physical_dimension = randint(1,5),
-                rightward_dimension = randint(1,5),
-                upward_dimension = randint(1,5),
-                leftward_dimension = randint(1,5),
-                downward_dimension = site.inward_dimension,
-                randomize = True,
-            )
-
+        center = StateCenterSite(**{
+            "physical_dimension": randint(1,5),
+            "rightward_dimension": randint(1,5),
+            "upward_dimension": randint(1,5),
+            "leftward_dimension": randint(1,5),
+            "downward_dimension": randint(1,5),
+            "randomize": True,
+            StateCenterSite._bandwidth_dimensions[direction]+"_dimension": side.inward_dimension
+        })
         self.assertAllClose(
-             tensordot(site.data,center.data,(3,4))
-            .transpose(0,3,1,6,2,4,5)
-            .reshape(
-                site.physical_dimension*center.physical_dimension,
-                site.clockwise_dimension*center.leftward_dimension,
-                site.counterclockwise_dimension*center.rightward_dimension,
-                center.upward_dimension,
+             tensordot(side.data,center.data,(side.inward_index,center.bandwidthIndex(direction)))
+            .transpose(
+                side.physical_index,
+                center.physical_index+3,
+                side.clockwise_index,
+                center.bandwidthIndex(CW(direction))+3 - (1 if CW(direction) > direction else 0),
+                side.counterclockwise_index,
+                center.bandwidthIndex(CCW(direction))+3 - (1 if CCW(direction) > direction else 0),
+                center.bandwidthIndex(OPP(direction))+3 - (1 if OPP(direction) > direction else 0),
              )
-
-            ,site.absorbCenterSite(center,3).data
-        )
-    #@+node:gcross.20111013080525.1240: *5* absorbCenterSite_leftward
-    @with_checker(number_of_calls=10)
-    def test_absorbCenterSite_leftward(self):
-        site = \
-            StateSideSite(
-                physical_dimension = randint(1,5),
-                clockwise_dimension = randint(1,5),
-                counterclockwise_dimension = randint(1,5),
-                inward_dimension = randint(1,5),
-                randomize = True,
-            )
-        center = \
-            StateCenterSite(
-                physical_dimension = randint(1,5),
-                rightward_dimension = randint(1,5),
-                upward_dimension = randint(1,5),
-                leftward_dimension = site.inward_dimension,
-                downward_dimension = randint(1,5),
-                randomize = True,
-            )
-
-        self.assertAllClose(
-             tensordot(site.data,center.data,(3,3))
-            .transpose(0,3,1,5,2,6,4)
             .reshape(
-                site.physical_dimension*center.physical_dimension,
-                site.clockwise_dimension*center.upward_dimension,
-                site.counterclockwise_dimension*center.downward_dimension,
-                center.rightward_dimension,
+                side.physical_dimension*center.physical_dimension,
+                side.clockwise_dimension*center.bandwidthDimension(CW(direction)),
+                side.counterclockwise_dimension*center.bandwidthDimension(CCW(direction)),
+                center.bandwidthDimension(OPP(direction)),
              )
-
-            ,site.absorbCenterSite(center,2).data
-        )
-    #@+node:gcross.20111013080525.1236: *5* absorbCenterSite_rightward
-    @with_checker(number_of_calls=10)
-    def test_absorbCenterSite_rightward(self):
-        site = \
-            StateSideSite(
-                physical_dimension = randint(1,5),
-                clockwise_dimension = randint(1,5),
-                counterclockwise_dimension = randint(1,5),
-                inward_dimension = randint(1,5),
-                randomize = True,
-            )
-        center = \
-            StateCenterSite(
-                physical_dimension = randint(1,5),
-                rightward_dimension = randint(1,5),
-                upward_dimension = site.inward_dimension,
-                leftward_dimension = randint(1,5),
-                downward_dimension = randint(1,5),
-                randomize = True,
-            )
-
-        self.assertAllClose(
-             tensordot(site.data,center.data,(3,2))
-            .transpose(0,3,1,4,2,5,6)
-            .reshape(
-                site.physical_dimension*center.physical_dimension,
-                site.clockwise_dimension*center.rightward_dimension,
-                site.counterclockwise_dimension*center.leftward_dimension,
-                center.downward_dimension,
-             )
-
-            ,site.absorbCenterSite(center,1).data
-        )
-    #@+node:gcross.20111013080525.1238: *5* absorbCenterSite_upward
-    @with_checker(number_of_calls=10)
-    def test_absorbCenterSite_upward(self):
-        site = \
-            StateSideSite(
-                physical_dimension = randint(1,5),
-                clockwise_dimension = randint(1,5),
-                counterclockwise_dimension = randint(1,5),
-                inward_dimension = randint(1,5),
-                randomize = True,
-            )
-        center = \
-            StateCenterSite(
-                physical_dimension = randint(1,5),
-                rightward_dimension = site.inward_dimension,
-                upward_dimension = randint(1,5),
-                leftward_dimension = randint(1,5),
-                downward_dimension = randint(1,5),
-                randomize = True,
-            )
-
-        self.assertAllClose(
-             tensordot(site.data,center.data,(3,1))
-            .transpose(0,3,1,6,2,4,5)
-            .reshape(
-                site.physical_dimension*center.physical_dimension,
-                site.clockwise_dimension*center.downward_dimension,
-                site.counterclockwise_dimension*center.upward_dimension,
-                center.leftward_dimension,
-             )
-
-            ,site.absorbCenterSite(center,0).data
+            ,side.absorbCenterSite(center,direction).data
         )
     #@+node:gcross.20111009193003.1170: *5* formNormalizationBoundary
     @with_checker(number_of_calls=10)
@@ -1036,15 +947,16 @@ class TestStateSideSite(TestCase):
 
     test_formNormalizationBoundary.contract = \
         formContractor(
-            ['T','T*'],
+            ['S','S*'],
             [
-                (('T',0),('T*',0)),
+                [('S'+c,StateSideSite.physical_index) for c in ('','*')]
             ],
             [
-                [('T',1),('T*',1)],
-                [('T',2),('T*',2)],
-                [('T',3)],
-                [('T*',3)],
+                {"clockwise":[('S'+c,StateSideSite.clockwise_index) for c in ('','*')]
+                ,"counterclockwise":[('S'+c,StateSideSite.counterclockwise_index) for c in ('','*')]
+                ,"inward":[('S',StateSideSite.inward_index)]
+                ,"inward_conjugate":[('S*',StateSideSite.inward_index)]
+                }[name] for name in NormalizationSideBoundary._dimensions
             ]
         )
     #@-others
@@ -1277,11 +1189,11 @@ class TestNormalizationGrid(TestCase):
     test_computeNormalization_random.contract = \
         formContractor(
             (['O','O*'] + ['S{}'.format(i) for i in range(4)] + ['C{}'.format(i) for i in range(4)]),
-            ([(('S{}'.format(i),1),('C{}'.format(i),0)) for i in range(4)]
-            +[(('C{}'.format(i),1),('S{}'.format(CCW(i)),0)) for i in range(4)]
-            +[(('S{}'.format(i),2),('O',1+i)) for i in range(4)]
-            +[(('S{}'.format(i),3),('O*',1+i)) for i in range(4)]
-            +[(('O',0),('O*',0))]
+            ([(('S{}'.format(i),NormalizationSideBoundary.counterclockwise_index),('C{}'.format(i),CornerBoundary.clockwise_index)) for i in range(4)]
+            +[(('C{}'.format(i),CornerBoundary.counterclockwise_index),('S{}'.format(CCW(i)),NormalizationSideBoundary.clockwise_index)) for i in range(4)]
+            +[(('S{}'.format(i),NormalizationSideBoundary.inward_index),('O',StateCenterSite.bandwidthIndex(i))) for i in range(4)]
+            +[(('S{}'.format(i),NormalizationSideBoundary.inward_conjugate_index),('O*',StateCenterSite.bandwidthIndex(i))) for i in range(4)]
+            +[(('O',StateCenterSite.physical_index),('O*',StateCenterSite.physical_index))]
             ),
             []
         )
@@ -1315,12 +1227,12 @@ class TestNormalizationGrid(TestCase):
     test_computeNormalizationMatrix_random.contract = \
         formContractor(
             (['I'] + ['S{}'.format(i) for i in range(4)] + ['C{}'.format(i) for i in range(4)]),
-            ([(('S{}'.format(i),1),('C{}'.format(i),0)) for i in range(4)]
-            +[(('C{}'.format(i),1),('S{}'.format(CCW(i)),0)) for i in range(4)]
+            ([(('S{}'.format(i),NormalizationSideBoundary.counterclockwise_index),('C{}'.format(i),CornerBoundary.clockwise_index)) for i in range(4)]
+            +[(('C{}'.format(i),CornerBoundary.counterclockwise_index),('S{}'.format(CCW(i)),NormalizationSideBoundary.clockwise_index)) for i in range(4)]
             ),
             [
-                [('I',0)] + [('S{}'.format(i),2) for i in range(4)],
-                [('I',1)] + [('S{}'.format(i),3) for i in range(4)],
+                [('I',0)] + [('S{}'.format(i),NormalizationSideBoundary.inward_index) for i in range(4)],
+                [('I',1)] + [('S{}'.format(i),NormalizationSideBoundary.inward_conjugate_index) for i in range(4)],
             ]
         )
     #@+node:gcross.20111010182517.1196: *4* test_computeNormalizationMatrix_trivial
