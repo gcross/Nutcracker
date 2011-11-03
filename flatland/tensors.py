@@ -41,15 +41,53 @@ class MetaSiteTensor(MetaTensor):
     def __new__(cls,class_name,bases,data):
         if "_dimensions" in data:
             physical_indices = []
+            physical_dimensions = []
             bandwidth_indices = []
+            bandwidth_dimensions = []
             for (index,name) in enumerate(data["_dimensions"]):
                 if name.startswith("physical"):
                     physical_indices.append(index)
+                    physical_dimensions.append(name)
                 else:
                     bandwidth_indices.append(index)
+                    bandwidth_dimensions.append(name)
             data["_physical_indices"] = physical_indices
+            data["_physical_dimensions"] = physical_dimensions
             data["_bandwidth_indices"] = bandwidth_indices
+            data["_bandwidth_dimensions"] = bandwidth_dimensions
         return MetaTensor.__new__(cls,class_name,bases,data)
+    #@-others
+#@+node:gcross.20111103110300.1359: *4* MetaCenterSiteTensor
+class MetaCenterSiteTensor(MetaSiteTensor):
+    #@+others
+    #@+node:gcross.20111103110300.1360: *5* __init__
+    def __new__(cls,class_name,bases,data):
+        cls = MetaSiteTensor.__new__(cls,class_name,bases,data)
+        if hasattr(cls,"_center_site_class"):
+            center_cls = cls._center_site_class
+            assert cls._physical_dimensions == center_cls._physical_dimensions
+            contractors = []
+            for i in range(4):
+                outgoing_connection_for = {
+                    "clockwise":[('S',cls.clockwise_index),('C',center_cls.bandwidthIndex(CW(i)))],
+                    "counterclockwise":[('S',cls.counterclockwise_index),('C',center_cls.bandwidthIndex(CCW(i)))],
+                    "inward":[('C',center_cls.bandwidthIndex(OPP(i))),]
+                }
+                for (index,name) in enumerate(cls._physical_dimensions):
+                    outgoing_connection_for[name] = [('S',cls.physicalIndex(index)),('C',center_cls.physicalIndex(index))]
+                contractors.append(
+                    formContractor(
+                        ['S','C'],
+                        [
+                            (('S',cls.inward_index),('C',center_cls.bandwidthIndex(i))),
+                        ],
+                        [
+                            outgoing_connection_for[name] for name in cls._dimensions
+                        ]
+                    )
+                )
+            cls._center_site_contractors = contractors
+        return cls
     #@-others
 #@+node:gcross.20111103110300.1338: *3* Base classes
 #@+node:gcross.20111009193003.1162: *4* Tensor
@@ -114,9 +152,11 @@ class SiteTensor(Tensor,metaclass=MetaSiteTensor):
     def bandwidthDimensions(self):
         return [self.data.shape[i] for i in self.bandwidthIndices()]
     #@+node:gcross.20111103110300.1349: *5* bandwidthIndex
+    @classmethod
     def bandwidthIndex(self,direction):
         return self._bandwidth_indices[direction]
     #@+node:gcross.20111103110300.1351: *5* bandwidthIndices
+    @classmethod
     def bandwidthIndices(self):
         return self._bandwidth_indices
     #@+node:gcross.20111103110300.1346: *5* physicalDimension
@@ -126,11 +166,20 @@ class SiteTensor(Tensor,metaclass=MetaSiteTensor):
     def physicalDimensions(self):
         return [self.data.shape[i] for i in self.physicalIndices()]
     #@+node:gcross.20111103110300.1353: *5* physicalIndex
+    @classmethod
     def physicalIndex(self,direction):
         return self._physical_indices[direction]
     #@+node:gcross.20111103110300.1355: *5* physicalIndices
+    @classmethod
     def physicalIndices(self):
         return self._physical_indices
+    #@-others
+#@+node:gcross.20111103110300.1356: *4* CenterSiteTensor
+class CenterSiteTensor(SiteTensor,metaclass=MetaCenterSiteTensor):
+    #@+others
+    #@+node:gcross.20111013080525.1234: *5* absorbCenterSite
+    def absorbCenterSite(self,center,direction):
+        return type(self)(self._center_site_contractors[direction](self.data,center.data))
     #@-others
 #@+node:gcross.20111009193003.1161: *3* Tensors
 #@+others
@@ -211,12 +260,10 @@ class StateCornerSite(SiteTensor):
         return normalizeAndDenormalizeTensors(self,self.counterclockwise_index,side,side.clockwise_index)
     #@-others
 #@+node:gcross.20111009193003.1164: *4* StateSideSite
-class StateSideSite(SiteTensor):
+class StateSideSite(CenterSiteTensor):
     _dimensions = ["physical","clockwise","counterclockwise","inward"]
+    _center_site_class = StateCenterSite
     #@+others
-    #@+node:gcross.20111013080525.1234: *5* absorbCenterSite
-    def absorbCenterSite(self,center,direction):
-        return StateSideSite(self.absorbCenterSite.contractors[direction](self.data,center.data))
     #@+node:gcross.20111009193003.1165: *5* formNormalizationBoundary
     def formNormalizationBoundary(self):
         return NormalizationSideBoundary(
@@ -233,24 +280,6 @@ class StateSideSite(SiteTensor):
     def normalizeSelfAndDenormalizeCenter(self,center,direction):
         return normalizeAndDenormalizeTensors(self,self.inward_index,center,1+direction)
     #@-others
-
-#@+<< absorbCenterSite contractors >>
-#@+node:gcross.20111101164302.1349: *5* << absorbCenterSite contractors >>
-StateSideSite.absorbCenterSite.contractors = [
-    formContractor(
-        ['S','C'],
-        [
-            (('S',StateSideSite.inward_index),('C',1+i)),
-        ],
-        [
-            [('S',StateSideSite.physical_index),('C',StateCenterSite.physical_index)],
-            [('S',StateSideSite.clockwise_index),('C',1+CW(i))],
-            [('S',StateSideSite.counterclockwise_index),('C',1+CCW(i))],
-            [('C',1+OPP(i)),]
-        ]
-    ) for i in range(4)
-]
-#@-<< absorbCenterSite contractors >>
 #@-others
 #@-others
 
