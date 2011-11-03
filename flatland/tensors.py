@@ -9,10 +9,11 @@ from flatland.utils import *
 
 #@+others
 #@+node:gcross.20111016195932.1248: ** Classes
-#@+node:gcross.20111016195932.1249: *3* MetaTensor
+#@+node:gcross.20111103110300.1333: *3* Metaclasses
+#@+node:gcross.20111016195932.1249: *4* MetaTensor
 class MetaTensor(type):
     #@+others
-    #@+node:gcross.20111009193003.1173: *4* __init__
+    #@+node:gcross.20111009193003.1173: *5* __init__
     def __new__(cls,class_name,bases,data):
         conjugate_suffix = "_conjugate"
         conjugate_suffix_length = len(conjugate_suffix)
@@ -33,10 +34,28 @@ class MetaTensor(type):
             data["number_of_dimensions"] = len(data["_dimensions"])
         return type.__new__(cls,class_name,bases,data)
     #@-others
-#@+node:gcross.20111009193003.1162: *3* Tensor
+#@+node:gcross.20111103110300.1336: *4* MetaSiteTensor
+class MetaSiteTensor(MetaTensor):
+    #@+others
+    #@+node:gcross.20111103110300.1337: *5* __init__
+    def __new__(cls,class_name,bases,data):
+        if "_dimensions" in data:
+            physical_indices = []
+            bandwidth_indices = []
+            for (index,name) in enumerate(data["_dimensions"]):
+                if name.startswith("physical"):
+                    physical_indices.append(index)
+                else:
+                    bandwidth_indices.append(index)
+            data["_physical_indices"] = physical_indices
+            data["_bandwidth_indices"] = bandwidth_indices
+        return MetaTensor.__new__(cls,class_name,bases,data)
+    #@-others
+#@+node:gcross.20111103110300.1338: *3* Base classes
+#@+node:gcross.20111009193003.1162: *4* Tensor
 class Tensor(metaclass=MetaTensor):
     #@+others
-    #@+node:gcross.20111009193003.1163: *4* __init__
+    #@+node:gcross.20111009193003.1163: *5* __init__
     def __init__(self,*args,**keywords):
         if not ((len(args) > 0) ^ (len(keywords) > 0)):
             raise ValueError("constructor must be given either a reference to the data or the dimensions of the tensor")
@@ -78,12 +97,40 @@ class Tensor(metaclass=MetaTensor):
                 self.data = ndarray(shape,dtype=complex128)
             if fill:
                 self.data[...] = fill
-    #@+node:gcross.20111009193003.5259: *4* trivial
+    #@+node:gcross.20111009193003.5259: *5* trivial
     @classmethod
     def trivial(cls):
         keywords = {name: 1 for name in cls._dimension_arguments}
         keywords["fill"] = 1
         return cls(**keywords)
+    #@-others
+#@+node:gcross.20111103110300.1345: *4* SiteTensor
+class SiteTensor(Tensor,metaclass=MetaSiteTensor):
+    #@+others
+    #@+node:gcross.20111014113710.1232: *5* bandwidthDimension
+    def bandwidthDimension(self,direction):
+        return self.data.shape[self.bandwidthIndex(direction)]
+    #@+node:gcross.20111014113710.1233: *5* bandwidthDimensions
+    def bandwidthDimensions(self):
+        return [self.data.shape[i] for i in self.bandwidthIndices()]
+    #@+node:gcross.20111103110300.1349: *5* bandwidthIndex
+    def bandwidthIndex(self,direction):
+        return self._bandwidth_indices[direction]
+    #@+node:gcross.20111103110300.1351: *5* bandwidthIndices
+    def bandwidthIndices(self):
+        return self._bandwidth_indices
+    #@+node:gcross.20111103110300.1346: *5* physicalDimension
+    def physicalDimension(self,direction):
+        return self.data.shape[self.physicalIndex(direction)]
+    #@+node:gcross.20111103110300.1348: *5* physicalDimensions
+    def physicalDimensions(self):
+        return [self.data.shape[i] for i in self.physicalIndices()]
+    #@+node:gcross.20111103110300.1353: *5* physicalIndex
+    def physicalIndex(self,direction):
+        return self._physical_indices[direction]
+    #@+node:gcross.20111103110300.1355: *5* physicalIndices
+    def physicalIndices(self):
+        return self._physical_indices
     #@-others
 #@+node:gcross.20111009193003.1161: *3* Tensors
 #@+others
@@ -116,18 +163,12 @@ class NormalizationSideBoundary(Tensor):
         )
     #@-others
 #@+node:gcross.20111009193003.5252: *4* StateCenterSite
-class StateCenterSite(Tensor):
+class StateCenterSite(SiteTensor):
     _dimensions = ["physical","rightward","upward","leftward","downward"]
     #@+others
-    #@+node:gcross.20111014113710.1232: *5* bandwidthDimension
-    def bandwidthDimension(self,direction):
-        return self.data.shape[1+direction]
-    #@+node:gcross.20111014113710.1233: *5* bandwidthDimensions
-    def bandwidthDimensions(self):
-        return self.data.shape[1:]
     #@-others
 #@+node:gcross.20111009193003.5232: *4* StateCornerSite
-class StateCornerSite(Tensor):
+class StateCornerSite(SiteTensor):
     _dimensions = ["physical","clockwise","counterclockwise"]
     #@+others
     #@+node:gcross.20111013080525.1207: *5* absorbSideSiteAtClockwise
@@ -170,7 +211,7 @@ class StateCornerSite(Tensor):
         return normalizeAndDenormalizeTensors(self,self.counterclockwise_index,side,side.clockwise_index)
     #@-others
 #@+node:gcross.20111009193003.1164: *4* StateSideSite
-class StateSideSite(Tensor):
+class StateSideSite(SiteTensor):
     _dimensions = ["physical","clockwise","counterclockwise","inward"]
     #@+others
     #@+node:gcross.20111013080525.1234: *5* absorbCenterSite
