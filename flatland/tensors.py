@@ -194,15 +194,27 @@ class NormalizationSideBoundary(Tensor):
     #@+others
     #@+node:gcross.20111009193003.5244: *5* absorbCounterClockwiseCornerBoundary
     def absorbCounterClockwiseCornerBoundary(self,corner):
-        return NormalizationSideBoundary(
+        return type(self)(
              tensordot(self.data,corner.data,(self.counterclockwise_index,corner.clockwise_index))
-            .transpose(0,3,1,2)
+            .transpose(
+                self.clockwise_index,
+                corner.counterclockwise_index+3-1,
+                self.inward_index-1,
+                self.inward_conjugate_index-1,
+             )
         )
     #@+node:gcross.20111009193003.5262: *5* absorbCounterClockwiseSideBoundary
     def absorbCounterClockwiseSideBoundary(self,side):
-        return NormalizationSideBoundary(
+        return type(self)(
              tensordot(self.data,side.data,(self.counterclockwise_index,side.clockwise_index))
-            .transpose(0,3,1,4,2,5)
+            .transpose(
+                self.clockwise_index,
+                side.counterclockwise_index+3-1,
+                self.inward_index-1,
+                side.inward_index+3-1,
+                self.inward_conjugate_index-1,
+                side.inward_conjugate_index+3-1,
+             )
             .reshape(
                 self.clockwise_dimension,
                 side.counterclockwise_dimension,
@@ -222,9 +234,15 @@ class StateCornerSite(SiteTensor):
     #@+others
     #@+node:gcross.20111013080525.1207: *5* absorbSideSiteAtClockwise
     def absorbSideSiteAtClockwise(self,side):
-        return StateCornerSite(
+        return type(self)(
              tensordot(self.data,side.data,(self.clockwise_index,side.counterclockwise_index))
-            .transpose(0,2,3,1,4)
+            .transpose(
+                self.physical_index,
+                side.physical_index+2,
+                side.clockwise_index+2,
+                self.counterclockwise_index-1,
+                side.inward_index+2-1,
+             )
             .reshape(
                 self.physical_dimension*side.physical_dimension,
                 side.clockwise_dimension,
@@ -233,9 +251,15 @@ class StateCornerSite(SiteTensor):
         )
     #@+node:gcross.20111013080525.1203: *5* absorbSideSiteAtCounterClockwise
     def absorbSideSiteAtCounterClockwise(self,side):
-        return StateCornerSite(
+        return type(self)(
              tensordot(self.data,side.data,(self.counterclockwise_index,side.clockwise_index))
-            .transpose(0,2,1,4,3)
+            .transpose(
+                self.physical_index,
+                side.physical_index+2,
+                self.clockwise_index,
+                side.inward_index+2-1,
+                side.counterclockwise_index+2-1
+             )
             .reshape(
                 self.physical_dimension*side.physical_dimension,
                 self.clockwise_dimension*side.inward_dimension,
@@ -246,7 +270,12 @@ class StateCornerSite(SiteTensor):
     def formNormalizationBoundary(self):
         return CornerBoundary(
              tensordot(self.data,self.data.conj(),(self.physical_index,)*2)
-            .transpose(0,2,1,3)
+            .transpose(
+                self.clockwise_index-1,
+                self.clockwise_index+2-1,
+                self.counterclockwise_index-1,
+                self.counterclockwise_index+2-1,
+             )
             .reshape(
                 self.clockwise_dimension*self.clockwise_dimension,
                 self.counterclockwise_dimension*self.counterclockwise_dimension,
@@ -268,7 +297,14 @@ class StateSideSite(CenterSiteTensor):
     def formNormalizationBoundary(self):
         return NormalizationSideBoundary(
              tensordot(self.data,self.data.conj(),(self.physical_index,)*2)
-            .transpose(0,3,1,4,2,5)
+            .transpose(
+                self.clockwise_index-1,
+                self.clockwise_index+3-1,
+                self.counterclockwise_index-1,
+                self.counterclockwise_index+3-1,
+                self.inward_index-1,
+                self.inward_index+3-1,
+             )
             .reshape(
                 self.clockwise_dimension*self.clockwise_dimension,
                 self.counterclockwise_dimension*self.counterclockwise_dimension,
