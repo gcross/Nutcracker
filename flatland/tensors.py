@@ -14,20 +14,23 @@ class MetaTensor(type):
     #@+others
     #@+node:gcross.20111009193003.1173: *4* __init__
     def __new__(cls,class_name,bases,data):
+        conjugate_suffix = "_conjugate"
+        conjugate_suffix_length = len(conjugate_suffix)
         if "_dimensions" in data:
-            dimensions = data["_dimensions"]
-            data["_dimensions"] = [name + "_dimension" for name in dimensions]
-            repeated_dimensions = set()
-            index = 0
-            for name in dimensions:
-                if name not in repeated_dimensions:
-                    index_name = name + "_index"
-                    if index_name in data:
-                        repeated_dimensions.add(name)
-                        del data[index_name]
-                    else:
-                        data[index_name] = index
-                index += 1
+            dimension_arguments = []
+            conjugated_dimension_arguments = []
+            for (index,name) in enumerate(data["_dimensions"]):
+                index_name = name + "_index"
+                if index_name in data:
+                    raise ValueError("repeated dimension name '{}'".format(name))
+                else:
+                    data[index_name] = index
+                dimension_arguments.append(name + "_dimension")
+                if name.endswith(conjugate_suffix):
+                    conjugated_dimension_arguments.append((name[:-conjugate_suffix_length]+"_dimension",name+"_dimension"))
+            data["_dimension_arguments"] = dimension_arguments
+            data["_conjugated_dimension_arguments"] = conjugated_dimension_arguments
+            data["number_of_dimensions"] = len(data["_dimensions"])
         return type.__new__(cls,class_name,bases,data)
     #@-others
 #@+node:gcross.20111009193003.1162: *3* Tensor
@@ -39,9 +42,9 @@ class Tensor(metaclass=MetaTensor):
             raise ValueError("constructor must be given either a reference to the data or the dimensions of the tensor")
         if len(args) == 1:
             self.data = args[0]
-            if(self.data.ndim != len(self._dimensions)):
-                raise ValueError("constructor was given a reference to a tensor of rank {}, when a tensor of rank {} was required".format(self.data.ndim,len(self._dimensions)))
-            for (name,dimension) in zip(self._dimensions,self.data.shape):
+            if(self.data.ndim != self.number_of_dimensions):
+                raise ValueError("constructor was given a reference to a tensor of rank {}, when a tensor of rank {} was required".format(self.data.ndim,self.number_of_dimensions))
+            for (name,dimension) in zip(self._dimension_arguments,self.data.shape):
                 setattr(self,name,dimension)
         else:
             randomize = False
@@ -51,13 +54,16 @@ class Tensor(metaclass=MetaTensor):
                     randomize = keywords["randomize"]
                 elif given_dimension_name == "fill":
                     fill = keywords["fill"]
-                elif given_dimension_name not in self._dimensions:
-                    if given_dimension_name + "_dimension" in self._dimensions:
+                elif given_dimension_name not in self._dimension_arguments:
+                    if given_dimension_name in self._dimensions:
                         raise ValueError("you needed to type '{}_dimension' rather than '{}' in the list of keyword arguments to supply the {} dimension".format(*(given_dimension_name,)*3))
                     else:
                         raise ValueError("{} is not a recognized dimension for this tensor".format(given_dimension_name))
             shape = []
-            for name in self._dimensions:
+            for (name,conjugated_name) in self._conjugated_dimension_arguments:
+                if name in keywords:
+                    keywords[conjugated_name] = keywords[name]
+            for name in self._dimension_arguments:
                 try:
                     dimension = keywords[name]
                     shape.append(dimension)
@@ -75,7 +81,7 @@ class Tensor(metaclass=MetaTensor):
     #@+node:gcross.20111009193003.5259: *4* trivial
     @classmethod
     def trivial(cls):
-        keywords = {name: 1 for name in cls._dimensions}
+        keywords = {name: 1 for name in cls._dimension_arguments}
         keywords["fill"] = 1
         return cls(**keywords)
     #@-others
@@ -88,7 +94,7 @@ class CornerBoundary(Tensor):
     #@-others
 #@+node:gcross.20111009193003.1166: *4* NormalizationSideBoundary
 class NormalizationSideBoundary(Tensor):
-    _dimensions = ["clockwise","counterclockwise","inward","inward"]
+    _dimensions = ["clockwise","counterclockwise","inward_conjugate","inward"]
     #@+others
     #@+node:gcross.20111009193003.5244: *5* absorbCounterClockwiseCornerBoundary
     def absorbCounterClockwiseCornerBoundary(self,corner):
