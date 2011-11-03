@@ -13,7 +13,7 @@ from flatland.utils import *
 class MetaTensor(type):
     #@+others
     #@+node:gcross.20111009193003.1173: *4* __init__
-    def __new__(cls,name,bases,data):
+    def __new__(cls,class_name,bases,data):
         if "_dimensions" in data:
             dimensions = data["_dimensions"]
             data["_dimensions"] = [name + "_dimension" for name in dimensions]
@@ -28,7 +28,7 @@ class MetaTensor(type):
                     else:
                         data[index_name] = index
                 index += 1
-        return type.__new__(cls,name,bases,data)
+        return type.__new__(cls,class_name,bases,data)
     #@-others
 #@+node:gcross.20111009193003.1162: *3* Tensor
 class Tensor(metaclass=MetaTensor):
