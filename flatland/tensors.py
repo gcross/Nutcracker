@@ -188,6 +188,45 @@ class CornerBoundary(Tensor):
     _dimensions = ["clockwise","counterclockwise"]
     #@+others
     #@-others
+#@+node:gcross.20111103110300.1381: *4* ExpectationSideBoundary
+class ExpectationSideBoundary(Tensor):
+    _dimensions = ["clockwise","counterclockwise","inward_state","inward_operator","inward_state_conjugate"]
+    #@+others
+    #@+node:gcross.20111103170337.1365: *5* absorbCounterClockwiseCornerBoundary
+    def absorbCounterClockwiseCornerBoundary(self,corner):
+        return type(self)(
+             tensordot(self.data,corner.data,(self.counterclockwise_index,corner.clockwise_index))
+            .transpose(
+                self.clockwise_index,
+                corner.counterclockwise_index+4-1,
+                self.inward_state_index-1,
+                self.inward_operator_index-1,
+                self.inward_state_conjugate_index-1,
+             )
+        )
+    #@+node:gcross.20111103170337.1367: *5* absorbCounterClockwiseSideBoundary
+    def absorbCounterClockwiseSideBoundary(self,side):
+        return type(self)(
+             tensordot(self.data,side.data,(self.counterclockwise_index,side.clockwise_index))
+            .transpose(
+                self.clockwise_index,
+                side.counterclockwise_index+4-1,
+                self.inward_state_index-1,
+                side.inward_state_index+4-1,
+                self.inward_operator_index-1,
+                side.inward_operator_index+4-1,
+                self.inward_state_conjugate_index-1,
+                side.inward_state_conjugate_index+4-1,
+             )
+            .reshape(
+                self.clockwise_dimension,
+                side.counterclockwise_dimension,
+                self.inward_state_dimension*side.inward_state_dimension,
+                self.inward_operator_dimension*side.inward_operator_dimension,
+                self.inward_state_conjugate_dimension*side.inward_state_conjugate_dimension,
+             )
+        )
+    #@-others
 #@+node:gcross.20111009193003.1166: *4* NormalizationSideBoundary
 class NormalizationSideBoundary(Tensor):
     _dimensions = ["clockwise","counterclockwise","inward","inward_conjugate"]
@@ -220,6 +259,110 @@ class NormalizationSideBoundary(Tensor):
                 side.counterclockwise_dimension,
                 self.inward_dimension*side.inward_dimension,
                 self.inward_dimension*side.inward_dimension,
+             )
+        )
+    #@-others
+#@+node:gcross.20111103110300.1362: *4* OperatorCenterSite
+class OperatorCenterSite(SiteTensor):
+    _dimensions = ["physical","physical_conjugate","rightward","upward","leftward","downward"]
+    #@+others
+    #@-others
+#@+node:gcross.20111103110300.1404: *4* OperatorCornerSite
+class OperatorCornerSite(SiteTensor):
+    _dimensions = ["physical","physical_conjugate","clockwise","counterclockwise"]
+    #@+others
+    #@+node:gcross.20111103110300.1405: *5* absorbSideSiteAtClockwise
+    def absorbSideSiteAtClockwise(self,side):
+        return type(self)(
+             tensordot(self.data,side.data,(self.clockwise_index,side.counterclockwise_index))
+            .transpose(
+                self.physical_index,
+                side.physical_index+3,
+                self.physical_conjugate_index,
+                side.physical_conjugate_index+3,
+                side.clockwise_index+3,
+                self.counterclockwise_index-1,
+                side.inward_index+3-1,
+             )
+            .reshape(
+                self.physical_dimension*side.physical_dimension,
+                self.physical_conjugate_dimension*side.physical_conjugate_dimension,
+                side.clockwise_dimension,
+                self.counterclockwise_dimension*side.inward_dimension,
+             )
+        )
+    #@+node:gcross.20111103170337.1359: *5* absorbSideSiteAtCounterClockwise
+    def absorbSideSiteAtCounterClockwise(self,side):
+        return type(self)(
+             tensordot(self.data,side.data,(self.counterclockwise_index,side.clockwise_index))
+            .transpose(
+                self.physical_index,
+                side.physical_index+3,
+                self.physical_conjugate_index,
+                side.physical_conjugate_index+3,
+                self.clockwise_index,
+                side.inward_index+3-1,
+                side.counterclockwise_index+3-1,
+             )
+            .reshape(
+                self.physical_dimension*side.physical_dimension,
+                self.physical_conjugate_dimension*side.physical_conjugate_dimension,
+                self.clockwise_dimension*side.inward_dimension,
+                side.counterclockwise_dimension,
+             )
+        )
+    #@+node:gcross.20111103110300.1407: *5* formExpectationBoundary
+    def formExpectationBoundary(self,state):
+        return CornerBoundary(
+             tensordot(
+                tensordot(state.data,self.data,(state.physical_index,self.physical_index)),
+                state.data.conj(),
+                (self.physical_index+2,state.physical_index),
+             )
+            .transpose(
+                state.clockwise_index-1,
+                self.clockwise_index+2-2,
+                state.clockwise_index+4-1,
+                state.counterclockwise_index-1,
+                self.counterclockwise_index+2-2,
+                state.counterclockwise_index+4-1,
+             )
+            .reshape(
+                state.clockwise_dimension*self.clockwise_dimension*state.clockwise_dimension,
+                state.counterclockwise_dimension*self.counterclockwise_dimension*state.counterclockwise_dimension,
+             )
+        )
+    #@-others
+#@+node:gcross.20111103110300.1366: *4* OperatorSideSite
+class OperatorSideSite(CenterSiteTensor):
+    _dimensions = ["physical","physical_conjugate","clockwise","counterclockwise","inward"]
+    _center_site_class = OperatorCenterSite
+    #@+others
+    #@+node:gcross.20111103110300.1367: *5* formExpectationBoundary
+    def formExpectationBoundary(self,state):
+        return ExpectationSideBoundary(
+             tensordot(
+                tensordot(state.data,self.data,(state.physical_index,self.physical_index)),
+                state.data.conj(),
+                (self.physical_index+3,state.physical_index),
+             )
+            .transpose(
+                state.clockwise_index-1,
+                self.clockwise_index+3-2,
+                state.clockwise_index+6-1,
+                state.counterclockwise_index-1,
+                self.counterclockwise_index+3-2,
+                state.counterclockwise_index+6-1,
+                state.inward_index-1,
+                self.inward_index+3-2,
+                state.inward_index+6-1,
+             )
+            .reshape(
+                state.clockwise_dimension*self.clockwise_dimension*state.clockwise_dimension,
+                state.counterclockwise_dimension*self.counterclockwise_dimension*state.counterclockwise_dimension,
+                state.inward_dimension,
+                self.inward_dimension,
+                state.inward_dimension,
              )
         )
     #@-others
@@ -323,7 +466,11 @@ class StateSideSite(CenterSiteTensor):
 #@+node:gcross.20111009193003.1171: ** << Exports >>
 __all__ = [
     "CornerBoundary",
+    "ExpectationSideBoundary",
     "NormalizationSideBoundary",
+    "OperatorCenterSite",
+    "OperatorCornerSite",
+    "OperatorSideSite",
     "StateCenterSite",
     "StateCornerSite",
     "StateSideSite",
