@@ -50,16 +50,9 @@ set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/CMakeModules/")
 
 #@+<< Platform-specific tweaks >>
 #@+node:gcross.20110427003658.2447: ** << Platform-specific tweaks >>
-if(APPLE)
-    message (STATUS "Compiling on Darwin, adding -arch x86_64")
-    add_definitions(-arch x86_64)
-endif(APPLE)
-
-if(UNIX)
-    if(CMAKE_COMPILER_IS_GNUCC)
-         add_definitions(-Wall -Wno-strict-aliasing)
-    endif(CMAKE_COMPILER_IS_GNUCC)
-endif(UNIX)
+if(CMAKE_COMPILER_IS_GNUCC)
+    add_definitions(-Wall -Wno-strict-aliasing)
+endif(CMAKE_COMPILER_IS_GNUCC)
 #@-<< Platform-specific tweaks >>
 
 #@+<< Find packages >>
