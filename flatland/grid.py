@@ -5,7 +5,7 @@
 from numpy import array, dot, identity, product, tensordot
 from numpy.linalg import cond, svd
 
-from flatland.tensors import NormalizationSideBoundary, StateCenterSite, StateCornerSite, StateSideSite
+from flatland.tensors import *
 from flatland.utils import *
 #@-<< Imports >>
 
@@ -205,12 +205,106 @@ class NormalizationGrid:
     #@+node:gcross.20111014113710.1234: *4* physical_dimension
     physical_dimension = property(lambda self: self.center.physical_dimension)
     #@-others
+#@+node:gcross.20111103170337.1374: *3* ExpectationGrid
+class ExpectationGrid(NormalizationGrid):
+    #@+others
+    #@+node:gcross.20111103170337.1375: *4* __init__
+    def __init__(self,O_center,O_sides,O_corners):
+        NormalizationGrid.__init__(self,O_center.physical_dimension)
+        if not isinstance(O_center,OperatorCenterSite):
+            raise ValueError("first argument must be the operator center site")
+        try:
+            assert len(O_sides) == 4
+            for i in range(4):
+                assert isinstance(O_sides[i],OperatorSideSite)
+        except AssertionError:
+            raise ValueError("second argument must be a list of 4 operator side boundaries")
+        try:
+            assert len(O_corners) == 4
+            for i in range(4):
+                assert isinstance(O_corners[i],OperatorCornerSite)
+        except AssertionError:
+            raise ValueError("second argument must be a list of 4 operator side corners")
+        for i in range(4):
+            if O_center.bandwidthDimension(i) != O_sides[i].inward_dimension:
+                raise ValueError("the bandwidth dimension of the center site in direction {} is {}, but the inward dimension of the adjacent side is {}".format(i,O_center.bandwidthDimension(i),O_sides[i].inward_dimension))
+            if O_sides[i].counterclockwise_dimension != O_corners[i].clockwise_dimension:
+                raise ValueError("the counterclockwise dimension of side {} is {}, but the clockwise dimension of its adjacent corner is {}".format(i,O_sides[i].counterclockwise_dimension,O_corners[i].clockwise_dimension))
+            if O_sides[i].clockwise_dimension != O_corners[CCW(i)].counterclockwise_dimension:
+                raise ValueError("the clockwise dimension of side {} is {}, but the counterclockwise dimension of its adjacent corner is {}".format(i,O_sides[i].counterclockwise_dimension,O_corners[i].clockwise_dimension))
+            if O_sides[i].physical_dimension != 1:
+                raise ValueError("the physical dimension of side {} is {} when it needs to be exactly 1".format(i,O_sides[i].physical_dimension))
+            if O_corners[i].physical_dimension != 1:
+                raise ValueError("the physical dimension of corner {} is {} when it needs to be exactly 1".format(i,O_corners[i].physical_dimension))
+        if O_center.leftward_dimension != O_center.rightward_dimension:
+            raise ValueError("the left and right dimensions of the center tensor need to be equal ({} != {})".format(O_center.left_dimension,O_center.right_dimension))
+        if O_center.upward_dimension != O_center.downward_dimension:
+            raise ValueError("the upward and downward dimensions of the center tensor need to be equal ({} != {})".format(O_center.upward_dimension,O_center.downward_dimension))
+        self.O_center = O_center
+        self.O_sides = O_sides
+        self.O_corners = O_corners
+    #@+node:gcross.20111103170337.1382: *4* computeExpectation
+    def computeExpectation(self):
+        return \
+            dot(
+                dot(
+                    self.center.data.ravel(),
+                    self.computeExpectationMatrix()
+                ),
+                self.center.data.conj().ravel()
+            )/self.computeNormalization()
+    #@+node:gcross.20111103170337.1379: *4* computeExpectationMatrix
+    def computeExpectationMatrix(self):
+        side_boundaries = [
+            O_side.formExpectationBoundary(S_side).absorbCounterClockwiseCornerBoundary(O_corner.formExpectationBoundary(S_corner))
+            for (O_side,S_side,O_corner,S_corner) in zip(self.O_sides,self.sides,self.O_corners,self.corners)
+        ]
+        total_state_bandwidth_dimension = product(self.bandwidthDimensions())
+        total_operator_bandwidth_dimension = product(self.O_center.bandwidthDimensions())
+        matrix_dimension = self.physical_dimension*total_state_bandwidth_dimension
+        return (
+             tensordot(
+                 self.O_center.data.reshape(self.physical_dimension,self.physical_dimension,product(total_operator_bandwidth_dimension))
+                ,tensordot(
+                    side_boundaries[0].absorbCounterClockwiseSideBoundary(side_boundaries[1]).data,
+                    side_boundaries[2].absorbCounterClockwiseSideBoundary(side_boundaries[3]).data,
+                    ((ExpectationSideBoundary.clockwise_index,ExpectationSideBoundary.counterclockwise_index)
+                    ,(ExpectationSideBoundary.counterclockwise_index,ExpectationSideBoundary.clockwise_index)
+                    )
+                 )
+                .transpose(
+                    ExpectationSideBoundary.inward_operator_index-2,
+                    ExpectationSideBoundary.inward_operator_index+3-2,
+                    ExpectationSideBoundary.inward_state_index-2,
+                    ExpectationSideBoundary.inward_state_index+3-2,
+                    ExpectationSideBoundary.inward_state_conjugate_index-2,
+                    ExpectationSideBoundary.inward_state_conjugate_index+3-2,
+                 )
+                .reshape(
+                    total_operator_bandwidth_dimension,
+                    total_state_bandwidth_dimension,
+                    total_state_bandwidth_dimension,
+                 )
+                ,axes=1
+             )
+            .transpose(0,2,1,3)
+            .reshape(matrix_dimension,matrix_dimension)
+        )
+    #@+node:gcross.20111103170337.1377: *4* contract
+    def contract(self,*directions):
+        super(ExpectationGrid,self).contract(*directions)
+        for direction in directions:
+            self.O_sides[direction] = self.O_sides[direction].absorbCenterSite(self.O_center,direction)
+            self.O_corners[direction] = self.O_corners[direction].absorbSideSiteAtCounterClockwise(self.O_sides[CCW(direction)])
+            self.O_corners[CW(direction)] = self.O_corners[CW(direction)].absorbSideSiteAtClockwise(self.O_sides[CW(direction)])
+    #@-others
 #@-others
 
 #@+<< Exports >>
 #@+node:gcross.20111009193003.5255: ** << Exports >>
 __all__ = [
     "NormalizationGrid",
+    "ExpectationGrid",
 ]
 #@-<< Exports >>
 #@-leo
