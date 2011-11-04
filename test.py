@@ -1246,19 +1246,27 @@ class TestNormalizationGrid(TestCase):
     @staticmethod
     def randomNormalizationGrid():
         grid = NormalizationGrid(1)
-        grid.sides = []
-        for _ in range(4):
-            clockwise_dimension = randint(1,3)
-            counterclockwise_dimension = randint(1,3)
-            physical_dimension = randint(1,3)
-            inward_dimension = randint(1,3)
-            grid.sides.append(StateSideSite(
-                clockwise_dimension = clockwise_dimension,
-                counterclockwise_dimension = counterclockwise_dimension,
-                inward_dimension = inward_dimension,
-                physical_dimension = physical_dimension,
+        horizontal_dimension = randint(1,3)
+        vertical_dimension = randint(1,3)
+        grid.center = \
+            StateCenterSite(
+                physical_dimension=randint(1,3),
+                rightward_dimension=horizontal_dimension,
+                upward_dimension=vertical_dimension,
+                leftward_dimension=horizontal_dimension,
+                downward_dimension=vertical_dimension,
+                randomize=True,
+            )
+        grid.sides = [
+            StateSideSite(
+                clockwise_dimension = randint(1,3),
+                counterclockwise_dimension = randint(1,3),
+                inward_dimension = grid.center.bandwidthDimension(i),
+                physical_dimension = randint(1,3),
                 randomize = True
-            ))
+            )
+            for i in range(4)
+        ]
         grid.corners = [
             StateCornerSite(
                 clockwise_dimension = grid.sides[i].counterclockwise_dimension,
@@ -1268,15 +1276,6 @@ class TestNormalizationGrid(TestCase):
             )
             for i in range(4)
         ]
-        grid.center = \
-            StateCenterSite(
-                physical_dimension=randint(1,3),
-                rightward_dimension=grid.sides[0].inward_dimension,
-                upward_dimension=grid.sides[1].inward_dimension,
-                leftward_dimension=grid.sides[2].inward_dimension,
-                downward_dimension=grid.sides[3].inward_dimension,
-                randomize=True,
-            )
         return grid
     #@+node:gcross.20111024143336.1335: *4* test_compressConnectionBetweenSideAndCenter_keep_all
     @with_checker(number_of_calls=10)
@@ -1518,110 +1517,17 @@ class TestNormalizationGrid(TestCase):
     def test_computeNormalizationMatrix_trivial(self):
         for physical_dimension in range(1,5):
             self.assertAllClose(NormalizationGrid(physical_dimension).computeNormalizationMatrix(),identity(physical_dimension))
-    #@+node:gcross.20111013080525.1257: *4* test_contract_downward
-    @with_checker(number_of_calls=10)
-    def test_contract_downward(self):
+    #@+node:gcross.20111103170337.1388: *4* test_contract
+    @with_checker(number_of_calls=100)
+    def test_contract(self,direction=irange(0,3)):
         grid = self.randomNormalizationGrid()
-        for forward_direction in [1,3]:
-            reverse_direction = OPP(forward_direction)
-            forward_dimension = grid.bandwidthDimension(forward_direction)
-            reverse_dimension = grid.bandwidthDimension(reverse_direction)
-            if forward_dimension < reverse_dimension:
-                grid.sides[forward_direction] = \
-                    ensurePhysicalDimensionSufficientlyLarge(
-                        grid.sides[forward_direction],
-                        StateSideSite.inward_index,
-                        reverse_dimension
-                    )
-                grid.increaseSingleDirectionBandwidthDimensionTo(reverse_dimension,forward_direction)
         sides = copy(grid.sides)
         corners = copy(grid.corners)
         center = grid.center
-        corners[3] = corners[3].absorbSideSiteAtCounterClockwise(sides[0])
-        corners[2] = corners[2].absorbSideSiteAtClockwise(sides[2])
-        sides[3] = sides[3].absorbCenterSite(center,3)
-        grid.contract(3)
-        for correct_side, actual_side in zip(sides,grid.sides):
-            self.assertAllClose(correct_side.data,actual_side.data)
-        for correct_corner, actual_corner in zip(corners,grid.corners):
-            self.assertAllClose(correct_corner.data,actual_corner.data)
-    #@+node:gcross.20111013080525.1253: *4* test_contract_leftward
-    @with_checker(number_of_calls=10)
-    def test_contract_leftward(self):
-        grid = self.randomNormalizationGrid()
-        for forward_direction in [0,2]:
-            reverse_direction = OPP(forward_direction)
-            forward_dimension = grid.bandwidthDimension(forward_direction)
-            reverse_dimension = grid.bandwidthDimension(reverse_direction)
-            if forward_dimension < reverse_dimension:
-                grid.sides[forward_direction] = \
-                    ensurePhysicalDimensionSufficientlyLarge(
-                        grid.sides[forward_direction],
-                        StateSideSite.inward_index,
-                        reverse_dimension
-                    )
-                grid.increaseSingleDirectionBandwidthDimensionTo(reverse_dimension,forward_direction)
-        sides = copy(grid.sides)
-        corners = copy(grid.corners)
-        center = grid.center
-        corners[2] = corners[2].absorbSideSiteAtCounterClockwise(sides[3])
-        corners[1] = corners[1].absorbSideSiteAtClockwise(sides[1])
-        sides[2] = sides[2].absorbCenterSite(center,2)
-        grid.contract(2)
-        for correct_side, actual_side in zip(sides,grid.sides):
-            self.assertAllClose(correct_side.data,actual_side.data)
-        for correct_corner, actual_corner in zip(corners,grid.corners):
-            self.assertAllClose(correct_corner.data,actual_corner.data)
-    #@+node:gcross.20111013080525.1248: *4* test_contract_rightward
-    @with_checker(number_of_calls=10)
-    def test_contract_rightward(self):
-        grid = self.randomNormalizationGrid()
-        for forward_direction in [0,2]:
-            reverse_direction = OPP(forward_direction)
-            forward_dimension = grid.bandwidthDimension(forward_direction)
-            reverse_dimension = grid.bandwidthDimension(reverse_direction)
-            if forward_dimension < reverse_dimension:
-                grid.sides[forward_direction] = \
-                    ensurePhysicalDimensionSufficientlyLarge(
-                        grid.sides[forward_direction],
-                        StateSideSite.inward_index,
-                        reverse_dimension
-                    )
-                grid.increaseSingleDirectionBandwidthDimensionTo(reverse_dimension,forward_direction)
-        sides = copy(grid.sides)
-        corners = copy(grid.corners)
-        center = grid.center
-        corners[0] = corners[0].absorbSideSiteAtCounterClockwise(sides[1])
-        corners[-1] = corners[-1].absorbSideSiteAtClockwise(sides[-1])
-        sides[0] = sides[0].absorbCenterSite(center,0)
-        grid.contract(0)
-        for correct_side, actual_side in zip(sides,grid.sides):
-            self.assertAllClose(correct_side.data,actual_side.data)
-        for correct_corner, actual_corner in zip(corners,grid.corners):
-            self.assertAllClose(correct_corner.data,actual_corner.data)
-    #@+node:gcross.20111013080525.1251: *4* test_contract_upward
-    @with_checker(number_of_calls=10)
-    def test_contract_upward(self):
-        grid = self.randomNormalizationGrid()
-        for forward_direction in [1,3]:
-            reverse_direction = OPP(forward_direction)
-            forward_dimension = grid.bandwidthDimension(forward_direction)
-            reverse_dimension = grid.bandwidthDimension(reverse_direction)
-            if forward_dimension < reverse_dimension:
-                grid.sides[forward_direction] = \
-                    ensurePhysicalDimensionSufficientlyLarge(
-                        grid.sides[forward_direction],
-                        StateSideSite.inward_index,
-                        reverse_dimension
-                    )
-                grid.increaseSingleDirectionBandwidthDimensionTo(reverse_dimension,forward_direction)
-        sides = copy(grid.sides)
-        corners = copy(grid.corners)
-        center = grid.center
-        corners[1] = corners[1].absorbSideSiteAtCounterClockwise(sides[2])
-        corners[0] = corners[0].absorbSideSiteAtClockwise(sides[0])
-        sides[1] = sides[1].absorbCenterSite(center,1)
-        grid.contract(1)
+        corners[direction] = corners[direction].absorbSideSiteAtCounterClockwise(sides[CCW(direction)])
+        corners[CW(direction)] = corners[CW(direction)].absorbSideSiteAtClockwise(sides[CW(direction)])
+        sides[direction] = sides[direction].absorbCenterSite(center,direction)
+        grid.contract(direction)
         for correct_side, actual_side in zip(sides,grid.sides):
             self.assertAllClose(correct_side.data,actual_side.data)
         for correct_corner, actual_corner in zip(corners,grid.corners):
