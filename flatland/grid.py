@@ -5,7 +5,7 @@
 from numpy import array, dot, identity, product, tensordot
 from numpy.linalg import cond, svd
 
-from flatland.tensors import StateCenterSite, StateCornerSite, StateSideSite
+from flatland.tensors import NormalizationSideBoundary, StateCenterSite, StateCornerSite, StateSideSite
 from flatland.utils import *
 #@-<< Imports >>
 
@@ -126,14 +126,21 @@ class NormalizationGrid:
     #@+node:gcross.20111013080525.1259: *4* computeNormalizationSubmatrix
     def computeNormalizationSubmatrix(self):
         side_boundaries = [side.formNormalizationBoundary().absorbCounterClockwiseCornerBoundary(corner.formNormalizationBoundary()) for (side,corner) in zip(self.sides,self.corners)]
-        final_dimension = product([side.inward_dimension for side in self.sides])
+        final_dimension = product(self.bandwidthDimensions())
         return (
              tensordot(
                 side_boundaries[0].absorbCounterClockwiseSideBoundary(side_boundaries[1]).data,
                 side_boundaries[2].absorbCounterClockwiseSideBoundary(side_boundaries[3]).data,
-                ((1,0),(0,1))
+                ((NormalizationSideBoundary.clockwise_index,NormalizationSideBoundary.counterclockwise_index)
+                ,(NormalizationSideBoundary.counterclockwise_index,NormalizationSideBoundary.clockwise_index)
+                )
              )
-            .transpose(0,2,1,3)
+            .transpose(
+                NormalizationSideBoundary.inward_index-2,
+                NormalizationSideBoundary.inward_index+2-2,
+                NormalizationSideBoundary.inward_conjugate_index-2,
+                NormalizationSideBoundary.inward_conjugate_index+2-2,
+             )
             .reshape(final_dimension,final_dimension)
         )
     #@+node:gcross.20111013080525.1244: *4* contract
