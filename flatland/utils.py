@@ -135,7 +135,7 @@ def formContractor(order,joins,result_joins):
     #@+node:gcross.20111009135633.1136: *4* << Form the contractor function >>
     def contract(*arguments):
         if len(arguments) != len(order):
-            raise ValueError("wrong number of arguments;  expected {} but received {}",len(order),len(arguments))
+            raise ValueError("wrong number of arguments;  expected {} but received {}".format(len(order),len(arguments)))
         for (i, (tensor_id, argument)) in enumerate(zip(order,arguments)):
             if argument.ndim != len(tensor_join_ids[tensor_id]):
                 raise ValueError("argument {} ('{}') has rank {} when it was expected to have rank {}".format(i,order[i],argument.ndim,len(tensor_join_ids[tensor_id])))
