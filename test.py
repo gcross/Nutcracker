@@ -1408,7 +1408,6 @@ class TestNormalizationGrid(TestCase):
         direction = irange(0,3),
     ):
         grid = self.randomNormalizationGrid()
-        old_normalization = grid.computeNormalization()
         number_to_keep = randint(1,product(withoutIndex(grid.corners[direction].data.shape,StateCornerSite.physical_index)))
         grid.compressCorner(direction,keep=number_to_keep)
         self.assertEqual(grid.corners[direction].physical_dimension,number_to_keep)
@@ -1440,7 +1439,6 @@ class TestNormalizationGrid(TestCase):
         direction = irange(0,3),
     ):
         grid = self.randomNormalizationGrid()
-        old_normalization = grid.computeNormalization()
         number_to_keep = randint(1,product(withoutIndex(grid.sides[direction].data.shape,StateSideSite.physical_index)))
         grid.compressSide(direction,keep=number_to_keep)
         self.assertEqual(grid.sides[direction].physical_dimension,number_to_keep)
