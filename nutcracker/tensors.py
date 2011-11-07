@@ -25,6 +25,9 @@ from nutcracker.utils import crand
 #@-<< Imports >>
 
 #@+others
+#@+node:gcross.20111107131531.3588: ** Values
+LEFT = 0
+RIGHT = 1
 #@+node:gcross.20111107131531.1291: ** Classes
 #@+node:gcross.20111107131531.1292: *3* Metaclasses
 #@+node:gcross.20111107131531.1295: *4* MetaTensor
@@ -234,12 +237,26 @@ class OperatorSite(SiteTensor):
 class StateSite(SiteTensor):
     _dimensions = ["physical","left","right"]
     #@+others
+    #@+node:gcross.20111107131531.3585: *6* normalizeAndDenormalize
+    def normalizeAndDenormalize(self,other,other_direction_from_self):
+        if other_direction_from_self == LEFT:
+            info, new_other, new_self = core.norm_denorm_going_left(other.data.transpose(),self.data.transpose())
+        elif other_direction_from_self == RIGHT:
+            info, new_self, new_other = core.norm_denorm_going_right(self.data.transpose(),other.data.transpose())
+        else:
+            raise ValueError("direction must be LEFT ({}) or RIGHT ({}), not {}".format(LEFT,RIGHT,direction))
+        if info != 0:
+            raise Exception("Error code {} (!= 0) returned from the normalization routine.".format(info))
+        return StateSite(new_self.transpose()), StateSite(new_other.transpose())
     #@-others
 #@-others
 
 #@+<< Exports >>
 #@+node:gcross.20111107131531.1305: ** << Exports >>
 __all__ = [
+    "LEFT",
+    "RIGHT",
+
     "MetaTensor",
     "Tensor",
 

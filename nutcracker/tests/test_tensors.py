@@ -2,6 +2,8 @@
 #@+node:gcross.20111107131531.1333: * @file test_tensors.py
 #@+<< Imports >>
 #@+node:gcross.20111107131531.1334: ** << Imports >>
+from numpy import identity, tensordot
+
 from paycheck import *
 
 from nutcracker.tensors import *
@@ -107,6 +109,51 @@ class TestRightExpectationBoundary(TestCase):
          }[name] for name in RightExpectationBoundary._dimensions
         ]
     )
+    #@-others
+#@+node:gcross.20111107131531.3591: *3* TestStateSite
+class TestStateSite(TestCase):
+    #@+others
+    #@+node:gcross.20111107131531.3593: *4* normalizeAndDenormalize
+    @with_checker
+    def test_normalizeAndDenormalize(self,
+        direction=irange(0,1),
+        leftmost_dimension=irange(3,9),
+        middle_dimension=irange(3,9),
+        rightmost_dimension=irange(3,9),
+    ):
+        left_site = StateSite(
+            physical_dimension = 9,
+            left_dimension = leftmost_dimension,
+            right_dimension = middle_dimension,
+            randomize = True
+        )
+        right_site = StateSite(
+            physical_dimension = 9,
+            left_dimension = middle_dimension,
+            right_dimension = rightmost_dimension,
+            randomize = True
+        )
+        if direction == LEFT:
+            new_right_site, new_left_site = right_site.normalizeAndDenormalize(left_site,direction)
+
+        else:
+            new_left_site, new_right_site = left_site.normalizeAndDenormalize(right_site,direction)
+        self.assertEqual(new_left_site.data.shape,left_site.data.shape)
+        self.assertEqual(new_right_site.data.shape,right_site.data.shape)
+        self.assertAllClose(
+            tensordot(new_left_site.data,new_right_site.data,(StateSite.right_index,StateSite.left_index)),
+            tensordot(left_site.data,right_site.data,(StateSite.right_index,StateSite.left_index)),
+        )
+        if direction == LEFT:
+            self.assertAllClose(
+                tensordot(new_right_site.data.conj(),new_right_site.data,((StateSite.physical_index,StateSite.right_index),)*2),
+                identity(middle_dimension)
+            )
+        else:
+            self.assertAllClose(
+                tensordot(new_left_site.data.conj(),new_left_site.data,((StateSite.physical_index,StateSite.left_index),)*2),
+                identity(middle_dimension)
+            )
     #@-others
 #@-others
 #@-leo
