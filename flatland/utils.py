@@ -46,8 +46,10 @@ def compressConnectionUsingFirstTensorOnlyBetweenTensors(tensor_1,index_1,tensor
     )
 #@+node:gcross.20111022200315.1309: *3* computeFilterFrom
 def constructFilterFrom(keep=None,threshold=None):
-    if keep is None and threshold is None or (keep is not None and threshold is not None):
-        raise ValueError("either keep or threshold (but not both) needs to be specified")
+    if keep is None and threshold is None:
+        raise ValueError("either keep or threshold needs to be specified")
+    if keep is not None and threshold is not None:
+        raise ValueError("both keep and threshold cannot be simultaneously specified")
     if keep is not None:
         return keep
     if threshold is not None:
