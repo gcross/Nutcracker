@@ -16,7 +16,6 @@ def configuration(parent_package='',top_path=None):
                          extra_info = lapack_opt
                         )
 
-    config.add_data_dir('tests')
     return config
 
 if __name__ == '__main__':
