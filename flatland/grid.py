@@ -270,6 +270,15 @@ class ExpectationGrid(NormalizationGrid):
                 keep=keep,
                 threshold=threshold
             )
+    #@+node:gcross.20111107154810.1396: *4* compressSide
+    def compressSide(self,direction,keep=None,threshold=None):
+        self.sides[direction], self.O_sides[direction] = \
+            compressHermitianConnectionUsingFirstTensorOnlyBetweenTensors(
+                self.sides[direction], StateSideSite.physical_index,
+                self.O_sides[direction], OperatorSideSite.physical_index, OperatorSideSite.physical_conjugate_index,
+                keep=keep,
+                threshold=threshold
+            )
     #@+node:gcross.20111103170337.1382: *4* computeExpectation
     def computeExpectation(self):
         return \

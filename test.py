@@ -1894,6 +1894,41 @@ class TestExpectationGrid(TestCase):
         self.assertLessEqual(grid.corners[direction].physical_dimension,old_physical_dimension)
         self.assertAlmostEqual(old_normalization/grid.computeNormalization(),1)
         self.assertAlmostEqual(old_expectation/grid.computeExpectation(),1)
+    #@+node:gcross.20111107154810.1398: *5* test_compressSide_keep_all
+    @with_checker(number_of_calls=10)
+    def test_compressSide_keep_all(self,
+        direction = irange(0,3),
+    ):
+        grid = self.randomExpectationGrid()
+        old_physical_dimension = grid.sides[direction].physical_dimension
+        old_normalization = grid.computeNormalization()
+        old_expectation = grid.computeExpectation()
+        grid.compressSide(direction,keep=len)
+        self.assertLessEqual(grid.sides[direction].physical_dimension,old_physical_dimension)
+        self.assertAlmostEqual(old_normalization/grid.computeNormalization(),1)
+        self.assertAlmostEqual(old_expectation/grid.computeExpectation(),1)
+    #@+node:gcross.20111107154810.1400: *5* test_compressSide_keep_some
+    @with_checker(number_of_calls=10)
+    def test_compressSide_keep_some(self,
+        direction = irange(0,3),
+    ):
+        grid = self.randomExpectationGrid()
+        number_to_keep = randint(1,product(withoutIndex(grid.sides[direction].data.shape,StateSideSite.physical_index)))
+        grid.compressSide(direction,keep=lambda x: min(number_to_keep,len(x)))
+        self.assertLessEqual(grid.sides[direction].physical_dimension,number_to_keep)
+    #@+node:gcross.20111107154810.1402: *5* test_compressSide_threshold_zero
+    @with_checker(number_of_calls=10)
+    def test_compressSide_threshold_zero(self,
+        direction = irange(0,3),
+    ):
+        grid = self.randomExpectationGrid()
+        old_physical_dimension = grid.sides[direction].physical_dimension
+        old_normalization = grid.computeNormalization()
+        old_expectation = grid.computeExpectation()
+        grid.compressSide(direction,threshold=0)
+        self.assertLessEqual(grid.sides[direction].physical_dimension,old_physical_dimension)
+        self.assertAlmostEqual(old_normalization/grid.computeNormalization(),1)
+        self.assertAlmostEqual(old_expectation/grid.computeExpectation(),1)
     #@+node:gcross.20111103170337.1403: *5* test_computeExpectation_random
     @with_checker(number_of_calls=100)
     def test_computeExpectation_random(self):
