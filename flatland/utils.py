@@ -44,6 +44,15 @@ def compressConnectionUsingFirstTensorOnlyBetweenTensors(tensor_1,index_1,tensor
         (type(tensor_1),type(tensor_2)),
         compressConnectionUsingFirstTensorOnlyBetween(tensor_1.data,index_1,tensor_2.data,index_2,keep,threshold)
     )
+#@+node:gcross.20111107154810.1384: *3* compressHermitianConnectionUsingFirstTensorOnlyBetween
+def compressHermitianConnectionUsingFirstTensorOnlyBetween(tensor_1,index_1,tensor_2,index_2,index_2c,keep=None,threshold=None):
+    return truncateHermitianConnectionUsingFirstTensorOnlyBetween(tensor_1,index_1,tensor_2,index_2,index_2c,constructFilterFrom(keep=keep,threshold=threshold))
+#@+node:gcross.20111107154810.1386: *3* compressHermitianConnectionUsingFirstTensorOnlyBetweenTensors
+def compressHermitianConnectionUsingFirstTensorOnlyBetweenTensors(tensor_1,index_1,tensor_2,index_2,index_2c,keep=None,threshold=None):
+    return mapFunctions(
+        (type(tensor_1),type(tensor_2)),
+        compressHermitianConnectionUsingFirstTensorOnlyBetween(tensor_1.data,index_1,tensor_2.data,index_2,index_2c,keep,threshold)
+    )
 #@+node:gcross.20111022200315.1309: *3* computeFilterFrom
 def constructFilterFrom(keep=None,threshold=None):
     if keep is None and threshold is None:
@@ -295,6 +304,16 @@ def transposeAndReshapeAndReturnInverseTransformation(tensor,index):
         return tensor.reshape(inverse_shape).transpose(inverse_indices)
 
     return tensor.transpose(new_indices).reshape(new_shape), inverseTransformer
+#@+node:gcross.20111107123047.1400: *3* truncateConnectionAndReturnCompressor
+def truncateConnectionAndReturnCompressor(tensor,index,filter):
+    reshaped_tensor, inverseTransformation = transposeAndReshapeAndReturnInverseTransformation(tensor,index)
+    u, s, v = svd(reshaped_tensor,full_matrices=False)
+    s[s < 0] = 0
+    keep = filter(s/s[0] if s[0] != 0 else s) if callable(filter) else filter
+    return (
+        inverseTransformation(u[:,:keep]*s[:keep].reshape(1,keep)),
+        v[:keep].transpose()
+    )
 #@+node:gcross.20111022200315.1306: *3* truncateConnectionBetween
 def truncateConnectionBetween(tensor_1,index_1,tensor_2,index_2,filter):
     reshaped_tensor_1, inverseTransformation_1 = transposeAndReshapeAndReturnInverseTransformation(tensor_1,index_1)
@@ -316,14 +335,12 @@ def truncateConnectionToSelf(tensor,index,filter):
     return inverseTransformation(sqrt(evals[:keep])*evecs[:,:keep])
 #@+node:gcross.20111024143336.1315: *3* truncateConnectionUsingFirstTensorOnlyBetween
 def truncateConnectionUsingFirstTensorOnlyBetween(tensor_1,index_1,tensor_2,index_2,filter):
-    reshaped_tensor_1, inverseTransformation_1 = transposeAndReshapeAndReturnInverseTransformation(tensor_1,index_1)
-    u, s, v = svd(reshaped_tensor_1,full_matrices=False)
-    s[s < 0] = 0
-    keep = filter(s/s[0] if s[0] != 0 else s) if callable(filter) else filter
-    return (
-        inverseTransformation_1(u[:,:keep]),
-        multiplyTensorByMatrixAtIndex(tensor_2,s[:keep].reshape(1,keep)*v[:keep].transpose(),index_2)
-    )
+    new_tensor_1, compressor = truncateConnectionAndReturnCompressor(tensor_1,index_1,filter)
+    return new_tensor_1, multiplyTensorByMatrixAtIndex(tensor_2,compressor,index_2)
+#@+node:gcross.20111107123047.1402: *3* truncateHermitianConnectionUsingFirstTensorOnlyBetween
+def truncateHermitianConnectionUsingFirstTensorOnlyBetween(tensor_1,index_1,tensor_2,index_2,index_2c,filter):
+    new_tensor_1, compressor = truncateConnectionAndReturnCompressor(tensor_1,index_1,filter)
+    return new_tensor_1, multiplyTensorByMatrixAtIndex(multiplyTensorByMatrixAtIndex(tensor_2,compressor,index_2),compressor.conj(),index_2c)
 #@+node:gcross.20111022200315.1270: *3* withoutIndex
 def withoutIndex(vector,index):
     copy_of_vector = list(vector)
@@ -345,6 +362,8 @@ __all__ = [
     "compressConnectionToSelfTensor",
     "compressConnectionUsingFirstTensorOnlyBetween",
     "compressConnectionUsingFirstTensorOnlyBetweenTensors",
+    "compressHermitianConnectionUsingFirstTensorOnlyBetween",
+    "compressHermitianConnectionUsingFirstTensorOnlyBetweenTensors",
     "CW",
     "firstIndexBelowMagnitude",
     "formContractor",
@@ -363,6 +382,7 @@ __all__ = [
     "truncateConnectionBetween",
     "truncateConnectionToSelf",
     "truncateConnectionUsingFirstTensorOnlyBetween",
+    "truncateHermitianConnectionUsingFirstTensorOnlyBetween",
     "withoutIndex",
 ]
 #@-<< Exports >>

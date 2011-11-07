@@ -261,6 +261,15 @@ class ExpectationGrid(NormalizationGrid):
                 self.O_corners[direction],OperatorCornerSite.clockwise_index,
                 keep=keep,threshold=threshold,
             )
+    #@+node:gcross.20111107123047.1404: *4* compressCorner
+    def compressCorner(self,direction,keep=None,threshold=None):
+        self.corners[direction], self.O_corners[direction] = \
+            compressHermitianConnectionUsingFirstTensorOnlyBetweenTensors(
+                self.corners[direction], StateCornerSite.physical_index,
+                self.O_corners[direction], OperatorCornerSite.physical_index, OperatorCornerSite.physical_conjugate_index,
+                keep=keep,
+                threshold=threshold
+            )
     #@+node:gcross.20111103170337.1382: *4* computeExpectation
     def computeExpectation(self):
         return \
