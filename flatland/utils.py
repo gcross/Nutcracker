@@ -65,8 +65,9 @@ def firstIndexBelowMagnitude(arr,magnitude):
     index = 0
     for x in arr:
         if abs(x) < magnitude:
-            return index
+            break
         index += 1
+    return index
 #@+node:gcross.20111022200315.1276: *3* firstIndexWithNonZeroMagnitude
 def firstIndexWithNonZeroMagnitude(arr):
     return firstIndexBelowMagnitude(arr,1e-13)
