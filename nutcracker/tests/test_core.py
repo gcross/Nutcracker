@@ -358,50 +358,6 @@ class contract_matrix_left(TestCase):
         self.assertEqual(actual_output_tensor.shape,correct_output_tensor.shape)
         self.assertAllClose(actual_output_tensor,correct_output_tensor)
 #@+node:gcross.20111107123726.3163: *4* contract_sos
-#@+node:gcross.20111107123726.3164: *5* contract_sos_left
-contract_sos_left_correct_contractor = form_contractor([
-    ("L2","S*2"),
-    ("L3","O4"),
-    ("L1","S2"),
-    ("O1","S3"),
-    ("O2","S*3"),
-    ("O3","N3"),
-    ("S1","N1"),
-    ("S*1","N2"),
-], [
-    ("L",3),
-    ("O",4),
-    ("S",3),
-    ("S*",3),
-], ("N",3)
-)
-
-class contract_sos_left(TestCase):
-
-    @with_checker(number_of_calls=10)
-    def test_agreement_with_contractor(self,
-        bl = irange(2,20),
-        br = irange(2,20),
-        cl = irange(2,10),
-        cr = irange(2,10),
-    ):
-        d = 2
-        left_environment = crand(bl,bl,cl)
-        sparse_operator_indices, sparse_operator_matrices, operator_site_tensor = generate_random_sparse_matrices(cl,cr,d)
-        state_site_tensor = crand(br,bl,d)
-        actual_output_tensor = core.contract_sos_left(
-            cr,
-            left_environment,
-            sparse_operator_indices, sparse_operator_matrices,
-            state_site_tensor
-        )
-        correct_output_tensor = contract_sos_left_correct_contractor(
-            left_environment,
-            operator_site_tensor,
-            state_site_tensor,
-            state_site_tensor.conj(),
-        )
-        self.assertAllClose(actual_output_tensor,correct_output_tensor)
 #@+node:gcross.20111107123726.3165: *5* contract_sos_right_stage_1
 contract_sos_right_stage_1_correct_contractor = form_contractor([
     ("R1","S*1"),
@@ -532,50 +488,6 @@ class contract_sos_right_stage_2(TestCase):
             sos_right_stage_1_tensor,
             operator_site_tensor,
             state_site_tensor
-        )
-        self.assertAllClose(actual_output_tensor,correct_output_tensor)
-#@+node:gcross.20111107123726.3169: *5* contract_sos_right
-contract_sos_right_correct_contractor = form_contractor([
-    ("R1","S*1"),
-    ("R3","O3"),
-    ("R2","S1"),
-    ("O2","S*3"),
-    ("O1","S3"),
-    ("O4","N3"),
-    ("S2","N2"),
-    ("S*2","N1"),
-], [
-    ("R",3),
-    ("O",4),
-    ("S",3),
-    ("S*",3),
-], ("N",3)
-)
-
-class contract_sos_right(TestCase):
-
-    @with_checker(number_of_calls=10)
-    def test_agreement_with_contractor(self,
-        bl = irange(2,20),
-        br = irange(2,20),
-        cl = irange(2,10),
-        cr = irange(2,10),
-    ):
-        d = 2
-        right_environment = crand(br,br,cr)
-        sparse_operator_indices, sparse_operator_matrices, operator_site_tensor = generate_random_sparse_matrices(cl,cr,d)
-        state_site_tensor = crand(br,bl,d)
-        actual_output_tensor = core.contract_sos_right(
-            cl,
-            right_environment,
-            sparse_operator_indices, sparse_operator_matrices,
-            state_site_tensor
-        )
-        correct_output_tensor = contract_sos_right_correct_contractor(
-            right_environment,
-            operator_site_tensor,
-            state_site_tensor,
-            state_site_tensor.conj(),
         )
         self.assertAllClose(actual_output_tensor,correct_output_tensor)
 #@+node:gcross.20111107123726.3170: *4* contract_ss
@@ -1164,77 +1076,6 @@ class filter_components_outside_orthog(TestCase):
         vector = dot(projectors.conj(),rand(projectors.shape[-1]))
         filtered_vector = core.filter_components_outside_orthog(orthogonal_subspace_dimension,reflectors,coefficients,swaps,vector)
         self.assertVanishing(dot(filtered_vector,projectors))
-#@+node:gcross.20111107123726.3218: *3* Normalization
-#@+node:gcross.20111107123726.3219: *4* norm_denorm_going_left
-class norm_denorm_going_left(TestCase):
-    #@+others
-    #@-others
-
-    @with_checker
-    def testCorrectness(self,bll=irange(2,4),bl=irange(2,4),br=irange(2,4)):
-        dl = d = 2
-        tensor_to_denormalize = crand(bl,bll,d)
-        tensor_to_normalize = crand(br,bl,d)
-        info, denormalized_tensor, normalized_tensor = core.norm_denorm_going_left(tensor_to_denormalize,tensor_to_normalize)
-        self.assertEqual(0,info)
-        should_be_identity = tensordot(normalized_tensor.conj(),normalized_tensor,((0,2,),)*2)
-        self.assertAllClose(identity(bl),should_be_identity)
-        self.assertAllClose(
-            tensordot(tensor_to_denormalize,tensor_to_normalize,(0,1)),
-            tensordot(denormalized_tensor,normalized_tensor,(0,1)),
-        )
-
-    @with_checker
-    def testCorrectnessOnLarge(self):
-        br = 10
-        bl = 20
-        bll = 40
-        dl = d = 2
-        tensor_to_denormalize = crand(bl,bll,d)
-        tensor_to_normalize = crand(br,bl,d)
-        info, denormalized_tensor, normalized_tensor = core.norm_denorm_going_left(tensor_to_denormalize,tensor_to_normalize)
-        self.assertEqual(0,info)
-        should_be_identity = tensordot(normalized_tensor.conj(),normalized_tensor,((0,2,),)*2)
-        self.assertAllClose(identity(bl),should_be_identity)
-        self.assertAllClose(
-            tensordot(tensor_to_denormalize,tensor_to_normalize,(0,1)),
-            tensordot(denormalized_tensor,normalized_tensor,(0,1)),
-        )
-#@+node:gcross.20111107123726.3220: *4* norm_denorm_going_right
-class norm_denorm_going_right(TestCase):
-    #@+others
-    #@-others
-
-    @with_checker
-    def testCorrectness(self,brr=irange(2,4),br=irange(2,4),bl=irange(2,4)):
-        dr = d = 2
-        tensor_to_normalize = crand(br,bl,d)
-        tensor_to_denormalize = crand(brr,br,dr)
-        info, normalized_tensor, denormalized_tensor = core.norm_denorm_going_right(tensor_to_normalize,tensor_to_denormalize)
-        self.assertEqual(0,info)
-        should_be_identity = tensordot(normalized_tensor.conj(),normalized_tensor,((1,2,),)*2)
-        self.assertAllClose(identity(br),should_be_identity)
-        self.assertAllClose(
-            tensordot(tensor_to_normalize,tensor_to_denormalize,(0,1)),
-            tensordot(normalized_tensor,denormalized_tensor,(0,1)),
-        )
-
-    @with_checker
-    def testCorrectnessOnLarge(self):
-        bl = 10
-        br = 20
-        brr = 40
-        dr = d = 2
-        tensor_to_normalize = crand(br,bl,d)
-        tensor_to_denormalize = crand(brr,br,dr)
-        info, normalized_tensor, denormalized_tensor = core.norm_denorm_going_right(tensor_to_normalize,tensor_to_denormalize)
-        self.assertEqual(0,info)
-        should_be_identity = tensordot(normalized_tensor.conj(),normalized_tensor,((1,2,),)*2)
-        self.assertAllClose(identity(br),should_be_identity)
-        self.assertAllClose(
-            tensordot(tensor_to_normalize,tensor_to_denormalize,(0,1)),
-            tensordot(normalized_tensor,denormalized_tensor,(0,1)),
-        )
 #@+node:gcross.20111107123726.3221: *3* Bandwidth increase
 #@+node:gcross.20111107123726.3222: *4* create_bandwidth_increase_matrix
 class create_bandwidth_increase_matrix(TestCase):
