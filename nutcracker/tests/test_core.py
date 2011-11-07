@@ -236,53 +236,6 @@ def form_contractor(edges,input_tensors,output_tensor):
 #@+node:gcross.20111107123726.3157: ** Tests
 #@+node:gcross.20111107123726.3158: *3* Contractors
 #@+others
-#@+node:gcross.20111107123726.3174: *4* compute_expectation
-compute_expectation_correct_contractor = form_contractor([
-    ("L2","S*2"),
-    ("L3","O4"),
-    ("L1","S2"),
-    ("R1","S*1"),
-    ("R3","O3"),
-    ("R2","S1"),
-    ("O2","S*3"),
-    ("O1","S3"),
-], [
-    ("L",3),
-    ("S",3),
-    ("O",4),
-    ("S*",3),
-    ("R",3),
-], (None,0)
-)
-
-class compute_expectation(TestCase):
-
-    @with_checker(number_of_calls=10)
-    def test_agreement_with_contractor(self,
-        bl = irange(2,20),
-        br = irange(2,20),
-        cl = irange(2,10),
-        cr = irange(2,10),
-    ):
-        d = 2
-        left_environment = crand(bl,bl,cl)
-        right_environment = crand(br,br,cr)
-        sparse_operator_indices, sparse_operator_matrices, operator_site_tensor = generate_random_sparse_matrices(cl,cr,d)
-        state_site_tensor = crand(br,bl,d)
-        actual_output_tensor = core.compute_expectation(
-            left_environment,
-            state_site_tensor,
-            sparse_operator_indices, sparse_operator_matrices,
-            right_environment,
-        )
-        correct_output_tensor = compute_expectation_correct_contractor(
-            left_environment,
-            state_site_tensor,
-            operator_site_tensor,
-            state_site_tensor.conj(),
-            right_environment,
-        )
-        self.assertAlmostEqual(actual_output_tensor,correct_output_tensor)
 #@+node:gcross.20111107123726.3175: *4* compute_optimization_matrix
 class compute_optimization_matrix(TestCase):
 
