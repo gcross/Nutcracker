@@ -81,7 +81,6 @@ class TestCase(unittest.TestCase):
         self.assertAlmostEqual(norm(v),0)
     #@-others
 #@+node:gcross.20111009135633.2982: ** Tests
-#@+others
 #@+node:gcross.20111013183808.3918: *3* Functions
 #@+node:gcross.20111022200315.1323: *4* compressConnectionBetween
 class TestCompressConnectionBetween(TestCase):
@@ -1880,31 +1879,7 @@ class TestExpectationGrid(TestCase):
     #@-others
 #@-others
 
-tests = [
-    TestCompressConnectionBetween,
-    TestCompressConnectionToSelf,
-    TestCompressConnectionUsingFirstTensorBetween,
-    TestFormContractor,
-    TestIncreaseDimensionUsingFirstTensorOnlyBetween,
-    TestNormalizeAndDenormalize,
-    TestTruncateConnectionToSelf,
-
-    TestExpectationSideBoundary,
-    TestNormalizationSideBoundary,
-    TestOperatorCornerSite,
-    TestOperatorSideSite,
-    TestStateCornerSite,
-    TestStateSideSite,
-
-    TestNormalizationGrid,
-    TestExpectationGrid,
-]
-#@-others
-
-#@+<< Runner >>
-#@+node:gcross.20111009135633.2971: ** << Runner >>
-numpy.set_printoptions(linewidth=132)
-
-unittest.TextTestRunner(verbosity=2).run(unittest.TestSuite(map(unittest.defaultTestLoader.loadTestsFromTestCase, tests)))
-#@-<< Runner >>
+if __name__ == "__main__":
+    numpy.set_printoptions(linewidth=132)
+    unittest.main()
 #@-leo
