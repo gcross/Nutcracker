@@ -1757,6 +1757,110 @@ class TestExpectationGrid(TestCase):
             for i in range(4)
         ]
         return grid
+    #@+node:gcross.20111107123047.1382: *5* test_compressConnectionBetweenSideAndClockwiseCorner_keep_all
+    @with_checker(number_of_calls=10)
+    def test_compressConnectionBetweenSideAndClockwiseCorner_threshold_zero(self,
+        direction = irange(0,3),
+    ):
+        grid = self.randomExpectationGrid()
+        old_O_connection_dimension = grid.O_sides[direction].clockwise_dimension
+        old_connection_dimension = grid.sides[direction].clockwise_dimension
+        old_normalization = grid.computeNormalization()
+        old_expectation = grid.computeExpectation()
+        grid.compressConnectionBetweenSideAndClockwiseCorner(direction,keep=len)
+        self.assertLessEqual(grid.O_sides[direction].clockwise_dimension,old_O_connection_dimension)
+        self.assertLessEqual(grid.sides[direction].clockwise_dimension,old_connection_dimension)
+        self.assertAlmostEqual(old_normalization/grid.computeNormalization(),1)
+        self.assertAlmostEqual(old_expectation/grid.computeExpectation(),1)
+    #@+node:gcross.20111107123047.1384: *5* test_compressConnectionBetweenSideAndClockwiseCorner_keep_some
+    @with_checker(number_of_calls=10)
+    def test_compressConnectionBetweenSideAndClockwiseCorner_keep_some(self,
+        direction = irange(0,3),
+    ):
+        grid = self.randomExpectationGrid()
+        number_to_keep = \
+            randint(1,
+                min(
+                    product(withoutIndex(grid.O_sides[direction].data.shape,OperatorSideSite.clockwise_index)),
+                    product(withoutIndex(grid.O_corners[CW(direction)].data.shape,OperatorCornerSite.counterclockwise_index)),
+                    product(withoutIndex(grid.sides[direction].data.shape,StateSideSite.clockwise_index)),
+                    product(withoutIndex(grid.corners[CW(direction)].data.shape,StateCornerSite.counterclockwise_index)),
+                ),
+            )
+        grid.compressConnectionBetweenSideAndClockwiseCorner(direction,keep=number_to_keep)
+        self.assertEqual(number_to_keep,grid.O_sides[direction].clockwise_dimension)
+        self.assertEqual(number_to_keep,grid.O_corners[CW(direction)].counterclockwise_dimension)
+        self.assertEqual(number_to_keep,grid.sides[direction].clockwise_dimension)
+        self.assertEqual(number_to_keep,grid.corners[CW(direction)].counterclockwise_dimension)
+        grid.computeNormalization()
+        grid.computeExpectation()
+    #@+node:gcross.20111107123047.1388: *5* test_compressConnectionBetweenSideAndClockwiseCorner_threshold_zero
+    @with_checker(number_of_calls=10)
+    def test_compressConnectionBetweenSideAndClockwiseCorner_threshold_zero(self,
+        direction = irange(0,3),
+    ):
+        grid = self.randomExpectationGrid()
+        old_O_connection_dimension = grid.O_sides[direction].clockwise_dimension
+        old_connection_dimension = grid.sides[direction].clockwise_dimension
+        old_normalization = grid.computeNormalization()
+        old_expectation = grid.computeExpectation()
+        grid.compressConnectionBetweenSideAndClockwiseCorner(direction,threshold=0)
+        self.assertLessEqual(grid.O_sides[direction].clockwise_dimension,old_O_connection_dimension)
+        self.assertLessEqual(grid.sides[direction].clockwise_dimension,old_connection_dimension)
+        self.assertAlmostEqual(old_normalization/grid.computeNormalization(),1)
+        self.assertAlmostEqual(old_expectation/grid.computeExpectation(),1)
+    #@+node:gcross.20111107123047.1390: *5* test_compressConnectionBetweenSideAndCounterClockwiseCorner_keep_all
+    @with_checker(number_of_calls=10)
+    def test_compressConnectionBetweenSideAndCounterClockwiseCorner_threshold_zero(self,
+        direction = irange(0,3),
+    ):
+        grid = self.randomExpectationGrid()
+        old_O_connection_dimension = grid.O_sides[direction].counterclockwise_dimension
+        old_connection_dimension = grid.sides[direction].counterclockwise_dimension
+        old_normalization = grid.computeNormalization()
+        old_expectation = grid.computeExpectation()
+        grid.compressConnectionBetweenSideAndCounterClockwiseCorner(direction,keep=len)
+        self.assertLessEqual(grid.O_sides[direction].counterclockwise_dimension,old_O_connection_dimension)
+        self.assertLessEqual(grid.sides[direction].counterclockwise_dimension,old_connection_dimension)
+        self.assertAlmostEqual(old_normalization/grid.computeNormalization(),1)
+        self.assertAlmostEqual(old_expectation/grid.computeExpectation(),1)
+    #@+node:gcross.20111107123047.1394: *5* test_compressConnectionBetweenSideAndCounterClockwiseCorner_keep_some
+    @with_checker(number_of_calls=10)
+    def test_compressConnectionBetweenSideAndCounterClockwiseCorner_keep_some(self,
+        direction = irange(0,3),
+    ):
+        grid = self.randomExpectationGrid()
+        number_to_keep = \
+            randint(1,
+                min(
+                    product(withoutIndex(grid.O_sides[direction].data.shape,OperatorSideSite.counterclockwise_index)),
+                    product(withoutIndex(grid.O_corners[direction].data.shape,OperatorCornerSite.clockwise_index)),
+                    product(withoutIndex(grid.sides[direction].data.shape,StateSideSite.counterclockwise_index)),
+                    product(withoutIndex(grid.corners[direction].data.shape,StateCornerSite.clockwise_index)),
+                )
+            )
+        grid.compressConnectionBetweenSideAndCounterClockwiseCorner(direction,keep=number_to_keep)
+        self.assertEqual(number_to_keep,grid.O_sides[direction].counterclockwise_dimension)
+        self.assertEqual(number_to_keep,grid.O_corners[direction].clockwise_dimension)
+        self.assertEqual(number_to_keep,grid.sides[direction].counterclockwise_dimension)
+        self.assertEqual(number_to_keep,grid.corners[direction].clockwise_dimension)
+        grid.computeNormalization()
+        grid.computeExpectation()
+    #@+node:gcross.20111107123047.1392: *5* test_compressConnectionBetweenSideAndCounterClockwiseCorner_threshold_zero
+    @with_checker(number_of_calls=10)
+    def test_compressConnectionBetweenSideAndCounterClockwiseCorner_threshold_zero(self,
+        direction = irange(0,3),
+    ):
+        grid = self.randomExpectationGrid()
+        old_O_connection_dimension = grid.O_sides[direction].counterclockwise_dimension
+        old_connection_dimension = grid.sides[direction].counterclockwise_dimension
+        old_normalization = grid.computeNormalization()
+        old_expectation = grid.computeExpectation()
+        grid.compressConnectionBetweenSideAndCounterClockwiseCorner(direction,threshold=0)
+        self.assertLessEqual(grid.O_sides[direction].counterclockwise_dimension,old_O_connection_dimension)
+        self.assertLessEqual(grid.sides[direction].counterclockwise_dimension,old_connection_dimension)
+        self.assertAlmostEqual(old_normalization/grid.computeNormalization(),1)
+        self.assertAlmostEqual(old_expectation/grid.computeExpectation(),1)
     #@+node:gcross.20111103170337.1403: *5* test_computeExpectation_random
     @with_checker(number_of_calls=100)
     def test_computeExpectation_random(self):

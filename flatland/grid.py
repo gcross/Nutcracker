@@ -243,6 +243,24 @@ class ExpectationGrid(NormalizationGrid):
         self.O_center = O_center
         self.O_sides = O_sides
         self.O_corners = O_corners
+    #@+node:gcross.20111107123047.1378: *4* compressConnectionBetweenSideAndClockwiseCorner
+    def compressConnectionBetweenSideAndClockwiseCorner(self,direction,keep=None,threshold=None):
+        NormalizationGrid.compressConnectionBetweenSideAndClockwiseCorner(self,direction,keep,threshold)
+        self.O_sides[direction], self.O_corners[CW(direction)] = \
+            compressConnectionBetweenTensors(
+                self.O_sides[direction],OperatorSideSite.clockwise_index,
+                self.O_corners[CW(direction)],OperatorCornerSite.counterclockwise_index,
+                keep=keep,threshold=threshold,
+            )
+    #@+node:gcross.20111107123047.1380: *4* compressConnectionBetweenSideAndCounterClockwiseCorner
+    def compressConnectionBetweenSideAndCounterClockwiseCorner(self,direction,keep=None,threshold=None):
+        NormalizationGrid.compressConnectionBetweenSideAndCounterClockwiseCorner(self,direction,keep,threshold)
+        self.O_sides[direction], self.O_corners[direction] = \
+            compressConnectionBetweenTensors(
+                self.O_sides[direction],OperatorSideSite.counterclockwise_index,
+                self.O_corners[direction],OperatorCornerSite.clockwise_index,
+                keep=keep,threshold=threshold,
+            )
     #@+node:gcross.20111103170337.1382: *4* computeExpectation
     def computeExpectation(self):
         return \
