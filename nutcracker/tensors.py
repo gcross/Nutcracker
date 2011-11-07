@@ -161,23 +161,33 @@ class SiteTensor(Tensor):
         return self._physical_indices
     #@-others
 #@+node:gcross.20111107131531.1306: *3* Tensors
-#@+node:gcross.20111107131531.1338: *4* LeftExpectationBoundary
+#@+node:gcross.20111107131531.3579: *4* Boundaries
+#@+node:gcross.20111107131531.1338: *5* LeftExpectationBoundary
 class LeftExpectationBoundary(SiteTensor):
     _dimensions = ["operator","state_conjugate","state"]
     #@+others
-    #@+node:gcross.20111107131531.1339: *5* absorb
+    #@+node:gcross.20111107131531.1339: *6* absorb
     def absorb(self,operator,state):
         return type(self)(core.contract_sos_left(operator.right_dimension,self.data.transpose(),operator.index_table.transpose(),operator.matrix_table.transpose(),state.data.transpose()).transpose())
     #@-others
-#@+node:gcross.20111107131531.1336: *4* OperatorSite
+#@+node:gcross.20111107131531.3577: *5* RightExpectationBoundary
+class RightExpectationBoundary(SiteTensor):
+    _dimensions = ["operator","state","state_conjugate"]
+    #@+others
+    #@+node:gcross.20111107131531.3578: *6* absorb
+    def absorb(self,operator,state):
+        return type(self)(core.contract_sos_right(operator.left_dimension,self.data.transpose(),operator.index_table.transpose(),operator.matrix_table.transpose(),state.data.transpose()).transpose())
+    #@-others
+#@+node:gcross.20111107131531.3580: *4* Sites
+#@+node:gcross.20111107131531.1336: *5* OperatorSite
 class OperatorSite(SiteTensor):
     #@+others
-    #@+node:gcross.20111107131531.1350: *5* (indices)
+    #@+node:gcross.20111107131531.1350: *6* (indices)
     left_index = 0
     right_index = 1
     physical_conjugate_index = 2
     physical_index = 3
-    #@+node:gcross.20111107131531.1341: *5* __init__
+    #@+node:gcross.20111107131531.1341: *6* __init__
     def __init__(self,*args,**keywords):
         self.left_dimension = keywords["left_dimension"]
         self.right_dimension = keywords["right_dimension"]
@@ -191,14 +201,14 @@ class OperatorSite(SiteTensor):
             raise ValueError("index table has {} entries but matrix table has {}".format(self.index_table.shape[0],self.matrix_table.shape[0]))
         self.number_of_matrices = self.matrix_table.shape[0]
         self.physical_dimension = self.physical_conjugate_dimension = self.matrix_table.shape[-1]
-    #@+node:gcross.20111107131531.1342: *5* formDenseTensor
+    #@+node:gcross.20111107131531.1342: *6* formDenseTensor
     def formDenseTensor(self):
         operator = zeros([self.left_dimension,self.right_dimension,self.physical_dimension,self.physical_dimension,],dtype=complex128,order='F')
         for i in xrange(self.number_of_matrices):
             left_index, right_index = self.index_table[i]-1
             operator[left_index,right_index] += self.matrix_table[i]
         return operator
-    #@+node:gcross.20111107131531.1345: *5* random
+    #@+node:gcross.20111107131531.1345: *6* random
     @staticmethod
     def random(*args,**keywords):
         assert len(args) == 0
@@ -220,7 +230,7 @@ class OperatorSite(SiteTensor):
             right_dimension = right_dimension
         )
     #@-others
-#@+node:gcross.20111107131531.1307: *4* StateSite
+#@+node:gcross.20111107131531.1307: *5* StateSite
 class StateSite(SiteTensor):
     _dimensions = ["physical","left","right"]
     #@+others
@@ -234,6 +244,8 @@ __all__ = [
     "Tensor",
 
     "LeftExpectationBoundary",
+    "RightExpectationBoundary",
+
     "OperatorSite",
     "StateSite",
 ]
