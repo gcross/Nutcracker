@@ -10,10 +10,17 @@
 <v t="gcross.20111107123726.3232"><vh>@path nutcracker</vh>
 <v t="gcross.20111107123726.1214"><vh>@file __init__.py</vh></v>
 <v t="gcross.20111107123726.1123"><vh>@file core.f95</vh></v>
+<v t="gcross.20111107131531.1288"><vh>@file tensors.py</vh></v>
+<v t="gcross.20111107123726.3236"><vh>@file utils.py</vh></v>
+<v t="gcross.20111107131531.1331"><vh>@path tests</vh>
+<v t="gcross.20111107131531.1346"><vh>@file __init__.py</vh></v>
+<v t="gcross.20111107123726.3138"><vh>@file test_core.py</vh></v>
+<v t="gcross.20111107131531.1333"><vh>@file test_tensors.py</vh></v>
 </v>
-<v t="gcross.20111107123726.3138"><vh>@file test.py</vh></v>
+</v>
 </vnodes>
 <tnodes>
 <t tx="gcross.20111107123726.3232"></t>
+<t tx="gcross.20111107131531.1331"></t>
 </tnodes>
 </leo_file>

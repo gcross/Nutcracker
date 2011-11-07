@@ -1,5 +1,5 @@
 #@+leo-ver=5-thin
-#@+node:gcross.20111107123726.3138: * @file test.py
+#@+node:gcross.20111107123726.3138: * @file test_core.py
 #@+<< Import needed modules >>
 #@+node:gcross.20111107123726.3139: ** << Import needed modules >>
 import unittest
@@ -12,6 +12,8 @@ from random import randint, choice
 import random
 import __builtin__
 import nutcracker.core as core
+
+from nutcracker.tests import *
 #@-<< Import needed modules >>
 
 #@+others
@@ -231,26 +233,6 @@ def form_contractor(edges,input_tensors,output_tensor):
         [[e[input_name+str(index)] for index in xrange(1,input_size+1)] for (input_name,input_size) in input_tensors],
         [e[output_name+str(index)] for index in xrange(1,output_size+1)],
     )
-#@+node:gcross.20111107123726.3152: ** Classes
-#@+node:gcross.20111107123726.3153: *3* TestCase
-class TestCase(unittest.TestCase):
-    #@+others
-    #@+node:gcross.20111107123726.3154: *4* assertAllClose
-    def assertAllClose(self,v1,v2):
-        v1 = array(v1)
-        v2 = array(v2)
-        self.assertEqual(v1.shape,v2.shape)
-        self.assertTrue(allclose(v1,v2))
-    #@+node:gcross.20111107123726.3155: *4* assertAllEqual
-    def assertAllEqual(self,v1,v2):
-        v1 = array(v1)
-        v2 = array(v2)
-        self.assertEqual(v1.shape,v2.shape)
-        self.assertTrue(all(v1 == v2))
-    #@+node:gcross.20111107123726.3156: *4* assertVanishing
-    def assertVanishing(self,v):
-        self.assertAlmostEqual(norm(v),0)
-    #@-others
 #@+node:gcross.20111107123726.3157: ** Tests
 #@+node:gcross.20111107123726.3158: *3* Contractors
 #@+others
@@ -920,25 +902,6 @@ class compute_orthogonal_basis(TestCase):
         vectors = array(crand(m,n),order='Fortran')
         _, basis = core.compute_orthogonal_basis(m,vectors)
         self.assertAlmostEqual(norm(dot(basis[:,n:].conj().transpose(),vectors)),0)
-#@+node:gcross.20111107123726.3194: *4* compute_orthogonal_subspace
-class compute_orthogonal_subspace(TestCase):
-    @with_checker
-    def test_shape(self,m=irange(8,20),n=irange(1,7)):
-        vectors = array(crand(m,n),order='Fortran')
-        basis = core.compute_orthogonal_subspace(vectors)
-        self.assertEqual(basis.shape,(m,n-m))
-
-    @with_checker
-    def test_orthogonality(self,m=irange(8,20),n=irange(1,7)):
-        vectors = array(crand(m,n),order='Fortran')
-        basis = core.compute_orthogonal_subspace(vectors)
-        self.assertAllClose(dot(basis.transpose().conj(),basis),identity(n-m))
-
-    @with_checker
-    def test_subspace(self,m=irange(8,20),n=irange(1,7)):
-        vectors = array(crand(m,n),order='Fortran')
-        _, basis = core.compute_orthogonal_subspace(vectors)
-        self.assertAlmostEqual(norm(dot(basis.conj().transpose(),vectors)),0)
 #@+node:gcross.20111107123726.3196: *4* swap_inplace
 class swap_inplace(TestCase):
     @with_checker
@@ -1415,51 +1378,7 @@ class non_hermitian_matrix_detection(TestCase):
             self.assertNotAlmostEqual(left_boundary_1.ravel(),left_boundary_2.conj().ravel())
 #@-others
 
-set_printoptions(linewidth=132)
-
-tests = [
-    iteration_stage_1,
-    iteration_stage_2,
-    iteration_stage_3,
-    contract_sos_left,
-    contract_sos_right_stage_1,
-    contract_sos_right_stage_2a,
-    contract_sos_right_stage_2b,
-    contract_sos_right_stage_2,
-    contract_sos_right,
-    contract_vs_left,
-    contract_vs_right,
-    form_overlap_vector,
-    compute_expectation,
-    compute_optimization_matrix,
-    rand_norm_state_site_tensor,
-    rand_unnorm_state_site_tensor,
-    norm_denorm_going_left,
-    norm_denorm_going_right,
-    create_bandwidth_increase_matrix,
-    absorb_bi_matrix_from_left,
-    absorb_bi_matrix_from_right,
-    increase_bandwidth_between,
-    orthogonalize_matrix_in_place,
-    compute_orthogonal_basis,
-    compute_overlap_with_projectors,
-    compute_q_from_reflectors,
-    project_into_orthogonal_space,
-    unproject_from_orthogonal_space,
-    project_matrix_into_orthog_space,
-    form_overlap_site_tensor,
-    form_norm_overlap_tensors,
-    filter_components_outside_orthog,
-    swap_inplace,
-    unswap_inplace,
-    swap_matrix_inplace,
-    non_hermitian_matrix_detection,
-    extend_state_vector_fragment,
-    contract_matrix_left,
-]
-
-#@+<< Runner >>
-#@+node:gcross.20111107123726.3230: ** << Runner >>
-unittest.TextTestRunner(verbosity=2).run(unittest.TestSuite(map(unittest.defaultTestLoader.loadTestsFromTestCase, tests)))
-#@-<< Runner >>
+if __name__ == "__main__":
+    set_printoptions(linewidth=132)
+    unittest.main()
 #@-leo
