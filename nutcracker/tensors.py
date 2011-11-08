@@ -165,7 +165,7 @@ class SiteTensor(Tensor):
 #@+node:gcross.20111107131531.1306: *3* Tensors
 #@+node:gcross.20111107131531.3579: *4* Boundaries
 #@+node:gcross.20111107131531.1338: *5* LeftExpectationBoundary
-class LeftExpectationBoundary(SiteTensor):
+class LeftExpectationBoundary(Tensor):
     _dimensions = ["operator","state_conjugate","state"]
     #@+others
     #@+node:gcross.20111107131531.1339: *6* absorb
@@ -173,7 +173,7 @@ class LeftExpectationBoundary(SiteTensor):
         return type(self)(core.contract_sos_left(operator.right_dimension,self.data.transpose(),operator.index_table.transpose(),operator.matrix_table.transpose(),state.data.transpose()).transpose())
     #@-others
 #@+node:gcross.20111107131531.3577: *5* RightExpectationBoundary
-class RightExpectationBoundary(SiteTensor):
+class RightExpectationBoundary(Tensor):
     _dimensions = ["operator","state","state_conjugate"]
     #@+others
     #@+node:gcross.20111107131531.3578: *6* absorb
