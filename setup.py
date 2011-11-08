@@ -4,7 +4,7 @@ def configuration(parent_package='',top_path=None):
     from numpy.distutils.system_info import get_info, NotFoundError
     from numpy.distutils.misc_util import Configuration
 
-    config = Configuration('flatland',parent_package,top_path)
+    config = Configuration('nutcracker',parent_package,top_path)
 
     lapack_opt = get_info('lapack_opt')
 
