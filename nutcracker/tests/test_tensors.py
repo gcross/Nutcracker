@@ -60,6 +60,49 @@ class TestLeftExpectationBoundary(TestCase):
         ]
     )
     #@-others
+#@+node:gcross.20111108100704.1438: *3* TestLeftOverlapBoundary
+class TestLeftOverlapBoundary(TestCase):
+    #@+others
+    #@+node:gcross.20111108100704.1439: *4* absorb
+    @with_checker
+    def test_absorb(self,
+        physical_dimension=irange(1,4),
+        left_state_dimension=irange(1,4),
+        right_state_dimension=irange(1,4),
+        left_overlap_dimension=irange(1,4),
+        right_overlap_dimension=irange(1,4),
+    ):
+        L = LeftOverlapBoundary.random(
+            state_dimension = left_state_dimension,
+            overlap_dimension = left_overlap_dimension,
+        )
+        V = OverlapSite.random(
+            physical_dimension = physical_dimension,
+            left_dimension = left_overlap_dimension,
+            right_dimension = right_overlap_dimension,
+        )
+        S = StateSite.random(
+            physical_dimension = physical_dimension,
+            left_dimension = left_state_dimension,
+            right_dimension = right_state_dimension,
+        )
+        self.assertAllClose(
+            L.absorb(V,S).data,
+            self.test_absorb.contract(L.data,V.data,S.data)
+        )
+
+    test_absorb.contract = formContractor(
+        ['L','V','S'],
+        [(('L',LeftOverlapBoundary.overlap_index),('V',OverlapSite.left_index))
+        ,(('L',LeftOverlapBoundary.state_index),('S',StateSite.left_index))
+        ,(('V',OverlapSite.physical_index),('S',StateSite.physical_index))
+        ],
+        [{'state':[('S',StateSite.right_index)]
+         ,'overlap':[('V',OverlapSite.right_index)]
+         }[name] for name in LeftOverlapBoundary._dimensions
+        ]
+    )
+    #@-others
 #@+node:gcross.20111107131531.3583: *3* TestRightExpectationBoundary
 class TestRightExpectationBoundary(TestCase):
     #@+others
@@ -103,6 +146,49 @@ class TestRightExpectationBoundary(TestCase):
          ,'state_conjugate':[('S*',StateSite.left_index)]
          ,'operator':[('O',OperatorSite.left_index)]
          }[name] for name in RightExpectationBoundary._dimensions
+        ]
+    )
+    #@-others
+#@+node:gcross.20111108100704.1442: *3* TestRightOverlapBoundary
+class TestLeftOverlapBoundary(TestCase):
+    #@+others
+    #@+node:gcross.20111108100704.1443: *4* absorb
+    @with_checker
+    def test_absorb(self,
+        physical_dimension=irange(1,4),
+        left_state_dimension=irange(1,4),
+        right_state_dimension=irange(1,4),
+        left_overlap_dimension=irange(1,4),
+        right_overlap_dimension=irange(1,4),
+    ):
+        R = RightOverlapBoundary.random(
+            state_dimension = right_state_dimension,
+            overlap_dimension = right_overlap_dimension,
+        )
+        V = OverlapSite.random(
+            physical_dimension = physical_dimension,
+            left_dimension = left_overlap_dimension,
+            right_dimension = right_overlap_dimension,
+        )
+        S = StateSite.random(
+            physical_dimension = physical_dimension,
+            left_dimension = left_state_dimension,
+            right_dimension = right_state_dimension,
+        )
+        self.assertAllClose(
+            R.absorb(V,S).data,
+            self.test_absorb.contract(R.data,V.data,S.data)
+        )
+
+    test_absorb.contract = formContractor(
+        ['R','V','S'],
+        [(('R',RightOverlapBoundary.overlap_index),('V',OverlapSite.right_index))
+        ,(('R',RightOverlapBoundary.state_index),('S',StateSite.right_index))
+        ,(('V',OverlapSite.physical_index),('S',StateSite.physical_index))
+        ],
+        [{'state':[('S',StateSite.left_index)]
+         ,'overlap':[('V',OverlapSite.left_index)]
+         }[name] for name in RightOverlapBoundary._dimensions
         ]
     )
     #@-others
