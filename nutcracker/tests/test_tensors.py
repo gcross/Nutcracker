@@ -113,6 +113,66 @@ class TestRightExpectationBoundary(TestCase):
 #@+node:gcross.20111107131531.3591: *3* TestStateSite
 class TestStateSite(TestCase):
     #@+others
+    #@+node:gcross.20111108100704.1372: *4* formNormalizedOverlapSites
+    @with_checker
+    def test_formNormalizedOverlapSites(self,
+        left_physical_dimension = irange(2,4),
+        right_physical_dimension = irange(2,4),
+        leftmost_bandwidth_dimension = irange(2,4),
+        middle_bandwidth_dimension = irange(2,4),
+        rightmost_bandwidth_dimension = irange(2,4),
+    ):
+        unnormalized_left_state_site = StateSite(
+            physical_dimension = left_physical_dimension,
+            left_dimension = leftmost_bandwidth_dimension,
+            right_dimension = middle_bandwidth_dimension,
+            randomize = True
+        )
+        right_normalized_right_state_site = StateSite(
+            physical_dimension = right_physical_dimension,
+            left_dimension = middle_bandwidth_dimension,
+            right_dimension = rightmost_bandwidth_dimension,
+            randomize = True
+        )
+        result = unnormalized_left_state_site.formNormalizedOverlapSites(right_normalized_right_state_site)
+        self.assertAllClose(
+            result.unnormalized_left_overlap_site.data,
+            unnormalized_left_state_site.data.transpose(2,0,1).conj()
+        )
+        self.assertAllClose(
+            result.right_normalized_right_overlap_site.data,
+            right_normalized_right_state_site.data.transpose(2,0,1).conj()
+        )
+        self.assertAllClose(
+            tensordot(
+                unnormalized_left_state_site.data,
+                right_normalized_right_state_site.data,
+                (StateSite.right_index,StateSite.left_index)
+            ),
+            tensordot(
+                result.left_normalized_left_overlap_site.data.conj().transpose(1,2,0),
+                result.unnormalized_right_state_site.data,
+                (StateSite.right_index,StateSite.left_index)
+            )
+        )
+        self.assertNormalized(result.left_normalized_left_overlap_site.data,OverlapSite.right_index)
+    #@+node:gcross.20111107131531.5850: *4* formOverlapSite
+    @with_checker
+    def test_formOverlapSite(self,
+        physical_dimension = irange(1,5),
+        left_dimension = irange(1,5),
+        right_dimension = irange(1,5)
+    ):
+        state_site = StateSite(
+            physical_dimension = physical_dimension,
+            left_dimension = left_dimension,
+            right_dimension = right_dimension,
+            randomize = True
+        )
+        self.assertAllClose(
+            state_site.formOverlapSite().data,
+            state_site.data.conj().transpose(2,0,1)
+        )
     #@+node:gcross.20111107131531.3593: *4* normalizeAndDenormalize
     @with_checker
     def test_normalizeAndDenormalize(self,
@@ -145,15 +205,9 @@ class TestStateSite(TestCase):
             tensordot(left_site.data,right_site.data,(StateSite.right_index,StateSite.left_index)),
         )
         if direction == LEFT:
-            self.assertAllClose(
-                tensordot(new_right_site.data.conj(),new_right_site.data,((StateSite.physical_index,StateSite.right_index),)*2),
-                identity(middle_dimension)
-            )
+            self.assertNormalized(new_right_site.data,StateSite.left_index)
         else:
-            self.assertAllClose(
-                tensordot(new_left_site.data.conj(),new_left_site.data,((StateSite.physical_index,StateSite.left_index),)*2),
-                identity(middle_dimension)
-            )
+            self.assertNormalized(new_left_site.data,StateSite.right_index)
     #@-others
 #@-others
 #@-leo

@@ -132,6 +132,10 @@ def formContractor(order,joins,result_joins):
     #@-<< Form the contractor function >>
 
     return contract
+#@+node:gcross.20111107131531.3590: *3* mapFunctions
+def mapFunctions(functions,data):
+    for f, x in zip(functions,data):
+        yield f(x)
 #@-others
 
 #@+<< Exports >>

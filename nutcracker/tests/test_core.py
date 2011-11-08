@@ -1091,38 +1091,6 @@ class increase_bandwidth_between(TestCase):
             tensordot(old_left_tensor,old_right_tensor,(0,1)),
             tensordot(new_left_tensor,new_right_tensor,(0,1)),
         )
-#@+node:gcross.20111107123726.3226: *3* Overlap tensor formation
-#@+node:gcross.20111107123726.3227: *4* form_overlap_site_tensor
-class form_overlap_site_tensor(TestCase):
-    #@+others
-    #@-others
-
-    @with_checker
-    def test_correctness(self,br=irange(2,4),bl=irange(2,4),d=irange(2,4)):
-        state_site_tensor = crand(br,bl,d)
-        overlap_site_tensor = core.form_overlap_site_tensor(state_site_tensor)
-        self.assertAllClose(state_site_tensor.transpose(1,2,0).conj(),overlap_site_tensor)
-#@+node:gcross.20111107123726.3228: *4* form_norm_overlap_tensors
-class form_norm_overlap_tensors(TestCase):
-    #@+others
-    #@-others
-
-    @with_checker
-    def test_correctness(self,br=irange(2,4),bm=irange(2,4),bl=irange(2,4),dl=irange(2,4),dr=irange(2,4)):
-        unnormalized_state_tensor_1 = crand(bm,bl,dl)
-        right_norm_state_tensor_2 = crand(br,bm,dr)
-        resulting_tensors = core.form_norm_overlap_tensors(unnormalized_state_tensor_1,right_norm_state_tensor_2)
-        left_norm_overlap_tensor_1 = resulting_tensors[0]
-        unnormalized_overlap_tensor_1 = resulting_tensors[1]
-        unnormalized_state_tensor_2 = resulting_tensors[2]
-        right_norm_overlap_tensor_2 = resulting_tensors[3]
-        self.assertAllClose(right_norm_state_tensor_2,right_norm_overlap_tensor_2.transpose(2,0,1).conj())
-        self.assertAllClose(unnormalized_state_tensor_1,unnormalized_overlap_tensor_1.transpose(2,0,1).conj())
-        left_norm_state_tensor_1 = left_norm_overlap_tensor_1.transpose(2,0,1).conj()
-        self.assertAllClose(
-            tensordot(unnormalized_state_tensor_1,right_norm_state_tensor_2,(0,1)),
-            tensordot(left_norm_state_tensor_1,unnormalized_state_tensor_2,(0,1)),
-        )
 #@+node:gcross.20111107123726.3229: *3* non_hermitian_matrix_detection
 class non_hermitian_matrix_detection(TestCase):
     @with_checker

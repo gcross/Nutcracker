@@ -17,11 +17,12 @@
 
 #@+<< Imports >>
 #@+node:gcross.20111107131531.1304: ** << Imports >>
+from collections import namedtuple
 from numpy import array, complex128, ndarray, zeros
 from numpy.random import randint
 
 import nutcracker.core as core
-from nutcracker.utils import crand
+from nutcracker.utils import crand, mapFunctions
 #@-<< Imports >>
 
 #@+others
@@ -233,10 +234,33 @@ class OperatorSite(SiteTensor):
             right_dimension = right_dimension
         )
     #@-others
+#@+node:gcross.20111107131531.5847: *5* OverlapSite
+class OverlapSite(SiteTensor):
+    _dimensions = ["right","physical","left"]
+    #@+others
+    #@-others
 #@+node:gcross.20111107131531.1307: *5* StateSite
 class StateSite(SiteTensor):
     _dimensions = ["physical","left","right"]
     #@+others
+    #@+node:gcross.20111108100704.1371: *6* formNormalizedOverlapSites
+    FormAndNormalizeOverlapSiteResult = \
+        namedtuple("FormAndNormalizeOverlapSiteResult",
+            ["left_normalized_left_overlap_site"
+            ,"unnormalized_left_overlap_site"
+            ,"unnormalized_right_state_site"
+            ,"right_normalized_right_overlap_site"
+            ]
+        )
+
+    def formNormalizedOverlapSites(self,right_normalized_right_neighbor):
+        return self.FormAndNormalizeOverlapSiteResult(*mapFunctions(
+            (OverlapSite,OverlapSite,StateSite,OverlapSite),
+            (x.transpose() for x in core.form_norm_overlap_tensors(self.data.transpose(),right_normalized_right_neighbor.data.transpose()))
+        ))
+    #@+node:gcross.20111107131531.5848: *6* formOverlapSite
+    def formOverlapSite(self):
+        return OverlapSite(core.form_overlap_site_tensor(self.data.transpose()).transpose())
     #@+node:gcross.20111107131531.3585: *6* normalizeAndDenormalize
     def normalizeAndDenormalize(self,other,other_direction_from_self):
         if other_direction_from_self == LEFT:
@@ -264,6 +288,7 @@ __all__ = [
     "RightExpectationBoundary",
 
     "OperatorSite",
+    "OverlapSite",
     "StateSite",
 ]
 #@-<< Exports >>
