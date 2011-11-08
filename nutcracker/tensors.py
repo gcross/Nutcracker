@@ -121,9 +121,7 @@ class Tensor:
     #@+node:gcross.20111107131531.1303: *5* trivial
     @classmethod
     def trivial(cls):
-        keywords = {name: 1 for name in cls._dimension_arguments}
-        keywords["fill"] = 1
-        return cls(**keywords)
+        return cls.filled(1,**{name: 1 for name in cls._dimension_arguments})
     #@+node:gcross.20111108100704.1446: *5* size
     def size(self):
         return product([getattr(self,name + "_dimension") for name in self._dimensions])

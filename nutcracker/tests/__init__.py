@@ -2,11 +2,13 @@
 #@+node:gcross.20111107131531.1346: * @file __init__.py
 #@+<< Imports >>
 #@+node:gcross.20111107131531.1351: ** << Imports >>
-from numpy import all, allclose, array, identity, product, tensordot
+from copy import copy
+import numpy
+from numpy import all, allclose, array, dot, identity, product, tensordot
 from numpy.linalg import norm
-
+from numpy.random import rand
+from paycheck import *
 from random import randint
-
 import unittest
 
 from ..utils import *
@@ -14,6 +16,17 @@ from ..utils import *
 
 #@+others
 #@+node:gcross.20111108100704.1374: ** Functions
+#@+node:gcross.20111028110210.1335: *3* ensurePhysicalDimensionSufficientlyLarge
+def ensurePhysicalDimensionSufficientlyLarge(tensor,index,dimension):
+    if dimension > product(withoutIndex(tensor.data.shape,index)):
+        new_shape = list(tensor.data.shape)
+        new_shape[0] = dimension
+        return type(tensor)(crand(*new_shape))
+    else:
+        return tensor
+#@+node:gcross.20111028110210.1337: *3* ensurePhysicalDimensionSufficientlyLargeToNormalize
+def ensurePhysicalDimensionSufficientlyLargeToNormalize(tensor,index):
+    return ensurePhysicalDimensionSufficientlyLarge(tensor,index,tensor.data.shape[index])
 #@+node:gcross.20111108100704.1408: *3* randomIndex
 def randomIndex(ndim):
     return randint(0,ndim-1)
@@ -48,12 +61,6 @@ def randomTensorAndIndexAgreeingWith(ndim,other_dimension):
 #@+node:gcross.20111107123726.3153: *3* TestCase
 class TestCase(unittest.TestCase):
     #@+others
-    #@+node:gcross.20111108100704.1373: *4* assertNormalized
-    def assertNormalized(self,tensor,index):
-        self.assertAllClose(
-            tensordot(tensor.conj(),tensor,(withoutIndex(range(tensor.ndim),index),)*2),
-            identity(tensor.shape[index])
-        )
     #@+node:gcross.20111107123726.3154: *4* assertAllClose
     def assertAllClose(self,v1,v2):
         v1 = array(v1)
@@ -66,6 +73,12 @@ class TestCase(unittest.TestCase):
         v2 = array(v2)
         self.assertEqual(v1.shape,v2.shape)
         self.assertTrue(all(v1 == v2))
+    #@+node:gcross.20111108100704.1373: *4* assertNormalized
+    def assertNormalized(self,tensor,index):
+        self.assertAllClose(
+            tensordot(tensor.conj(),tensor,(withoutIndex(range(tensor.ndim),index),)*2),
+            identity(tensor.shape[index])
+        )
     #@+node:gcross.20111107123726.3156: *4* assertVanishing
     def assertVanishing(self,v):
         self.assertAlmostEqual(norm(v),0)
