@@ -20,8 +20,8 @@
 from numpy import array, product, tensordot
 from numpy.random import rand
 
-from nutcracker import core
-from nutcracker.miscellaneous.enum_meta import Enum
+from . import core
+from .miscellaneous.enum_meta import Enum
 #@-<< Imports >>
 
 #@+others

@@ -22,8 +22,8 @@ from numpy import array, complex128, ndarray, product, zeros
 from numpy.linalg import norm
 from numpy.random import randint
 
-import nutcracker.core as core
-from nutcracker.utils import Direction, Normalization, crand, mapFunctions, normalize
+from . import core
+from .utils import Direction, Normalization, crand, mapFunctions, normalize
 #@-<< Imports >>
 
 #@+others

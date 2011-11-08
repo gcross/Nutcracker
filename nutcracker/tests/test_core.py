@@ -13,7 +13,7 @@ import random
 import __builtin__
 import nutcracker.core as core
 
-from nutcracker.tests import *
+from . import *
 #@-<< Import needed modules >>
 
 #@+others

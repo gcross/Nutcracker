@@ -6,10 +6,10 @@ from numpy import identity, tensordot
 
 from paycheck import *
 
-from nutcracker.tensors import *
-from nutcracker.utils import *
+from ..tensors import *
+from ..utils import *
 
-from nutcracker.tests import *
+from . import *
 #@-<< Imports >>
 
 #@+others

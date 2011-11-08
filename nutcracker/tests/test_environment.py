@@ -4,10 +4,10 @@
 #@+node:gcross.20111107131531.3619: ** << Imports >>
 from random import randint
 
-from nutcracker.environment import *
-from nutcracker.utils import *
+from ..environment import *
+from ..utils import *
 
-from nutcracker.tests import *
+from . import *
 #@-<< Imports >>
 
 #@+others

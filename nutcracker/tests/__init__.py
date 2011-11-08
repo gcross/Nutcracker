@@ -9,7 +9,7 @@ from random import randint
 
 import unittest
 
-from nutcracker.utils import *
+from ..utils import *
 #@-<< Imports >>
 
 #@+others

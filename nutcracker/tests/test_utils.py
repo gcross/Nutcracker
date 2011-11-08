@@ -4,9 +4,9 @@
 #@+node:gcross.20111108100704.1390: ** << Imports >>
 from paycheck import *
 
-from nutcracker.utils import normalize
+from ..utils import normalize
 
-from nutcracker.tests import *
+from . import *
 #@-<< Imports >>
 
 #@+others
