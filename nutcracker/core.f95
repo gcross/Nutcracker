@@ -1884,56 +1884,6 @@ subroutine seed_randomizer(seed)
   integer, intent(in) :: seed
   call srand(seed)
 end subroutine
-!@+node:gcross.20091110205054.1920: *3* randomize_state_site_tensor
-subroutine randomize_state_site_tensor(br, bl, d, state_site_tensor)
-  integer, intent(in) :: br, bl, d
-  double complex, intent(out) :: state_site_tensor(br,bl,d)
-
-  integer :: i, j, k
-
-  do i = 1, br
-  do j = 1, bl
-  do k = 1, d
-    state_site_tensor(i,j,k) = (0.5d0,0d0)-rand()*(1d0,0d0) + (0,0.5d0)-rand()*(0d0,1d0)
-  end do
-  end do
-  end do
-end subroutine
-!@+node:gcross.20091110205054.1922: *3* rand_norm_state_site_tensor
-subroutine rand_norm_state_site_tensor(br, bl, d, state_site_tensor)
-  integer, intent(in) :: br, bl, d
-  double complex, intent(out) :: state_site_tensor(br,bl,d)
-
-  double complex :: workspace(br,d,bl)
-  integer :: rank
-
-  if (br*d < bl) then
-    print *, "Not enough degrees of freedom to normalize."
-    print *, br*d, "<", bl
-    stop
-  end if
-
-  call randomize_state_site_tensor(br, d, bl, workspace)
-
-  call orthogonalize_matrix_in_place(br*d, bl, workspace, rank)
-  if ( rank < bl ) then
-    print *, "rand_norm_state_site_tensor:  Bad rank", rank, "<", bl
-    stop
-  end if
-
-  state_site_tensor = reshape(workspace,shape(state_site_tensor),order=(/1,3,2/))
-
-end subroutine
-!@+node:gcross.20091120134444.1600: *3* rand_unnorm_state_site_tensor
-subroutine rand_unnorm_state_site_tensor(br, bl, d, state_site_tensor)
-  integer, intent(in) :: br, bl, d
-  double complex, intent(out) :: state_site_tensor(br,bl,d)
-
-  call randomize_state_site_tensor(bl, br, d, state_site_tensor)
-
-  state_site_tensor = state_site_tensor / sqrt(dble(real(sum(conjg(state_site_tensor(:,:,:))*state_site_tensor(:,:,:)))))
-
-end subroutine
 !@+node:gcross.20100521141104.1771: *3* random_projector_matrix
 subroutine random_projector_matrix( &
   projector_length, number_of_projectors, &

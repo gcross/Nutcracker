@@ -17,12 +17,31 @@
 
 #@+<< Imports >>
 #@+node:gcross.20111107123726.3250: ** << Imports >>
-from numpy import tensordot
+from numpy import array, product, tensordot
 from numpy.random import rand
+
+from nutcracker import core
+from nutcracker.miscellaneous.enum_meta import Enum
 #@-<< Imports >>
 
 #@+others
+#@+node:gcross.20111108100704.1380: ** Enumerations
+#@+node:gcross.20111108100704.1382: *3* Direction
+class Direction(Enum):
+    left = "left"
+    right = "right"
+#@+node:gcross.20111108100704.1381: *3* Normalization
+class Normalization(Direction):
+    middle = "middle"
+    none = "none"
 #@+node:gcross.20111107123726.3237: ** Functions
+#@+node:gcross.20111108100704.1417: *3* appended
+def appended(vector,entry):
+    copy_of_vector = list(vector)
+    if copy_of_vector is vector:
+        copy_of_vector = copy(vector)
+    copy_of_vector.append(entry)
+    return copy_of_vector
 #@+node:gcross.20111107131531.1353: *3* crand
 def crand(*shape):
     return rand(*shape)*2-1+rand(*shape)*2j-1j
@@ -136,12 +155,48 @@ def formContractor(order,joins,result_joins):
 def mapFunctions(functions,data):
     for f, x in zip(functions,data):
         yield f(x)
+#@+node:gcross.20111108100704.1384: *3* normalize
+def normalize(tensor,index):
+    reshaped_tensor, inverseTransformation = transposeAndReshapeAndReturnInverseTransformation(tensor,index)
+    reshaped_tensor = array(reshaped_tensor,order='F')
+    core.orthogonalize_matrix_in_place(reshaped_tensor)
+    return inverseTransformation(reshaped_tensor)
+#@+node:gcross.20111108100704.1386: *3* transposeAndReshapeAndReturnInverseTransformation
+def transposeAndReshapeAndReturnInverseTransformation(tensor,index):
+    new_indices = withoutIndex(range(tensor.ndim),index)
+    new_indices.append(index)
+
+    old_shape = withoutIndex(tensor.shape,index)
+    new_shape = (product(old_shape),tensor.shape[index])
+
+    inverse_indices = list(range(tensor.ndim-1))
+    inverse_indices.insert(index,tensor.ndim-1)
+
+    def inverseTransformer(tensor):
+        inverse_shape = appended(old_shape,tensor.shape[1])
+        return tensor.reshape(inverse_shape).transpose(inverse_indices)
+
+    return tensor.transpose(new_indices).reshape(new_shape), inverseTransformer
+#@+node:gcross.20111108100704.1376: *3* withoutIndex
+def withoutIndex(vector,index):
+    copy_of_vector = list(vector)
+    if copy_of_vector is vector:
+        copy_of_vector = copy(vector)
+    del copy_of_vector[index]
+    return copy_of_vector
 #@-others
 
 #@+<< Exports >>
 #@+node:gcross.20111107123726.3251: ** << Exports >>
 __all__ = [
+    "Direction",
+    "Normalization",
+
+    "appended",
+    "crand",
     "formContractor",
+    "normalize",
+    "withoutIndex",
 ]
 #@-<< Exports >>
 #@-leo

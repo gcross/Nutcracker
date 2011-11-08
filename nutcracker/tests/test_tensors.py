@@ -174,6 +174,7 @@ class TestStateSite(TestCase):
         middle_dimension=irange(3,9),
         rightmost_dimension=irange(3,9),
     ):
+        direction = Direction.values()[direction]
         left_site = StateSite.random(
             physical_dimension = 9,
             left_dimension = leftmost_dimension,
@@ -184,21 +185,63 @@ class TestStateSite(TestCase):
             left_dimension = middle_dimension,
             right_dimension = rightmost_dimension,
         )
-        if direction == LEFT:
-            new_right_site, new_left_site = right_site.normalizeAndDenormalize(left_site,direction)
+        if direction == Direction.right:
+            new_right_site, new_left_site = right_site.normalizeAndDenormalize(direction,left_site)
 
         else:
-            new_left_site, new_right_site = left_site.normalizeAndDenormalize(right_site,direction)
+            new_left_site, new_right_site = left_site.normalizeAndDenormalize(direction,right_site)
         self.assertEqual(new_left_site.data.shape,left_site.data.shape)
         self.assertEqual(new_right_site.data.shape,right_site.data.shape)
         self.assertAllClose(
             tensordot(new_left_site.data,new_right_site.data,(StateSite.right_index,StateSite.left_index)),
             tensordot(left_site.data,right_site.data,(StateSite.right_index,StateSite.left_index)),
         )
-        if direction == LEFT:
+        if direction == Direction.right:
             self.assertNormalized(new_right_site.data,StateSite.left_index)
         else:
             self.assertNormalized(new_left_site.data,StateSite.right_index)
+    #@+node:gcross.20111108100704.1419: *4* random (left normalized)
+    @with_checker
+    def test_random_left_normalized(self,
+        physical_dimension = irange(3,9),
+        left_dimension = irange(3,9),
+        right_dimension = irange(3,9)
+    ):
+        state_site = StateSite.random(
+            normalization = Normalization.left,
+            physical_dimension = physical_dimension,
+            left_dimension = left_dimension,
+            right_dimension = right_dimension,
+        )
+        self.assertNormalized(state_site.data,StateSite.right_index)
+    #@+node:gcross.20111108100704.1383: *4* random (middle normalized)
+    @with_checker
+    def test_random_middle_normalized(self,
+        physical_dimension = irange(3,9),
+        left_dimension = irange(3,9),
+        right_dimension = irange(3,9)
+    ):
+        state_site = StateSite.random(
+            normalization = Normalization.middle,
+            physical_dimension = physical_dimension,
+            left_dimension = left_dimension,
+            right_dimension = right_dimension,
+        )
+        self.assertAlmostEqual(norm(state_site.data),1)
+    #@+node:gcross.20111108100704.1423: *4* random (right normalized)
+    @with_checker
+    def test_random_right_normalized(self,
+        physical_dimension = irange(3,9),
+        left_dimension = irange(3,9),
+        right_dimension = irange(3,9)
+    ):
+        state_site = StateSite.random(
+            normalization = Normalization.right,
+            physical_dimension = physical_dimension,
+            left_dimension = left_dimension,
+            right_dimension = right_dimension,
+        )
+        self.assertNormalized(state_site.data,StateSite.left_index)
     #@-others
 #@-others
 #@-leo

@@ -19,16 +19,14 @@
 #@+node:gcross.20111107131531.1304: ** << Imports >>
 from collections import namedtuple
 from numpy import array, complex128, ndarray, zeros
+from numpy.linalg import norm
 from numpy.random import randint
 
 import nutcracker.core as core
-from nutcracker.utils import crand, mapFunctions
+from nutcracker.utils import Direction, Normalization, crand, mapFunctions, normalize
 #@-<< Imports >>
 
 #@+others
-#@+node:gcross.20111107131531.3588: ** Values
-LEFT = 0
-RIGHT = 1
 #@+node:gcross.20111107131531.1291: ** Classes
 #@+node:gcross.20111107131531.1292: *3* Metaclasses
 #@+node:gcross.20111107131531.1295: *4* MetaTensor
@@ -214,12 +212,12 @@ class OperatorSite(SiteTensor):
         return operator
     #@+node:gcross.20111107131531.1345: *6* random
     @staticmethod
-    def random(*args,**keywords):
-        assert len(args) == 0
+    def random(number_of_matrices=None,**keywords):
         left_dimension = keywords["left_dimension"]
         right_dimension = keywords["right_dimension"]
         physical_dimension = keywords["physical_dimension"]
-        number_of_matrices = randint(2,left_dimension+right_dimension+1)
+        if number_of_matrices is None:
+            number_of_matrices = randint(2,left_dimension+right_dimension+1)
         sparse_operator_indices = array([
             randint(1,left_dimension+1,size=number_of_matrices),
             randint(1,right_dimension+1,size=number_of_matrices),
@@ -262,25 +260,33 @@ class StateSite(SiteTensor):
     def formOverlapSite(self):
         return OverlapSite(core.form_overlap_site_tensor(self.data.transpose()).transpose())
     #@+node:gcross.20111107131531.3585: *6* normalizeAndDenormalize
-    def normalizeAndDenormalize(self,other,other_direction_from_self):
-        if other_direction_from_self == LEFT:
+    def normalizeAndDenormalize(self,direction,other):
+        if direction == Direction.right:
             info, new_other, new_self = core.norm_denorm_going_left(other.data.transpose(),self.data.transpose())
-        elif other_direction_from_self == RIGHT:
+        elif direction == Direction.left:
             info, new_self, new_other = core.norm_denorm_going_right(self.data.transpose(),other.data.transpose())
         else:
-            raise ValueError("direction must be LEFT ({}) or RIGHT ({}), not {}".format(LEFT,RIGHT,direction))
+            raise ValueError("direction must be Direction.left or Direction.right, not {}".format(direction))
         if info != 0:
             raise Exception("Error code {} (!= 0) returned from the normalization routine.".format(info))
         return StateSite(new_self.transpose()), StateSite(new_other.transpose())
+    #@+node:gcross.20111108100704.1379: *6* random
+    @classmethod
+    def random(cls,normalization=Normalization.none,**keywords):
+        self = super(cls,cls).random(**keywords)
+        if normalization == Normalization.middle:
+            self.data /= norm(self.data)
+        elif normalization == Normalization.left:
+            self.data = normalize(self.data,StateSite.right_index)
+        elif normalization == Normalization.right:
+            self.data = normalize(self.data,StateSite.left_index)
+        return self
     #@-others
 #@-others
 
 #@+<< Exports >>
 #@+node:gcross.20111107131531.1305: ** << Exports >>
 __all__ = [
-    "LEFT",
-    "RIGHT",
-
     "MetaTensor",
     "Tensor",
 

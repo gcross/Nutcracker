@@ -18,6 +18,7 @@
 <v t="gcross.20111107123726.3138"><vh>@file test_core.py</vh></v>
 <v t="gcross.20111107131531.3618"><vh>@file test_environment.py</vh></v>
 <v t="gcross.20111107131531.1333"><vh>@file test_tensors.py</vh></v>
+<v t="gcross.20111108100704.1389"><vh>@file test_utils.py</vh></v>
 <v t="gcross.20111107131531.3614"><vh>file template.py</vh>
 <v t="gcross.20111107131531.3615"><vh>&lt;&lt; Imports &gt;&gt;</vh></v>
 </v>

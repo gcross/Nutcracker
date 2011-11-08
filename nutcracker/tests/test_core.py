@@ -691,28 +691,6 @@ optimization_matrix_contractor = form_contractor([
 ], ("M",6)
 )
 #@-others
-#@+node:gcross.20111107123726.3188: *3* Randomization
-#@+node:gcross.20111107123726.3189: *4* rand_norm_state_site_tensor
-class rand_norm_state_site_tensor(TestCase):
-    #@+others
-    #@-others
-
-    @with_checker
-    def testCorrectness(self,bl=irange(2,4),br=irange(2,4)):
-        d = 2
-        normalized_tensor = core.rand_norm_state_site_tensor(br,bl,d)
-        should_be_identity = tensordot(normalized_tensor.conj(),normalized_tensor,((0,2,),)*2)
-        self.assertAllClose(identity(bl),should_be_identity)
-#@+node:gcross.20111107123726.3190: *4* rand_unnorm_state_site_tensor
-class rand_unnorm_state_site_tensor(TestCase):
-    #@+others
-    #@-others
-
-    @with_checker
-    def testCorrectness(self,bl=irange(2,4),br=irange(2,4)):
-        d = 2
-        unnormalized_tensor = core.rand_unnorm_state_site_tensor(br,bl,d)
-        self.assertAlmostEqual(1,norm(unnormalized_tensor.ravel()))
 #@+node:gcross.20111107123726.3191: *3* Utility Functions
 #@+node:gcross.20111107123726.3192: *4* orthogonalize_matrix_in_place
 class orthogonalize_matrix_in_place(TestCase):

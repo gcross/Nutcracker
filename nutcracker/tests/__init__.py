@@ -2,20 +2,48 @@
 #@+node:gcross.20111107131531.1346: * @file __init__.py
 #@+<< Imports >>
 #@+node:gcross.20111107131531.1351: ** << Imports >>
-from numpy import all, allclose, array, identity, tensordot
+from numpy import all, allclose, array, identity, product, tensordot
 from numpy.linalg import norm
+
+from random import randint
+
 import unittest
+
+from nutcracker.utils import *
 #@-<< Imports >>
 
 #@+others
 #@+node:gcross.20111108100704.1374: ** Functions
-#@+node:gcross.20111108100704.1376: *3* withoutIndex
-def withoutIndex(vector,index):
-    copy_of_vector = list(vector)
-    if copy_of_vector is vector:
-        copy_of_vector = copy(vector)
-    del copy_of_vector[index]
-    return copy_of_vector
+#@+node:gcross.20111108100704.1408: *3* randomIndex
+def randomIndex(ndim):
+    return randint(0,ndim-1)
+#@+node:gcross.20111108100704.1415: *3* randomNormalizableTensorAndIndex
+def randomNormalizableTensorAndIndex(ndim):
+    index = randomIndex(ndim)
+    shape = randomShape(ndim)
+    shape[index] = randint(1,product(withoutIndex(shape,index)))
+    return crand(*shape), index
+#@+node:gcross.20111108100704.1409: *3* randomShape
+def randomShape(ndim):
+    return [randint(1,5) for _ in range(ndim)]
+#@+node:gcross.20111108100704.1410: *3* randomShapeAgreeingWith
+def randomShapeAgreeingWith(ndim,index,other_dimension):
+    shape = randomShape(ndim)
+    shape[index] = other_dimension
+    return shape
+#@+node:gcross.20111108100704.1411: *3* randomTensor
+def randomTensor(ndim):
+    return crand(*randomShape(ndim))
+#@+node:gcross.20111108100704.1412: *3* randomTensorAgreeingWith
+def randomTensorAgreeingWith(ndim,index,other_dimension):
+    return crand(*randomShapeAgreeingWith(ndim,index,other_dimension))
+#@+node:gcross.20111108100704.1413: *3* randomTensorAndIndex
+def randomTensorAndIndex(ndim):
+    return randomTensor(ndim), randomIndex(ndim)
+#@+node:gcross.20111108100704.1414: *3* randomTensorAndIndexAgreeingWith
+def randomTensorAndIndexAgreeingWith(ndim,other_dimension):
+    index = randomIndex(ndim)
+    return randomTensorAgreeingWith(ndim,index,other_dimension), index
 #@+node:gcross.20111107123726.3152: ** Classes
 #@+node:gcross.20111107123726.3153: *3* TestCase
 class TestCase(unittest.TestCase):
