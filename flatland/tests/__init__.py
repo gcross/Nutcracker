@@ -10,7 +10,7 @@ from paycheck import *
 from random import randint
 import unittest
 
-from flatland.utils import *
+from ..utils import *
 #@-<< Imports >>
 
 #@+others

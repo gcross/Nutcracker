@@ -1,11 +1,11 @@
 #@+leo-ver=5-thin
-#@+node:gcross.20111107154810.1414: * @file test_grid.py
+#@+node:gcross.20111107154810.1414: * @file test_2d_grid.py
 #@+<< Imports >>
 #@+node:gcross.20111107154810.1415: ** << Imports >>
-from flatland.grid import *
-from flatland.tensors import *
+from .._2d.grid import *
+from .._2d.tensors import *
 
-from flatland.tests import *
+from . import *
 #@-<< Imports >>
 
 #@+others

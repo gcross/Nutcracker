@@ -2,7 +2,7 @@
 #@+node:gcross.20111107154810.1419: * @file test_utils.py
 #@+<< Imports >>
 #@+node:gcross.20111107154810.1423: ** << Imports >>
-from flatland.tests import *
+from . import *
 #@-<< Imports >>
 
 #@+others

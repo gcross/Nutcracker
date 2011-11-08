@@ -1,10 +1,10 @@
 #@+leo-ver=5-thin
-#@+node:gcross.20111107154810.1418: * @file test_tensor.py
+#@+node:gcross.20111107154810.1418: * @file test_2d_tensors.py
 #@+<< Imports >>
 #@+node:gcross.20111107154810.1420: ** << Imports >>
-from flatland.tensors import *
+from .._2d.tensors import *
 
-from flatland.tests import *
+from . import *
 #@-<< Imports >>
 
 #@+others

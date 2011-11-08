@@ -5,8 +5,8 @@
 from numpy import array, dot, identity, product, tensordot
 from numpy.linalg import cond, svd
 
-from flatland.tensors import *
-from flatland.utils import *
+from .tensors import *
+from ..utils import *
 #@-<< Imports >>
 
 #@+others
