@@ -26,21 +26,19 @@ class TestLeftExpectationBoundary(TestCase):
         left_operator_dimension=irange(1,4),
         right_operator_dimension=irange(1,4),
     ):
-        L = LeftExpectationBoundary(
+        L = LeftExpectationBoundary.random(
             state_dimension = left_state_dimension,
             operator_dimension = left_operator_dimension,
-            randomize = True
         )
         O = OperatorSite.random(
             physical_dimension = physical_dimension,
             left_dimension = left_operator_dimension,
             right_dimension = right_operator_dimension,
         )
-        S = StateSite(
+        S = StateSite.random(
             physical_dimension = physical_dimension,
             left_dimension = left_state_dimension,
             right_dimension = right_state_dimension,
-            randomize = True
         )
         self.assertAllClose(
             L.absorb(O,S).data,
@@ -74,21 +72,19 @@ class TestRightExpectationBoundary(TestCase):
         left_operator_dimension=irange(1,4),
         right_operator_dimension=irange(1,4),
     ):
-        R = RightExpectationBoundary(
+        R = RightExpectationBoundary.random(
             state_dimension = right_state_dimension,
             operator_dimension = right_operator_dimension,
-            randomize = True
         )
         O = OperatorSite.random(
             physical_dimension = physical_dimension,
             left_dimension = left_operator_dimension,
             right_dimension = right_operator_dimension,
         )
-        S = StateSite(
+        S = StateSite.random(
             physical_dimension = physical_dimension,
             left_dimension = left_state_dimension,
             right_dimension = right_state_dimension,
-            randomize = True
         )
         self.assertAllClose(
             R.absorb(O,S).data,
@@ -122,17 +118,15 @@ class TestStateSite(TestCase):
         middle_bandwidth_dimension = irange(2,4),
         rightmost_bandwidth_dimension = irange(2,4),
     ):
-        unnormalized_left_state_site = StateSite(
+        unnormalized_left_state_site = StateSite.random(
             physical_dimension = left_physical_dimension,
             left_dimension = leftmost_bandwidth_dimension,
             right_dimension = middle_bandwidth_dimension,
-            randomize = True
         )
-        right_normalized_right_state_site = StateSite(
+        right_normalized_right_state_site = StateSite.random(
             physical_dimension = right_physical_dimension,
             left_dimension = middle_bandwidth_dimension,
             right_dimension = rightmost_bandwidth_dimension,
-            randomize = True
         )
         result = unnormalized_left_state_site.formNormalizedOverlapSites(right_normalized_right_state_site)
         self.assertAllClose(
@@ -163,11 +157,10 @@ class TestStateSite(TestCase):
         left_dimension = irange(1,5),
         right_dimension = irange(1,5)
     ):
-        state_site = StateSite(
+        state_site = StateSite.random(
             physical_dimension = physical_dimension,
             left_dimension = left_dimension,
             right_dimension = right_dimension,
-            randomize = True
         )
         self.assertAllClose(
             state_site.formOverlapSite().data,
@@ -181,17 +174,15 @@ class TestStateSite(TestCase):
         middle_dimension=irange(3,9),
         rightmost_dimension=irange(3,9),
     ):
-        left_site = StateSite(
+        left_site = StateSite.random(
             physical_dimension = 9,
             left_dimension = leftmost_dimension,
             right_dimension = middle_dimension,
-            randomize = True
         )
-        right_site = StateSite(
+        right_site = StateSite.random(
             physical_dimension = 9,
             left_dimension = middle_dimension,
             right_dimension = rightmost_dimension,
-            randomize = True
         )
         if direction == LEFT:
             new_right_site, new_left_site = right_site.normalizeAndDenormalize(left_site,direction)

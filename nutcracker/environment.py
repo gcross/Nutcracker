@@ -40,23 +40,20 @@ class Environment(object):
         right_operator_dimension
     ):  return Environment(
             left_environment =
-                LeftExpectationBoundary(
+                LeftExpectationBoundary.random(
                     state_dimension = left_state_dimension,
                     operator_dimension = left_operator_dimension,
-                    randomize = True
                 ),
             right_environment =
-                RightExpectationBoundary(
+                RightExpectationBoundary.random(
                     state_dimension = right_state_dimension,
                     operator_dimension = right_operator_dimension,
-                    randomize = True
                 ),
             state_site =
-                StateSite(
+                StateSite.random(
                     left_dimension = left_state_dimension,
                     right_dimension = right_state_dimension,
                     physical_dimension = physical_dimension,
-                    randomize = True
                 ),
             operator_site =
                 OperatorSite.random(

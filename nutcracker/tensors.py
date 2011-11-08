@@ -85,7 +85,7 @@ class Tensor:
     #@+others
     #@+node:gcross.20111107131531.1302: *5* __init__
     def __init__(self,*args,**keywords):
-        if not ((len(args) > 0) ^ (len(keywords) > 0)):
+        if not ((len(args) == 1) ^ (len(keywords) > 0)):
             raise ValueError("constructor must be given either a reference to the data or the dimensions of the tensor")
         if len(args) == 1:
             self.data = args[0]
@@ -94,14 +94,8 @@ class Tensor:
             for (name,dimension) in zip(self._dimension_arguments,self.data.shape):
                 setattr(self,name,dimension)
         else:
-            randomize = False
-            fill = None
             for given_dimension_name in keywords.keys():
-                if given_dimension_name == "randomize":
-                    randomize = keywords["randomize"]
-                elif given_dimension_name == "fill":
-                    fill = keywords["fill"]
-                elif given_dimension_name not in self._dimension_arguments:
+                if given_dimension_name not in self._dimension_arguments:
                     if given_dimension_name in self._dimensions:
                         raise ValueError("you needed to type '{}_dimension' rather than '{}' in the list of keyword arguments to supply the {} dimension".format(*(given_dimension_name,)*3))
                     else:
@@ -117,13 +111,19 @@ class Tensor:
                     setattr(self,name,dimension)
                 except KeyError:
                     raise ValueError("missing a value for dimension {}".format(name))
-            if randomize and fill:
-                raise ValueError("you asked to fill the tensor both with random data *and* a given constant, which are contradictory requests")
             self.data = ndarray(shape,dtype=complex128)
-            if randomize:
-                self.data[...] = crand(*shape)
-            if fill:
-                self.data[...] = fill
+    #@+node:gcross.20111108100704.1378: *5* filled
+    @classmethod
+    def filled(cls,fill,**keywords):
+        self = cls(**keywords)
+        self.data[...] = fill
+        return self
+    #@+node:gcross.20111108100704.1377: *5* random
+    @classmethod
+    def random(cls,**keywords):
+        self = cls(**keywords)
+        self.data[...] = crand(*self.data.shape)
+        return self
     #@+node:gcross.20111107131531.1303: *5* trivial
     @classmethod
     def trivial(cls):
