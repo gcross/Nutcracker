@@ -1,12 +1,12 @@
 #@+leo-ver=5-thin
-#@+node:gcross.20111107131531.1333: * @file test_tensors.py
+#@+node:gcross.20111107131531.1333: * @file test_1d_tensors.py
 #@+<< Imports >>
 #@+node:gcross.20111107131531.1334: ** << Imports >>
 from numpy import identity, tensordot
 
 from paycheck import *
 
-from ..tensors import *
+from .._1d.tensors import *
 from ..utils import *
 
 from . import *

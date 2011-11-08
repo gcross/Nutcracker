@@ -6,8 +6,8 @@
 
 #@+<< Imports >>
 #@+node:gcross.20111107131531.3608: ** << Imports >>
-from nutcracker.tensors import LeftExpectationBoundary, RightExpectationBoundary, StateSite, OperatorSite
-from . import core
+from .. import core
+from .tensors import LeftExpectationBoundary, RightExpectationBoundary, StateSite, OperatorSite
 #@-<< Imports >>
 
 #@+others

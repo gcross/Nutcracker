@@ -1,10 +1,10 @@
 #@+leo-ver=5-thin
-#@+node:gcross.20111107131531.3618: * @file test_environment.py
+#@+node:gcross.20111107131531.3618: * @file test_1d_environment.py
 #@+<< Imports >>
 #@+node:gcross.20111107131531.3619: ** << Imports >>
 from random import randint
 
-from ..environment import *
+from .._1d.environment import *
 from ..utils import *
 
 from . import *
