@@ -18,7 +18,7 @@
 #@+<< Imports >>
 #@+node:gcross.20111107131531.1304: ** << Imports >>
 from collections import namedtuple
-from numpy import array, complex128, ndarray, zeros
+from numpy import array, complex128, ndarray, product, zeros
 from numpy.linalg import norm
 from numpy.random import randint
 
@@ -128,6 +128,9 @@ class Tensor:
         keywords = {name: 1 for name in cls._dimension_arguments}
         keywords["fill"] = 1
         return cls(**keywords)
+    #@+node:gcross.20111108100704.1446: *5* size
+    def size(self):
+        return product([getattr(self,name + "_dimension") for name in self._dimensions])
     #@-others
 #@+node:gcross.20111107131531.1321: *4* SiteTensor
 class SiteTensor(Tensor):

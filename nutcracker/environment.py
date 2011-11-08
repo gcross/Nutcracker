@@ -30,6 +30,14 @@ class Environment(object):
             self.operator_site.matrix_table.transpose(),
             self.right_environment.data.transpose()
         )
+    #@+node:gcross.20111108100704.1444: *4* computeOptimizationMatrix
+    def computeOptimizationMatrix(self):
+        return core.compute_optimization_matrix(
+            self.left_environment.data.transpose(),
+            self.operator_site.index_table.transpose(),
+            self.operator_site.matrix_table.transpose(),
+            self.right_environment.data.transpose()
+        ).transpose().reshape((self.state_site.size(),)*2)
     #@+node:gcross.20111107131531.3625: *4* random
     @staticmethod
     def random(

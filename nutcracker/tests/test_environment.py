@@ -52,6 +52,27 @@ class TestEnvironment(TestCase):
         ],
         []
     )
+    #@+node:gcross.20111108100704.1445: *4* computeOptimizationMatrix
+    def test_computeOptimizationMatrix(self):
+        environment = randomEnvironment()
+        self.assertAllClose(
+            environment.computeOptimizationMatrix(),
+            self.test_computeOptimizationMatrix.contract(
+                environment.left_environment.data,
+                environment.right_environment.data,
+                environment.operator_site.formDenseTensor(),
+            )
+        )
+
+    test_computeOptimizationMatrix.contract = formContractor(
+        ['L','R','O',],
+        [(('L',0),('O',0))
+        ,(('R',0),('O',1))
+        ],
+        [[('O',2),('L',1),('R',2)]
+        ,[('O',3),('L',2),('R',1)]
+        ]
+    )
     #@-others
 #@-others
 #@-leo

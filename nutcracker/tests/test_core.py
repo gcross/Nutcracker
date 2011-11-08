@@ -236,47 +236,6 @@ def form_contractor(edges,input_tensors,output_tensor):
 #@+node:gcross.20111107123726.3157: ** Tests
 #@+node:gcross.20111107123726.3158: *3* Contractors
 #@+others
-#@+node:gcross.20111107123726.3175: *4* compute_optimization_matrix
-class compute_optimization_matrix(TestCase):
-
-    correct_contractor = staticmethod(form_contractor([
-        ("L2","M2"),
-        ("L3","O4"),
-        ("L1","M5"),
-        ("R1","M1"),
-        ("R3","O3"),
-        ("R2","M4"),
-        ("O2","M3"),
-        ("O1","M6"),
-    ], [
-        ("L",3),
-        ("O",4),
-        ("R",3),
-    ], ("M",6)
-    ))
-
-    @with_checker(number_of_calls=10)
-    def test_agreement_with_contractor(self,
-        d = irange(2,4),
-        bl = irange(2,20),
-        br = irange(2,20),
-        cl = irange(2,10),
-        cr = irange(2,10),
-    ):
-        left_environment = crand(bl,bl,cl)
-        right_environment = crand(br,br,cr)
-        sparse_operator_indices, sparse_operator_matrices, operator_site_tensor = generate_random_sparse_matrices(cl,cr,d)
-        actual_output_tensor = core.compute_optimization_matrix(
-            left_environment,
-            sparse_operator_indices, sparse_operator_matrices,
-            right_environment,
-        )
-        correct_output_tensor = optimization_matrix_contractor(
-            left_environment,
-            operator_site_tensor,
-            right_environment,
-        )
-        self.assertAllClose(actual_output_tensor,correct_output_tensor)
 #@+node:gcross.20111107123726.3177: *4* contract_matrix_left
 class contract_matrix_left(TestCase):
 
@@ -444,82 +403,6 @@ class contract_sos_right_stage_2(TestCase):
         )
         self.assertAllClose(actual_output_tensor,correct_output_tensor)
 #@+node:gcross.20111107123726.3170: *4* contract_ss
-#@+node:gcross.20111107123726.3171: *5* contract_vs_left
-contract_vs_left_correct_contractor = form_contractor([
-    ("L2","O1"),
-    ("L1","N2"),
-    ("O2","N3"),
-    ("O3","L'2"),
-    ("N1","L'1"),
-], [
-    ("L",2),
-    ("O",3),
-    ("N",3),
-], ("L'",2)
-)
-
-class contract_vs_left(TestCase):
-
-    @with_checker(number_of_calls=10)
-    def test_agreement_with_contractor(self,
-        nsl = irange(2,20),
-        nsr = irange(2,20),
-        osl = irange(2,20),
-        osr = irange(2,20),
-        d = irange(2,4),
-    ):
-        left_environment = crand(nsl,osl)
-        new_state_site_tensor = crand(nsr,nsl,d)
-        old_state_site_tensor = crand(osl,d,osr)
-        actual_output_tensor = core.contract_vs_left(
-            left_environment,
-            old_state_site_tensor,
-            new_state_site_tensor,
-        )
-        correct_output_tensor = contract_vs_left_correct_contractor(
-            left_environment,
-            old_state_site_tensor,
-            new_state_site_tensor,
-        )
-        self.assertAllClose(actual_output_tensor,correct_output_tensor)
-#@+node:gcross.20111107123726.3172: *5* contract_vs_right
-contract_vs_right_correct_contractor = form_contractor([
-    ("R1","O3"),
-    ("R2","N1"),
-    ("O2","N3"),
-    ("O1","R'1"),
-    ("N2","R'2"),
-], [
-    ("R",2),
-    ("O",3),
-    ("N",3),
-], ("R'",2)
-)
-
-class contract_vs_right(TestCase):
-
-    @with_checker(number_of_calls=10)
-    def test_agreement_with_contractor(self,
-        nsl = irange(2,20),
-        nsr = irange(2,20),
-        osl = irange(2,20),
-        osr = irange(2,20),
-        d = irange(2,4),
-    ):
-        right_environment = crand(osr,nsr)
-        new_state_site_tensor = crand(nsr,nsl,d)
-        old_state_site_tensor = crand(osl,d,osr)
-        actual_output_tensor = core.contract_vs_right(
-            right_environment,
-            old_state_site_tensor,
-            new_state_site_tensor,
-        )
-        correct_output_tensor = contract_vs_right_correct_contractor(
-            right_environment,
-            old_state_site_tensor,
-            new_state_site_tensor,
-        )
-        self.assertAllClose(actual_output_tensor,correct_output_tensor)
 #@+node:gcross.20111107123726.3173: *5* form_overlap_vector
 form_overlap_vector_correct_contractor = form_contractor([
     ("R1","O3"),
@@ -674,22 +557,6 @@ class iteration_stage_3(TestCase):
         actual_output_tensor = core.iteration_stage_3(iteration_stage_2_tensor,right_environment)
         correct_output_tensor = iteration_stage_3_correct_contractor(iteration_stage_2_tensor,right_environment)
         self.assertAllClose(actual_output_tensor,correct_output_tensor)
-#@+node:gcross.20111107123726.3235: *4* optimization_matrix_contractor
-optimization_matrix_contractor = form_contractor([
-    ("L1","M5"),
-    ("L2","M2"),
-    ("L3","O4"),
-    ("R1","M1"),
-    ("R2","M4"),
-    ("R3","O3"),
-    ("O1","M6"),
-    ("O2","M3"),
-], [
-    ("L",3),
-    ("O",4),
-    ("R",3),
-], ("M",6)
-)
 #@-others
 #@+node:gcross.20111107123726.3191: *3* Utility Functions
 #@+node:gcross.20111107123726.3192: *4* orthogonalize_matrix_in_place

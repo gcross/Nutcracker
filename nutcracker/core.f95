@@ -1108,13 +1108,13 @@ subroutine compute_optimization_matrix( &
     r3 = sparse_operator_indices(2,n)
     o3 = r3
     o4 = l3
-    do o1 = 1, d
-    do l1 = 1, bl
-    do r2 = 1, br
     do o2 = 1, d
     do l2 = 1, bl
     do r1 = 1, br
-      optimization_matrix(r1,l2,o2,r2,l1,o1) = optimization_matrix(r1,l2,o2,r2,l1,o1) + &
+    do o1 = 1, d
+    do l1 = 1, bl
+    do r2 = 1, br
+      optimization_matrix(r2,l1,o1,r1,l2,o2) = optimization_matrix(r2,l1,o1,r1,l2,o2) + &
         left_environment(l1,l2,l3)*sparse_operator_matrices(o1,o2,n)*right_environment(r1,r2,r3)
     end do
     end do
