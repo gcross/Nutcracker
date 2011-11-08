@@ -11,7 +11,7 @@ def configuration(parent_package='',top_path=None):
     if not lapack_opt:
         raise NotFoundError('no lapack/blas resources found')
 
-    config.add_extension('nutcracker.core',
+    config.add_extension('core',
                          sources='nutcracker/core.f95',
                          extra_info = lapack_opt
                         )
