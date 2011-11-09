@@ -19,8 +19,22 @@ from . import *
 class TestLeftExpectationBoundary(TestCase):
     #@+others
     #@+node:gcross.20111107131531.1349: *4* absorb
+    @prependContractor(
+        ['L','O','S','S*'],
+        [(('L',LeftExpectationBoundary.operator_index),('O',OperatorSite.left_index))
+        ,(('L',LeftExpectationBoundary.state_index),('S',StateSite.left_index))
+        ,(('L',LeftExpectationBoundary.state_conjugate_index),('S*',StateSite.left_index))
+        ,(('O',OperatorSite.physical_index),('S',StateSite.physical_index))
+        ,(('O',OperatorSite.physical_conjugate_index),('S*',StateSite.physical_index))
+        ],
+        [{'state':[('S',StateSite.right_index)]
+         ,'state_conjugate':[('S*',StateSite.right_index)]
+         ,'operator':[('O',OperatorSite.right_index)]
+         }[name] for name in LeftExpectationBoundary.dimension_names
+        ]
+    )
     @with_checker
-    def test_absorb(self,
+    def test_absorb(contract,self,
         physical_dimension=irange(1,4),
         left_state_dimension=irange(1,4),
         right_state_dimension=irange(1,4),
@@ -43,30 +57,26 @@ class TestLeftExpectationBoundary(TestCase):
         )
         self.assertAllClose(
             L.absorb(O,S).data,
-            self.test_absorb.contract(L.data,O.formDenseTensor(),S.data,S.data.conj())
+            contract(L.data,O.formDenseTensor(),S.data,S.data.conj())
         )
-
-    test_absorb.contract = formContractor(
-        ['L','O','S','S*'],
-        [(('L',LeftExpectationBoundary.operator_index),('O',OperatorSite.left_index))
-        ,(('L',LeftExpectationBoundary.state_index),('S',StateSite.left_index))
-        ,(('L',LeftExpectationBoundary.state_conjugate_index),('S*',StateSite.left_index))
-        ,(('O',OperatorSite.physical_index),('S',StateSite.physical_index))
-        ,(('O',OperatorSite.physical_conjugate_index),('S*',StateSite.physical_index))
-        ],
-        [{'state':[('S',StateSite.right_index)]
-         ,'state_conjugate':[('S*',StateSite.right_index)]
-         ,'operator':[('O',OperatorSite.right_index)]
-         }[name] for name in LeftExpectationBoundary.dimension_names
-        ]
-    )
     #@-others
 #@+node:gcross.20111108100704.1438: *3* TestLeftOverlapBoundary
 class TestLeftOverlapBoundary(TestCase):
     #@+others
     #@+node:gcross.20111108100704.1439: *4* absorb
+    @prependContractor(
+        ['L','V','S'],
+        [(('L',LeftOverlapBoundary.overlap_index),('V',OverlapSite.left_index))
+        ,(('L',LeftOverlapBoundary.state_index),('S',StateSite.left_index))
+        ,(('V',OverlapSite.physical_index),('S',StateSite.physical_index))
+        ],
+        [{'state':[('S',StateSite.right_index)]
+         ,'overlap':[('V',OverlapSite.right_index)]
+         }[name] for name in LeftOverlapBoundary.dimension_names
+        ]
+    )
     @with_checker
-    def test_absorb(self,
+    def test_absorb(contract,self,
         physical_dimension=irange(1,4),
         left_state_dimension=irange(1,4),
         right_state_dimension=irange(1,4),
@@ -89,27 +99,29 @@ class TestLeftOverlapBoundary(TestCase):
         )
         self.assertAllClose(
             L.absorb(V,S).data,
-            self.test_absorb.contract(L.data,V.data,S.data)
+            contract(L.data,V.data,S.data)
         )
-
-    test_absorb.contract = formContractor(
-        ['L','V','S'],
-        [(('L',LeftOverlapBoundary.overlap_index),('V',OverlapSite.left_index))
-        ,(('L',LeftOverlapBoundary.state_index),('S',StateSite.left_index))
-        ,(('V',OverlapSite.physical_index),('S',StateSite.physical_index))
-        ],
-        [{'state':[('S',StateSite.right_index)]
-         ,'overlap':[('V',OverlapSite.right_index)]
-         }[name] for name in LeftOverlapBoundary.dimension_names
-        ]
-    )
     #@-others
 #@+node:gcross.20111107131531.3583: *3* TestRightExpectationBoundary
 class TestRightExpectationBoundary(TestCase):
     #@+others
     #@+node:gcross.20111107131531.3584: *4* absorb
+    @prependContractor(
+        ['R','O','S','S*'],
+        [(('R',RightExpectationBoundary.operator_index),('O',OperatorSite.right_index))
+        ,(('R',RightExpectationBoundary.state_index),('S',StateSite.right_index))
+        ,(('R',RightExpectationBoundary.state_conjugate_index),('S*',StateSite.right_index))
+        ,(('O',OperatorSite.physical_index),('S',StateSite.physical_index))
+        ,(('O',OperatorSite.physical_conjugate_index),('S*',StateSite.physical_index))
+        ],
+        [{'state':[('S',StateSite.left_index)]
+         ,'state_conjugate':[('S*',StateSite.left_index)]
+         ,'operator':[('O',OperatorSite.left_index)]
+         }[name] for name in RightExpectationBoundary.dimension_names
+        ]
+    )
     @with_checker
-    def test_absorb(self,
+    def test_absorb(contract,self,
         physical_dimension=irange(1,4),
         left_state_dimension=irange(1,4),
         right_state_dimension=irange(1,4),
@@ -132,30 +144,26 @@ class TestRightExpectationBoundary(TestCase):
         )
         self.assertAllClose(
             R.absorb(O,S).data,
-            self.test_absorb.contract(R.data,O.formDenseTensor(),S.data,S.data.conj())
+            contract(R.data,O.formDenseTensor(),S.data,S.data.conj())
         )
-
-    test_absorb.contract = formContractor(
-        ['R','O','S','S*'],
-        [(('R',RightExpectationBoundary.operator_index),('O',OperatorSite.right_index))
-        ,(('R',RightExpectationBoundary.state_index),('S',StateSite.right_index))
-        ,(('R',RightExpectationBoundary.state_conjugate_index),('S*',StateSite.right_index))
-        ,(('O',OperatorSite.physical_index),('S',StateSite.physical_index))
-        ,(('O',OperatorSite.physical_conjugate_index),('S*',StateSite.physical_index))
-        ],
-        [{'state':[('S',StateSite.left_index)]
-         ,'state_conjugate':[('S*',StateSite.left_index)]
-         ,'operator':[('O',OperatorSite.left_index)]
-         }[name] for name in RightExpectationBoundary.dimension_names
-        ]
-    )
     #@-others
 #@+node:gcross.20111108100704.1442: *3* TestRightOverlapBoundary
 class TestLeftOverlapBoundary(TestCase):
     #@+others
     #@+node:gcross.20111108100704.1443: *4* absorb
+    @prependContractor(
+        ['R','V','S'],
+        [(('R',RightOverlapBoundary.overlap_index),('V',OverlapSite.right_index))
+        ,(('R',RightOverlapBoundary.state_index),('S',StateSite.right_index))
+        ,(('V',OverlapSite.physical_index),('S',StateSite.physical_index))
+        ],
+        [{'state':[('S',StateSite.left_index)]
+         ,'overlap':[('V',OverlapSite.left_index)]
+         }[name] for name in RightOverlapBoundary.dimension_names
+        ]
+    )
     @with_checker
-    def test_absorb(self,
+    def test_absorb(contract,self,
         physical_dimension=irange(1,4),
         left_state_dimension=irange(1,4),
         right_state_dimension=irange(1,4),
@@ -178,20 +186,8 @@ class TestLeftOverlapBoundary(TestCase):
         )
         self.assertAllClose(
             R.absorb(V,S).data,
-            self.test_absorb.contract(R.data,V.data,S.data)
+            contract(R.data,V.data,S.data)
         )
-
-    test_absorb.contract = formContractor(
-        ['R','V','S'],
-        [(('R',RightOverlapBoundary.overlap_index),('V',OverlapSite.right_index))
-        ,(('R',RightOverlapBoundary.state_index),('S',StateSite.right_index))
-        ,(('V',OverlapSite.physical_index),('S',StateSite.physical_index))
-        ],
-        [{'state':[('S',StateSite.left_index)]
-         ,'overlap':[('V',OverlapSite.left_index)]
-         }[name] for name in RightOverlapBoundary.dimension_names
-        ]
-    )
     #@-others
 #@+node:gcross.20111107131531.3591: *3* TestStateSite
 class TestStateSite(TestCase):

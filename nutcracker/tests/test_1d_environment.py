@@ -13,8 +13,8 @@ from . import *
 #@+others
 #@+node:gcross.20111107131531.3624: ** Functions
 #@+node:gcross.20111107131531.3622: *3* randomEnvironment
-def randomEnvironment():
-    return Environment.random(
+def randomEnvironment(cls=Environment):
+    return cls.random(
         randint(1,5),
         randint(1,5),
         randint(1,5),
@@ -26,20 +26,7 @@ def randomEnvironment():
 class TestEnvironment(TestCase):
     #@+others
     #@+node:gcross.20111107131531.3623: *4* computeExpectation
-    def test_computeExpectation(self):
-        environment = randomEnvironment()
-        self.assertAlmostEqual(
-            environment.computeExpectation(),
-            self.test_computeExpectation.contract(
-                environment.left_environment.data,
-                environment.right_environment.data,
-                environment.state_site.data,
-                environment.state_site.data.conj(),
-                environment.operator_site.formDenseTensor(),
-            )
-        )
-
-    test_computeExpectation.contract = formContractor(
+    @prependContractor(
         ['L','R','S','S*','O',],
         [(('L',1),('S*',1))
         ,(('L',0),('O',0))
@@ -52,19 +39,20 @@ class TestEnvironment(TestCase):
         ],
         []
     )
-    #@+node:gcross.20111108100704.1445: *4* computeOptimizationMatrix
-    def test_computeOptimizationMatrix(self):
+    def test_computeExpectation(contract,self):
         environment = randomEnvironment()
-        self.assertAllClose(
-            environment.computeOptimizationMatrix(),
-            self.test_computeOptimizationMatrix.contract(
+        self.assertAlmostEqual(
+            environment.computeExpectation(),
+            contract(
                 environment.left_environment.data,
                 environment.right_environment.data,
+                environment.state_site.data,
+                environment.state_site.data.conj(),
                 environment.operator_site.formDenseTensor(),
             )
         )
-
-    test_computeOptimizationMatrix.contract = formContractor(
+    #@+node:gcross.20111108100704.1445: *4* computeOptimizationMatrix
+    @prependContractor(
         ['L','R','O',],
         [(('L',0),('O',0))
         ,(('R',0),('O',1))
@@ -73,6 +61,17 @@ class TestEnvironment(TestCase):
         ,[('O',3),('L',2),('R',1)]
         ]
     )
+
+    def test_computeOptimizationMatrix(contract,self):
+        environment = randomEnvironment()
+        self.assertAllClose(
+            environment.computeOptimizationMatrix(),
+            contract(
+                environment.left_environment.data,
+                environment.right_environment.data,
+                environment.operator_site.formDenseTensor(),
+            )
+        )
     #@-others
 #@-others
 #@-leo

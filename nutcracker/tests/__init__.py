@@ -27,6 +27,14 @@ def ensurePhysicalDimensionSufficientlyLarge(tensor,index,dimension):
 #@+node:gcross.20111028110210.1337: *3* ensurePhysicalDimensionSufficientlyLargeToNormalize
 def ensurePhysicalDimensionSufficientlyLargeToNormalize(tensor,index):
     return ensurePhysicalDimensionSufficientlyLarge(tensor,index,tensor.dimension(index))
+#@+node:gcross.20111109104457.1813: *3* prependContractor
+class prependContractor(object):
+    def __init__(self,*args,**keywords):
+        self.contractor = formContractor(*args,**keywords)
+    def __call__(self,f):
+        def new_f(*args,**keywords):
+            return f(self.contractor,*args,**keywords)
+        return new_f
 #@+node:gcross.20111108100704.1408: *3* randomIndex
 def randomIndex(ndim):
     return randint(0,ndim-1)

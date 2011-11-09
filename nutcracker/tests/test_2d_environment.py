@@ -280,24 +280,22 @@ class TestNormalizationEnvironment(TestCase):
         self.assertLessEqual(environment.sides[direction].physical_dimension,old_physical_dimension)
         self.assertAlmostEqual(old_normalization/environment.computeNormalization(),1)
     #@+node:gcross.20111013165152.1231: *4* test_computeNormalization_random
+    @prependContractor(
+        (['O','O*'] + ['S{}'.format(i) for i in range(4)] + ['C{}'.format(i) for i in range(4)]),
+        ([(('S{}'.format(i),NormalizationSideBoundary.counterclockwise_index),('C{}'.format(i),CornerBoundary.clockwise_index)) for i in range(4)]
+        +[(('C{}'.format(i),CornerBoundary.counterclockwise_index),('S{}'.format(CCW(i)),NormalizationSideBoundary.clockwise_index)) for i in range(4)]
+        +[(('S{}'.format(i),NormalizationSideBoundary.inward_index),('O',StateCenterSite.bandwidthIndex(i))) for i in range(4)]
+        +[(('S{}'.format(i),NormalizationSideBoundary.inward_conjugate_index),('O*',StateCenterSite.bandwidthIndex(i))) for i in range(4)]
+        +[(('O',StateCenterSite.physical_index),('O*',StateCenterSite.physical_index))]
+        ),
+        []
+    )
     @with_checker(number_of_calls=10)
-    def test_computeNormalization_random(self):
+    def test_computeNormalization_random(contract,self):
         environment = randomNormalizationEnvironment()
         self.assertAlmostEqual(
-            self.test_computeNormalization_random.contract(*([environment.center.data,environment.center.data.conj()] + [x.formNormalizationBoundary().data for x in environment.sides + environment.corners])),
+            contract(*([environment.center.data,environment.center.data.conj()] + [x.formNormalizationBoundary().data for x in environment.sides + environment.corners])),
             environment.computeNormalization(),
-        )
-
-    test_computeNormalization_random.contract = \
-        formContractor(
-            (['O','O*'] + ['S{}'.format(i) for i in range(4)] + ['C{}'.format(i) for i in range(4)]),
-            ([(('S{}'.format(i),NormalizationSideBoundary.counterclockwise_index),('C{}'.format(i),CornerBoundary.clockwise_index)) for i in range(4)]
-            +[(('C{}'.format(i),CornerBoundary.counterclockwise_index),('S{}'.format(CCW(i)),NormalizationSideBoundary.clockwise_index)) for i in range(4)]
-            +[(('S{}'.format(i),NormalizationSideBoundary.inward_index),('O',StateCenterSite.bandwidthIndex(i))) for i in range(4)]
-            +[(('S{}'.format(i),NormalizationSideBoundary.inward_conjugate_index),('O*',StateCenterSite.bandwidthIndex(i))) for i in range(4)]
-            +[(('O',StateCenterSite.physical_index),('O*',StateCenterSite.physical_index))]
-            ),
-            []
         )
     #@+node:gcross.20111013165152.1227: *4* test_computeNormalization_trivial
     def test_computeNormalization_trivial(self):
@@ -306,24 +304,22 @@ class TestNormalizationEnvironment(TestCase):
     def test_computeNormalizationConditionNumber_trivial(self):
         self.assertAlmostEqual(NormalizationEnvironment.trivial().computeNormalizationConditionNumber(),1)
     #@+node:gcross.20111010182600.1199: *4* test_computeNormalizationMatrix_random
+    @prependContractor(
+        (['I'] + ['S{}'.format(i) for i in range(4)] + ['C{}'.format(i) for i in range(4)]),
+        ([(('S{}'.format(i),NormalizationSideBoundary.counterclockwise_index),('C{}'.format(i),CornerBoundary.clockwise_index)) for i in range(4)]
+        +[(('C{}'.format(i),CornerBoundary.counterclockwise_index),('S{}'.format(CCW(i)),NormalizationSideBoundary.clockwise_index)) for i in range(4)]
+        ),
+        [
+            [('I',0)] + [('S{}'.format(i),NormalizationSideBoundary.inward_index) for i in range(4)],
+            [('I',1)] + [('S{}'.format(i),NormalizationSideBoundary.inward_conjugate_index) for i in range(4)],
+        ]
+    )
     @with_checker(number_of_calls=10)
-    def test_computeNormalizationMatrix_random(self):
+    def test_computeNormalizationMatrix_random(contract,self):
         environment = randomNormalizationEnvironment()
         self.assertAllClose(
-            self.test_computeNormalizationMatrix_random.contract(*([identity(environment.physical_dimension)] + [x.formNormalizationBoundary().data for x in environment.sides + environment.corners])),
+            contract(*([identity(environment.physical_dimension)] + [x.formNormalizationBoundary().data for x in environment.sides + environment.corners])),
             environment.computeNormalizationMatrix(),
-        )
-
-    test_computeNormalizationMatrix_random.contract = \
-        formContractor(
-            (['I'] + ['S{}'.format(i) for i in range(4)] + ['C{}'.format(i) for i in range(4)]),
-            ([(('S{}'.format(i),NormalizationSideBoundary.counterclockwise_index),('C{}'.format(i),CornerBoundary.clockwise_index)) for i in range(4)]
-            +[(('C{}'.format(i),CornerBoundary.counterclockwise_index),('S{}'.format(CCW(i)),NormalizationSideBoundary.clockwise_index)) for i in range(4)]
-            ),
-            [
-                [('I',0)] + [('S{}'.format(i),NormalizationSideBoundary.inward_index) for i in range(4)],
-                [('I',1)] + [('S{}'.format(i),NormalizationSideBoundary.inward_conjugate_index) for i in range(4)],
-            ]
         )
     #@+node:gcross.20111010182517.1196: *4* test_computeNormalizationMatrix_trivial
     def test_computeNormalizationMatrix_trivial(self):
@@ -552,91 +548,87 @@ class TestExpectationEnvironment(TestCase):
         self.assertAlmostEqual(old_normalization/environment.computeNormalization(),1)
         self.assertAlmostEqual(old_expectation/environment.computeExpectation(),1)
     #@+node:gcross.20111103170337.1403: *4* test_computeExpectation_random
-    @with_checker(number_of_calls=100)
-    def test_computeExpectation_random(self):
+    @prependContractor(
+        (['S','O','S*']
+        +['S{}'.format(i) for i in range(4)]
+        +['C{}'.format(i) for i in range(4)]
+        ),
+        ([(('S{}'.format(i),ExpectationSideBoundary.counterclockwise_index)
+          ,('C{}'.format(i),CornerBoundary.clockwise_index)
+          ) for i in range(4)
+         ]
+        +[(('C{}'.format(i),CornerBoundary.counterclockwise_index)
+          ,('S{}'.format(CCW(i)),ExpectationSideBoundary.clockwise_index)
+          ) for i in range(4)
+         ]
+        +[(('O',OperatorCenterSite.bandwidthIndex(i))
+          ,('S{}'.format(i),ExpectationSideBoundary.inward_operator_index)
+          ) for i in range(4)
+         ]
+        +[(('S',StateCenterSite.bandwidthIndex(i))
+          ,('S{}'.format(i),ExpectationSideBoundary.inward_state_index)
+          ) for i in range(4)
+         ]
+        +[(('S*',StateCenterSite.bandwidthIndex(i))
+          ,('S{}'.format(i),ExpectationSideBoundary.inward_state_conjugate_index)
+          ) for i in range(4)
+         ]
+        +[(('O',OperatorCenterSite.physical_index)
+          ,('S',StateCenterSite.physical_index)
+          )
+         ,(('O',OperatorCenterSite.physical_conjugate_index)
+          ,('S*',StateCenterSite.physical_index)
+          )
+         ]
+        ),
+        []
+    )
+    @with_checker
+    def test_computeExpectation_random(contract,self):
         environment = randomExpectationEnvironment()
         self.assertAlmostEqual(
-            self.test_computeExpectation_random.contract(*(
+            contract(*(
                 [environment.center.data,environment.O_center.data,environment.center.data.conj()]+
                 [o.formExpectationBoundary(s).data for (s,o) in zip(environment.sides + environment.corners,environment.O_sides + environment.O_corners)]
             ))/environment.computeNormalization(),
             environment.computeExpectation(),
         )
-
-    test_computeExpectation_random.contract = \
-        formContractor(
-            (['S','O','S*']
-            +['S{}'.format(i) for i in range(4)]
-            +['C{}'.format(i) for i in range(4)]
-            ),
-            ([(('S{}'.format(i),ExpectationSideBoundary.counterclockwise_index)
-              ,('C{}'.format(i),CornerBoundary.clockwise_index)
-              ) for i in range(4)
-             ]
-            +[(('C{}'.format(i),CornerBoundary.counterclockwise_index)
-              ,('S{}'.format(CCW(i)),ExpectationSideBoundary.clockwise_index)
-              ) for i in range(4)
-             ]
-            +[(('O',OperatorCenterSite.bandwidthIndex(i))
-              ,('S{}'.format(i),ExpectationSideBoundary.inward_operator_index)
-              ) for i in range(4)
-             ]
-            +[(('S',StateCenterSite.bandwidthIndex(i))
-              ,('S{}'.format(i),ExpectationSideBoundary.inward_state_index)
-              ) for i in range(4)
-             ]
-            +[(('S*',StateCenterSite.bandwidthIndex(i))
-              ,('S{}'.format(i),ExpectationSideBoundary.inward_state_conjugate_index)
-              ) for i in range(4)
-             ]
-            +[(('O',OperatorCenterSite.physical_index)
-              ,('S',StateCenterSite.physical_index)
-              )
-             ,(('O',OperatorCenterSite.physical_conjugate_index)
-              ,('S*',StateCenterSite.physical_index)
-              )
-             ]
-            ),
-            []
-        )
     #@+node:gcross.20111103170337.1401: *4* test_computeExpectation_trivial
     def test_computeNormalization_trivial(self):
         self.assertAlmostEqual(ExpectationEnvironment.trivial().computeExpectation(),1)
     #@+node:gcross.20111103170337.1399: *4* test_computeExpectationMatrix_random
-    @with_checker(number_of_calls=100)
-    def test_computeExpectationMatrix_random(self):
+    @prependContractor(
+        (['O']
+        +['S{}'.format(i) for i in range(4)]
+        +['C{}'.format(i) for i in range(4)]
+        ),
+        ([(('S{}'.format(i),ExpectationSideBoundary.counterclockwise_index)
+          ,('C{}'.format(i),CornerBoundary.clockwise_index)
+          ) for i in range(4)
+         ]
+        +[(('C{}'.format(i),CornerBoundary.counterclockwise_index)
+          ,('S{}'.format(CCW(i)),ExpectationSideBoundary.clockwise_index)
+          ) for i in range(4)
+         ]
+        +[(('O',OperatorCenterSite.bandwidthIndex(i))
+          ,('S{}'.format(i),ExpectationSideBoundary.inward_operator_index)
+          ) for i in range(4)
+         ]
+        ),
+        [
+            [('O',OperatorCenterSite.physical_index)] + [('S{}'.format(i),ExpectationSideBoundary.inward_state_index) for i in range(4)],
+            [('O',OperatorCenterSite.physical_conjugate_index)] + [('S{}'.format(i),ExpectationSideBoundary.inward_state_conjugate_index) for i in range(4)],
+        ]
+    )
+    @with_checker
+    def test_computeExpectationMatrix_random(contract,self):
         environment = randomExpectationEnvironment()
         self.assertAllClose(
-            self.test_computeExpectationMatrix_random.contract(*(
+            contract(*(
                 [environment.O_center.data]+
                 [o.formExpectationBoundary(s).data for (s,o) in zip(environment.sides + environment.corners,environment.O_sides + environment.O_corners)]
             )),
             environment.computeExpectationMatrix(),
-        )
-
-    test_computeExpectationMatrix_random.contract = \
-        formContractor(
-            (['O']
-            +['S{}'.format(i) for i in range(4)]
-            +['C{}'.format(i) for i in range(4)]
-            ),
-            ([(('S{}'.format(i),ExpectationSideBoundary.counterclockwise_index)
-              ,('C{}'.format(i),CornerBoundary.clockwise_index)
-              ) for i in range(4)
-             ]
-            +[(('C{}'.format(i),CornerBoundary.counterclockwise_index)
-              ,('S{}'.format(CCW(i)),ExpectationSideBoundary.clockwise_index)
-              ) for i in range(4)
-             ]
-            +[(('O',OperatorCenterSite.bandwidthIndex(i))
-              ,('S{}'.format(i),ExpectationSideBoundary.inward_operator_index)
-              ) for i in range(4)
-             ]
-            ),
-            [
-                [('O',OperatorCenterSite.physical_index)] + [('S{}'.format(i),ExpectationSideBoundary.inward_state_index) for i in range(4)],
-                [('O',OperatorCenterSite.physical_conjugate_index)] + [('S{}'.format(i),ExpectationSideBoundary.inward_state_conjugate_index) for i in range(4)],
-            ]
         )
     #@+node:gcross.20111103170337.1396: *4* test_computeExpectationMatrix_trivial
     def test_computeExpectationMatrix_trivial(self):
