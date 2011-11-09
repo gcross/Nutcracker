@@ -57,7 +57,7 @@ class TestLeftExpectationBoundary(TestCase):
         [{'state':[('S',StateSite.right_index)]
          ,'state_conjugate':[('S*',StateSite.right_index)]
          ,'operator':[('O',OperatorSite.right_index)]
-         }[name] for name in LeftExpectationBoundary._dimensions
+         }[name] for name in LeftExpectationBoundary.dimension_names
         ]
     )
     #@-others
@@ -100,7 +100,7 @@ class TestLeftOverlapBoundary(TestCase):
         ],
         [{'state':[('S',StateSite.right_index)]
          ,'overlap':[('V',OverlapSite.right_index)]
-         }[name] for name in LeftOverlapBoundary._dimensions
+         }[name] for name in LeftOverlapBoundary.dimension_names
         ]
     )
     #@-others
@@ -146,7 +146,7 @@ class TestRightExpectationBoundary(TestCase):
         [{'state':[('S',StateSite.left_index)]
          ,'state_conjugate':[('S*',StateSite.left_index)]
          ,'operator':[('O',OperatorSite.left_index)]
-         }[name] for name in RightExpectationBoundary._dimensions
+         }[name] for name in RightExpectationBoundary.dimension_names
         ]
     )
     #@-others
@@ -189,7 +189,7 @@ class TestLeftOverlapBoundary(TestCase):
         ],
         [{'state':[('S',StateSite.left_index)]
          ,'overlap':[('V',OverlapSite.left_index)]
-         }[name] for name in RightOverlapBoundary._dimensions
+         }[name] for name in RightOverlapBoundary.dimension_names
         ]
     )
     #@-others

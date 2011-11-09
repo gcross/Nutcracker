@@ -19,7 +19,7 @@ class MetaCenterSiteTensor(MetaSiteTensor):
         cls = MetaSiteTensor.__new__(cls,class_name,bases,data)
         if hasattr(cls,"_center_site_class"):
             center_cls = cls._center_site_class
-            assert cls._physical_dimensions == center_cls._physical_dimensions
+            assert cls.physical_dimension_names == center_cls.physical_dimension_names
             contractors = []
             for i in range(4):
                 outgoing_connection_for = {
@@ -27,7 +27,7 @@ class MetaCenterSiteTensor(MetaSiteTensor):
                     "counterclockwise":[('S',cls.counterclockwise_index),('C',center_cls.bandwidthIndex(CCW(i)))],
                     "inward":[('C',center_cls.bandwidthIndex(OPP(i))),]
                 }
-                for (index,name) in enumerate(cls._physical_dimensions):
+                for (index,name) in enumerate(cls.physical_dimension_names):
                     outgoing_connection_for[name] = [('S',cls.physicalIndex(index)),('C',center_cls.physicalIndex(index))]
                 contractors.append(
                     formContractor(
@@ -36,7 +36,7 @@ class MetaCenterSiteTensor(MetaSiteTensor):
                             (('S',cls.inward_index),('C',center_cls.bandwidthIndex(i))),
                         ],
                         [
-                            outgoing_connection_for[name] for name in cls._dimensions
+                            outgoing_connection_for[name] for name in cls.dimension_names
                         ]
                     )
                 )
@@ -56,12 +56,12 @@ class CenterSiteTensor(SiteTensor):
 #@+others
 #@+node:gcross.20111108103420.1498: *4* CornerBoundary
 class CornerBoundary(Tensor):
-    _dimensions = ["clockwise","counterclockwise"]
+    dimension_names = ["clockwise","counterclockwise"]
     #@+others
     #@-others
 #@+node:gcross.20111108103420.1499: *4* ExpectationSideBoundary
 class ExpectationSideBoundary(Tensor):
-    _dimensions = ["clockwise","counterclockwise","inward_state","inward_operator","inward_state_conjugate"]
+    dimension_names = ["clockwise","counterclockwise","inward_state","inward_operator","inward_state_conjugate"]
     #@+others
     #@+node:gcross.20111108103420.1500: *5* absorbCounterClockwiseCornerBoundary
     def absorbCounterClockwiseCornerBoundary(self,corner):
@@ -100,7 +100,7 @@ class ExpectationSideBoundary(Tensor):
     #@-others
 #@+node:gcross.20111108103420.1502: *4* NormalizationSideBoundary
 class NormalizationSideBoundary(Tensor):
-    _dimensions = ["clockwise","counterclockwise","inward","inward_conjugate"]
+    dimension_names = ["clockwise","counterclockwise","inward","inward_conjugate"]
     #@+others
     #@+node:gcross.20111108103420.1503: *5* absorbCounterClockwiseCornerBoundary
     def absorbCounterClockwiseCornerBoundary(self,corner):
@@ -135,12 +135,12 @@ class NormalizationSideBoundary(Tensor):
     #@-others
 #@+node:gcross.20111108103420.1505: *4* OperatorCenterSite
 class OperatorCenterSite(SiteTensor):
-    _dimensions = ["physical","physical_conjugate","rightward","upward","leftward","downward"]
+    dimension_names = ["physical","physical_conjugate","rightward","upward","leftward","downward"]
     #@+others
     #@-others
 #@+node:gcross.20111108103420.1506: *4* OperatorCornerSite
 class OperatorCornerSite(SiteTensor):
-    _dimensions = ["physical","physical_conjugate","clockwise","counterclockwise"]
+    dimension_names = ["physical","physical_conjugate","clockwise","counterclockwise"]
     #@+others
     #@+node:gcross.20111108103420.1507: *5* absorbSideSiteAtClockwise
     def absorbSideSiteAtClockwise(self,side):
@@ -206,7 +206,7 @@ class OperatorCornerSite(SiteTensor):
     #@-others
 #@+node:gcross.20111108103420.1510: *4* OperatorSideSite
 class OperatorSideSite(CenterSiteTensor):
-    _dimensions = ["physical","physical_conjugate","clockwise","counterclockwise","inward"]
+    dimension_names = ["physical","physical_conjugate","clockwise","counterclockwise","inward"]
     _center_site_class = OperatorCenterSite
     #@+others
     #@+node:gcross.20111108103420.1511: *5* formExpectationBoundary
@@ -239,12 +239,12 @@ class OperatorSideSite(CenterSiteTensor):
     #@-others
 #@+node:gcross.20111108103420.1512: *4* StateCenterSite
 class StateCenterSite(StateSiteTensor):
-    _dimensions = ["physical","rightward","upward","leftward","downward"]
+    dimension_names = ["physical","rightward","upward","leftward","downward"]
     #@+others
     #@-others
 #@+node:gcross.20111108103420.1513: *4* StateCornerSite
 class StateCornerSite(SiteTensor):
-    _dimensions = ["physical","clockwise","counterclockwise"]
+    dimension_names = ["physical","clockwise","counterclockwise"]
     #@+others
     #@+node:gcross.20111108103420.1514: *5* absorbSideSiteAtClockwise
     def absorbSideSiteAtClockwise(self,side):
@@ -304,7 +304,7 @@ class StateCornerSite(SiteTensor):
     #@-others
 #@+node:gcross.20111108103420.1519: *4* StateSideSite
 class StateSideSite(CenterSiteTensor):
-    _dimensions = ["physical","clockwise","counterclockwise","inward"]
+    dimension_names = ["physical","clockwise","counterclockwise","inward"]
     _center_site_class = StateCenterSite
     #@+others
     #@+node:gcross.20111108103420.1520: *5* formNormalizationBoundary

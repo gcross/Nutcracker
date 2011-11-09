@@ -27,7 +27,7 @@ class TestSiteTensor(TestCase):
             return
         bandwidth_dimension_names = ["A","B","C","D"][:number_of_bandwidth_dimensions]
         physical_dimension_names = ["physical","physical_conjugate"][:number_of_physical_dimensions]
-        dimension_names = bandwidth_dimension_names + physical_dimension_names
+        original_dimension_names = bandwidth_dimension_names + physical_dimension_names
         bandwidth_dimensions = [randint(1,5) for _ in xrange(number_of_bandwidth_dimensions)]
         physical_dimension = randint(1,5)
         physical_dimensions = [physical_dimension]*number_of_physical_dimensions
@@ -43,7 +43,7 @@ class TestSiteTensor(TestCase):
         shuffle(order)
         inverse_order = [order.index(i) for i in xrange(number_of_dimensions)]
         class MySiteTensor(SiteTensor):
-            _dimensions = [dimension_names[i] for i in order]
+            dimension_names = [original_dimension_names[i] for i in order]
         tensor = MySiteTensor.build(zip(bandwidth_dimension_names,bandwidth_dimensions),components)
         data = tensor.data.transpose(inverse_order)
         self.assertAllClose(data,correct_data)
@@ -58,7 +58,7 @@ class TestSiteTensor(TestCase):
             return
         bandwidth_dimension_names = ["A","B","C","D"][:number_of_bandwidth_dimensions]
         physical_dimension_names = ["physical","physical_conjugate"][:number_of_physical_dimensions]
-        dimension_names = bandwidth_dimension_names + physical_dimension_names
+        original_dimension_names = bandwidth_dimension_names + physical_dimension_names
         bandwidth_dimensions = [1]*number_of_bandwidth_dimensions
         physical_dimension = randint(1,5)
         physical_dimensions = [physical_dimension]*number_of_physical_dimensions
@@ -74,7 +74,7 @@ class TestSiteTensor(TestCase):
         shuffle(order)
         inverse_order = [order.index(i) for i in xrange(number_of_dimensions)]
         class MySiteTensor(SiteTensor):
-            _dimensions = [dimension_names[i] for i in order]
+            dimension_names = [original_dimension_names[i] for i in order]
         tensor = MySiteTensor.simple(components[0][1])
         data = tensor.data.transpose(inverse_order)
         self.assertAllClose(data,correct_data)

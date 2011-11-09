@@ -46,7 +46,7 @@ class TestExpectationSideBoundary(TestCase):
                 ,"inward_state":[('S',ExpectationSideBoundary.inward_state_index)]
                 ,"inward_operator":[('S',ExpectationSideBoundary.inward_operator_index)]
                 ,"inward_state_conjugate":[('S',ExpectationSideBoundary.inward_state_conjugate_index)]
-                }[name] for name in ExpectationSideBoundary._dimensions
+                }[name] for name in ExpectationSideBoundary.dimension_names
             ]
         )
     #@+node:gcross.20111103170337.1373: *4* absorbCounterClockwiseSideBoundary
@@ -83,7 +83,7 @@ class TestExpectationSideBoundary(TestCase):
                 ,"inward_state":[(x,ExpectationSideBoundary.inward_state_index) for x in ('A','B')]
                 ,"inward_operator":[(x,ExpectationSideBoundary.inward_operator_index) for x in ('A','B')]
                 ,"inward_state_conjugate":[(x,ExpectationSideBoundary.inward_state_conjugate_index) for x in ('A','B')]
-                }[name] for name in ExpectationSideBoundary._dimensions
+                }[name] for name in ExpectationSideBoundary.dimension_names
             ]
         )
     #@-others
@@ -120,7 +120,7 @@ class TestNormalizationSideBoundary(TestCase):
                 ,"counterclockwise":[('C',CornerBoundary.counterclockwise_index)]
                 ,"inward":[('S',NormalizationSideBoundary.inward_index)]
                 ,"inward_conjugate":[('S',NormalizationSideBoundary.inward_conjugate_index)]
-                }[name] for name in NormalizationSideBoundary._dimensions
+                }[name] for name in NormalizationSideBoundary.dimension_names
             ]
         )
     #@+node:gcross.20111009193003.5264: *4* absorbCounterClockwiseSideBoundary
@@ -154,7 +154,7 @@ class TestNormalizationSideBoundary(TestCase):
                 ,"counterclockwise":[('B',NormalizationSideBoundary.counterclockwise_index)]
                 ,"inward":[(x,NormalizationSideBoundary.inward_index) for x in ('A','B')]
                 ,"inward_conjugate":[(x,NormalizationSideBoundary.inward_conjugate_index) for x in ('A','B')]
-                }[name] for name in NormalizationSideBoundary._dimensions
+                }[name] for name in NormalizationSideBoundary.dimension_names
             ]
         )
     #@-others
@@ -193,7 +193,7 @@ class TestOperatorCornerSite(TestCase):
                 ,"physical_conjugate":[('C',OperatorCornerSite.physical_conjugate_index),('S',OperatorSideSite.physical_conjugate_index)]
                 ,"counterclockwise":[('C',OperatorCornerSite.counterclockwise_index),('S',OperatorSideSite.inward_index)]
                 ,"clockwise":[('S',OperatorSideSite.clockwise_index)]
-                }[name] for name in OperatorCornerSite._dimensions
+                }[name] for name in OperatorCornerSite.dimension_names
             ]
         )
     #@+node:gcross.20111103170337.1361: *4* absorbSideSiteAtCounterClockwise
@@ -228,7 +228,7 @@ class TestOperatorCornerSite(TestCase):
                 ,"physical_conjugate":[('C',OperatorCornerSite.physical_conjugate_index),('S',OperatorSideSite.physical_conjugate_index)]
                 ,"counterclockwise":[('S',OperatorSideSite.counterclockwise_index)]
                 ,"clockwise":[('C',OperatorCornerSite.clockwise_index),('S',OperatorSideSite.inward_index)]
-                }[name] for name in OperatorCornerSite._dimensions
+                }[name] for name in OperatorCornerSite.dimension_names
             ]
         )
     #@+node:gcross.20111103170337.1355: *4* formExpectationBoundary
@@ -261,7 +261,7 @@ class TestOperatorCornerSite(TestCase):
             [
                 {"clockwise":[('S',StateCornerSite.clockwise_index),('O',OperatorCornerSite.clockwise_index),('S*',StateCornerSite.clockwise_index)]
                 ,"counterclockwise":[('S',StateCornerSite.counterclockwise_index),('O',OperatorCornerSite.counterclockwise_index),('S*',StateCornerSite.counterclockwise_index)]
-                }[name] for name in CornerBoundary._dimensions
+                }[name] for name in CornerBoundary.dimension_names
             ]
         )
     #@-others
@@ -284,7 +284,7 @@ class TestOperatorSideSite(TestCase):
             "upward_dimension": randint(1,5),
             "leftward_dimension": randint(1,5),
             "downward_dimension": randint(1,5),
-            OperatorCenterSite._bandwidth_dimensions[direction]+"_dimension": side.inward_dimension
+            OperatorCenterSite.bandwidth_dimension_names[direction]+"_dimension": side.inward_dimension
         })
         self.assertAllClose(
              tensordot(side.data,center.data,(side.inward_index,center.bandwidthIndex(direction)))
@@ -343,7 +343,7 @@ class TestOperatorSideSite(TestCase):
                 ,"inward_state":[('S',StateSideSite.inward_index)]
                 ,"inward_operator":[('O',OperatorSideSite.inward_index)]
                 ,"inward_state_conjugate":[('S*',StateSideSite.inward_index)]
-                }[name] for name in ExpectationSideBoundary._dimensions
+                }[name] for name in ExpectationSideBoundary.dimension_names
             ]
         )
     #@-others
@@ -396,7 +396,7 @@ class TestStateCornerSite(TestCase):
                 {"physical":[('C',StateCornerSite.physical_index),('S',StateSideSite.physical_index)]
                 ,"clockwise":[('C',StateCornerSite.clockwise_index),('S',StateSideSite.inward_index)]
                 ,"counterclockwise":[('S',StateSideSite.counterclockwise_index)]
-                }[name] for name in StateCornerSite._dimensions
+                }[name] for name in StateCornerSite.dimension_names
             ]
         )
     #@+node:gcross.20111013080525.1209: *4* absorbSideSiteAtClockwise
@@ -430,7 +430,7 @@ class TestStateCornerSite(TestCase):
                 {"physical":[('C',StateCornerSite.physical_index),('S',StateSideSite.physical_index)]
                 ,"counterclockwise":[('C',StateCornerSite.counterclockwise_index),('S',StateSideSite.inward_index)]
                 ,"clockwise":[('S',StateSideSite.clockwise_index)]
-                }[name] for name in StateCornerSite._dimensions
+                }[name] for name in StateCornerSite.dimension_names
             ]
         )
     #@+node:gcross.20111009193003.5241: *4* formNormalizationBoundary
@@ -455,7 +455,7 @@ class TestStateCornerSite(TestCase):
             ],
             [
                 [('S'+c,getattr(StateCornerSite,name+'_index')) for c in ('','*')]
-                for name in CornerBoundary._dimensions
+                for name in CornerBoundary.dimension_names
             ]
         )
     #@-others
@@ -478,7 +478,7 @@ class TestStateSideSite(TestCase):
             "upward_dimension": randint(1,5),
             "leftward_dimension": randint(1,5),
             "downward_dimension": randint(1,5),
-            StateCenterSite._bandwidth_dimensions[direction]+"_dimension": side.inward_dimension
+            StateCenterSite.bandwidth_dimension_names[direction]+"_dimension": side.inward_dimension
         })
         self.assertAllClose(
              tensordot(side.data,center.data,(side.inward_index,center.bandwidthIndex(direction)))
@@ -525,7 +525,7 @@ class TestStateSideSite(TestCase):
                 ,"counterclockwise":[('S'+c,StateSideSite.counterclockwise_index) for c in ('','*')]
                 ,"inward":[('S',StateSideSite.inward_index)]
                 ,"inward_conjugate":[('S*',StateSideSite.inward_index)]
-                }[name] for name in NormalizationSideBoundary._dimensions
+                }[name] for name in NormalizationSideBoundary.dimension_names
             ]
         )
     #@-others

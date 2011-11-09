@@ -35,7 +35,7 @@ from ..utils import crand, mapFunctions, normalize
 #@+node:gcross.20111108100704.1424: *5* Expectation
 #@+node:gcross.20111107131531.1338: *6* LeftExpectationBoundary
 class LeftExpectationBoundary(Tensor):
-    _dimensions = ["operator","state_conjugate","state"]
+    dimension_names = ["operator","state_conjugate","state"]
     #@+others
     #@+node:gcross.20111107131531.1339: *7* absorb
     def absorb(self,operator,state):
@@ -43,7 +43,7 @@ class LeftExpectationBoundary(Tensor):
     #@-others
 #@+node:gcross.20111107131531.3577: *6* RightExpectationBoundary
 class RightExpectationBoundary(Tensor):
-    _dimensions = ["operator","state","state_conjugate"]
+    dimension_names = ["operator","state","state_conjugate"]
     #@+others
     #@+node:gcross.20111107131531.3578: *7* absorb
     def absorb(self,operator,state):
@@ -52,7 +52,7 @@ class RightExpectationBoundary(Tensor):
 #@+node:gcross.20111108100704.1431: *5* Overlap
 #@+node:gcross.20111108100704.1432: *6* LeftOverlapBoundary
 class LeftOverlapBoundary(Tensor):
-    _dimensions = ["overlap","state"]
+    dimension_names = ["overlap","state"]
     #@+others
     #@+node:gcross.20111108100704.1433: *7* absorb
     def absorb(self,overlap,state):
@@ -60,7 +60,7 @@ class LeftOverlapBoundary(Tensor):
     #@-others
 #@+node:gcross.20111108100704.1434: *6* RightOverlapBoundary
 class RightOverlapBoundary(Tensor):
-    _dimensions = ["state","overlap"]
+    dimension_names = ["state","overlap"]
     #@+others
     #@+node:gcross.20111108100704.1435: *7* absorb
     def absorb(self,overlap,state):
@@ -120,12 +120,12 @@ class OperatorSite(SiteTensor):
     #@-others
 #@+node:gcross.20111107131531.5847: *5* OverlapSite
 class OverlapSite(SiteTensor):
-    _dimensions = ["right","physical","left"]
+    dimension_names = ["right","physical","left"]
     #@+others
     #@-others
 #@+node:gcross.20111107131531.1307: *5* StateSite
 class StateSite(StateSiteTensor):
-    _dimensions = ["physical","left","right"]
+    dimension_names = ["physical","left","right"]
     #@+others
     #@+node:gcross.20111108100704.1371: *6* formNormalizedOverlapSites
     FormAndNormalizeOverlapSiteResult = \
