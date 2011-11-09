@@ -93,7 +93,7 @@ class Tensor:
             self.data = args[0]
             if(self.data.ndim != self.number_of_dimensions):
                 raise ValueError("constructor was given a reference to a tensor of rank {}, when a tensor of rank {} was required".format(self.data.ndim,self.number_of_dimensions))
-            for (name,dimension) in zip(self._dimension_arguments,self.data.shape):
+            for (name,dimension) in zip(self._dimension_arguments,self.dimensions()):
                 setattr(self,name,dimension)
         else:
             for given_dimension_name in keywords.keys():
@@ -114,6 +114,12 @@ class Tensor:
                 except KeyError:
                     raise ValueError("missing a value for dimension {}".format(name))
             self.data = ndarray(shape,dtype=complex128)
+    #@+node:gcross.20111109104457.1800: *5* dimension
+    def dimension(self,index):
+        return self.dimensions()[index]
+    #@+node:gcross.20111109104457.1799: *5* dimensions
+    def dimensions(self):
+        return self.data.shape
     #@+node:gcross.20111108100704.1378: *5* filled
     @classmethod
     def filled(cls,fill,**keywords):
@@ -128,7 +134,7 @@ class Tensor:
     @classmethod
     def random(cls,**keywords):
         self = cls(**keywords)
-        self.data[...] = crand(*self.data.shape)
+        self.data[...] = crand(*self.dimensions())
         return self
     #@+node:gcross.20111108100704.1446: *5* size
     def size(self):
@@ -144,10 +150,10 @@ class SiteTensor(Tensor):
     #@+others
     #@+node:gcross.20111107131531.1322: *5* bandwidthDimension
     def bandwidthDimension(self,direction):
-        return self.data.shape[self.bandwidthIndex(direction)]
+        return self.dimension(self.bandwidthIndex(direction))
     #@+node:gcross.20111107131531.1323: *5* bandwidthDimensions
     def bandwidthDimensions(self):
-        return [self.data.shape[i] for i in self.bandwidthIndices()]
+        return [self.dimension(i) for i in self.bandwidthIndices()]
     #@+node:gcross.20111107131531.1324: *5* bandwidthIndex
     @classmethod
     def bandwidthIndex(self,direction):
@@ -181,10 +187,10 @@ class SiteTensor(Tensor):
         return self
     #@+node:gcross.20111107131531.1326: *5* physicalDimension
     def physicalDimension(self,direction):
-        return self.data.shape[self.physicalIndex(direction)]
+        return self.dimension(self.physicalIndex(direction))
     #@+node:gcross.20111107131531.1327: *5* physicalDimensions
     def physicalDimensions(self):
-        return [self.data.shape[i] for i in self.physicalIndices()]
+        return [self.dimension(i) for i in self.physicalIndices()]
     #@+node:gcross.20111107131531.1328: *5* physicalIndex
     @classmethod
     def physicalIndex(self,direction):

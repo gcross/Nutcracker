@@ -277,8 +277,8 @@ class TestStateSite(TestCase):
 
         else:
             new_left_site, new_right_site = left_site.normalizeAndDenormalize(direction,right_site)
-        self.assertEqual(new_left_site.data.shape,left_site.data.shape)
-        self.assertEqual(new_right_site.data.shape,right_site.data.shape)
+        self.assertEqual(new_left_site.dimensions(),left_site.dimensions())
+        self.assertEqual(new_right_site.dimensions(),right_site.dimensions())
         self.assertAllClose(
             tensordot(new_left_site.data,new_right_site.data,(StateSite.right_index,StateSite.left_index)),
             tensordot(left_site.data,right_site.data,(StateSite.right_index,StateSite.left_index)),

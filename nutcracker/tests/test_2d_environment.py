@@ -121,7 +121,7 @@ class TestNormalizationEnvironment(TestCase):
     ):
         environment = randomNormalizationEnvironment()
         number_to_keep = randint(1,min(
-            product(withoutIndex(environment.sides[direction].data.shape,StateSideSite.inward_index)),
+            product(withoutIndex(environment.sides[direction].dimensions(),StateSideSite.inward_index)),
             environment.sides[direction].inward_dimension
         ))
         environment.compressConnectionBetweenSideAndCenter(direction,keep=number_to_keep)
@@ -159,8 +159,8 @@ class TestNormalizationEnvironment(TestCase):
         number_to_keep = \
             randint(1,
                 min(
-                    product(withoutIndex(environment.sides[direction].data.shape,StateSideSite.clockwise_index)),
-                    product(withoutIndex(environment.corners[CW(direction)].data.shape,StateCornerSite.counterclockwise_index)),
+                    product(withoutIndex(environment.sides[direction].dimensions(),StateSideSite.clockwise_index)),
+                    product(withoutIndex(environment.corners[CW(direction)].dimensions(),StateCornerSite.counterclockwise_index)),
                 )
             )
         environment.compressConnectionBetweenSideAndClockwiseCorner(direction,keep=number_to_keep)
@@ -198,8 +198,8 @@ class TestNormalizationEnvironment(TestCase):
         number_to_keep = \
             randint(1,
                 min(
-                    product(withoutIndex(environment.sides[direction].data.shape,StateSideSite.counterclockwise_index)),
-                    product(withoutIndex(environment.corners[direction].data.shape,StateCornerSite.clockwise_index)),
+                    product(withoutIndex(environment.sides[direction].dimensions(),StateSideSite.counterclockwise_index)),
+                    product(withoutIndex(environment.corners[direction].dimensions(),StateCornerSite.clockwise_index)),
                 )
             )
         environment.compressConnectionBetweenSideAndCounterClockwiseCorner(direction,keep=number_to_keep)
@@ -224,7 +224,7 @@ class TestNormalizationEnvironment(TestCase):
     ):
         environment = randomNormalizationEnvironment()
         old_normalization = environment.computeNormalization()
-        number_to_keep = product(withoutIndex(environment.corners[direction].data.shape,StateCornerSite.physical_index))
+        number_to_keep = product(withoutIndex(environment.corners[direction].dimensions(),StateCornerSite.physical_index))
         environment.compressCorner(direction,keep=number_to_keep)
         self.assertEqual(environment.corners[direction].physical_dimension,number_to_keep)
         self.assertAlmostEqual(old_normalization/environment.computeNormalization(),1)
@@ -234,7 +234,7 @@ class TestNormalizationEnvironment(TestCase):
         direction = irange(0,3),
     ):
         environment = randomNormalizationEnvironment()
-        number_to_keep = randint(1,product(withoutIndex(environment.corners[direction].data.shape,StateCornerSite.physical_index)))
+        number_to_keep = randint(1,product(withoutIndex(environment.corners[direction].dimensions(),StateCornerSite.physical_index)))
         environment.compressCorner(direction,keep=number_to_keep)
         self.assertEqual(environment.corners[direction].physical_dimension,number_to_keep)
     #@+node:gcross.20111022200315.1286: *4* test_compressCorner_threshold_zero
@@ -255,7 +255,7 @@ class TestNormalizationEnvironment(TestCase):
     ):
         environment = randomNormalizationEnvironment()
         old_normalization = environment.computeNormalization()
-        number_to_keep = product(withoutIndex(environment.sides[direction].data.shape,StateSideSite.physical_index))
+        number_to_keep = product(withoutIndex(environment.sides[direction].dimensions(),StateSideSite.physical_index))
         environment.compressSide(direction,keep=number_to_keep)
         self.assertEqual(environment.sides[direction].physical_dimension,number_to_keep)
         self.assertAlmostEqual(old_normalization/environment.computeNormalization(),1)
@@ -265,7 +265,7 @@ class TestNormalizationEnvironment(TestCase):
         direction = irange(0,3),
     ):
         environment = randomNormalizationEnvironment()
-        number_to_keep = randint(1,product(withoutIndex(environment.sides[direction].data.shape,StateSideSite.physical_index)))
+        number_to_keep = randint(1,product(withoutIndex(environment.sides[direction].dimensions(),StateSideSite.physical_index)))
         environment.compressSide(direction,keep=number_to_keep)
         self.assertEqual(environment.sides[direction].physical_dimension,number_to_keep)
     #@+node:gcross.20111022200315.1294: *4* test_compressSide_threshold_zero
@@ -401,10 +401,10 @@ class TestExpectationEnvironment(TestCase):
         number_to_keep = \
             randint(1,
                 min(
-                    product(withoutIndex(environment.O_sides[direction].data.shape,OperatorSideSite.clockwise_index)),
-                    product(withoutIndex(environment.O_corners[CW(direction)].data.shape,OperatorCornerSite.counterclockwise_index)),
-                    product(withoutIndex(environment.sides[direction].data.shape,StateSideSite.clockwise_index)),
-                    product(withoutIndex(environment.corners[CW(direction)].data.shape,StateCornerSite.counterclockwise_index)),
+                    product(withoutIndex(environment.O_sides[direction].dimensions(),OperatorSideSite.clockwise_index)),
+                    product(withoutIndex(environment.O_corners[CW(direction)].dimensions(),OperatorCornerSite.counterclockwise_index)),
+                    product(withoutIndex(environment.sides[direction].dimensions(),StateSideSite.clockwise_index)),
+                    product(withoutIndex(environment.corners[CW(direction)].dimensions(),StateCornerSite.counterclockwise_index)),
                 ),
             )
         environment.compressConnectionBetweenSideAndClockwiseCorner(direction,keep=number_to_keep)
@@ -453,10 +453,10 @@ class TestExpectationEnvironment(TestCase):
         number_to_keep = \
             randint(1,
                 min(
-                    product(withoutIndex(environment.O_sides[direction].data.shape,OperatorSideSite.counterclockwise_index)),
-                    product(withoutIndex(environment.O_corners[direction].data.shape,OperatorCornerSite.clockwise_index)),
-                    product(withoutIndex(environment.sides[direction].data.shape,StateSideSite.counterclockwise_index)),
-                    product(withoutIndex(environment.corners[direction].data.shape,StateCornerSite.clockwise_index)),
+                    product(withoutIndex(environment.O_sides[direction].dimensions(),OperatorSideSite.counterclockwise_index)),
+                    product(withoutIndex(environment.O_corners[direction].dimensions(),OperatorCornerSite.clockwise_index)),
+                    product(withoutIndex(environment.sides[direction].dimensions(),StateSideSite.counterclockwise_index)),
+                    product(withoutIndex(environment.corners[direction].dimensions(),StateCornerSite.clockwise_index)),
                 )
             )
         environment.compressConnectionBetweenSideAndCounterClockwiseCorner(direction,keep=number_to_keep)
@@ -500,7 +500,7 @@ class TestExpectationEnvironment(TestCase):
         direction = irange(0,3),
     ):
         environment = randomExpectationEnvironment()
-        number_to_keep = randint(1,product(withoutIndex(environment.corners[direction].data.shape,StateCornerSite.physical_index)))
+        number_to_keep = randint(1,product(withoutIndex(environment.corners[direction].dimensions(),StateCornerSite.physical_index)))
         environment.compressCorner(direction,keep=lambda x: min(number_to_keep,len(x)))
         self.assertLessEqual(environment.corners[direction].physical_dimension,number_to_keep)
     #@+node:gcross.20111107154810.1392: *4* test_compressCorner_threshold_zero
@@ -535,7 +535,7 @@ class TestExpectationEnvironment(TestCase):
         direction = irange(0,3),
     ):
         environment = randomExpectationEnvironment()
-        number_to_keep = randint(1,product(withoutIndex(environment.sides[direction].data.shape,StateSideSite.physical_index)))
+        number_to_keep = randint(1,product(withoutIndex(environment.sides[direction].dimensions(),StateSideSite.physical_index)))
         environment.compressSide(direction,keep=lambda x: min(number_to_keep,len(x)))
         self.assertLessEqual(environment.sides[direction].physical_dimension,number_to_keep)
     #@+node:gcross.20111107154810.1402: *4* test_compressSide_threshold_zero

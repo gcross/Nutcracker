@@ -18,15 +18,15 @@ from ..utils import *
 #@+node:gcross.20111108100704.1374: ** Functions
 #@+node:gcross.20111028110210.1335: *3* ensurePhysicalDimensionSufficientlyLarge
 def ensurePhysicalDimensionSufficientlyLarge(tensor,index,dimension):
-    if dimension > product(withoutIndex(tensor.data.shape,index)):
-        new_shape = list(tensor.data.shape)
+    if dimension > product(withoutIndex(tensor.dimensions(),index)):
+        new_shape = list(tensor.dimensions())
         new_shape[0] = dimension
         return type(tensor)(crand(*new_shape))
     else:
         return tensor
 #@+node:gcross.20111028110210.1337: *3* ensurePhysicalDimensionSufficientlyLargeToNormalize
 def ensurePhysicalDimensionSufficientlyLargeToNormalize(tensor,index):
-    return ensurePhysicalDimensionSufficientlyLarge(tensor,index,tensor.data.shape[index])
+    return ensurePhysicalDimensionSufficientlyLarge(tensor,index,tensor.dimension(index))
 #@+node:gcross.20111108100704.1408: *3* randomIndex
 def randomIndex(ndim):
     return randint(0,ndim-1)
