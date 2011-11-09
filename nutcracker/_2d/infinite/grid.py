@@ -15,9 +15,7 @@ from ...utils import *
 class NormalizationGrid(NormalizationEnvironment):
     #@+others
     #@+node:gcross.20111109104457.1706: *4* __init__
-    def __init__(self,physical_dimension=None):
-        if not physical_dimension:
-            return
+    def __init__(self,physical_dimension):
         self.sides = [StateSideSite.trivial()]*4
         self.corners = [StateCornerSite.trivial()]*4
         self.center = \
@@ -56,17 +54,16 @@ class NormalizationGrid(NormalizationEnvironment):
                 self.center,1+direction,
                 new_dimension
             )
+    #@+node:gcross.20111109104457.1787: *4* trivial
+    @classmethod
+    def trivial(cls):
+        return cls(1)
     #@-others
 #@+node:gcross.20111109104457.1735: *3* ExpectationGrid
 class ExpectationGrid(ExpectationEnvironment,NormalizationGrid):
     #@+others
     #@+node:gcross.20111109104457.1736: *4* __init__
-    def __init__(self,**keywords):
-        if not keywords:
-            return
-        O_center = keywords["center"]
-        O_sides = keywords["sides"]
-        O_corners = keywords["corners"]
+    def __init__(self,O_center,O_sides,O_corners):
         super(type(self),self).__init__(O_center.physical_dimension)
         if not isinstance(O_center,OperatorCenterSite):
             raise ValueError("first argument must be the operator center site")
@@ -107,6 +104,10 @@ class ExpectationGrid(ExpectationEnvironment,NormalizationGrid):
             self.O_sides[direction] = self.O_sides[direction].absorbCenterSite(self.O_center,direction)
             self.O_corners[direction] = self.O_corners[direction].absorbSideSiteAtCounterClockwise(self.O_sides[CCW(direction)])
             self.O_corners[CW(direction)] = self.O_corners[CW(direction)].absorbSideSiteAtClockwise(self.O_sides[CW(direction)])
+    #@+node:gcross.20111109104457.1788: *4* trivial
+    @classmethod
+    def trivial(cls):
+        return cls(OperatorCenterSite.trivial(),[OperatorSideSite.trivial()]*4,[OperatorCornerSite.trivial()]*4)
     #@-others
 #@-others
 

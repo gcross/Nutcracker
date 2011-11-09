@@ -168,10 +168,13 @@ class NormalizationEnvironment(object):
     @classmethod
     def trivial(cls):
         self = cls()
+        self.trivialize()
+        return self
+    #@+node:gcross.20111109104457.1789: *4* trivialize
+    def trivialize(self):
         self.sides = [StateSideSite.trivial()]*4
         self.corners = [StateCornerSite.trivial()]*4
         self.center = StateCenterSite.trivial()
-        return self
     #@-others
 #@+node:gcross.20111103170337.1374: *3* ExpectationEnvironment
 class ExpectationEnvironment(NormalizationEnvironment):
@@ -260,13 +263,11 @@ class ExpectationEnvironment(NormalizationEnvironment):
             .reshape(matrix_dimension,matrix_dimension)
         )
     #@+node:gcross.20111109104457.1756: *4* trivial
-    @classmethod
-    def trivial(cls):
-        self = super(ExpectationEnvironment,cls).trivial()
+    def trivialize(self):
+        super(type(self),self).trivialize()
         self.O_sides = [OperatorSideSite.trivial()]*4
         self.O_corners = [OperatorCornerSite.trivial()]*4
         self.O_center = OperatorCenterSite.trivial()
-        return self
     #@-others
 #@-others
 
