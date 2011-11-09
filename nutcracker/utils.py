@@ -205,7 +205,6 @@ def formContractor(order,joins,result_joins):
     #@-<< Form the contractor function >>
 
     return contract
-#@+node:gcross.20111108100704.1386: *3* transposeAndReshapeAndReturnInverseTransformation
 #@+node:gcross.20111017110141.1258: *3* increaseDimensionNaivelyBetween
 def increaseDimensionNaivelyBetween(tensor_1,index_1,tensor_2,index_2,new_dimension):
     if tensor_1.shape[index_1] != tensor_2.shape[index_2]:
