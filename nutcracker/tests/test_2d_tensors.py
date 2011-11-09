@@ -2,6 +2,8 @@
 #@+node:gcross.20111107154810.1418: * @file test_2d_tensors.py
 #@+<< Imports >>
 #@+node:gcross.20111107154810.1420: ** << Imports >>
+from numpy import zeros
+
 from .._2d.tensors import *
 
 from . import *
@@ -344,6 +346,21 @@ class TestOperatorSideSite(TestCase):
                 }[name] for name in ExpectationSideBoundary._dimensions
             ]
         )
+    #@-others
+#@+node:gcross.20111109104457.1796: *3* StateCenterSite
+class TestStateCenterSite(TestCase):
+    #@+others
+    #@+node:gcross.20111109104457.1798: *4* simpleObservable
+    @with_checker
+    def test_simpleObservation(self,physical_dimension=irange(1,10)):
+        observation = randint(0,physical_dimension-1)
+        state_site = StateCenterSite.simpleObservation(physical_dimension,observation)
+        shape = [1]*StateCenterSite.number_of_dimensions
+        shape[StateCenterSite.indexForName("physical")] = physical_dimension
+        correct_data = zeros(physical_dimension)
+        correct_data[observation] = 1
+        correct_data = correct_data.reshape(shape)
+        self.assertAllClose(state_site.data,correct_data)
     #@-others
 #@+node:gcross.20111009193003.5240: *3* StateCornerSite
 class TestStateCornerSite(TestCase):

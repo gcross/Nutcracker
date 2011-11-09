@@ -2,9 +2,9 @@
 #@+node:gcross.20111107131531.1333: * @file test_1d_tensors.py
 #@+<< Imports >>
 #@+node:gcross.20111107131531.1334: ** << Imports >>
-from numpy import identity, tensordot
-
+from numpy import identity, tensordot, zeros
 from paycheck import *
+from random import randint
 
 from .._1d.enumerations import *
 from .._1d.tensors import *
@@ -329,6 +329,17 @@ class TestStateSite(TestCase):
             right_dimension = right_dimension,
         )
         self.assertNormalized(state_site.data,StateSite.left_index)
+    #@+node:gcross.20111109104457.1793: *4* simpleObservable
+    @with_checker
+    def test_simpleObservation(self,physical_dimension=irange(1,10)):
+        observation = randint(0,physical_dimension-1)
+        state_site = StateSite.simpleObservation(physical_dimension,observation)
+        shape = [1]*StateSite.number_of_dimensions
+        shape[StateSite.indexForName("physical")] = physical_dimension
+        correct_data = zeros(physical_dimension)
+        correct_data[observation] = 1
+        correct_data = correct_data.reshape(shape)
+        self.assertAllClose(state_site.data,correct_data)
     #@-others
 #@-others
 #@-leo

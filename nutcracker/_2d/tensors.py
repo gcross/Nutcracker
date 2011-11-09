@@ -238,7 +238,7 @@ class OperatorSideSite(CenterSiteTensor):
         )
     #@-others
 #@+node:gcross.20111108103420.1512: *4* StateCenterSite
-class StateCenterSite(SiteTensor):
+class StateCenterSite(StateSiteTensor):
     _dimensions = ["physical","rightward","upward","leftward","downward"]
     #@+others
     #@-others

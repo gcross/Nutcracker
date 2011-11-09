@@ -17,7 +17,7 @@
 
 #@+<< Imports >>
 #@+node:gcross.20111107131531.1304: ** << Imports >>
-from numpy import complex128, ndarray, product
+from numpy import complex128, ndarray, product, zeros
 
 from .utils import crand
 #@-<< Imports >>
@@ -120,6 +120,10 @@ class Tensor:
         self = cls(**keywords)
         self.data[...] = fill
         return self
+    #@+node:gcross.20111109104457.1795: *5* indexForName
+    @classmethod
+    def indexForName(cls,name):
+        return cls._dimensions.index(name)
     #@+node:gcross.20111108100704.1377: *5* random
     @classmethod
     def random(cls,**keywords):
@@ -194,6 +198,16 @@ class SiteTensor(Tensor):
     def simple(cls,component):
         return cls.build([(name,1) for name in cls._bandwidth_dimensions],[((0,) * cls.number_of_bandwidth_dimensions,component)])
     #@-others
+#@+node:gcross.20111109104457.1792: *4* StateSiteTensor
+class StateSiteTensor(SiteTensor):
+    #@+others
+    #@+node:gcross.20111109104457.1791: *5* simpleObservation
+    @classmethod
+    def simpleObservation(cls,physical_dimension,observation):
+        values = zeros(physical_dimension,complex128)
+        values[observation] = 1
+        return cls.simple(values)
+    #@-others
 #@-others
 
 #@+<< Exports >>
@@ -204,6 +218,7 @@ __all__ = [
 
     "Tensor",
     "SiteTensor",
+    "StateSiteTensor",
 ]
 #@-<< Exports >>
 #@-leo

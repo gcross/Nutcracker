@@ -124,7 +124,7 @@ class OverlapSite(SiteTensor):
     #@+others
     #@-others
 #@+node:gcross.20111107131531.1307: *5* StateSite
-class StateSite(SiteTensor):
+class StateSite(StateSiteTensor):
     _dimensions = ["physical","left","right"]
     #@+others
     #@+node:gcross.20111108100704.1371: *6* formNormalizedOverlapSites
