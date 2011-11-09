@@ -1,5 +1,5 @@
 #@+leo-ver=5-thin
-#@+node:gcross.20111009193003.5253: * @file grid.py
+#@+node:gcross.20111009193003.5253: * @file environment.py
 #@+<< Imports >>
 #@+node:gcross.20111009193003.5254: ** << Imports >>
 from numpy import array, dot, identity, product, tensordot
@@ -11,8 +11,8 @@ from ..utils import *
 
 #@+others
 #@+node:gcross.20111009193003.5256: ** Classes
-#@+node:gcross.20111009193003.5257: *3* NormalizationGrid
-class NormalizationGrid:
+#@+node:gcross.20111009193003.5257: *3* NormalizationEnvironment
+class NormalizationEnvironment:
     #@+others
     #@+node:gcross.20111009193003.5258: *4* __init__
     def __init__(self,physical_dimension):
@@ -205,12 +205,12 @@ class NormalizationGrid:
     #@+node:gcross.20111014113710.1234: *4* physical_dimension
     physical_dimension = property(lambda self: self.center.physical_dimension)
     #@-others
-#@+node:gcross.20111103170337.1374: *3* ExpectationGrid
-class ExpectationGrid(NormalizationGrid):
+#@+node:gcross.20111103170337.1374: *3* ExpectationEnvironment
+class ExpectationEnvironment(NormalizationEnvironment):
     #@+others
     #@+node:gcross.20111103170337.1375: *4* __init__
     def __init__(self,O_center,O_sides,O_corners):
-        NormalizationGrid.__init__(self,O_center.physical_dimension)
+        NormalizationEnvironment.__init__(self,O_center.physical_dimension)
         if not isinstance(O_center,OperatorCenterSite):
             raise ValueError("first argument must be the operator center site")
         try:
@@ -245,7 +245,7 @@ class ExpectationGrid(NormalizationGrid):
         self.O_corners = O_corners
     #@+node:gcross.20111107123047.1378: *4* compressConnectionBetweenSideAndClockwiseCorner
     def compressConnectionBetweenSideAndClockwiseCorner(self,direction,keep=None,threshold=None):
-        NormalizationGrid.compressConnectionBetweenSideAndClockwiseCorner(self,direction,keep,threshold)
+        NormalizationEnvironment.compressConnectionBetweenSideAndClockwiseCorner(self,direction,keep,threshold)
         self.O_sides[direction], self.O_corners[CW(direction)] = \
             compressConnectionBetweenTensors(
                 self.O_sides[direction],OperatorSideSite.clockwise_index,
@@ -254,7 +254,7 @@ class ExpectationGrid(NormalizationGrid):
             )
     #@+node:gcross.20111107123047.1380: *4* compressConnectionBetweenSideAndCounterClockwiseCorner
     def compressConnectionBetweenSideAndCounterClockwiseCorner(self,direction,keep=None,threshold=None):
-        NormalizationGrid.compressConnectionBetweenSideAndCounterClockwiseCorner(self,direction,keep,threshold)
+        NormalizationEnvironment.compressConnectionBetweenSideAndCounterClockwiseCorner(self,direction,keep,threshold)
         self.O_sides[direction], self.O_corners[direction] = \
             compressConnectionBetweenTensors(
                 self.O_sides[direction],OperatorSideSite.counterclockwise_index,
@@ -328,7 +328,7 @@ class ExpectationGrid(NormalizationGrid):
         )
     #@+node:gcross.20111103170337.1377: *4* contract
     def contract(self,*directions):
-        NormalizationGrid.contract(self,*directions)
+        NormalizationEnvironment.contract(self,*directions)
         for direction in directions:
             self.O_sides[direction] = self.O_sides[direction].absorbCenterSite(self.O_center,direction)
             self.O_corners[direction] = self.O_corners[direction].absorbSideSiteAtCounterClockwise(self.O_sides[CCW(direction)])
@@ -339,8 +339,8 @@ class ExpectationGrid(NormalizationGrid):
 #@+<< Exports >>
 #@+node:gcross.20111009193003.5255: ** << Exports >>
 __all__ = [
-    "NormalizationGrid",
-    "ExpectationGrid",
+    "NormalizationEnvironment",
+    "ExpectationEnvironment",
 ]
 #@-<< Exports >>
 #@-leo
