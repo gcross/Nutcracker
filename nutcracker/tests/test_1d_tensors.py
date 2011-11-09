@@ -56,7 +56,7 @@ class TestLeftExpectationBoundary(TestCase):
             right_dimension = right_state_dimension,
         )
         self.assertAllClose(
-            L.absorb(O,S).data,
+            L.absorb(state_site=S,operator_site=O).data,
             contract(L.data,O.formDenseTensor(),S.data,S.data.conj())
         )
     #@-others
@@ -98,7 +98,7 @@ class TestLeftOverlapBoundary(TestCase):
             right_dimension = right_state_dimension,
         )
         self.assertAllClose(
-            L.absorb(V,S).data,
+            L.absorb(overlap_site=V,state_site=S).data,
             contract(L.data,V.data,S.data)
         )
     #@-others
@@ -143,7 +143,7 @@ class TestRightExpectationBoundary(TestCase):
             right_dimension = right_state_dimension,
         )
         self.assertAllClose(
-            R.absorb(O,S).data,
+            R.absorb(state_site=S,operator_site=O).data,
             contract(R.data,O.formDenseTensor(),S.data,S.data.conj())
         )
     #@-others
@@ -185,7 +185,7 @@ class TestLeftOverlapBoundary(TestCase):
             right_dimension = right_state_dimension,
         )
         self.assertAllClose(
-            R.absorb(V,S).data,
+            R.absorb(overlap_site=V,state_site=S).data,
             contract(R.data,V.data,S.data)
         )
     #@-others

@@ -38,16 +38,27 @@ class LeftExpectationBoundary(Tensor):
     dimension_names = ["operator","state_conjugate","state"]
     #@+others
     #@+node:gcross.20111107131531.1339: *7* absorb
-    def absorb(self,operator,state):
-        return type(self)(core.contract_sos_left(operator.right_dimension,self.data.transpose(),operator.index_table.transpose(),operator.matrix_table.transpose(),state.data.transpose()).transpose())
+    def absorb(self,state_site,operator_site):
+        return type(self)(core.contract_sos_left(
+            operator_site.right_dimension,
+            self.data.transpose(),
+            operator_site.index_table.transpose(),
+            operator_site.matrix_table.transpose(),
+            state_site.data.transpose()).transpose()
+        )
     #@-others
 #@+node:gcross.20111107131531.3577: *6* RightExpectationBoundary
 class RightExpectationBoundary(Tensor):
     dimension_names = ["operator","state","state_conjugate"]
     #@+others
     #@+node:gcross.20111107131531.3578: *7* absorb
-    def absorb(self,operator,state):
-        return type(self)(core.contract_sos_right(operator.left_dimension,self.data.transpose(),operator.index_table.transpose(),operator.matrix_table.transpose(),state.data.transpose()).transpose())
+    def absorb(self,state_site,operator_site):
+        return type(self)(core.contract_sos_right(
+            operator_site.left_dimension,self.data.transpose(),
+            operator_site.index_table.transpose(),
+            operator_site.matrix_table.transpose(),
+            state_site.data.transpose()).transpose()
+        )
     #@-others
 #@+node:gcross.20111108100704.1431: *5* Overlap
 #@+node:gcross.20111108100704.1432: *6* LeftOverlapBoundary
@@ -55,16 +66,24 @@ class LeftOverlapBoundary(Tensor):
     dimension_names = ["overlap","state"]
     #@+others
     #@+node:gcross.20111108100704.1433: *7* absorb
-    def absorb(self,overlap,state):
-        return type(self)(core.contract_vs_left(self.data.transpose(),overlap.data.transpose(),state.data.transpose()).transpose())
+    def absorb(self,overlap_site,state_site):
+        return type(self)(
+            core.contract_vs_left(self.data.transpose(),
+            overlap_site.data.transpose(),
+            state_site.data.transpose()).transpose()
+        )
     #@-others
 #@+node:gcross.20111108100704.1434: *6* RightOverlapBoundary
 class RightOverlapBoundary(Tensor):
     dimension_names = ["state","overlap"]
     #@+others
     #@+node:gcross.20111108100704.1435: *7* absorb
-    def absorb(self,overlap,state):
-        return type(self)(core.contract_vs_right(self.data.transpose(),overlap.data.transpose(),state.data.transpose()).transpose())
+    def absorb(self,overlap_site,state_site):
+        return type(self)(
+            core.contract_vs_right(self.data.transpose(),
+            overlap_site.data.transpose(),
+            state_site.data.transpose()).transpose()
+        )
     #@-others
 #@+node:gcross.20111107131531.3580: *4* Sites
 #@+node:gcross.20111107131531.1336: *5* OperatorSite
