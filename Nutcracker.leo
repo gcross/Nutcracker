@@ -24,6 +24,7 @@
 <v t="gcross.20111107154810.1414"><vh>@file test_2d_grid.py</vh></v>
 <v t="gcross.20111107154810.1418"><vh>@file test_2d_tensors.py</vh></v>
 <v t="gcross.20111107123726.3138"><vh>@file test_core.py</vh></v>
+<v t="gcross.20111109104457.1643"><vh>@file test_tensors.py</vh></v>
 <v t="gcross.20111108100704.1389"><vh>@file test_utils.py</vh></v>
 <v t="gcross.20111107131531.3614"><vh>file template.py</vh>
 <v t="gcross.20111107131531.3615"><vh>&lt;&lt; Imports &gt;&gt;</vh></v>

@@ -59,7 +59,8 @@ class MetaSiteTensor(MetaTensor):
             physical_dimensions = []
             bandwidth_indices = []
             bandwidth_dimensions = []
-            for (index,name) in enumerate(data["_dimensions"]):
+            dimensions = data["_dimensions"]
+            for (index,name) in enumerate(dimensions):
                 if name.startswith("physical"):
                     physical_indices.append(index)
                     physical_dimensions.append(name)
@@ -70,6 +71,13 @@ class MetaSiteTensor(MetaTensor):
             data["_physical_dimensions"] = physical_dimensions
             data["_bandwidth_indices"] = bandwidth_indices
             data["_bandwidth_dimensions"] = bandwidth_dimensions
+            data["number_of_physical_dimensions"] = len(physical_dimensions)
+            data["number_of_bandwidth_dimensions"] = len(bandwidth_dimensions)
+            data["physical_indices_are_transposed"] = (
+                "physical" in dimensions and
+                "physical_conjugate" in dimensions and
+                dimensions.index("physical") > dimensions.index("physical_conjugate")
+            )
         return MetaTensor.__new__(cls,class_name,bases,data)
     #@-others
 #@+node:gcross.20111107131531.1297: *3* Base classes
@@ -140,10 +148,33 @@ class SiteTensor(Tensor):
     @classmethod
     def bandwidthIndex(self,direction):
         return self._bandwidth_indices[direction]
+    #@+node:gcross.20111109104457.1648: *5* bandwidthIndexForName
+    @classmethod
+    def bandwidthIndexForName(cls,name):
+        return cls.bandwidthIndex(cls._bandwidth_dimensions.index(name))
     #@+node:gcross.20111107131531.1325: *5* bandwidthIndices
     @classmethod
     def bandwidthIndices(self):
         return self._bandwidth_indices
+    #@+node:gcross.20111109104457.1639: *5* build
+    @classmethod
+    def build(cls,bandwidth_dimensions,components):
+        first_component_value = components[0][1]
+        selector = [None]*cls.number_of_dimensions
+        selector_indices = [cls.bandwidthIndexForName(name) for (name,_) in bandwidth_dimensions]
+        try:
+            physical_dimension = first_component_value.shape[0]
+            for i in xrange(cls.number_of_physical_dimensions):
+                selector[cls.physicalIndex(i)] = slice(0,physical_dimension)
+            self = cls.filled(0,physical_dimension=physical_dimension,**dict((name + "_dimension",dimension) for (name,dimension) in bandwidth_dimensions))
+        except AttributeError:
+            self = cls.filled(0,**dict((name + "_dimension",dimension) for (name,dimension) in bandwidth_dimensions))
+        data = self.data
+        for indices, component_value in components:
+            for selector_index, index in zip(selector_indices,indices):
+                selector[selector_index] = index
+            data[tuple(selector)] += component_value if not cls.physical_indices_are_transposed else component_value.transpose()
+        return self
     #@+node:gcross.20111107131531.1326: *5* physicalDimension
     def physicalDimension(self,direction):
         return self.data.shape[self.physicalIndex(direction)]
@@ -158,6 +189,10 @@ class SiteTensor(Tensor):
     @classmethod
     def physicalIndices(self):
         return self._physical_indices
+    #@+node:gcross.20111109104457.1640: *5* simple
+    @classmethod
+    def simple(cls,component):
+        return cls.build([(name,1) for name in cls._bandwidth_dimensions],[((0,) * cls.number_of_bandwidth_dimensions,component)])
     #@-others
 #@-others
 
