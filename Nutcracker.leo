@@ -9,6 +9,7 @@
 <v t="gcross.20111107123726.3236"><vh>@file utils.py</vh></v>
 <v t="gcross.20111108160624.1398"><vh>@path _1d</vh>
 <v t="gcross.20111108160624.1500"><vh>@file __init__.py</vh></v>
+<v t="gcross.20111109104457.1654"><vh>@file enumerations.py</vh></v>
 <v t="gcross.20111107131531.3606"><vh>@file environment.py</vh></v>
 <v t="gcross.20111108160624.1449"><vh>@file tensors.py</vh></v>
 </v>

@@ -23,19 +23,9 @@ from numpy.linalg import eigh, norm, qr, svd
 from numpy.random import rand
 
 from . import core
-from .miscellaneous.enum_meta import Enum
 #@-<< Imports >>
 
 #@+others
-#@+node:gcross.20111108100704.1380: ** Enumerations
-#@+node:gcross.20111108100704.1382: *3* Direction
-class Direction(Enum):
-    left = "left"
-    right = "right"
-#@+node:gcross.20111108100704.1381: *3* Normalization
-class Normalization(Direction):
-    middle = "middle"
-    none = "none"
 #@+node:gcross.20111107123726.3237: ** Functions
 #@+node:gcross.20111108100704.1417: *3* appended
 def appended(vector,entry):
@@ -384,9 +374,6 @@ def withoutIndex(vector,index):
 #@+<< Exports >>
 #@+node:gcross.20111107123726.3251: ** << Exports >>
 __all__ = [
-    "Direction",
-    "Normalization",
-
     "appended",
     "CCW",
     "crand",

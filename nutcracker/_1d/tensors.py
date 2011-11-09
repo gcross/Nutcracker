@@ -22,9 +22,10 @@ from numpy import array, complex128, zeros
 from numpy.linalg import norm
 from numpy.random import randint
 
+from .enumerations import Direction, Normalization
 from .. import core
 from ..tensors import *
-from ..utils import Direction, Normalization, crand, mapFunctions, normalize
+from ..utils import crand, mapFunctions, normalize
 #@-<< Imports >>
 
 #@+others

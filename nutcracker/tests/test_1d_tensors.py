@@ -6,6 +6,7 @@ from numpy import identity, tensordot
 
 from paycheck import *
 
+from .._1d.enumerations import *
 from .._1d.tensors import *
 from ..utils import *
 
