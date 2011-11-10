@@ -48,7 +48,7 @@ class TestEnvironment(TestCase):
                 environment.right_environment.data,
                 environment.state_site.data,
                 environment.state_site.data.conj(),
-                environment.operator_site.formDenseTensor(),
+                environment.operator_site.formDenseTensor().data,
             )
         )
     #@+node:gcross.20111108100704.1445: *4* computeOptimizationMatrix
@@ -69,7 +69,7 @@ class TestEnvironment(TestCase):
             contract(
                 environment.left_environment.data,
                 environment.right_environment.data,
-                environment.operator_site.formDenseTensor(),
+                environment.operator_site.formDenseTensor().data,
             )
         )
     #@-others

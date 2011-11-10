@@ -30,6 +30,12 @@ from ..utils import crand, mapFunctions, normalize
 
 #@+others
 #@+node:gcross.20111108160624.1499: ** Classes
+#@+node:gcross.20111109104457.1817: *3* Base classes
+#@+node:gcross.20111109104457.1818: *4* OperatorSiteTensor
+class OperatorSiteTensor(SiteTensor):
+    dimension_names = ["left","right","physical_conjugate","physical"]
+    #@+others
+    #@-others
 #@+node:gcross.20111107131531.1306: *3* Tensors
 #@+node:gcross.20111107131531.3579: *4* Boundaries
 #@+node:gcross.20111108100704.1424: *5* Expectation
@@ -86,14 +92,12 @@ class RightOverlapBoundary(Tensor):
         )
     #@-others
 #@+node:gcross.20111107131531.3580: *4* Sites
+#@+node:gcross.20111109104457.1819: *5* DenseOperatorSite
+class DenseOperatorSite(OperatorSiteTensor):
+    pass
 #@+node:gcross.20111107131531.1336: *5* OperatorSite
-class OperatorSite(SiteTensor):
+class OperatorSite(OperatorSiteTensor):
     #@+others
-    #@+node:gcross.20111107131531.1350: *6* (indices)
-    left_index = 0
-    right_index = 1
-    physical_conjugate_index = 2
-    physical_index = 3
     #@+node:gcross.20111107131531.1341: *6* __init__
     def __init__(self,left_dimension,right_dimension,index_table,matrix_table):
         self.left_dimension = left_dimension
@@ -114,7 +118,7 @@ class OperatorSite(SiteTensor):
         for i in xrange(self.number_of_matrices):
             left_index, right_index = self.index_table[i]-1
             operator[left_index,right_index] += self.matrix_table[i]
-        return operator
+        return DenseOperatorSite(operator)
     #@+node:gcross.20111107131531.1345: *6* random
     @staticmethod
     def random(number_of_matrices=None,**keywords):

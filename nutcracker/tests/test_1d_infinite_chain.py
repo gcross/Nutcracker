@@ -44,7 +44,7 @@ class TestChain(TestCase):
     def test_normalizeAndContract(contract,self,direction=irange(0,1)):
         direction = Direction.values()[direction]
         chain = randomChain()
-        operator_site_data = chain.operator_site.formDenseTensor()
+        operator_site_data = chain.operator_site.formDenseTensor().data
         correct_expectation = contract(
             chain.left_environment.data,
             chain.right_environment.data,

@@ -57,7 +57,7 @@ class TestLeftExpectationBoundary(TestCase):
         )
         self.assertAllClose(
             L.absorb(state_site=S,operator_site=O).data,
-            contract(L.data,O.formDenseTensor(),S.data,S.data.conj())
+            contract(L.data,O.formDenseTensor().data,S.data,S.data.conj())
         )
     #@-others
 #@+node:gcross.20111108100704.1438: *3* TestLeftOverlapBoundary
@@ -144,7 +144,7 @@ class TestRightExpectationBoundary(TestCase):
         )
         self.assertAllClose(
             R.absorb(state_site=S,operator_site=O).data,
-            contract(R.data,O.formDenseTensor(),S.data,S.data.conj())
+            contract(R.data,O.formDenseTensor().data,S.data,S.data.conj())
         )
     #@-others
 #@+node:gcross.20111108100704.1442: *3* TestRightOverlapBoundary
