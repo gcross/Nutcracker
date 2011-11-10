@@ -62,6 +62,7 @@ __credits__ = '''http://www.python.org/doc/essays/metaclasses/Enum.py
 (For metaclass instantiation trick, but overall idea arrived at independently.)
 '''
 
+from numpy import ndarray
 import random
 
 # Here is the magic code snippet that explains what goes on with metaclasses:
@@ -213,7 +214,7 @@ class EnumMeta(type):
                 if k[:2] == '__':
                     continue
                 # Check for duplicate values.
-                if v in enum_dict.values():
+                if not isinstance(v,ndarray) and v in enum_dict.values():
                     raise ValueError(
                         "Enumeration value used more than once: %r" % v)
                 enum_dict[k] = v
