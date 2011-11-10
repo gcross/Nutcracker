@@ -19,7 +19,7 @@ def randomChain(cls=InfiniteEnvironment):
     )
 #@+node:gcross.20111109104457.1806: ** Tests
 #@+node:gcross.20111109104457.1807: *3* InfiniteEnvironment
-class TestChain(TestCase):
+class TestInfiniteEnvironment(TestCase):
     #@+others
     #@+node:gcross.20111109104457.1808: *4* test_normalizeAndContract
     @prependContractor(
