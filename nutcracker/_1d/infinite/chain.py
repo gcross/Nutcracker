@@ -8,6 +8,7 @@
 #@+node:gcross.20111109104457.1779: ** << Imports >>
 from numpy import array, complex128
 
+from .operators import *
 from ..enumerations import Direction
 from ..environment import Environment
 from ..tensors import *
@@ -19,18 +20,12 @@ from ..tensors import *
 class Chain(Environment):
     #@+others
     #@+node:gcross.20111109104457.1783: *4* __init__
-    def __init__(self,operator_site,left_operator_boundary_vector,right_operator_boundary_vector,observation=0):
-        if operator_site.left_dimension != operator_site.right_dimension:
-            raise ValueError("the left and right dimensions of the operator site tensor must match in an infinite chain ({} != {})".format(operator_site.left_dimension,operator.right_dimension))
-        if len(left_operator_boundary_vector) != operator_site.left_dimension:
-            raise ValueError("the length of the left boundary vector does not match the left dimension of the operator site tensor ({} != {})".format(len(left_operator_boundary_vector),operator.left_dimension))
-        if len(right_operator_boundary_vector) != operator_site.right_dimension:
-            raise ValueError("the length of the right boundary vector does not match the right dimension of the operator site tensor ({} != {})".format(len(right_operator_boundary),operator_site.right_dimension))
+    def __init__(self,operator,observation=0):
         super(type(self),self).__init__(
-            LeftExpectationBoundary(array(left_operator_boundary_vector,dtype=complex128).reshape(len(left_operator_boundary_vector),1,1)),
-            RightExpectationBoundary(array(right_operator_boundary_vector,dtype=complex128).reshape(len(right_operator_boundary_vector),1,1)),
-            StateSite.simpleObservation(operator_site.physical_dimension,observation),
-            operator_site,
+            LeftExpectationBoundary(operator.left_operator_boundary_vector.reshape(operator.left_dimension,1,1)),
+            RightExpectationBoundary(operator.right_operator_boundary_vector.reshape(operator.right_dimension,1,1)),
+            StateSite.simpleObservation(operator.physical_dimension,observation),
+            operator.operator_site,
         )
     #@+node:gcross.20111109104457.1801: *4* normalizeAndContract
     def normalizeAndContract(self,direction):
@@ -76,7 +71,7 @@ class Chain(Environment):
     #@+node:gcross.20111109104457.1809: *4* trivial
     @classmethod
     def trivial(cls):
-        return cls(OperatorSite.trivial(),[1],[1])
+        return cls(Operator.trivial())
     #@-others
 #@-others
 
