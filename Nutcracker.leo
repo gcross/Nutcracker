@@ -12,6 +12,10 @@
 <v t="gcross.20111109104457.1654"><vh>@file enumerations.py</vh></v>
 <v t="gcross.20111107131531.3606"><vh>@file environment.py</vh></v>
 <v t="gcross.20111108160624.1449"><vh>@file tensors.py</vh></v>
+<v t="gcross.20111109104457.1771"><vh>@path infinite</vh>
+<v t="gcross.20111109104457.1772"><vh>@file __init__.py</vh></v>
+<v t="gcross.20111109104457.1777"><vh>@file chain.py</vh></v>
+</v>
 </v>
 <v t="gcross.20111108103420.1420"><vh>@path _2d</vh>
 <v t="gcross.20111108103420.1523"><vh>@file __init__.py</vh></v>
@@ -25,6 +29,7 @@
 <v t="gcross.20111107131531.1331"><vh>@path tests</vh>
 <v t="gcross.20111107131531.1346"><vh>@file __init__.py</vh></v>
 <v t="gcross.20111107131531.3618"><vh>@file test_1d_environment.py</vh></v>
+<v t="gcross.20111109104457.1804"><vh>@file test_1d_infinite_chain.py</vh></v>
 <v t="gcross.20111107131531.1333"><vh>@file test_1d_tensors.py</vh></v>
 <v t="gcross.20111107154810.1414"><vh>@file test_2d_environment.py</vh></v>
 <v t="gcross.20111109104457.1748"><vh>@file test_2d_infinite_grid.py</vh></v>
@@ -65,5 +70,7 @@
 </t>
 <t tx="gcross.20111108103420.1420"></t>
 <t tx="gcross.20111108160624.1398"></t>
+<t tx="gcross.20111109104457.1658"></t>
+<t tx="gcross.20111109104457.1771"></t>
 </tnodes>
 </leo_file>
