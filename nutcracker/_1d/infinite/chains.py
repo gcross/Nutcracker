@@ -8,6 +8,7 @@
 #@+node:gcross.20111109104457.1832: ** << Imports >>
 from numpy import array, complex128, identity
 
+from ...utils import basisVector
 from ...qubit import Pauli, Qubit
 from ..tensors import OperatorSite, StateSite
 #@-<< Imports >>
@@ -87,7 +88,7 @@ class StateChain(Chain):
     #@+node:gcross.20111109104457.1884: *4* simpleObservation
     @classmethod
     def simpleObservation(cls,physical_dimension,observation):
-        return cls([1],[1],cls._site_class.simpleObservation(physical_dimension,observation))
+        return cls.simple(basisVector(physical_dimension,observation))
     #@-others
 
 #@+<< Build standard states >>
