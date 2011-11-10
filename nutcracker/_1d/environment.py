@@ -39,14 +39,15 @@ class Environment(object):
             self.right_environment.data.transpose()
         ).transpose().reshape((self.state_site.size(),)*2)
     #@+node:gcross.20111107131531.3625: *4* random
-    @staticmethod
+    @classmethod
     def random(
+        cls,
         physical_dimension,
         left_state_dimension,
         right_state_dimension,
         left_operator_dimension,
         right_operator_dimension
-    ):  return Environment(
+    ):  return cls(
             left_environment =
                 LeftExpectationBoundary.random(
                     state_dimension = left_state_dimension,
