@@ -4,6 +4,7 @@
 #@+node:gcross.20111109104457.1703: ** << Imports >>
 from numpy import array
 
+from .grids import OperatorGrid, StateGrid
 from ..environment import NormalizationEnvironment, ExpectationEnvironment
 from ..tensors import *
 from ...utils import *
@@ -15,18 +16,14 @@ from ...utils import *
 class InfiniteNormalizationEnvironment(NormalizationEnvironment):
     #@+others
     #@+node:gcross.20111109104457.1706: *4* __init__
-    def __init__(self,physical_dimension):
-        self.sides = [StateSideSite.trivial()]*4
-        self.corners = [StateCornerSite.trivial()]*4
-        self.center = \
-            StateCenterSite(
-                physical_dimension = physical_dimension,
-                rightward_dimension = 1,
-                upward_dimension = 1,
-                leftward_dimension = 1,
-                downward_dimension = 1,
-            )
-        self.center.data[:,0,0,0,0] = array([1] + [0]*(physical_dimension-1))
+    def __init__(self,physical_dimension=None,state_grid=None):
+        if state_grid is None:
+            if physical_dimension is None:
+                raise ValueError("either the physical dimension or an initial state grid must be supplied")
+            state_grid = StateGrid.simpleObservation(physical_dimension,0)
+        self.center = state_grid.center
+        self.sides = state_grid.sides
+        self.corners = state_grid.corners
     #@+node:gcross.20111109104457.1723: *4* contract
     def contract(self,*directions):
         for direction in directions:
@@ -63,40 +60,11 @@ class InfiniteNormalizationEnvironment(NormalizationEnvironment):
 class InfiniteExpectationEnvironment(ExpectationEnvironment,InfiniteNormalizationEnvironment):
     #@+others
     #@+node:gcross.20111109104457.1736: *4* __init__
-    def __init__(self,O_center,O_sides,O_corners):
-        super(type(self),self).__init__(O_center.physical_dimension)
-        if not isinstance(O_center,OperatorCenterSite):
-            raise ValueError("first argument must be the operator center site")
-        try:
-            assert len(O_sides) == 4
-            for i in range(4):
-                assert isinstance(O_sides[i],OperatorSideSite)
-        except AssertionError:
-            raise ValueError("second argument must be a list of 4 operator side boundaries")
-        try:
-            assert len(O_corners) == 4
-            for i in range(4):
-                assert isinstance(O_corners[i],OperatorCornerSite)
-        except AssertionError:
-            raise ValueError("second argument must be a list of 4 operator side corners")
-        for i in range(4):
-            if O_center.bandwidthDimension(i) != O_sides[i].inward_dimension:
-                raise ValueError("the bandwidth dimension of the center site in direction {} is {}, but the inward dimension of the adjacent side is {}".format(i,O_center.bandwidthDimension(i),O_sides[i].inward_dimension))
-            if O_sides[i].counterclockwise_dimension != O_corners[i].clockwise_dimension:
-                raise ValueError("the counterclockwise dimension of side {} is {}, but the clockwise dimension of its adjacent corner is {}".format(i,O_sides[i].counterclockwise_dimension,O_corners[i].clockwise_dimension))
-            if O_sides[i].clockwise_dimension != O_corners[CCW(i)].counterclockwise_dimension:
-                raise ValueError("the clockwise dimension of side {} is {}, but the counterclockwise dimension of its adjacent corner is {}".format(i,O_sides[i].counterclockwise_dimension,O_corners[i].clockwise_dimension))
-            if O_sides[i].physical_dimension != 1:
-                raise ValueError("the physical dimension of side {} is {} when it needs to be exactly 1".format(i,O_sides[i].physical_dimension))
-            if O_corners[i].physical_dimension != 1:
-                raise ValueError("the physical dimension of corner {} is {} when it needs to be exactly 1".format(i,O_corners[i].physical_dimension))
-        if O_center.leftward_dimension != O_center.rightward_dimension:
-            raise ValueError("the left and right dimensions of the center tensor need to be equal ({} != {})".format(O_center.left_dimension,O_center.right_dimension))
-        if O_center.upward_dimension != O_center.downward_dimension:
-            raise ValueError("the upward and downward dimensions of the center tensor need to be equal ({} != {})".format(O_center.upward_dimension,O_center.downward_dimension))
-        self.O_center = O_center
-        self.O_sides = O_sides
-        self.O_corners = O_corners
+    def __init__(self,operator_grid,physical_dimension=None,state_grid=None):
+        super(type(self),self).__init__(physical_dimension=physical_dimension,state_grid=state_grid)
+        self.O_center = operator_grid.center
+        self.O_sides = operator_grid.sides
+        self.O_corners = operator_grid.corners
     #@+node:gcross.20111109104457.1743: *4* contract
     def contract(self,*directions):
         super(type(self),self).contract(*directions)
@@ -107,7 +75,7 @@ class InfiniteExpectationEnvironment(ExpectationEnvironment,InfiniteNormalizatio
     #@+node:gcross.20111109104457.1788: *4* trivial
     @classmethod
     def trivial(cls):
-        return cls(OperatorCenterSite.trivial(),[OperatorSideSite.trivial()]*4,[OperatorCornerSite.trivial()]*4)
+        return cls(operator_grid=OperatorGrid.trivial(),state_grid=StateGrid.trivial())
     #@-others
 #@-others
 
