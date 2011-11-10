@@ -4,6 +4,7 @@
 #@+node:gcross.20111107154810.1420: ** << Imports >>
 from numpy import zeros
 
+from .._2d.enumerations import *
 from .._2d.tensors import *
 
 from . import *
@@ -256,7 +257,7 @@ class TestOperatorSideSite(TestCase):
     #@+others
     #@+node:gcross.20111103110300.1385: *4* absorbCenterSite
     @with_checker(number_of_calls=100)
-    def test_absorbCenterSite(self,direction=irange(0,3)):
+    def test_absorbCenterSite(self,direction=Direction):
         side = \
             OperatorSideSite.random(
                 physical_dimension = randint(1,5),
@@ -442,7 +443,7 @@ class TestStateSideSite(TestCase):
     #@+others
     #@+node:gcross.20111103110300.1383: *4* absorbCenterSite
     @with_checker(number_of_calls=100)
-    def test_absorbCenterSite(self,direction=irange(0,3)):
+    def test_absorbCenterSite(self,direction=Direction):
         side = \
             StateSideSite.random(
                 physical_dimension = randint(1,5),

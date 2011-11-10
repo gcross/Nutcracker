@@ -2,6 +2,7 @@
 #@+node:gcross.20111109104457.1748: * @file test_2d_infinite_grid.py
 #@+<< Imports >>
 #@+node:gcross.20111109104457.1749: ** << Imports >>
+from .._2d.enumerations import *
 from .._2d.infinite.grid import *
 from .._2d.tensors import *
 from ..utils import *
@@ -46,7 +47,7 @@ class TestNormalizationGrid(TestCase):
             self.assertAllClose(NormalizationGrid(physical_dimension).computeNormalizationMatrix(),identity(physical_dimension))
     #@+node:gcross.20111103170337.1388: *4* test_contract
     @with_checker(number_of_calls=100)
-    def test_contract(self,direction=irange(0,3)):
+    def test_contract(self,direction=Direction):
         environment = randomNormalizationGrid()
         sides = copy(environment.sides)
         corners = copy(environment.corners)
@@ -176,7 +177,7 @@ class TestExpectationGrid(TestCase):
     #@+others
     #@+node:gcross.20111103170337.1394: *4* test_contract
     @with_checker(number_of_calls=100)
-    def test_contract(self,direction=irange(0,3)):
+    def test_contract(self,direction=Direction):
         environment = randomExpectationGrid()
         sides = copy(environment.sides)
         corners = copy(environment.corners)
