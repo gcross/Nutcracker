@@ -102,6 +102,52 @@ class TestLeftOverlapBoundary(TestCase):
             contract(L.data,V.data,S.data)
         )
     #@-others
+#@+node:gcross.20111109104457.1820: *3* TestOperatorSite
+class TestOperatorSite(TestCase):
+    #@+others
+    #@+node:gcross.20111109104457.1821: *4* build
+    @with_checker
+    def test_build(self,
+        left_dimension=irange(1,5),
+        right_dimension=irange(1,5),
+        physical_dimension=irange(1,5),
+        number_of_components=irange(1,10),
+        flip=bool
+    ):
+        bandwidth_dimensions = [("left",left_dimension),("right",right_dimension)]
+        if flip:
+            bandwidth_dimensions.reverse()
+        components = []
+        for _ in xrange(number_of_components):
+            bandwidth_indices = [randint(0,dimension-1) for (_,dimension) in bandwidth_dimensions]
+            component_value = crand(physical_dimension,physical_dimension)
+            components.append((bandwidth_indices,component_value))
+        self.assertAllClose(
+            OperatorSite.build(bandwidth_dimensions,components).formDenseTensor().data,
+            DenseOperatorSite.build(bandwidth_dimensions,components).data,
+        )
+    #@+node:gcross.20111109104457.1823: *4* simple
+    @with_checker
+    def test_simple(self,
+        physical_dimension=irange(1,5),
+        flip=bool
+    ):
+        left_dimension = 1
+        right_dimension = 1
+        number_of_components = 1
+        bandwidth_dimensions = [("left",left_dimension),("right",right_dimension)]
+        if flip:
+            bandwidth_dimensions.reverse()
+        components = []
+        for _ in xrange(number_of_components):
+            bandwidth_indices = [randint(0,dimension-1) for (_,dimension) in bandwidth_dimensions]
+            component_value = crand(physical_dimension,physical_dimension)
+            components.append((bandwidth_indices,component_value))
+        self.assertAllClose(
+            OperatorSite.simple(components[0][1]).formDenseTensor().data,
+            DenseOperatorSite.simple(components[0][1]).data,
+        )
+    #@-others
 #@+node:gcross.20111107131531.3583: *3* TestRightExpectationBoundary
 class TestRightExpectationBoundary(TestCase):
     #@+others

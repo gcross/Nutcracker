@@ -18,7 +18,7 @@
 #@+<< Imports >>
 #@+node:gcross.20111108160624.1451: ** << Imports >>
 from collections import namedtuple
-from numpy import array, complex128, ones, zeros
+from numpy import array, complex128, ndarray, ones, zeros
 from numpy.linalg import norm
 from numpy.random import randint
 
@@ -112,6 +112,30 @@ class OperatorSite(OperatorSiteTensor):
             raise ValueError("index table has {} entries but matrix table has {}".format(self.index_table.shape[0],self.matrix_table.shape[0]))
         self.number_of_matrices = self.matrix_table.shape[0]
         self.physical_dimension = self.physical_conjugate_dimension = self.matrix_table.shape[-1]
+    #@+node:gcross.20111109104457.1815: *6* build
+    @classmethod
+    def build(cls,bandwidth_dimensions,components):
+        bandwidth_dimension_names = [x[0] for x in bandwidth_dimensions]
+        if bandwidth_dimension_names == ["left","right"]:
+            flip = False
+        elif bandwidth_dimension_names == ["right","left"]:
+            flip = True
+        else:
+            raise ValueError("the only supported bandwidth dimension names are 'left' and 'right', but the given dimension names were {}".format(bandwidth_dimension_names))
+        number_of_matrices = len(components)
+        if number_of_matrices == 0:
+            raise ValueError("there must be at least one component")
+        index_table = ndarray((number_of_matrices,2),dtype=int)
+        matrix_table = ndarray((number_of_matrices,) + components[0][1].shape,dtype=complex128)
+        for (i,((x,y),component_value)) in enumerate(components):
+            if flip:
+                index_table[i,0] = y+1
+                index_table[i,1] = x+1
+            else:
+                index_table[i,0] = x+1
+                index_table[i,1] = y+1
+            matrix_table[i] = component_value
+        return OperatorSite(index_table=index_table,matrix_table=matrix_table,**dict((name + "_dimension",dimension) for (name,dimension) in bandwidth_dimensions))
     #@+node:gcross.20111107131531.1342: *6* formDenseTensor
     def formDenseTensor(self):
         operator = zeros([self.left_dimension,self.right_dimension,self.physical_dimension,self.physical_dimension,],dtype=complex128,order='F')
@@ -197,11 +221,14 @@ class StateSite(StateSiteTensor):
 #@+<< Exports >>
 #@+node:gcross.20111108160624.1498: ** << Exports >>
 __all__ = [
+    "OperatorSiteTensor",
+
     "LeftExpectationBoundary",
     "RightExpectationBoundary",
     "LeftOverlapBoundary",
     "RightOverlapBoundary",
 
+    "DenseOperatorSite",
     "OperatorSite",
     "OverlapSite",
     "StateSite",
