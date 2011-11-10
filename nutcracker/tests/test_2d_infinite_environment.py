@@ -1,9 +1,9 @@
 #@+leo-ver=5-thin
-#@+node:gcross.20111109104457.1748: * @file test_2d_infinite_grid.py
+#@+node:gcross.20111109104457.1748: * @file test_2d_infinite_environment.py
 #@+<< Imports >>
 #@+node:gcross.20111109104457.1749: ** << Imports >>
 from .._2d.enumerations import *
-from .._2d.infinite.grid import *
+from .._2d.infinite.environment import *
 from .._2d.tensors import *
 from ..utils import *
 
@@ -13,42 +13,42 @@ from .test_2d_environment import randomNormalizationEnvironment, randomExpectati
 
 #@+others
 #@+node:gcross.20111109104457.1765: ** Functions
-#@+node:gcross.20111109104457.1766: *3* randomNormalizationGrid
-def randomNormalizationGrid():
-    return randomNormalizationEnvironment(NormalizationGrid)
-#@+node:gcross.20111109104457.1767: *3* randomExpectationGrid
-def randomExpectationGrid():
-    return randomExpectationEnvironment(ExpectationGrid)
+#@+node:gcross.20111109104457.1766: *3* randomInfiniteNormalizationEnvironment
+def randomInfiniteNormalizationEnvironment():
+    return randomNormalizationEnvironment(InfiniteNormalizationEnvironment)
+#@+node:gcross.20111109104457.1767: *3* randomInfiniteExpectationEnvironment
+def randomInfiniteExpectationEnvironment():
+    return randomExpectationEnvironment(InfiniteExpectationEnvironment)
 #@+node:gcross.20111109104457.1750: ** Tests
-#@+node:gcross.20111109104457.1751: *3* TestNormalizationGrid
-class TestNormalizationGrid(TestCase):
+#@+node:gcross.20111109104457.1751: *3* TestInfiniteNormalizationEnvironment
+class TestInfiniteNormalizationEnvironment(TestCase):
     #@+others
     #@+node:gcross.20111109104457.1770: *4* test_computeNormalization_observable
     def test_computeNormalization_observable(self):
         for physical_dimension in range(1,5):
-            self.assertAlmostEqual(NormalizationGrid(physical_dimension).computeNormalization(),1)
+            self.assertAlmostEqual(InfiniteNormalizationEnvironment(physical_dimension).computeNormalization(),1)
     #@+node:gcross.20111109104457.1760: *4* test_computeNormalizationConditionNumber_observable
     def test_computeNormalizationConditionNumber_observable(self):
         for physical_dimension in range(1,5):
-            self.assertAlmostEqual(NormalizationGrid(physical_dimension).computeNormalizationConditionNumber(),1)
+            self.assertAlmostEqual(InfiniteNormalizationEnvironment(physical_dimension).computeNormalizationConditionNumber(),1)
     #@+node:gcross.20111013080525.1263: *4* test_computeNormalizationConditionNumber_post_contract
     @with_checker(number_of_calls=10)
     def test_computeNormalizationConditionNumber_post_contract(self,
         physical_dimension = irange(1,5),
         number_of_contractions = irange(0,5),
     ):
-        environment = NormalizationGrid(physical_dimension)
+        environment = InfiniteNormalizationEnvironment(physical_dimension)
         for _ in range(number_of_contractions):
             environment.contract(randint(0,3))
         self.assertAlmostEqual(environment.computeNormalizationConditionNumber(),1)
     #@+node:gcross.20111109104457.1758: *4* test_computeNormalizationMatrix_observable
     def test_computeNormalizationMatrix_observable(self):
         for physical_dimension in range(1,5):
-            self.assertAllClose(NormalizationGrid(physical_dimension).computeNormalizationMatrix(),identity(physical_dimension))
+            self.assertAllClose(InfiniteNormalizationEnvironment(physical_dimension).computeNormalizationMatrix(),identity(physical_dimension))
     #@+node:gcross.20111103170337.1388: *4* test_contract
     @with_checker(number_of_calls=100)
     def test_contract(self,direction=Direction):
-        environment = randomNormalizationGrid()
+        environment = randomInfiniteNormalizationEnvironment()
         sides = copy(environment.sides)
         corners = copy(environment.corners)
         center = environment.center
@@ -66,7 +66,7 @@ class TestNormalizationGrid(TestCase):
         direction = irange(0,3),
         increment = irange(0,3),
     ):
-        environment = randomNormalizationGrid()
+        environment = randomInfiniteNormalizationEnvironment()
 
         bandwidth_dimensions = list(environment.bandwidthDimensions())
         bandwidth_dimensions[direction] += increment
@@ -97,7 +97,7 @@ class TestNormalizationGrid(TestCase):
         direction = irange(0,3),
         increment = irange(0,3),
     ):
-        environment = randomNormalizationGrid()
+        environment = randomInfiniteNormalizationEnvironment()
 
         bandwidth_dimensions = list(environment.bandwidthDimensions())
         bandwidth_dimensions[direction] = max(bandwidth_dimensions[direction],bandwidth_dimensions[OPP(direction)])
@@ -129,7 +129,7 @@ class TestNormalizationGrid(TestCase):
         direction = irange(0,3),
         increment = irange(0,3),
     ):
-        environment = randomNormalizationGrid()
+        environment = randomInfiniteNormalizationEnvironment()
 
         bandwidth_dimensions = list(environment.bandwidthDimensions())
         bandwidth_dimensions[direction] += increment
@@ -153,7 +153,7 @@ class TestNormalizationGrid(TestCase):
         direction = irange(0,3),
         increment = irange(0,3),
     ):
-        environment = randomNormalizationGrid()
+        environment = randomInfiniteNormalizationEnvironment()
 
         bandwidth_dimensions = list(environment.bandwidthDimensions())
         bandwidth_dimensions[direction] += increment
@@ -172,13 +172,13 @@ class TestNormalizationGrid(TestCase):
         self.assertEqual(environment.bandwidthDimensions(),environment.bandwidthDimensions())
         self.assertAlmostEqual(old_normalization,environment.computeNormalization())
     #@-others
-#@+node:gcross.20111109104457.1753: *3* TestExpectationGrid
-class TestExpectationGrid(TestCase):
+#@+node:gcross.20111109104457.1753: *3* TestInfiniteExpectationEnvironment
+class TestInfiniteExpectationEnvironment(TestCase):
     #@+others
     #@+node:gcross.20111103170337.1394: *4* test_contract
     @with_checker(number_of_calls=100)
     def test_contract(self,direction=Direction):
-        environment = randomExpectationGrid()
+        environment = randomInfiniteExpectationEnvironment()
         sides = copy(environment.sides)
         corners = copy(environment.corners)
         center = environment.center

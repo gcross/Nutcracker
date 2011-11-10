@@ -1,5 +1,5 @@
 #@+leo-ver=5-thin
-#@+node:gcross.20111109104457.1702: * @file grid.py
+#@+node:gcross.20111109104457.1702: * @file environment.py
 #@+<< Imports >>
 #@+node:gcross.20111109104457.1703: ** << Imports >>
 from numpy import array
@@ -11,8 +11,8 @@ from ...utils import *
 
 #@+others
 #@+node:gcross.20111109104457.1704: ** Classes
-#@+node:gcross.20111109104457.1745: *3* NormalizationGrid
-class NormalizationGrid(NormalizationEnvironment):
+#@+node:gcross.20111109104457.1745: *3* InfiniteNormalizationEnvironment
+class InfiniteNormalizationEnvironment(NormalizationEnvironment):
     #@+others
     #@+node:gcross.20111109104457.1706: *4* __init__
     def __init__(self,physical_dimension):
@@ -59,8 +59,8 @@ class NormalizationGrid(NormalizationEnvironment):
     def trivial(cls):
         return cls(1)
     #@-others
-#@+node:gcross.20111109104457.1735: *3* ExpectationGrid
-class ExpectationGrid(ExpectationEnvironment,NormalizationGrid):
+#@+node:gcross.20111109104457.1735: *3* InfiniteExpectationEnvironment
+class InfiniteExpectationEnvironment(ExpectationEnvironment,InfiniteNormalizationEnvironment):
     #@+others
     #@+node:gcross.20111109104457.1736: *4* __init__
     def __init__(self,O_center,O_sides,O_corners):
@@ -114,8 +114,8 @@ class ExpectationGrid(ExpectationEnvironment,NormalizationGrid):
 #@+<< Exports >>
 #@+node:gcross.20111109104457.1744: ** << Exports >>
 __all__ = [
-    "NormalizationGrid",
-    "ExpectationGrid",
+    "InfiniteNormalizationEnvironment",
+    "InfiniteExpectationEnvironment",
 ]
 #@-<< Exports >>
 #@-leo
