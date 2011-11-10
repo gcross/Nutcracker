@@ -19,7 +19,7 @@
 #@+node:gcross.20111107131531.1304: ** << Imports >>
 from numpy import complex128, ndarray, product, zeros
 
-from .utils import crand
+from .utils import basisVector, crand
 #@-<< Imports >>
 
 #@+others
@@ -210,9 +210,7 @@ class StateSiteTensor(SiteTensor):
     #@+node:gcross.20111109104457.1791: *5* simpleObservation
     @classmethod
     def simpleObservation(cls,physical_dimension,observation):
-        values = zeros(physical_dimension,complex128)
-        values[observation] = 1
-        return cls.simple(values)
+        return cls.simple(basisVector(physical_dimension,observation))
     #@-others
 #@-others
 

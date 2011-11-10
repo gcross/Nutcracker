@@ -18,7 +18,7 @@
 #@+<< Imports >>
 #@+node:gcross.20111107123726.3250: ** << Imports >>
 from copy import copy
-from numpy import array, dot, ndarray, product, sqrt, tensordot
+from numpy import array, complex128, dot, ndarray, product, sqrt, tensordot, zeros
 from numpy.linalg import eigh, norm, qr, svd
 from numpy.random import rand
 
@@ -34,6 +34,11 @@ def appended(vector,entry):
         copy_of_vector = copy(vector)
     copy_of_vector.append(entry)
     return copy_of_vector
+#@+node:gcross.20111109104457.1882: *3* basisVector
+def basisVector(dimension,index,dtype=complex128):
+    vector = zeros(dimension,dtype=dtype)
+    vector[index] = 1
+    return vector
 #@+node:gcross.20111014183107.1246: *3* CCW
 def CCW(i):
     return (i+1)%4
@@ -374,6 +379,7 @@ def withoutIndex(vector,index):
 #@+node:gcross.20111107123726.3251: ** << Exports >>
 __all__ = [
     "appended",
+    "basisVector",
     "CCW",
     "crand",
     "compressConnectionBetween",

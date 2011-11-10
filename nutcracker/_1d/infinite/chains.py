@@ -29,6 +29,18 @@ class Chain(object):
         self.right_boundary_vector = array(right_boundary_vector,dtype=complex128)
     #@+node:gcross.20111109104457.1836: *4* bandwidth_dimension
     bandwidth_dimension = property(lambda self: self.site.left_dimension)
+    #@+node:gcross.20111109104457.1879: *4* build
+    @classmethod
+    def build(cls,left_boundary_vector,right_boundary_vector,components):
+        return cls(
+            left_boundary_vector,
+            right_boundary_vector,
+            cls._site_class.build(
+                left_dimension=len(left_boundary_vector),
+                right_dimension=len(right_boundary_vector),
+                components=components
+            ),
+        )
     #@+node:gcross.20111109104457.1878: *4* physical_dimension
     physical_dimension = property(lambda self: self.site.physical_dimension)
     #@+node:gcross.20111109104457.1881: *4* simple
