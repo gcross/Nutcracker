@@ -190,7 +190,7 @@ def formContractor(order,joins,result_joins):
                 current_tensor = tensordot(current_tensor,next_tensor,(first_axes,second_axes))
                 current_join_ids = [i for i in current_join_ids+next_join_ids if i not in common_join_ids]
             except Exception as e:
-                raise ValueError("Error when joining tensor {}: '{}'".format(order[join_ids_index],str(e)))
+                raise ValueError("Error when joining tensor {}: '{}' (first tensor axes are {} with dimensions {}, second ({}) axes are {} with dimensions {})".format(order[join_ids_index],str(e),first_axes,[current_tensor.shape[i] for i in first_axes],order[join_ids_index],second_axes,[next_tensor.shape[i] for i in second_axes]))
         current_tensor = current_tensor.transpose([current_join_ids.index(i) for i in sum([list(x) for x in result_join_ids],[])])
         old_shape = current_tensor.shape
         new_shape = []
