@@ -121,10 +121,7 @@ class OperatorSite(OperatorSiteTensor):
         return DenseOperatorSite(operator)
     #@+node:gcross.20111107131531.1345: *6* random
     @staticmethod
-    def random(number_of_matrices=None,**keywords):
-        left_dimension = keywords["left_dimension"]
-        right_dimension = keywords["right_dimension"]
-        physical_dimension = keywords["physical_dimension"]
+    def random(left_dimension,right_dimension,physical_dimension,number_of_matrices=None,symmetric=False):
         if number_of_matrices is None:
             number_of_matrices = randint(2,left_dimension+right_dimension+1)
         sparse_operator_indices = array([
@@ -132,7 +129,7 @@ class OperatorSite(OperatorSiteTensor):
             randint(1,right_dimension+1,size=number_of_matrices),
         ]).transpose()
         sparse_operator_matrices = crand(number_of_matrices,physical_dimension,physical_dimension)
-        if not keywords.get("symmetric",False):
+        if symmetric:
             sparse_operator_matrices += sparse_operator_matrices.transpose(0,2,1).conj()
         return OperatorSite(
             index_table = sparse_operator_indices,
