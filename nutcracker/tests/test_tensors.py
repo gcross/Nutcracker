@@ -27,6 +27,7 @@ class TestSiteTensor(TestCase):
             return
         bandwidth_dimension_names = ["A","B","C","D"][:number_of_bandwidth_dimensions]
         physical_dimension_names = ["physical","physical_conjugate"][:number_of_physical_dimensions]
+        physical_dimension_names.reverse()
         original_dimension_names = bandwidth_dimension_names + physical_dimension_names
         bandwidth_dimensions = [randint(1,5) for _ in xrange(number_of_bandwidth_dimensions)]
         physical_dimension = randint(1,5)
@@ -58,6 +59,7 @@ class TestSiteTensor(TestCase):
             return
         bandwidth_dimension_names = ["A","B","C","D"][:number_of_bandwidth_dimensions]
         physical_dimension_names = ["physical","physical_conjugate"][:number_of_physical_dimensions]
+        physical_dimension_names.reverse()
         original_dimension_names = bandwidth_dimension_names + physical_dimension_names
         bandwidth_dimensions = [1]*number_of_bandwidth_dimensions
         physical_dimension = randint(1,5)

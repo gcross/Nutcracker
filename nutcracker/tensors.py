@@ -76,7 +76,7 @@ class MetaSiteTensor(MetaTensor):
             data["physical_indices_are_transposed"] = (
                 "physical" in dimensions and
                 "physical_conjugate" in dimensions and
-                dimensions.index("physical") > dimensions.index("physical_conjugate")
+                dimensions.index("physical") < dimensions.index("physical_conjugate")
             )
         return MetaTensor.__new__(cls,class_name,bases,data)
     #@-others
