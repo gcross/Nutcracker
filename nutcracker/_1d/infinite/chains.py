@@ -6,8 +6,9 @@
 
 #@+<< Imports >>
 #@+node:gcross.20111109104457.1832: ** << Imports >>
-from numpy import array, complex128
+from numpy import array, complex128, identity
 
+from ...qubit import Pauli, Qubit
 from ..tensors import OperatorSite, StateSite
 #@-<< Imports >>
 
@@ -36,16 +37,26 @@ class Chain(object):
             left_boundary_vector,
             right_boundary_vector,
             cls._site_class.build(
-                left_dimension=len(left_boundary_vector),
-                right_dimension=len(right_boundary_vector),
+                [("left",len(left_boundary_vector)),("right",len(right_boundary_vector))],
                 components=components
             ),
+        )
+    #@+node:gcross.20111110144828.1735: *4* buildAllSitesSameButOne
+    @classmethod
+    def buildAllSitesSameButOne(cls,same_site_value,different_site_value):
+        return cls.build(
+            [1,0],
+            [0,1],
+            [((0,0),same_site_value)
+            ,((0,1),different_site_value)
+            ,((1,1),same_site_value)
+            ],
         )
     #@+node:gcross.20111109104457.1878: *4* physical_dimension
     physical_dimension = property(lambda self: self.site.physical_dimension)
     #@+node:gcross.20111109104457.1881: *4* simple
     @classmethod
-    def simple(cls,components):
+    def simple(cls,component_value):
         return cls([1],[1],cls._site_class.simple(component_value))
     #@+node:gcross.20111109104457.1838: *4* trivial
     @classmethod
@@ -56,7 +67,21 @@ class Chain(object):
 class OperatorChain(Chain):
     _site_class = OperatorSite
     #@+others
+    #@+node:gcross.20111110151700.1741: *4* buildMagneticField
+    @classmethod
+    def buildMagneticField(cls,field_operator):
+        return cls.buildAllSitesSameButOne(identity(field_operator.shape[0]),field_operator)
     #@-others
+
+#@+<< Build standard operators >>
+#@+node:gcross.20111110151700.1744: *4* << Build standard operators >>
+#@+others
+#@+node:gcross.20111110151700.1743: *5* qubit magnetic fields
+OperatorChain.qubit_X_magnetic_field = OperatorChain.buildMagneticField(Pauli.X)
+OperatorChain.qubit_Y_magnetic_field = OperatorChain.buildMagneticField(Pauli.Y)
+OperatorChain.qubit_Z_magnetic_field = OperatorChain.buildMagneticField(Pauli.Z)
+#@-others
+#@-<< Build standard operators >>
 #@+node:gcross.20111109104457.1876: *3* StateChain
 class StateChain(Chain):
     _site_class = StateSite
@@ -66,6 +91,14 @@ class StateChain(Chain):
     def simpleObservation(cls,physical_dimension,observation):
         return cls([1],[1],cls._site_class.simpleObservation(physical_dimension,observation))
     #@-others
+
+#@+<< Build standard states >>
+#@+node:gcross.20111110151700.1738: *4* << Build standard states >>
+#@+others
+#@+node:gcross.20111110151700.1739: *5* W state
+StateChain.qubit_W_state = StateChain.buildAllSitesSameButOne(Qubit.up,Qubit.down)
+#@-others
+#@-<< Build standard states >>
 #@-others
 
 #@+<< Exports >>

@@ -4,8 +4,10 @@
 #@+node:gcross.20111109104457.1805: ** << Imports >>
 from . import *
 from .._1d.enumerations import *
+from .._1d.infinite.chains import *
 from .._1d.infinite.environment import *
 from .._1d.tensors import *
+from ..qubit import *
 #@-<< Imports >>
 
 #@+others
@@ -18,6 +20,26 @@ def randomChain(cls=InfiniteEnvironment):
         randint(2,4),
     )
 #@+node:gcross.20111109104457.1806: ** Tests
+#@+node:gcross.20111110144828.1736: *3* ExpectationBehaviour
+class TestExpectationBehaviour(TestCase):
+    #@+others
+    #@+node:gcross.20111110150346.1736: *4* test_qubit_magnetic_field
+    @with_checker
+    def test_qubit_magnetic_field(self,
+        contractions = [(Qubit,Direction)],
+    ):
+        environment = InfiniteEnvironment(OperatorChain.qubit_Z_magnetic_field)
+        self.assertEqual(environment.computeExpectation(),1)
+        correct_expectation = 1
+        for qubit, direction in contractions:
+            environment.normalizeAndContract(direction)
+            environment.state_site = StateSite.simple(qubit)
+            if qubit is Qubit.up:
+                correct_expectation += 1
+            else:
+                correct_expectation -= 1
+        self.assertEqual(environment.computeExpectation(),correct_expectation)
+    #@-others
 #@+node:gcross.20111109104457.1807: *3* InfiniteEnvironment
 class TestInfiniteEnvironment(TestCase):
     #@+others
