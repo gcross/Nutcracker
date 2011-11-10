@@ -1,5 +1,5 @@
 #@+leo-ver=5-thin
-#@+node:gcross.20111109104457.1777: * @file chain.py
+#@+node:gcross.20111109104457.1777: * @file environment.py
 #@+<< License >>
 #@+node:gcross.20111109104457.1778: ** << License >>
 #@-<< License >>
@@ -16,8 +16,8 @@ from ..tensors import *
 
 #@+others
 #@+node:gcross.20111109104457.1781: ** Classes
-#@+node:gcross.20111109104457.1782: *3* Chain
-class Chain(Environment):
+#@+node:gcross.20111109104457.1782: *3* InfiniteEnvironment
+class InfiniteEnvironment(Environment):
     #@+others
     #@+node:gcross.20111109104457.1783: *4* __init__
     def __init__(self,operator,observation=0):
@@ -78,7 +78,7 @@ class Chain(Environment):
 #@+<< Exports >>
 #@+node:gcross.20111109104457.1780: ** << Exports >>
 __all__ = [
-    "Chain",
+    "InfiniteEnvironment",
 ]
 #@-<< Exports >>
 #@-leo

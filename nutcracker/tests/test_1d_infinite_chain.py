@@ -4,21 +4,21 @@
 #@+node:gcross.20111109104457.1805: ** << Imports >>
 from . import *
 from .._1d.enumerations import *
-from .._1d.infinite.chain import *
+from .._1d.infinite.environment import *
 from .._1d.tensors import *
 #@-<< Imports >>
 
 #@+others
 #@+node:gcross.20111109104457.1811: ** Functions
 #@+node:gcross.20111109104457.1812: *3* randomChain
-def randomChain(cls=Chain):
+def randomChain(cls=InfiniteEnvironment):
     return cls.random(
         randint(2,4),
         randint(2,4),
         randint(2,4),
     )
 #@+node:gcross.20111109104457.1806: ** Tests
-#@+node:gcross.20111109104457.1807: *3* Chain
+#@+node:gcross.20111109104457.1807: *3* InfiniteEnvironment
 class TestChain(TestCase):
     #@+others
     #@+node:gcross.20111109104457.1808: *4* test_normalizeAndContract
