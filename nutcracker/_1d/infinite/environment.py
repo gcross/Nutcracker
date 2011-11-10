@@ -8,7 +8,7 @@
 #@+node:gcross.20111109104457.1779: ** << Imports >>
 from numpy import array, complex128
 
-from .operators import *
+from .chains import *
 from ..enumerations import Direction
 from ..environment import Environment
 from ..tensors import *
@@ -20,12 +20,12 @@ from ..tensors import *
 class InfiniteEnvironment(Environment):
     #@+others
     #@+node:gcross.20111109104457.1783: *4* __init__
-    def __init__(self,operator,observation=0):
+    def __init__(self,operator_chain,observation=0):
         super(type(self),self).__init__(
-            LeftExpectationBoundary(operator.left_operator_boundary_vector.reshape(operator.left_dimension,1,1)),
-            RightExpectationBoundary(operator.right_operator_boundary_vector.reshape(operator.right_dimension,1,1)),
-            StateSite.simpleObservation(operator.physical_dimension,observation),
-            operator.operator_site,
+            LeftExpectationBoundary(operator_chain.left_boundary_vector.reshape(operator_chain.bandwidth_dimension,1,1)),
+            RightExpectationBoundary(operator_chain.right_boundary_vector.reshape(operator_chain.bandwidth_dimension,1,1)),
+            StateSite.simpleObservation(operator_chain.physical_dimension,observation),
+            operator_chain.site,
         )
     #@+node:gcross.20111109104457.1801: *4* normalizeAndContract
     def normalizeAndContract(self,direction):
@@ -71,7 +71,7 @@ class InfiniteEnvironment(Environment):
     #@+node:gcross.20111109104457.1809: *4* trivial
     @classmethod
     def trivial(cls):
-        return cls(Operator.trivial())
+        return cls(OperatorChain.trivial())
     #@-others
 #@-others
 
