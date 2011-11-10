@@ -62,6 +62,8 @@ __credits__ = '''http://www.python.org/doc/essays/metaclasses/Enum.py
 (For metaclass instantiation trick, but overall idea arrived at independently.)
 '''
 
+import random
+
 # Here is the magic code snippet that explains what goes on with metaclasses:
 # (from http://www.python.org/2.2.3/descrintro.html#metaclasses)
 #
@@ -277,6 +279,10 @@ class EnumMeta(type):
 
         return self.__enum__.iteritems()
 
+    def make_new_random_generator(self):
+
+        while True:
+            yield random.choice(self.values())
 
 # Make a class out of the metaclass, so that it can be subclassed.
 # Grabbed this trick from:

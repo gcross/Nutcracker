@@ -298,12 +298,11 @@ class TestStateSite(TestCase):
     #@+node:gcross.20111107131531.3593: *4* normalizeAndDenormalize
     @with_checker
     def test_normalizeAndDenormalize(self,
-        direction=irange(0,1),
+        direction=Direction,
         leftmost_dimension=irange(3,9),
         middle_dimension=irange(3,9),
         rightmost_dimension=irange(3,9),
     ):
-        direction = Direction.values()[direction]
         left_site = StateSite.random(
             physical_dimension = 9,
             left_dimension = leftmost_dimension,
