@@ -95,11 +95,11 @@ class OperatorSite(SiteTensor):
     physical_conjugate_index = 2
     physical_index = 3
     #@+node:gcross.20111107131531.1341: *6* __init__
-    def __init__(self,*args,**keywords):
-        self.left_dimension = keywords["left_dimension"]
-        self.right_dimension = keywords["right_dimension"]
-        self.index_table = keywords["index_table"]
-        self.matrix_table = keywords["matrix_table"]
+    def __init__(self,left_dimension,right_dimension,index_table,matrix_table):
+        self.left_dimension = left_dimension
+        self.right_dimension = right_dimension
+        self.index_table = index_table
+        self.matrix_table = matrix_table
         if self.index_table.ndim != 2:
             raise ValueError("index table must have rank 2")
         if self.matrix_table.ndim != 3:
