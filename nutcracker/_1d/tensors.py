@@ -18,7 +18,7 @@
 #@+<< Imports >>
 #@+node:gcross.20111108160624.1451: ** << Imports >>
 from collections import namedtuple
-from numpy import array, complex128, zeros
+from numpy import array, complex128, ones, zeros
 from numpy.linalg import norm
 from numpy.random import randint
 
@@ -136,6 +136,10 @@ class OperatorSite(SiteTensor):
             left_dimension = left_dimension,
             right_dimension = right_dimension
         )
+    #@+node:gcross.20111109104457.1814: *6* trivial
+    @classmethod
+    def trivial(cls):
+        return cls(1,1,ones((1,2),dtype=int),ones((1,1,1),dtype=complex128))
     #@-others
 #@+node:gcross.20111107131531.5847: *5* OverlapSite
 class OverlapSite(SiteTensor):
