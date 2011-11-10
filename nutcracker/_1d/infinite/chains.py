@@ -61,6 +61,10 @@ class OperatorChain(Chain):
 class StateChain(Chain):
     _site_class = StateSite
     #@+others
+    #@+node:gcross.20111109104457.1884: *4* simpleObservation
+    @classmethod
+    def simpleObservation(cls,physical_dimension,observation):
+        return cls([1],[1],cls._site_class.simpleObservation(physical_dimension,observation))
     #@-others
 #@-others
 

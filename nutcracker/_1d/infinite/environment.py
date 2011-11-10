@@ -20,7 +20,13 @@ from ..tensors import *
 class InfiniteEnvironment(Environment):
     #@+others
     #@+node:gcross.20111109104457.1783: *4* __init__
-    def __init__(self,operator_chain,observation=0):
+    def __init__(self,operator_chain,observation=0,state_chain=None):
+        if state_chain is None:
+            state_chain = \
+                StateChain.simpleObservation(
+                    physical_dimension=operator_chain.physical_dimension,
+                    observation=observation
+                )
         super(type(self),self).__init__(
             LeftExpectationBoundary(operator_chain.left_boundary_vector.reshape(operator_chain.bandwidth_dimension,1,1)),
             RightExpectationBoundary(operator_chain.right_boundary_vector.reshape(operator_chain.bandwidth_dimension,1,1)),

@@ -126,6 +126,21 @@ class Tensor:
         self = cls(**keywords)
         self.data[...] = fill
         return self
+    #@+node:gcross.20111109104457.1891: *5* formFromOuterProduct
+    @classmethod
+    def formFromOuterProduct(cls,**keywords):
+        for name in cls.dimension_names:
+            if name.endswith("_conjugate"):
+                if name not in keywords:
+                    keywords[name] = keywords[name[:-len("_conjugate")]].conj()
+        data = array(1,dtype=complex128)
+        indices = {}
+        index = 0
+        for name, vector in keywords.items():
+            data = multiply.outer(data,vector)
+            indices[name] = index
+        data.transpose((indices[name] for name in cls.dimension_names))
+        return cls(data)
     #@+node:gcross.20111109104457.1795: *5* indexForName
     @classmethod
     def indexForName(cls,name):
