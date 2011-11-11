@@ -16,14 +16,18 @@ from ...utils import *
 class InfiniteNormalizationEnvironment(NormalizationEnvironment):
     #@+others
     #@+node:gcross.20111109104457.1706: *4* __init__
-    def __init__(self,physical_dimension=None,state_grid=None):
+    def __init__(self,physical_dimension=None,state_grid=None,observation=0):
         if state_grid is None:
             if physical_dimension is None:
                 raise ValueError("either the physical dimension or an initial state grid must be supplied")
-            state_grid = StateGrid.simpleObservation(physical_dimension,0)
+            state_grid = \
+                StateGrid.simpleObservation(
+                    physical_dimension=physical_dimension,
+                    observation=observation
+                )
         self.center = state_grid.center
-        self.sides = state_grid.sides
-        self.corners = state_grid.corners
+        self.sides = [StateSideSite.simpleInward(vector) for vector in state_grid.boundary_vectors]
+        self.corners = [StateCornerSite.trivial()]*4
     #@+node:gcross.20111109104457.1723: *4* contract
     def contract(self,*directions):
         for direction in directions:
@@ -63,8 +67,8 @@ class InfiniteExpectationEnvironment(ExpectationEnvironment,InfiniteNormalizatio
     def __init__(self,operator_grid,physical_dimension=None,state_grid=None):
         super(type(self),self).__init__(physical_dimension=physical_dimension,state_grid=state_grid)
         self.O_center = operator_grid.center
-        self.O_sides = operator_grid.sides
-        self.O_corners = operator_grid.corners
+        self.O_sides = [OperatorSideSite.simpleInward(vector) for vector in operator_grid.boundary_vectors]
+        self.O_corners = [OperatorCornerSite.trivial()]*4
     #@+node:gcross.20111109104457.1743: *4* contract
     def contract(self,*directions):
         super(type(self),self).contract(*directions)

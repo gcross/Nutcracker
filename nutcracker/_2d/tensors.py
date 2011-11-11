@@ -2,7 +2,7 @@
 #@+node:gcross.20111108103420.1472: * @file tensors.py
 #@+<< Imports >>
 #@+node:gcross.20111108103420.1473: ** << Imports >>
-from numpy import complex128, inner, ndarray, tensordot
+from numpy import array, complex128, inner, ndarray, tensordot
 
 from ..tensors import *
 from ..utils import *
@@ -51,6 +51,12 @@ class SideSiteTensor(SiteTensor):
     #@+node:gcross.20111108103420.1496: *5* absorbCenterSite
     def absorbCenterSite(self,center,direction):
         return type(self)(self._center_site_contractors[direction](self.data,center.data))
+    #@+node:gcross.20111110233742.1789: *5* simpleInward
+    @classmethod
+    def simpleInward(cls,inward_vector):
+        shape = [1]*cls.number_of_dimensions
+        shape[cls.inward_index] = len(inward_vector)
+        return cls(array(inward_vector,dtype=complex128).reshape(shape))
     #@-others
 #@+node:gcross.20111108103420.1497: *3* Tensors
 #@+others

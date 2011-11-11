@@ -15,99 +15,75 @@ from ..tensors import OperatorCenterSite, OperatorCornerSite, OperatorSideSite, 
 #@-<< Imports >>
 
 #@+others
+#@+node:gcross.20111110233742.1791: ** Metaclasses
+#@+node:gcross.20111110233742.1792: *3* MetaGrid
+class MetaGrid(type):
+    #@+others
+    #@+node:gcross.20111110233742.1793: *4* __new__
+    def __new__(cls,class_name,bases,data):
+        if "_site_class" in data:
+            site_class = data["_site_class"]
+            class BoundaryProperty(property):
+                def __init__(self,bandwidth_index):
+                    property.__init__(self,self.get,self.set)
+                    self.bandwidth_index = bandwidth_index
+                def get(self,obj):
+                    return obj.boundary_vectors[self.bandwidth_index]
+                def set(self,obj,new_vector):
+                    obj.boundary_vectors[self.bandwidth_index] = new_vector
+            for i, name in enumerate(site_class.bandwidth_dimension_names):
+                data[name + "_boundary_vector"] = BoundaryProperty(i)
+        return type.__new__(cls,class_name,bases,data)
+    #@-others
 #@+node:gcross.20111110151700.1780: ** Classes
 #@+node:gcross.20111110151700.1781: *3* Grid
 class Grid(object):
+    __metaclass__ = MetaGrid
     #@+others
     #@+node:gcross.20111110151700.1782: *4* __init__
-    def __init__(self,center,sides,corners):
-        if not isinstance(center,self._center_class):
-            raise ValueError("the first argument (the center site) must be an instance of {}".format(self._center_class))
-        for side in sides:
-            if not isinstance(side,self._side_class):
-                raise ValueError("all of the items in the second argument (the sides) must be an instance of {}".format(self._side_class))
-        for corner in corners:
-            if not isinstance(corner,self._corner_class):
-                raise ValueError("all of the items in the third argument (the corners) must be an instance of {}".format(self._corner_class))
-        if len(sides) != 4:
-            raise ValueError("there must be exactly 4 sides, not {}".format(len(sides)))
-        if len(corners) != 4:
-            raise ValueError("there must be exactly 4 corners, not {}".format(len(corners)))
-        for i in range(4):
-            if center.bandwidthDimension(i) != sides[i].inward_dimension:
-                raise ValueError("the bandwidth dimension of the center site in direction {} is {}, but the inward dimension of the adjacent side is {}".format(i,center.bandwidthDimension(i),sides[i].inward_dimension))
-            if sides[i].counterclockwise_dimension != corners[i].clockwise_dimension:
-                raise ValueError("the counterclockwise dimension of side {} is {}, but the clockwise dimension of its adjacent corner is {}".format(i,sides[i].counterclockwise_dimension,corners[i].clockwise_dimension))
-            if sides[i].clockwise_dimension != corners[CCW(i)].counterclockwise_dimension:
-                raise ValueError("the clockwise dimension of side {} is {}, but the counterclockwise dimension of its adjacent corner is {}".format(i,sides[i].clockwise_dimension,corners[CCW(i)].counterclockwise_dimension))
-            if sides[i].physical_dimension != 1:
-                raise ValueError("the physical dimension of side {} is {} when it needs to be exactly 1".format(i,sides[i].physical_dimension))
-            if corners[i].physical_dimension != 1:
-                raise ValueError("the physical dimension of corner {} is {} when it needs to be exactly 1".format(i,corners[i].physical_dimension))
-        if center.leftward_dimension != center.rightward_dimension:
-            raise ValueError("the left and right dimensions of the center tensor need to be equal ({} != {})".format(center.left_dimension,center.right_dimension))
-        if center.upward_dimension != center.downward_dimension:
-            raise ValueError("the upward and downward dimensions of the center tensor need to be equal ({} != {})".format(center.upward_dimension,center.downward_dimension))
-        self.center = center
-        self.sides = sides
-        self.corners = corners
-        self.horizontal_bandwidth_dimension = center.leftward_dimension
-        self.vertical_bandwidth_dimension = center.upward_dimension
-        self.physical_dimension = center.physical_dimension
-    #@+node:gcross.20111110151700.1799: *4* random
+    def __init__(self,leftward_boundary_vector,upward_boundary_vector,rightward_boundary_vector,downward_boundary_vector,site):
+        if site.leftward_dimension != site.rightward_dimension:
+            raise ValueError("the leftward and rightward dimensions of the site tensor must match in an infinite grid ({} != {})".format(site.leftward_dimension,site.rightward_dimension))
+        if site.upward_dimension != site.downward_dimension:
+            raise ValueError("the upward and downward dimensions of the site tensor must match in an infinite grid ({} != {})".format(site.upward_dimension,site.downward_dimension))
+        boundary_vector_map = dict(
+            leftward = leftward_boundary_vector,
+            upward = upward_boundary_vector,
+            rightward = rightward_boundary_vector,
+            downward = downward_boundary_vector,
+        )
+        boundary_vectors = [boundary_vector_map[name] for name in site.bandwidth_dimension_names]
+        for i, d in enumerate(len(x) for x in boundary_vectors):
+            if d != site.bandwidthDimension(i):
+                name = site.bandwidth_dimension_names[i]
+                raise ValueError("the length of the {} boundary vector does not match the {} dimension of the site tensor ({} != {})".format(name,name,d,site.bandwidthDimension(i)))
+        self.center = site
+        self.horizontal_bandwidth_dimension = site.leftward_dimension
+        self.vertical_bandwidth_dimension = site.upward_dimension
+        self.physical_dimension = site.physical_dimension
+        self.boundary_vectors = boundary_vectors
+    #@+node:gcross.20111110233742.1787: *4* build
     @classmethod
-    def random(cls):
-        self = cls.trivial()
-        horizontal_dimension = random.randint(1,3)
-        vertical_dimension = random.randint(1,3)
-        self.center = \
-            cls._center_class.random(
-                physical_dimension=random.randint(1,3),
-                rightward_dimension=horizontal_dimension,
-                upward_dimension=vertical_dimension,
-                leftward_dimension=horizontal_dimension,
-                downward_dimension=vertical_dimension,
-            )
-        self.sides = [
-            cls._side_class.random(
-                clockwise_dimension = random.randint(1,3),
-                counterclockwise_dimension = random.randint(1,3),
-                inward_dimension = self.center.bandwidthDimension(i),
-                physical_dimension = random.randint(1,3),
-            )
-            for i in range(4)
-        ]
-        self.corners = [
-            cls._corner_class.random(
-                clockwise_dimension = self.sides[i].counterclockwise_dimension,
-                counterclockwise_dimension = self.sides[CCW(i)].clockwise_dimension,
-                physical_dimension = random.randint(1,3),
-            )
-            for i in range(4)
-        ]
-        return self
+    def build(cls,boundary_vectors_with_names,components):
+        return cls(
+            site=cls._site_class.build(
+                [(name,len(vector)) for (name,vector) in boundary_vectors_with_names],
+                components=components
+            ),
+            **dict((name + "_boundary_vector",vector) for (name,vector) in boundary_vectors_with_names)
+        )
     #@+node:gcross.20111110151700.1787: *4* simple
     @classmethod
     def simple(cls,component_value):
-        return cls(
-            center = cls._center_class.simple(component_value),
-            sides = [cls._side_class.trivial()]*4,
-            corners = [cls._corner_class.trivial()]*4,
-        )
+        return cls([1],[1],[1],[1],cls._site_class.simple(component_value))
     #@+node:gcross.20111110151700.1788: *4* trivial
     @classmethod
     def trivial(cls):
-        return cls(
-            center = cls._center_class.trivial(),
-            sides = [cls._side_class.trivial()]*4,
-            corners = [cls._corner_class.trivial()]*4,
-        )
+        return cls([1],[1],[1],[1],cls._site_class.trivial())
     #@-others
 #@+node:gcross.20111110151700.1789: *3* OperatorGrid
 class OperatorGrid(Grid):
-    _center_class = OperatorCenterSite
-    _side_class = OperatorSideSite
-    _corner_class = OperatorCornerSite
+    _site_class = OperatorCenterSite
     #@+others
     #@-others
 
@@ -118,9 +94,7 @@ class OperatorGrid(Grid):
 #@-<< Build standard operators >>
 #@+node:gcross.20111110151700.1793: *3* StateGrid
 class StateGrid(Grid):
-    _center_class = StateCenterSite
-    _side_class = StateSideSite
-    _corner_class = StateCornerSite
+    _site_class = StateCenterSite
     #@+others
     #@+node:gcross.20111110151700.1794: *4* simpleObservation
     @classmethod
