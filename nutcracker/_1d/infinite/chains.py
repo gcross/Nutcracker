@@ -6,10 +6,9 @@
 
 #@+<< Imports >>
 #@+node:gcross.20111109104457.1832: ** << Imports >>
-from numpy import array, complex128, identity
+from numpy import array, complex128
 
-from ...utils import basisVector
-from ...qubit import Pauli, Qubit
+from ...lattices import OperatorLattice, StateLattice
 from ..tensors import OperatorSite, StateSite
 #@-<< Imports >>
 
@@ -63,41 +62,15 @@ class Chain(object):
         return cls([1],[1],cls._site_class.trivial())
     #@-others
 #@+node:gcross.20111109104457.1875: *3* OperatorChain
-class OperatorChain(Chain):
+class OperatorChain(OperatorLattice,Chain):
     _site_class = OperatorSite
     #@+others
-    #@+node:gcross.20111110151700.1741: *4* buildMagneticField
-    @classmethod
-    def buildMagneticField(cls,field_operator):
-        return cls.buildAllSitesSameButOne(identity(field_operator.shape[0]),field_operator)
     #@-others
-
-#@+<< Build standard operators >>
-#@+node:gcross.20111110151700.1744: *4* << Build standard operators >>
-#@+others
-#@+node:gcross.20111110151700.1743: *5* qubit magnetic fields
-OperatorChain.qubit_X_magnetic_field = OperatorChain.buildMagneticField(Pauli.X)
-OperatorChain.qubit_Y_magnetic_field = OperatorChain.buildMagneticField(Pauli.Y)
-OperatorChain.qubit_Z_magnetic_field = OperatorChain.buildMagneticField(Pauli.Z)
-#@-others
-#@-<< Build standard operators >>
 #@+node:gcross.20111109104457.1876: *3* StateChain
-class StateChain(Chain):
+class StateChain(StateLattice,Chain):
     _site_class = StateSite
     #@+others
-    #@+node:gcross.20111109104457.1884: *4* simpleObservation
-    @classmethod
-    def simpleObservation(cls,physical_dimension,observation):
-        return cls.simple(basisVector(physical_dimension,observation))
     #@-others
-
-#@+<< Build standard states >>
-#@+node:gcross.20111110151700.1738: *4* << Build standard states >>
-#@+others
-#@+node:gcross.20111110151700.1739: *5* W state
-StateChain.qubit_W_state = StateChain.buildAllSitesSameButOne(Qubit.up,Qubit.down)
-#@-others
-#@-<< Build standard states >>
 #@-others
 
 #@+<< Exports >>

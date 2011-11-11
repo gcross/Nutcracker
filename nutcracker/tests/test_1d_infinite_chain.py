@@ -28,7 +28,7 @@ class TestExpectationBehaviour(TestCase):
     def test_qubit_magnetic_field(self,
         contractions = [(Qubit,Direction)],
     ):
-        environment = InfiniteEnvironment(OperatorChain.qubit_Z_magnetic_field)
+        environment = InfiniteEnvironment(OperatorChain.buildMagneticField(Pauli.Z))
         self.assertEqual(environment.computeExpectation(),1)
         correct_expectation = 1
         for qubit, direction in contractions:

@@ -6,11 +6,11 @@
 
 #@+<< Imports >>
 #@+node:gcross.20111110151700.1779: ** << Imports >>
-from numpy import array, complex128, identity
+from numpy import array, complex128
 import random
 
-from ...qubit import Pauli, Qubit
-from ...utils import basisVector, CCW
+from ...lattices import OperatorLattice, StateLattice
+from ...utils import CCW
 from ..tensors import OperatorCenterSite, OperatorCornerSite, OperatorSideSite, StateCenterSite, StateCornerSite, StateSideSite
 #@-<< Imports >>
 
@@ -82,31 +82,15 @@ class Grid(object):
         return cls([1],[1],[1],[1],cls._site_class.trivial())
     #@-others
 #@+node:gcross.20111110151700.1789: *3* OperatorGrid
-class OperatorGrid(Grid):
+class OperatorGrid(OperatorLattice,Grid):
     _site_class = OperatorCenterSite
     #@+others
     #@-others
-
-#@+<< Build standard operators >>
-#@+node:gcross.20111110151700.1791: *4* << Build standard operators >>
-#@+others
-#@-others
-#@-<< Build standard operators >>
 #@+node:gcross.20111110151700.1793: *3* StateGrid
-class StateGrid(Grid):
+class StateGrid(StateLattice,Grid):
     _site_class = StateCenterSite
     #@+others
-    #@+node:gcross.20111110151700.1794: *4* simpleObservation
-    @classmethod
-    def simpleObservation(cls,physical_dimension,observation):
-        return cls.simple(basisVector(physical_dimension,observation))
     #@-others
-
-#@+<< Build standard states >>
-#@+node:gcross.20111110151700.1795: *4* << Build standard states >>
-#@+others
-#@-others
-#@-<< Build standard states >>
 #@-others
 
 #@+<< Exports >>
