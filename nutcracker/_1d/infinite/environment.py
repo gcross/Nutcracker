@@ -33,6 +33,14 @@ class InfiniteEnvironment(Environment):
             StateSite.simpleObservation(operator_chain.physical_dimension,observation),
             operator_chain.site,
         )
+    #@+node:gcross.20111110233742.1820: *4* dangerouslyContractWithoutNormalizing
+    def dangerouslyContractWithoutNormalizing(self,direction):
+        if direction not in Direction.values():
+            raise ValueError("contraction direction must be either Direction.left or Direction.right, not {}".format(direction))
+        if direction == Direction.left:
+            self.left_environment = self.left_environment.absorb(state_site=self.state_site,operator_site=self.operator_site)
+        elif direction == Direction.right:
+            self.right_environment = self.right_environment.absorb(state_site=self.state_site,operator_site=self.operator_site)
     #@+node:gcross.20111109104457.1801: *4* normalizeAndContract
     def normalizeAndContract(self,direction):
         if direction not in Direction.values():
