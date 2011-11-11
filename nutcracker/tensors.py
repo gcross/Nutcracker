@@ -17,7 +17,7 @@
 
 #@+<< Imports >>
 #@+node:gcross.20111107131531.1304: ** << Imports >>
-from numpy import complex128, ndarray, product, zeros
+from numpy import array, complex128, multiply, ndarray, product, zeros
 
 from .utils import basisVector, crand
 #@-<< Imports >>
@@ -135,11 +135,10 @@ class Tensor:
                     keywords[name] = keywords[name[:-len("_conjugate")]].conj()
         data = array(1,dtype=complex128)
         indices = {}
-        index = 0
-        for name, vector in keywords.items():
+        for index, (name, vector) in enumerate(keywords.items()):
             data = multiply.outer(data,vector)
             indices[name] = index
-        data.transpose((indices[name] for name in cls.dimension_names))
+        data.transpose([indices[name] for name in cls.dimension_names])
         return cls(data)
     #@+node:gcross.20111109104457.1795: *5* indexForName
     @classmethod

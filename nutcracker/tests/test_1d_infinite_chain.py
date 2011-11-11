@@ -23,9 +23,9 @@ def randomChain(cls=InfiniteEnvironment):
 #@+node:gcross.20111110144828.1736: *3* ExpectationBehaviour
 class TestExpectationBehaviour(TestCase):
     #@+others
-    #@+node:gcross.20111110150346.1736: *4* test_qubit_magnetic_field
+    #@+node:gcross.20111110150346.1736: *4* test_qubit_magnetic_field_on_random_product_state
     @with_checker
-    def test_qubit_magnetic_field(self,
+    def test_qubit_magnetic_field_on_random_product_state(self,
         contractions = [(Qubit,Direction)],
     ):
         environment = InfiniteEnvironment(OperatorChain.buildMagneticField(Pauli.Z))
@@ -39,6 +39,51 @@ class TestExpectationBehaviour(TestCase):
             else:
                 correct_expectation -= 1
         self.assertEqual(environment.computeExpectation(),correct_expectation)
+    #@+node:gcross.20111110233742.1823: *4* test_qubit_magnetic_field_on_W_state
+    @with_checker
+    def test_qubit_magnetic_field_on_W_state(self,
+        contractions = [Direction],
+    ):
+        environment = InfiniteEnvironment(OperatorChain.buildMagneticField(Pauli.Z))
+        for direction in contractions:
+            environment.normalizeAndContract(direction)
+        self.assertEqual(environment.computeExpectation(),len(contractions)+1)
+    #@+node:gcross.20111110233742.1816: *4* test_qubit_spin_coupling_field_on_all_up_state
+    @with_checker
+    def test_qubit_spin_coupling_field_on_all_up_state(self,
+        contractions = [Direction],
+    ):
+        environment = InfiniteEnvironment(
+            operator_chain = OperatorChain.buildNearestNeighborSpinCouplingField(Pauli.Z),
+            state_chain = StateChain.simple(Qubit.up),
+        )
+        for direction in contractions:
+            environment.normalizeAndContract(direction)
+        self.assertEqual(environment.computeExpectation(),-len(contractions))
+    #@+node:gcross.20111110233742.1818: *4* test_qubit_spin_coupling_field_on_W_state
+    @with_checker
+    def test_qubit_spin_coupling_field_on_W_state(self,
+        contractions = [Direction],
+    ):
+        environment = InfiniteEnvironment(
+            operator_chain = OperatorChain.buildNearestNeighborSpinCouplingField(Pauli.Z),
+            state_chain = StateChain.buildWState(),
+        )
+        for direction in contractions:
+            environment.dangerouslyContractWithoutNormalizing(direction)
+        self.assertEqual(environment.computeExpectation(),-(len(contractions)-1)*(len(contractions)-2)+2)
+    #@+node:gcross.20111110233742.1821: *4* test_W_state_normalization
+    @with_checker
+    def test_W_state_normalization(self,
+        contractions = [Direction],
+    ):
+        environment = InfiniteEnvironment(
+            operator_chain = OperatorChain.simple(Pauli.I),
+            state_chain = StateChain.buildWState(),
+        )
+        for direction in contractions:
+            environment.dangerouslyContractWithoutNormalizing(direction)
+        self.assertEqual(environment.computeExpectation(),len(contractions)+1)
     #@-others
 #@+node:gcross.20111109104457.1807: *3* InfiniteEnvironment
 class TestInfiniteEnvironment(TestCase):

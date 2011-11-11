@@ -32,7 +32,7 @@ class StateLattice(object):
     #@+node:gcross.20111110233742.1808: *4* buildWState
     @classmethod
     def buildWState(cls):
-        cls.buildAllSitesSameButOne(Qubit.up,Qubit.down)
+        return cls.buildAllSitesSameButOne(Qubit.up,Qubit.down)
     #@-others
 #@-others
 

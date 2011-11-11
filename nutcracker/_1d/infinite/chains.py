@@ -6,7 +6,7 @@
 
 #@+<< Imports >>
 #@+node:gcross.20111109104457.1832: ** << Imports >>
-from numpy import array, complex128
+from numpy import array, complex128, identity
 
 from ...lattices import OperatorLattice, StateLattice
 from ..tensors import OperatorSite, StateSite
@@ -52,6 +52,18 @@ class Chain(object):
             ,((1,1),same_site_value)
             ],
         )
+    #@+node:gcross.20111110233742.1813: *4* buildAllSitesSameButTwoNeighbors
+    @classmethod
+    def buildAllSitesSameButTwoNeighbors(cls,same_site_value,different_site_value_1,different_site_value_2):
+        return cls.build(
+            [1,0,0],
+            [0,0,1],
+            [((0,0),same_site_value)
+            ,((0,1),different_site_value_1)
+            ,((1,2),different_site_value_2)
+            ,((2,2),same_site_value)
+            ],
+        )
     #@+node:gcross.20111109104457.1881: *4* simple
     @classmethod
     def simple(cls,component_value):
@@ -65,6 +77,10 @@ class Chain(object):
 class OperatorChain(OperatorLattice,Chain):
     _site_class = OperatorSite
     #@+others
+    #@+node:gcross.20111110233742.1814: *4* buildNearestNeighborSpinCouplingField
+    @classmethod
+    def buildNearestNeighborSpinCouplingField(cls,field_operator,anti=False):
+        return cls.buildAllSitesSameButTwoNeighbors(identity(len(field_operator)),field_operator,field_operator if anti else -field_operator)
     #@-others
 #@+node:gcross.20111109104457.1876: *3* StateChain
 class StateChain(StateLattice,Chain):

@@ -28,9 +28,15 @@ class InfiniteEnvironment(Environment):
                     observation=observation
                 )
         super(type(self),self).__init__(
-            LeftExpectationBoundary(operator_chain.left_boundary_vector.reshape(operator_chain.bandwidth_dimension,1,1)),
-            RightExpectationBoundary(operator_chain.right_boundary_vector.reshape(operator_chain.bandwidth_dimension,1,1)),
-            StateSite.simpleObservation(operator_chain.physical_dimension,observation),
+            LeftExpectationBoundary.formFromOuterProduct(
+                operator = operator_chain.left_boundary_vector,
+                state = state_chain.left_boundary_vector,
+            ),
+            RightExpectationBoundary.formFromOuterProduct(
+                operator = operator_chain.right_boundary_vector,
+                state = state_chain.right_boundary_vector,
+            ),
+            state_chain.site,
             operator_chain.site,
         )
     #@+node:gcross.20111110233742.1820: *4* dangerouslyContractWithoutNormalizing
