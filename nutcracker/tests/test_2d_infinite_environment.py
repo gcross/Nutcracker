@@ -20,7 +20,7 @@ def randomInfiniteNormalizationEnvironment():
 def randomInfiniteExpectationEnvironment():
     return randomExpectationEnvironment(InfiniteExpectationEnvironment)
 #@+node:gcross.20111109104457.1750: ** Tests
-#@+node:gcross.20111109104457.1751: *3* TestInfiniteNormalizationEnvironment
+#@+node:gcross.20111109104457.1751: *3* InfiniteNormalizationEnvironment
 class TestInfiniteNormalizationEnvironment(TestCase):
     #@+others
     #@+node:gcross.20111109104457.1770: *4* test_computeNormalization_observable
@@ -172,7 +172,7 @@ class TestInfiniteNormalizationEnvironment(TestCase):
         self.assertEqual(environment.bandwidthDimensions(),environment.bandwidthDimensions())
         self.assertAlmostEqual(old_normalization,environment.computeNormalization())
     #@-others
-#@+node:gcross.20111109104457.1753: *3* TestInfiniteExpectationEnvironment
+#@+node:gcross.20111109104457.1753: *3* InfiniteExpectationEnvironment
 class TestInfiniteExpectationEnvironment(TestCase):
     #@+others
     #@+node:gcross.20111103170337.1394: *4* test_contract

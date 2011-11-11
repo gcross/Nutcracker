@@ -12,7 +12,7 @@ from random import randint,shuffle
 
 #@+others
 #@+node:gcross.20111109104457.1645: ** Tests
-#@+node:gcross.20111109104457.1646: *3* TestSiteTensor
+#@+node:gcross.20111109104457.1646: *3* SiteTensor
 class TestSiteTensor(TestCase):
     #@+others
     #@+node:gcross.20111109104457.1647: *4* test_build

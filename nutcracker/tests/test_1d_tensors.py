@@ -15,7 +15,7 @@ from . import *
 
 #@+others
 #@+node:gcross.20111107131531.1347: ** Tests
-#@+node:gcross.20111107131531.1348: *3* TestLeftExpectationBoundary
+#@+node:gcross.20111107131531.1348: *3* LeftExpectationBoundary
 class TestLeftExpectationBoundary(TestCase):
     #@+others
     #@+node:gcross.20111107131531.1349: *4* absorb
@@ -60,7 +60,7 @@ class TestLeftExpectationBoundary(TestCase):
             contract(L.data,O.formDenseTensor().data,S.data,S.data.conj())
         )
     #@-others
-#@+node:gcross.20111108100704.1438: *3* TestLeftOverlapBoundary
+#@+node:gcross.20111108100704.1438: *3* LeftOverlapBoundary
 class TestLeftOverlapBoundary(TestCase):
     #@+others
     #@+node:gcross.20111108100704.1439: *4* absorb
@@ -102,7 +102,7 @@ class TestLeftOverlapBoundary(TestCase):
             contract(L.data,V.data,S.data)
         )
     #@-others
-#@+node:gcross.20111109104457.1820: *3* TestOperatorSite
+#@+node:gcross.20111109104457.1820: *3* OperatorSite
 class TestOperatorSite(TestCase):
     #@+others
     #@+node:gcross.20111109104457.1821: *4* build
@@ -148,7 +148,7 @@ class TestOperatorSite(TestCase):
             DenseOperatorSite.simple(components[0][1]).data,
         )
     #@-others
-#@+node:gcross.20111107131531.3583: *3* TestRightExpectationBoundary
+#@+node:gcross.20111107131531.3583: *3* RightExpectationBoundary
 class TestRightExpectationBoundary(TestCase):
     #@+others
     #@+node:gcross.20111107131531.3584: *4* absorb
@@ -193,7 +193,7 @@ class TestRightExpectationBoundary(TestCase):
             contract(R.data,O.formDenseTensor().data,S.data,S.data.conj())
         )
     #@-others
-#@+node:gcross.20111108100704.1442: *3* TestRightOverlapBoundary
+#@+node:gcross.20111108100704.1442: *3* RightOverlapBoundary
 class TestLeftOverlapBoundary(TestCase):
     #@+others
     #@+node:gcross.20111108100704.1443: *4* absorb
@@ -235,7 +235,7 @@ class TestLeftOverlapBoundary(TestCase):
             contract(R.data,V.data,S.data)
         )
     #@-others
-#@+node:gcross.20111107131531.3591: *3* TestStateSite
+#@+node:gcross.20111107131531.3591: *3* StateSite
 class TestStateSite(TestCase):
     #@+others
     #@+node:gcross.20111108100704.1372: *4* formNormalizedOverlapSites
