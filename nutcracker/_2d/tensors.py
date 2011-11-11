@@ -11,8 +11,8 @@ from ..utils import *
 #@+others
 #@+node:gcross.20111108103420.1474: ** Classes
 #@+node:gcross.20111108103420.1475: *3* Metaclasses
-#@+node:gcross.20111108103420.1480: *4* MetaCenterSiteTensor
-class MetaCenterSiteTensor(MetaSiteTensor):
+#@+node:gcross.20111108103420.1480: *4* MetaSideSiteTensor
+class MetaSideSiteTensor(MetaSiteTensor):
     #@+others
     #@+node:gcross.20111108103420.1481: *5* __init__
     def __new__(cls,class_name,bases,data):
@@ -44,9 +44,9 @@ class MetaCenterSiteTensor(MetaSiteTensor):
         return cls
     #@-others
 #@+node:gcross.20111108103420.1482: *3* Base classes
-#@+node:gcross.20111108103420.1495: *4* CenterSiteTensor
-class CenterSiteTensor(SiteTensor):
-    __metaclass__ = MetaCenterSiteTensor
+#@+node:gcross.20111108103420.1495: *4* SideSiteTensor
+class SideSiteTensor(SiteTensor):
+    __metaclass__ = MetaSideSiteTensor
     #@+others
     #@+node:gcross.20111108103420.1496: *5* absorbCenterSite
     def absorbCenterSite(self,center,direction):
@@ -205,7 +205,7 @@ class OperatorCornerSite(SiteTensor):
         )
     #@-others
 #@+node:gcross.20111108103420.1510: *4* OperatorSideSite
-class OperatorSideSite(CenterSiteTensor):
+class OperatorSideSite(SideSiteTensor):
     dimension_names = ["physical","physical_conjugate","clockwise","counterclockwise","inward"]
     _center_site_class = OperatorCenterSite
     #@+others
@@ -303,7 +303,7 @@ class StateCornerSite(SiteTensor):
         return normalizeAndDenormalizeTensors(self,self.counterclockwise_index,side,side.clockwise_index)
     #@-others
 #@+node:gcross.20111108103420.1519: *4* StateSideSite
-class StateSideSite(CenterSiteTensor):
+class StateSideSite(SideSiteTensor):
     dimension_names = ["physical","clockwise","counterclockwise","inward"]
     _center_site_class = StateCenterSite
     #@+others
