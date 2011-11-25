@@ -66,6 +66,8 @@ class InfiniteExpectationEnvironment(ExpectationEnvironment,InfiniteNormalizatio
     #@+node:gcross.20111109104457.1736: *4* __init__
     def __init__(self,operator_grid,physical_dimension=None,state_grid=None):
         super(type(self),self).__init__(physical_dimension=physical_dimension,state_grid=state_grid)
+        if self.physical_dimension != operator_grid.physical_dimension:
+            raise ValueError("state physical dimension ({}) does not match operator physical dimensions ({})".format(self.physical_dimension,operator_grid.physical_dimension))
         self.O_center = operator_grid.center
         self.O_sides = [OperatorSideSite.simpleInward(vector) for vector in operator_grid.boundary_vectors]
         self.O_corners = [OperatorCornerSite.trivial()]*4

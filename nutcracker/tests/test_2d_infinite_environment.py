@@ -3,12 +3,16 @@
 #@+<< Imports >>
 #@+node:gcross.20111109104457.1749: ** << Imports >>
 from .._2d.enumerations import *
+from .._2d.infinite.grids import *
 from .._2d.infinite.environment import *
 from .._2d.tensors import *
+from ..qubit import *
 from ..utils import *
 
 from . import *
 from .test_2d_environment import randomNormalizationEnvironment, randomExpectationEnvironment
+
+from random import choice
 #@-<< Imports >>
 
 #@+others
@@ -20,6 +24,20 @@ def randomInfiniteNormalizationEnvironment():
 def randomInfiniteExpectationEnvironment():
     return randomExpectationEnvironment(InfiniteExpectationEnvironment)
 #@+node:gcross.20111109104457.1750: ** Tests
+#@+node:gcross.20111110233742.1785: *3* ExpectationBehaviour
+class TestExpectationBehaviour(TestCase):
+    #@+others
+    #@+node:gcross.20111110233742.1824: *4* trivial
+    @with_checker
+    def test_trivial(self,directions=[Direction]):
+        environment = InfiniteExpectationEnvironment(
+            operator_grid = OperatorGrid.trivial(),
+            state_grid = StateGrid.trivial(),
+        )
+        for direction in directions:
+            environment.contract(direction)
+        self.assertEqual(environment.computeNormalization(),1)
+        self.assertEqual(environment.computeExpectation(),1)
 #@+node:gcross.20111109104457.1751: *3* InfiniteNormalizationEnvironment
 class TestInfiniteNormalizationEnvironment(TestCase):
     #@+others

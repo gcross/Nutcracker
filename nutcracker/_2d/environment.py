@@ -181,7 +181,7 @@ class ExpectationEnvironment(NormalizationEnvironment):
     #@+others
     #@+node:gcross.20111107123047.1378: *4* compressConnectionBetweenSideAndClockwiseCorner
     def compressConnectionBetweenSideAndClockwiseCorner(self,direction,keep=None,threshold=None):
-        super(type(self),self).compressConnectionBetweenSideAndClockwiseCorner(direction,keep,threshold)
+        super(ExpectationEnvironment,self).compressConnectionBetweenSideAndClockwiseCorner(direction,keep,threshold)
         self.O_sides[direction], self.O_corners[CW(direction)] = \
             compressConnectionBetweenTensors(
                 self.O_sides[direction],OperatorSideSite.clockwise_index,
@@ -190,7 +190,7 @@ class ExpectationEnvironment(NormalizationEnvironment):
             )
     #@+node:gcross.20111107123047.1380: *4* compressConnectionBetweenSideAndCounterClockwiseCorner
     def compressConnectionBetweenSideAndCounterClockwiseCorner(self,direction,keep=None,threshold=None):
-        super(type(self),self).compressConnectionBetweenSideAndCounterClockwiseCorner(direction,keep,threshold)
+        super(ExpectationEnvironment,self).compressConnectionBetweenSideAndCounterClockwiseCorner(direction,keep,threshold)
         self.O_sides[direction], self.O_corners[direction] = \
             compressConnectionBetweenTensors(
                 self.O_sides[direction],OperatorSideSite.counterclockwise_index,
