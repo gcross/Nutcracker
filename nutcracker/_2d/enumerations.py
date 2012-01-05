@@ -1,9 +1,5 @@
 #@+leo-ver=5-thin
 #@+node:gcross.20111110151700.1750: * @file enumerations.py
-#@+<< License >>
-#@+node:gcross.20111110151700.1751: ** << License >>
-#@-<< License >>
-
 #@+<< Imports >>
 #@+node:gcross.20111110151700.1752: ** << Imports >>
 from ..miscellaneous.enum_meta import Enum

@@ -1,9 +1,5 @@
 #@+leo-ver=5-thin
 #@+node:gcross.20111110151700.1777: * @file grids.py
-#@+<< License >>
-#@+node:gcross.20111110151700.1778: ** << License >>
-#@-<< License >>
-
 #@+<< Imports >>
 #@+node:gcross.20111110151700.1779: ** << Imports >>
 from numpy import array, complex128

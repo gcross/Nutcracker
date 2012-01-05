@@ -1,9 +1,5 @@
 #@+leo-ver=5-thin
 #@+node:gcross.20111107131531.3606: * @file environment.py
-#@+<< License >>
-#@+node:gcross.20111107131531.3607: ** << License >>
-#@-<< License >>
-
 #@+<< Imports >>
 #@+node:gcross.20111107131531.3608: ** << Imports >>
 from .. import core

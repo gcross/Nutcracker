@@ -1,9 +1,5 @@
 #@+leo-ver=5-thin
 #@+node:gcross.20111109104457.1830: * @file chains.py
-#@+<< License >>
-#@+node:gcross.20111109104457.1831: ** << License >>
-#@-<< License >>
-
 #@+<< Imports >>
 #@+node:gcross.20111109104457.1832: ** << Imports >>
 from numpy import array, complex128, identity

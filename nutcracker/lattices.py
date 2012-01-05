@@ -1,9 +1,5 @@
 #@+leo-ver=5-thin
 #@+node:gcross.20111110233742.1801: * @file lattices.py
-#@+<< License >>
-#@+node:gcross.20111110233742.1802: ** << License >>
-#@-<< License >>
-
 #@+<< Imports >>
 #@+node:gcross.20111110233742.1803: ** << Imports >>
 from numpy import identity

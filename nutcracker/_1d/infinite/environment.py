@@ -1,9 +1,5 @@
 #@+leo-ver=5-thin
 #@+node:gcross.20111109104457.1777: * @file environment.py
-#@+<< License >>
-#@+node:gcross.20111109104457.1778: ** << License >>
-#@-<< License >>
-
 #@+<< Imports >>
 #@+node:gcross.20111109104457.1779: ** << Imports >>
 from numpy import array, complex128
