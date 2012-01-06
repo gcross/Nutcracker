@@ -1,21 +1,15 @@
-#@+leo-ver=5-thin
-#@+node:gcross.20111110151700.1777: * @file grids.py
-#@+<< Imports >>
-#@+node:gcross.20111110151700.1779: ** << Imports >>
+# Imports {{{
 from numpy import array, complex128
 import random
 
 from ...lattices import OperatorLattice, StateLattice
 from ...utils import CCW
 from ..tensors import OperatorCenterSite, OperatorCornerSite, OperatorSideSite, StateCenterSite, StateCornerSite, StateSideSite
-#@-<< Imports >>
+# }}}
 
-#@+others
-#@+node:gcross.20111110233742.1791: ** Metaclasses
-#@+node:gcross.20111110233742.1792: *3* MetaGrid
-class MetaGrid(type):
-    #@+others
-    #@+node:gcross.20111110233742.1793: *4* __new__
+# Metaclasses {{{
+
+class MetaGrid(type): # {{{
     def __new__(cls,class_name,bases,data):
         if "_site_class" in data:
             site_class = data["_site_class"]
@@ -30,14 +24,16 @@ class MetaGrid(type):
             for i, name in enumerate(site_class.bandwidth_dimension_names):
                 data[name + "_boundary_vector"] = BoundaryProperty(i)
         return type.__new__(cls,class_name,bases,data)
-    #@-others
-#@+node:gcross.20111110151700.1780: ** Classes
-#@+node:gcross.20111110151700.1781: *3* Grid
-class Grid(object):
+# }}}
+
+# }}}
+
+# Classes {{{
+
+class Grid(object): # {{{
     __metaclass__ = MetaGrid
-    #@+others
-    #@+node:gcross.20111110151700.1782: *4* __init__
-    def __init__(self,leftward_boundary_vector,upward_boundary_vector,rightward_boundary_vector,downward_boundary_vector,site):
+
+    def __init__(self,leftward_boundary_vector,upward_boundary_vector,rightward_boundary_vector,downward_boundary_vector,site): # {{{
         if site.leftward_dimension != site.rightward_dimension:
             raise ValueError("the leftward and rightward dimensions of the site tensor must match in an infinite grid ({} != {})".format(site.leftward_dimension,site.rightward_dimension))
         if site.upward_dimension != site.downward_dimension:
@@ -58,9 +54,10 @@ class Grid(object):
         self.vertical_bandwidth_dimension = site.upward_dimension
         self.physical_dimension = site.physical_dimension
         self.boundary_vectors = boundary_vectors
-    #@+node:gcross.20111110233742.1787: *4* build
+    # }}}
+
     @classmethod
-    def build(cls,boundary_vectors_with_names,components):
+    def build(cls,boundary_vectors_with_names,components): # {{{
         return cls(
             site=cls._site_class.build(
                 [(name,len(vector)) for (name,vector) in boundary_vectors_with_names],
@@ -68,34 +65,34 @@ class Grid(object):
             ),
             **dict((name + "_boundary_vector",vector) for (name,vector) in boundary_vectors_with_names)
         )
-    #@+node:gcross.20111110151700.1787: *4* simple
-    @classmethod
-    def simple(cls,component_value):
-        return cls([1],[1],[1],[1],cls._site_class.simple(component_value))
-    #@+node:gcross.20111110151700.1788: *4* trivial
-    @classmethod
-    def trivial(cls):
-        return cls([1],[1],[1],[1],cls._site_class.trivial())
-    #@-others
-#@+node:gcross.20111110151700.1789: *3* OperatorGrid
-class OperatorGrid(OperatorLattice,Grid):
-    _site_class = OperatorCenterSite
-    #@+others
-    #@-others
-#@+node:gcross.20111110151700.1793: *3* StateGrid
-class StateGrid(StateLattice,Grid):
-    _site_class = StateCenterSite
-    #@+others
-    #@-others
-#@-others
+    # }}}
 
-#@+<< Exports >>
-#@+node:gcross.20111110151700.1797: ** << Exports >>
+    @classmethod
+    def simple(cls,component_value): # {{{
+        return cls([1],[1],[1],[1],cls._site_class.simple(component_value))
+    # }}}
+
+    @classmethod
+    def trivial(cls): # {{{
+        return cls([1],[1],[1],[1],cls._site_class.trivial())
+    # }}}
+# }}}
+
+class OperatorGrid(OperatorLattice,Grid): # {{{
+    _site_class = OperatorCenterSite
+# }}}
+
+class StateGrid(StateLattice,Grid): # {{{
+    _site_class = StateCenterSite
+# }}}
+
+# }}}
+
+# Exports {{{
 __all__ = [
     "Grid",
 
     "OperatorGrid",
     "StateGrid",
 ]
-#@-<< Exports >>
-#@-leo
+# }}}

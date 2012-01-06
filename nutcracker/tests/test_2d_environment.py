@@ -1,17 +1,13 @@
-#@+leo-ver=5-thin
-#@+node:gcross.20111107154810.1414: * @file test_2d_environment.py
-#@+<< Imports >>
-#@+node:gcross.20111107154810.1415: ** << Imports >>
+# Imports {{{
 from .._2d.environment import *
 from .._2d.tensors import *
 
 from . import *
-#@-<< Imports >>
+# }}}
 
-#@+others
-#@+node:gcross.20111109104457.1761: ** Functions
-#@+node:gcross.20111013080525.1249: *3* randomNormalizationEnvironment
-def randomNormalizationEnvironment(cls=NormalizationEnvironment):
+# Helper functions {{{
+
+def randomNormalizationEnvironment(cls=NormalizationEnvironment): # {{{
     environment = cls.trivial()
     horizontal_dimension = randint(1,3)
     vertical_dimension = randint(1,3)
@@ -41,8 +37,9 @@ def randomNormalizationEnvironment(cls=NormalizationEnvironment):
         for i in range(4)
     ]
     return environment
-#@+node:gcross.20111103170337.1392: *3* randomExpectationEnvironment
-def randomExpectationEnvironment(cls=ExpectationEnvironment):
+# }}}
+
+def randomExpectationEnvironment(cls=ExpectationEnvironment): # {{{
     environment = cls.trivial()
     O_horizontal_dimension = randint(1,2)
     O_vertical_dimension = randint(1,2)
@@ -99,13 +96,13 @@ def randomExpectationEnvironment(cls=ExpectationEnvironment):
         for i in range(4)
     ]
     return environment
-#@+node:gcross.20111107154810.1417: ** Tests
-#@+node:gcross.20111009193003.5265: *3* NormalizationEnvironment
-class TestNormalizationEnvironment(TestCase):
-    #@+others
-    #@+node:gcross.20111024143336.1335: *4* test_compressConnectionBetweenSideAndCenter_keep_all
+# }}}
+
+# }}}
+
+class TestNormalizationEnvironment(TestCase): # {{{
     @with_checker(number_of_calls=10)
-    def test_compressConnectionBetweenSideAndCenter_threshold_zero(self,
+    def test_compressConnectionBetweenSideAndCenter_threshold_zero(self, # {{{
         direction = irange(0,3),
     ):
         environment = randomNormalizationEnvironment()
@@ -114,9 +111,10 @@ class TestNormalizationEnvironment(TestCase):
         environment.compressConnectionBetweenSideAndCenter(direction,keep=len)
         self.assertLessEqual(environment.sides[direction].inward_dimension,old_connection_dimension)
         self.assertAlmostEqual(old_normalization/environment.computeNormalization(),1)
-    #@+node:gcross.20111024143336.1337: *4* test_compressConnectionBetweenSideAndCenter_keep_some
+    # }}}
+
     @with_checker(number_of_calls=10)
-    def test_compressConnectionBetweenSideAndCenter_keep_some(self,
+    def test_compressConnectionBetweenSideAndCenter_keep_some(self, # {{{
         direction = irange(0,3),
     ):
         environment = randomNormalizationEnvironment()
@@ -128,9 +126,10 @@ class TestNormalizationEnvironment(TestCase):
         self.assertEqual(number_to_keep,environment.sides[direction].inward_dimension)
         self.assertEqual(number_to_keep,environment.center.bandwidthDimension(direction))
         environment.computeNormalization()
-    #@+node:gcross.20111024143336.1339: *4* test_compressConnectionBetweenSideAndCenter_threshold_zero
+    # }}}
+
     @with_checker(number_of_calls=10)
-    def test_compressConnectionBetweenSideAndCenter_threshold_zero(self,
+    def test_compressConnectionBetweenSideAndCenter_threshold_zero(self, # {{{
         direction = irange(0,3),
     ):
         environment = randomNormalizationEnvironment()
@@ -139,9 +138,10 @@ class TestNormalizationEnvironment(TestCase):
         environment.compressConnectionBetweenSideAndCenter(direction,threshold=0)
         self.assertLessEqual(environment.sides[direction].inward_dimension,old_connection_dimension)
         self.assertAlmostEqual(old_normalization/environment.computeNormalization(),1)
-    #@+node:gcross.20111024143336.1299: *4* test_compressConnectionBetweenSideAndClockwiseCorner_keep_all
+    # }}}
+
     @with_checker(number_of_calls=10)
-    def test_compressConnectionBetweenSideAndClockwiseCorner_threshold_zero(self,
+    def test_compressConnectionBetweenSideAndClockwiseCorner_threshold_zero(self, # {{{
         direction = irange(0,3),
     ):
         environment = randomNormalizationEnvironment()
@@ -150,9 +150,10 @@ class TestNormalizationEnvironment(TestCase):
         environment.compressConnectionBetweenSideAndClockwiseCorner(direction,keep=len)
         self.assertLessEqual(environment.sides[direction].clockwise_dimension,old_connection_dimension)
         self.assertAlmostEqual(old_normalization/environment.computeNormalization(),1)
-    #@+node:gcross.20111024143336.1305: *4* test_compressConnectionBetweenSideAndClockwiseCorner_keep_some
+    # }}}
+
     @with_checker(number_of_calls=10)
-    def test_compressConnectionBetweenSideAndClockwiseCorner_keep_some(self,
+    def test_compressConnectionBetweenSideAndClockwiseCorner_keep_some(self, # {{{
         direction = irange(0,3),
     ):
         environment = randomNormalizationEnvironment()
@@ -167,9 +168,10 @@ class TestNormalizationEnvironment(TestCase):
         self.assertEqual(number_to_keep,environment.sides[direction].clockwise_dimension)
         self.assertEqual(number_to_keep,environment.corners[CW(direction)].counterclockwise_dimension)
         environment.computeNormalization()
-    #@+node:gcross.20111024143336.1303: *4* test_compressConnectionBetweenSideAndClockwiseCorner_threshold_zero
+    # }}}
+
     @with_checker(number_of_calls=10)
-    def test_compressConnectionBetweenSideAndClockwiseCorner_threshold_zero(self,
+    def test_compressConnectionBetweenSideAndClockwiseCorner_threshold_zero(self, # {{{
         direction = irange(0,3),
     ):
         environment = randomNormalizationEnvironment()
@@ -178,9 +180,10 @@ class TestNormalizationEnvironment(TestCase):
         environment.compressConnectionBetweenSideAndClockwiseCorner(direction,threshold=0)
         self.assertLessEqual(environment.sides[direction].clockwise_dimension,old_connection_dimension)
         self.assertAlmostEqual(old_normalization/environment.computeNormalization(),1)
-    #@+node:gcross.20111022200315.1342: *4* test_compressConnectionBetweenSideAndCounterClockwiseCorner_keep_all
+    # }}}
+
     @with_checker(number_of_calls=10)
-    def test_compressConnectionBetweenSideAndCounterClockwiseCorner_threshold_zero(self,
+    def test_compressConnectionBetweenSideAndCounterClockwiseCorner_threshold_zero(self, # {{{
         direction = irange(0,3),
     ):
         environment = randomNormalizationEnvironment()
@@ -189,9 +192,10 @@ class TestNormalizationEnvironment(TestCase):
         environment.compressConnectionBetweenSideAndCounterClockwiseCorner(direction,keep=len)
         self.assertLessEqual(environment.sides[direction].counterclockwise_dimension,old_connection_dimension)
         self.assertAlmostEqual(old_normalization/environment.computeNormalization(),1)
-    #@+node:gcross.20111024143336.1307: *4* test_compressConnectionBetweenSideAndCounterClockwiseCorner_keep_some
+    # }}}
+
     @with_checker(number_of_calls=10)
-    def test_compressConnectionBetweenSideAndCounterClockwiseCorner_keep_some(self,
+    def test_compressConnectionBetweenSideAndCounterClockwiseCorner_keep_some(self, # {{{
         direction = irange(0,3),
     ):
         environment = randomNormalizationEnvironment()
@@ -206,9 +210,10 @@ class TestNormalizationEnvironment(TestCase):
         self.assertEqual(number_to_keep,environment.sides[direction].counterclockwise_dimension)
         self.assertEqual(number_to_keep,environment.corners[direction].clockwise_dimension)
         environment.computeNormalization()
-    #@+node:gcross.20111022200315.1340: *4* test_compressConnectionBetweenSideAndCounterClockwiseCorner_threshold_zero
+    # }}}
+
     @with_checker(number_of_calls=10)
-    def test_compressConnectionBetweenSideAndCounterClockwiseCorner_threshold_zero(self,
+    def test_compressConnectionBetweenSideAndCounterClockwiseCorner_threshold_zero(self, # {{{
         direction = irange(0,3),
     ):
         environment = randomNormalizationEnvironment()
@@ -217,9 +222,10 @@ class TestNormalizationEnvironment(TestCase):
         environment.compressConnectionBetweenSideAndCounterClockwiseCorner(direction,threshold=0)
         self.assertLessEqual(environment.sides[direction].counterclockwise_dimension,old_connection_dimension)
         self.assertAlmostEqual(old_normalization/environment.computeNormalization(),1)
-    #@+node:gcross.20111022200315.1288: *4* test_compressCorner_keep_all
+    # }}}
+
     @with_checker(number_of_calls=10)
-    def test_compressCorner_keep_all(self,
+    def test_compressCorner_keep_all(self, # {{{
         direction = irange(0,3),
     ):
         environment = randomNormalizationEnvironment()
@@ -228,18 +234,20 @@ class TestNormalizationEnvironment(TestCase):
         environment.compressCorner(direction,keep=number_to_keep)
         self.assertEqual(environment.corners[direction].physical_dimension,number_to_keep)
         self.assertAlmostEqual(old_normalization/environment.computeNormalization(),1)
-    #@+node:gcross.20111022200315.1290: *4* test_compressCorner_keep_some
+    # }}}
+
     @with_checker(number_of_calls=10)
-    def test_compressCorner_keep_some(self,
+    def test_compressCorner_keep_some(self, # {{{
         direction = irange(0,3),
     ):
         environment = randomNormalizationEnvironment()
         number_to_keep = randint(1,product(withoutIndex(environment.corners[direction].dimensions(),StateCornerSite.physical_index)))
         environment.compressCorner(direction,keep=number_to_keep)
         self.assertEqual(environment.corners[direction].physical_dimension,number_to_keep)
-    #@+node:gcross.20111022200315.1286: *4* test_compressCorner_threshold_zero
+    # }}}
+
     @with_checker(number_of_calls=10)
-    def test_compressCorner_threshold_zero(self,
+    def test_compressCorner_threshold_zero(self, # {{{
         direction = irange(0,3),
     ):
         environment = randomNormalizationEnvironment()
@@ -248,9 +256,10 @@ class TestNormalizationEnvironment(TestCase):
         environment.compressCorner(direction,threshold=0)
         self.assertLessEqual(environment.corners[direction].physical_dimension,old_physical_dimension)
         self.assertAlmostEqual(old_normalization/environment.computeNormalization(),1)
-    #@+node:gcross.20111022200315.1298: *4* test_compressSide_keep_all
+    # }}}
+
     @with_checker(number_of_calls=10)
-    def test_compressSide_keep_all(self,
+    def test_compressSide_keep_all(self, # {{{
         direction = irange(0,3),
     ):
         environment = randomNormalizationEnvironment()
@@ -259,18 +268,20 @@ class TestNormalizationEnvironment(TestCase):
         environment.compressSide(direction,keep=number_to_keep)
         self.assertEqual(environment.sides[direction].physical_dimension,number_to_keep)
         self.assertAlmostEqual(old_normalization/environment.computeNormalization(),1)
-    #@+node:gcross.20111022200315.1300: *4* test_compressSide_keep_some
+    # }}}
+
     @with_checker(number_of_calls=10)
-    def test_compressSide_keep_some(self,
+    def test_compressSide_keep_some(self, # {{{
         direction = irange(0,3),
     ):
         environment = randomNormalizationEnvironment()
         number_to_keep = randint(1,product(withoutIndex(environment.sides[direction].dimensions(),StateSideSite.physical_index)))
         environment.compressSide(direction,keep=number_to_keep)
         self.assertEqual(environment.sides[direction].physical_dimension,number_to_keep)
-    #@+node:gcross.20111022200315.1294: *4* test_compressSide_threshold_zero
+    # }}}
+
     @with_checker(number_of_calls=10)
-    def test_compressSide_threshold_zero(self,
+    def test_compressSide_threshold_zero(self, # {{{
         direction = irange(0,3),
     ):
         environment = randomNormalizationEnvironment()
@@ -279,7 +290,9 @@ class TestNormalizationEnvironment(TestCase):
         environment.compressSide(direction,threshold=0)
         self.assertLessEqual(environment.sides[direction].physical_dimension,old_physical_dimension)
         self.assertAlmostEqual(old_normalization/environment.computeNormalization(),1)
-    #@+node:gcross.20111013165152.1231: *4* test_computeNormalization_random
+    # }}}
+
+    # test computeNormalization with random data {{{
     @prependContractor(
         (['O','O*'] + ['S{}'.format(i) for i in range(4)] + ['C{}'.format(i) for i in range(4)]),
         ([(('S{}'.format(i),NormalizationSideBoundary.counterclockwise_index),('C{}'.format(i),CornerBoundary.clockwise_index)) for i in range(4)]
@@ -297,13 +310,17 @@ class TestNormalizationEnvironment(TestCase):
             contract(*([environment.center.data,environment.center.data.conj()] + [x.formNormalizationBoundary().data for x in environment.sides + environment.corners])),
             environment.computeNormalization(),
         )
-    #@+node:gcross.20111013165152.1227: *4* test_computeNormalization_trivial
-    def test_computeNormalization_trivial(self):
+    # }}}
+
+    def test_computeNormalization_trivial(self): # {{{
         self.assertAlmostEqual(NormalizationEnvironment.trivial().computeNormalization(),1)
-    #@+node:gcross.20111013080525.1261: *4* test_computeNormalizationConditionNumber_trivial
-    def test_computeNormalizationConditionNumber_trivial(self):
+    # }}}
+
+    def test_computeNormalizationConditionNumber_trivial(self): # {{{
         self.assertAlmostEqual(NormalizationEnvironment.trivial().computeNormalizationConditionNumber(),1)
-    #@+node:gcross.20111010182600.1199: *4* test_computeNormalizationMatrix_random
+    # }}}
+
+    # test computeNormalizationMatrix using random data {{{
     @prependContractor(
         (['I'] + ['S{}'.format(i) for i in range(4)] + ['C{}'.format(i) for i in range(4)]),
         ([(('S{}'.format(i),NormalizationSideBoundary.counterclockwise_index),('C{}'.format(i),CornerBoundary.clockwise_index)) for i in range(4)]
@@ -321,12 +338,14 @@ class TestNormalizationEnvironment(TestCase):
             contract(*([identity(environment.physical_dimension)] + [x.formNormalizationBoundary().data for x in environment.sides + environment.corners])),
             environment.computeNormalizationMatrix(),
         )
-    #@+node:gcross.20111010182517.1196: *4* test_computeNormalizationMatrix_trivial
-    def test_computeNormalizationMatrix_trivial(self):
+    # }}}
+
+    def test_computeNormalizationMatrix_trivial(self): # {{{
         self.assertAllClose(NormalizationEnvironment.trivial().computeNormalizationMatrix(),identity(1))
-    #@+node:gcross.20111017110141.1273: *4* test_normalizeCornerAndDenormalizeClockwiseSide
+    # }}}
+
     @with_checker(number_of_calls=10)
-    def test_normalizeCornerAndDenormalizeClockwiseSide(self,
+    def test_normalizeCornerAndDenormalizeClockwiseSide(self, # {{{
         direction = irange(0,3),
     ):
         environment = randomNormalizationEnvironment()
@@ -339,9 +358,10 @@ class TestNormalizationEnvironment(TestCase):
         environment.normalizeCornerAndDenormalizeClockwiseSide(direction)
         self.assertNormalized(environment.corners[direction].data,StateCornerSite.clockwise_index)
         self.assertAlmostEqual(old_normalization/environment.computeNormalization(),1)
-    #@+node:gcross.20111017110141.1275: *4* test_normalizeCornerAndDenormalizeCounterClockwiseSide
+    # }}}
+
     @with_checker(number_of_calls=10)
-    def test_normalizeCornerAndDenormalizeCounterClockwiseSide(self,
+    def test_normalizeCornerAndDenormalizeCounterClockwiseSide(self, # {{{
         direction = irange(0,3),
     ):
         environment = randomNormalizationEnvironment()
@@ -354,9 +374,10 @@ class TestNormalizationEnvironment(TestCase):
         environment.normalizeCornerAndDenormalizeCounterClockwiseSide(direction)
         self.assertNormalized(environment.corners[direction].data,StateCornerSite.counterclockwise_index)
         self.assertAlmostEqual(old_normalization/environment.computeNormalization(),1)
-    #@+node:gcross.20111014113710.1231: *4* test_normalizeSide
+    # }}}
+
     @with_checker(number_of_calls=10)
-    def test_normalizeSide(self,
+    def test_normalizeSide(self, # {{{
         direction = irange(0,3),
     ):
         environment = randomNormalizationEnvironment()
@@ -369,13 +390,12 @@ class TestNormalizationEnvironment(TestCase):
         environment.normalizeSide(direction)
         self.assertNormalized(environment.sides[direction].data,StateSideSite.inward_index)
         self.assertAlmostEqual(old_normalization/environment.computeNormalization(),1)
-    #@-others
-#@+node:gcross.20111103170337.1389: *3* ExpectationEnvironment
-class TestExpectationEnvironment(TestCase):
-    #@+others
-    #@+node:gcross.20111107123047.1382: *4* test_compressConnectionBetweenSideAndClockwiseCorner_keep_all
+    # }}}
+# }}}
+
+class TestExpectationEnvironment(TestCase): # {{{
     @with_checker(number_of_calls=10)
-    def test_compressConnectionBetweenSideAndClockwiseCorner_threshold_zero(self,
+    def test_compressConnectionBetweenSideAndClockwiseCorner_threshold_zero(self, # {{{
         direction = irange(0,3),
     ):
         environment = randomExpectationEnvironment()
@@ -388,9 +408,10 @@ class TestExpectationEnvironment(TestCase):
         self.assertLessEqual(environment.sides[direction].clockwise_dimension,old_connection_dimension)
         self.assertAlmostEqual(old_normalization/environment.computeNormalization(),1)
         self.assertAlmostEqual(old_expectation/environment.computeExpectation(),1)
-    #@+node:gcross.20111107123047.1384: *4* test_compressConnectionBetweenSideAndClockwiseCorner_keep_some
+    # }}}
+
     @with_checker(number_of_calls=10)
-    def test_compressConnectionBetweenSideAndClockwiseCorner_keep_some(self,
+    def test_compressConnectionBetweenSideAndClockwiseCorner_keep_some(self, # {{{
         direction = irange(0,3),
     ):
         environment = randomExpectationEnvironment()
@@ -410,9 +431,10 @@ class TestExpectationEnvironment(TestCase):
         self.assertEqual(number_to_keep,environment.corners[CW(direction)].counterclockwise_dimension)
         environment.computeNormalization()
         environment.computeExpectation()
-    #@+node:gcross.20111107123047.1388: *4* test_compressConnectionBetweenSideAndClockwiseCorner_threshold_zero
+    # }}}
+
     @with_checker(number_of_calls=10)
-    def test_compressConnectionBetweenSideAndClockwiseCorner_threshold_zero(self,
+    def test_compressConnectionBetweenSideAndClockwiseCorner_threshold_zero(self, # {{{
         direction = irange(0,3),
     ):
         environment = randomExpectationEnvironment()
@@ -425,9 +447,10 @@ class TestExpectationEnvironment(TestCase):
         self.assertLessEqual(environment.sides[direction].clockwise_dimension,old_connection_dimension)
         self.assertAlmostEqual(old_normalization/environment.computeNormalization(),1)
         self.assertAlmostEqual(old_expectation/environment.computeExpectation(),1)
-    #@+node:gcross.20111107123047.1390: *4* test_compressConnectionBetweenSideAndCounterClockwiseCorner_keep_all
+    # }}}
+
     @with_checker(number_of_calls=10)
-    def test_compressConnectionBetweenSideAndCounterClockwiseCorner_threshold_zero(self,
+    def test_compressConnectionBetweenSideAndCounterClockwiseCorner_threshold_zero(self, # {{{
         direction = irange(0,3),
     ):
         environment = randomExpectationEnvironment()
@@ -440,9 +463,10 @@ class TestExpectationEnvironment(TestCase):
         self.assertLessEqual(environment.sides[direction].counterclockwise_dimension,old_connection_dimension)
         self.assertAlmostEqual(old_normalization/environment.computeNormalization(),1)
         self.assertAlmostEqual(old_expectation/environment.computeExpectation(),1)
-    #@+node:gcross.20111107123047.1394: *4* test_compressConnectionBetweenSideAndCounterClockwiseCorner_keep_some
+    # }}}
+
     @with_checker(number_of_calls=10)
-    def test_compressConnectionBetweenSideAndCounterClockwiseCorner_keep_some(self,
+    def test_compressConnectionBetweenSideAndCounterClockwiseCorner_keep_some(self, # {{{
         direction = irange(0,3),
     ):
         environment = randomExpectationEnvironment()
@@ -462,9 +486,10 @@ class TestExpectationEnvironment(TestCase):
         self.assertEqual(number_to_keep,environment.corners[direction].clockwise_dimension)
         environment.computeNormalization()
         environment.computeExpectation()
-    #@+node:gcross.20111107123047.1392: *4* test_compressConnectionBetweenSideAndCounterClockwiseCorner_threshold_zero
+    # }}}
+
     @with_checker(number_of_calls=10)
-    def test_compressConnectionBetweenSideAndCounterClockwiseCorner_threshold_zero(self,
+    def test_compressConnectionBetweenSideAndCounterClockwiseCorner_threshold_zero(self, # {{{
         direction = irange(0,3),
     ):
         environment = randomExpectationEnvironment()
@@ -477,9 +502,10 @@ class TestExpectationEnvironment(TestCase):
         self.assertLessEqual(environment.sides[direction].counterclockwise_dimension,old_connection_dimension)
         self.assertAlmostEqual(old_normalization/environment.computeNormalization(),1)
         self.assertAlmostEqual(old_expectation/environment.computeExpectation(),1)
-    #@+node:gcross.20111107154810.1388: *4* test_compressCorner_keep_all
+    # }}}
+
     @with_checker(number_of_calls=10)
-    def test_compressCorner_keep_all(self,
+    def test_compressCorner_keep_all(self, # {{{
         direction = irange(0,3),
     ):
         environment = randomExpectationEnvironment()
@@ -490,18 +516,20 @@ class TestExpectationEnvironment(TestCase):
         self.assertLessEqual(environment.corners[direction].physical_dimension,old_physical_dimension)
         self.assertAlmostEqual(old_normalization/environment.computeNormalization(),1)
         self.assertAlmostEqual(old_expectation/environment.computeExpectation(),1)
-    #@+node:gcross.20111107154810.1390: *4* test_compressCorner_keep_some
+    # }}}
+
     @with_checker(number_of_calls=10)
-    def test_compressCorner_keep_some(self,
+    def test_compressCorner_keep_some(self, # {{{
         direction = irange(0,3),
     ):
         environment = randomExpectationEnvironment()
         number_to_keep = randint(1,product(withoutIndex(environment.corners[direction].dimensions(),StateCornerSite.physical_index)))
         environment.compressCorner(direction,keep=lambda x: min(number_to_keep,len(x)))
         self.assertLessEqual(environment.corners[direction].physical_dimension,number_to_keep)
-    #@+node:gcross.20111107154810.1392: *4* test_compressCorner_threshold_zero
+    # }}}
+
     @with_checker(number_of_calls=10)
-    def test_compressCorner_threshold_zero(self,
+    def test_compressCorner_threshold_zero(self, # {{{
         direction = irange(0,3),
     ):
         environment = randomExpectationEnvironment()
@@ -512,9 +540,10 @@ class TestExpectationEnvironment(TestCase):
         self.assertLessEqual(environment.corners[direction].physical_dimension,old_physical_dimension)
         self.assertAlmostEqual(old_normalization/environment.computeNormalization(),1)
         self.assertAlmostEqual(old_expectation/environment.computeExpectation(),1)
-    #@+node:gcross.20111107154810.1398: *4* test_compressSide_keep_all
+    # }}}
+
     @with_checker(number_of_calls=10)
-    def test_compressSide_keep_all(self,
+    def test_compressSide_keep_all(self, # {{{
         direction = irange(0,3),
     ):
         environment = randomExpectationEnvironment()
@@ -525,18 +554,20 @@ class TestExpectationEnvironment(TestCase):
         self.assertLessEqual(environment.sides[direction].physical_dimension,old_physical_dimension)
         self.assertAlmostEqual(old_normalization/environment.computeNormalization(),1)
         self.assertAlmostEqual(old_expectation/environment.computeExpectation(),1)
-    #@+node:gcross.20111107154810.1400: *4* test_compressSide_keep_some
+    # }}}
+
     @with_checker(number_of_calls=10)
-    def test_compressSide_keep_some(self,
+    def test_compressSide_keep_some(self, # {{{
         direction = irange(0,3),
     ):
         environment = randomExpectationEnvironment()
         number_to_keep = randint(1,product(withoutIndex(environment.sides[direction].dimensions(),StateSideSite.physical_index)))
         environment.compressSide(direction,keep=lambda x: min(number_to_keep,len(x)))
         self.assertLessEqual(environment.sides[direction].physical_dimension,number_to_keep)
-    #@+node:gcross.20111107154810.1402: *4* test_compressSide_threshold_zero
+    # }}}
+
     @with_checker(number_of_calls=10)
-    def test_compressSide_threshold_zero(self,
+    def test_compressSide_threshold_zero(self, # {{{
         direction = irange(0,3),
     ):
         environment = randomExpectationEnvironment()
@@ -547,7 +578,9 @@ class TestExpectationEnvironment(TestCase):
         self.assertLessEqual(environment.sides[direction].physical_dimension,old_physical_dimension)
         self.assertAlmostEqual(old_normalization/environment.computeNormalization(),1)
         self.assertAlmostEqual(old_expectation/environment.computeExpectation(),1)
-    #@+node:gcross.20111103170337.1403: *4* test_computeExpectation_random
+    # }}}
+
+    # test computeExpectation using random data {{{
     @prependContractor(
         (['S','O','S*']
         +['S{}'.format(i) for i in range(4)]
@@ -593,10 +626,13 @@ class TestExpectationEnvironment(TestCase):
             ))/environment.computeNormalization(),
             environment.computeExpectation(),
         )
-    #@+node:gcross.20111103170337.1401: *4* test_computeExpectation_trivial
-    def test_computeNormalization_trivial(self):
+    # }}}
+
+    def test_computeNormalization_trivial(self): # {{{
         self.assertAlmostEqual(ExpectationEnvironment.trivial().computeExpectation(),1)
-    #@+node:gcross.20111103170337.1399: *4* test_computeExpectationMatrix_random
+    # }}}
+
+    # test computeExpectationMatrix using random data {{{
     @prependContractor(
         (['O']
         +['S{}'.format(i) for i in range(4)]
@@ -630,9 +666,9 @@ class TestExpectationEnvironment(TestCase):
             )),
             environment.computeExpectationMatrix(),
         )
-    #@+node:gcross.20111103170337.1396: *4* test_computeExpectationMatrix_trivial
-    def test_computeExpectationMatrix_trivial(self):
+    # }}}
+
+    def test_computeExpectationMatrix_trivial(self): # {{{
         self.assertAllClose(ExpectationEnvironment.trivial().computeExpectationMatrix(),identity(1))
-    #@-others
-#@-others
-#@-leo
+    # }}}
+# }}}

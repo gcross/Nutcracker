@@ -1,31 +1,28 @@
-#@+leo-ver=5-thin
-#@+node:gcross.20111109104457.1804: * @file test_1d_infinite_chain.py
-#@+<< Imports >>
-#@+node:gcross.20111109104457.1805: ** << Imports >>
+# Imports {{{
 from . import *
 from .._1d.enumerations import *
 from .._1d.infinite.chains import *
 from .._1d.infinite.environment import *
 from .._1d.tensors import *
 from ..qubit import *
-#@-<< Imports >>
+# }}}
 
-#@+others
-#@+node:gcross.20111109104457.1811: ** Functions
-#@+node:gcross.20111109104457.1812: *3* randomChain
+# Helper functions {{{
+
 def randomChain(cls=InfiniteEnvironment):
     return cls.random(
         randint(2,4),
         randint(2,4),
         randint(2,4),
     )
-#@+node:gcross.20111109104457.1806: ** Tests
-#@+node:gcross.20111110144828.1736: *3* ExpectationBehaviour
-class TestExpectationBehaviour(TestCase):
-    #@+others
-    #@+node:gcross.20111110150346.1736: *4* test_qubit_magnetic_field_on_random_product_state
+
+# }}}
+
+# Tests {{{
+
+class TestExpectationBehaviour(TestCase): # {{{
     @with_checker
-    def test_qubit_magnetic_field_on_random_product_state(self,
+    def test_qubit_magnetic_field_on_random_product_state(self, # {{{
         contractions = [(Qubit,Direction)],
     ):
         environment = InfiniteEnvironment(OperatorChain.buildMagneticField(Pauli.Z))
@@ -39,18 +36,20 @@ class TestExpectationBehaviour(TestCase):
             else:
                 correct_expectation -= 1
         self.assertEqual(environment.computeExpectation(),correct_expectation)
-    #@+node:gcross.20111110233742.1823: *4* test_qubit_magnetic_field_on_W_state
+    # }}}
+
     @with_checker
-    def test_qubit_magnetic_field_on_W_state(self,
+    def test_qubit_magnetic_field_on_W_state(self, # {{{
         contractions = [Direction],
     ):
         environment = InfiniteEnvironment(OperatorChain.buildMagneticField(Pauli.Z))
         for direction in contractions:
             environment.normalizeAndContract(direction)
         self.assertEqual(environment.computeExpectation(),len(contractions)+1)
-    #@+node:gcross.20111110233742.1816: *4* test_qubit_spin_coupling_field_on_all_up_state
+    # }}}
+
     @with_checker
-    def test_qubit_spin_coupling_field_on_all_up_state(self,
+    def test_qubit_spin_coupling_field_on_all_up_state(self, # {{{
         contractions = [Direction],
     ):
         environment = InfiniteEnvironment(
@@ -60,9 +59,10 @@ class TestExpectationBehaviour(TestCase):
         for direction in contractions:
             environment.normalizeAndContract(direction)
         self.assertEqual(environment.computeExpectation(),-len(contractions))
-    #@+node:gcross.20111110233742.1818: *4* test_qubit_spin_coupling_field_on_W_state
+    # }}}
+
     @with_checker
-    def test_qubit_spin_coupling_field_on_W_state(self,
+    def test_qubit_spin_coupling_field_on_W_state(self, # {{{
         contractions = [Direction],
     ):
         environment = InfiniteEnvironment(
@@ -72,9 +72,10 @@ class TestExpectationBehaviour(TestCase):
         for direction in contractions:
             environment.dangerouslyContractWithoutNormalizing(direction)
         self.assertEqual(environment.computeExpectation(),-(len(contractions)-1)*(len(contractions)-2)+2)
-    #@+node:gcross.20111110233742.1821: *4* test_W_state_normalization
+    # }}}
+
     @with_checker
-    def test_W_state_normalization(self,
+    def test_W_state_normalization(self, # {{{
         contractions = [Direction],
     ):
         environment = InfiniteEnvironment(
@@ -84,11 +85,12 @@ class TestExpectationBehaviour(TestCase):
         for direction in contractions:
             environment.dangerouslyContractWithoutNormalizing(direction)
         self.assertEqual(environment.computeExpectation(),len(contractions)+1)
-    #@-others
-#@+node:gcross.20111109104457.1807: *3* InfiniteEnvironment
-class TestInfiniteEnvironment(TestCase):
-    #@+others
-    #@+node:gcross.20111109104457.1808: *4* test_normalizeAndContract
+    # }}}
+# }}}
+
+
+class TestInfiniteEnvironment(TestCase): # {{{
+    # test normalizeAndContract {{{
     @prependContractor(
         ['L','R','S1','S1*','S2','S2*','O1','O2'],
         [(('L',LeftExpectationBoundary.state_index),('S1',StateSite.left_index))
@@ -123,6 +125,7 @@ class TestInfiniteEnvironment(TestCase):
         )
         chain.normalizeAndContract(direction)
         self.assertAlmostEqual(chain.computeExpectation(),correct_expectation)
-    #@-others
-#@-others
-#@-leo
+    # }}}
+# }}}
+
+# }}}

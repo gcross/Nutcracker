@@ -1,19 +1,12 @@
-#@+leo-ver=5-thin
-#@+node:gcross.20111107131531.1288: * @file tensors.py
-#@+<< Imports >>
-#@+node:gcross.20111107131531.1304: ** << Imports >>
+# Imports {{{
 from numpy import array, complex128, multiply, ndarray, product, zeros
 
 from .utils import basisVector, crand
-#@-<< Imports >>
+# }}}
 
-#@+others
-#@+node:gcross.20111107131531.1291: ** Classes
-#@+node:gcross.20111107131531.1292: *3* Metaclasses
-#@+node:gcross.20111107131531.1295: *4* MetaTensor
-class MetaTensor(type):
-    #@+others
-    #@+node:gcross.20111107131531.1296: *5* __init__
+# Metaclasses {{{ 
+
+class MetaTensor(type): # {{{
     def __new__(cls,class_name,bases,data):
         conjugate_suffix = "_conjugate"
         conjugate_suffix_length = len(conjugate_suffix)
@@ -33,11 +26,9 @@ class MetaTensor(type):
             data["_conjugated_dimension_arguments"] = conjugated_dimension_arguments
             data["number_of_dimensions"] = len(data["dimension_names"])
         return type.__new__(cls,class_name,bases,data)
-    #@-others
-#@+node:gcross.20111107131531.1310: *4* MetaSiteTensor
-class MetaSiteTensor(MetaTensor):
-    #@+others
-    #@+node:gcross.20111107131531.1311: *5* __init__
+# }}}
+
+class MetaSiteTensor(MetaTensor): # {{{
     def __new__(cls,class_name,bases,data):
         if "dimension_names" in data:
             physical_indices = []
@@ -64,14 +55,16 @@ class MetaSiteTensor(MetaTensor):
                 dimensions.index("physical") < dimensions.index("physical_conjugate")
             )
         return MetaTensor.__new__(cls,class_name,bases,data)
-    #@-others
-#@+node:gcross.20111107131531.1297: *3* Base classes
-#@+node:gcross.20111107131531.1301: *4* Tensor
-class Tensor:
+# }}}
+
+#}}}
+
+# Base Classes {{{
+
+class Tensor:# {{{
     __metaclass__ = MetaTensor
-    #@+others
-    #@+node:gcross.20111107131531.1302: *5* __init__
-    def __init__(self,*args,**keywords):
+    
+    def __init__(self,*args,**keywords): # {{{
         if not ((len(args) == 1) ^ (len(keywords) > 0)):
             raise ValueError("constructor must be given either a reference to the data or the dimensions of the tensor")
         if len(args) == 1:
@@ -99,21 +92,25 @@ class Tensor:
                 except KeyError:
                     raise ValueError("missing a value for dimension {}".format(name))
             self.data = ndarray(shape,dtype=complex128)
-    #@+node:gcross.20111109104457.1800: *5* dimension
-    def dimension(self,index):
+    # }}}
+    
+    def dimension(self,index): # {{{
         return self.dimensions()[index]
-    #@+node:gcross.20111109104457.1799: *5* dimensions
-    def dimensions(self):
+    # }}}
+    
+    def dimensions(self): # {{{
         return self.data.shape
-    #@+node:gcross.20111108100704.1378: *5* filled
+    # }}}
+    
     @classmethod
-    def filled(cls,fill,**keywords):
+    def filled(cls,fill,**keywords): # {{{
         self = cls(**keywords)
         self.data[...] = fill
         return self
-    #@+node:gcross.20111109104457.1891: *5* formFromOuterProduct
+    # }}}
+    
     @classmethod
-    def formFromOuterProduct(cls,**keywords):
+    def formFromOuterProduct(cls,**keywords): # {{{
         for name in cls.dimension_names:
             if name.endswith("_conjugate"):
                 if name not in keywords:
@@ -125,49 +122,59 @@ class Tensor:
             indices[name] = index
         data.transpose([indices[name] for name in cls.dimension_names])
         return cls(data)
-    #@+node:gcross.20111109104457.1795: *5* indexForName
+    # }}}
+    
     @classmethod
-    def indexForName(cls,name):
+    def indexForName(cls,name): # {{{
         return cls.dimension_names.index(name)
-    #@+node:gcross.20111108100704.1377: *5* random
+    # }}}
+    
     @classmethod
-    def random(cls,**keywords):
+    def random(cls,**keywords): # {{{
         self = cls(**keywords)
         self.data[...] = crand(*self.dimensions())
         return self
-    #@+node:gcross.20111108100704.1446: *5* size
-    def size(self):
+    # }}}
+    
+    def size(self): # {{{
         return product([getattr(self,name + "_dimension") for name in self.dimension_names])
-    #@+node:gcross.20111107131531.1303: *5* trivial
+    # }}}
+    
     @classmethod
-    def trivial(cls):
+    def trivial(cls): # {{{
         return cls.filled(1,**{name: 1 for name in cls._dimension_arguments})
-    #@-others
-#@+node:gcross.20111107131531.1321: *4* SiteTensor
-class SiteTensor(Tensor):
+    # }}}
+
+# }}}
+
+class SiteTensor(Tensor): # {{{
     __metaclass__ = MetaSiteTensor
-    #@+others
-    #@+node:gcross.20111107131531.1322: *5* bandwidthDimension
-    def bandwidthDimension(self,direction):
+
+    def bandwidthDimension(self,direction): # {{{
         return self.dimension(self.bandwidthIndex(direction))
-    #@+node:gcross.20111107131531.1323: *5* bandwidthDimensions
-    def bandwidthDimensions(self):
+    # }}}
+
+    def bandwidthDimensions(self): # {{{
         return [self.dimension(i) for i in self.bandwidthIndices()]
-    #@+node:gcross.20111107131531.1324: *5* bandwidthIndex
+    # }}}
+
     @classmethod
-    def bandwidthIndex(self,direction):
+    def bandwidthIndex(self,direction): # {{{
         return self.bandwidth_dimension_indices[direction]
-    #@+node:gcross.20111109104457.1648: *5* bandwidthIndexForName
+    # }}}
+
     @classmethod
-    def bandwidthIndexForName(cls,name):
+    def bandwidthIndexForName(cls,name): # {{{
         return cls.bandwidthIndex(cls.bandwidth_dimension_names.index(name))
-    #@+node:gcross.20111107131531.1325: *5* bandwidthIndices
+    # }}}
+
     @classmethod
-    def bandwidthIndices(self):
+    def bandwidthIndices(self): # {{{
         return self.bandwidth_dimension_indices
-    #@+node:gcross.20111109104457.1639: *5* build
+    # }}}
+
     @classmethod
-    def build(cls,bandwidth_dimensions,components):
+    def build(cls,bandwidth_dimensions,components): # {{{
         first_component_value = components[0][1]
         selector = [None]*cls.number_of_dimensions
         selector_indices = [cls.bandwidthIndexForName(name) for (name,_) in bandwidth_dimensions]
@@ -184,37 +191,43 @@ class SiteTensor(Tensor):
                 selector[selector_index] = index
             data[tuple(selector)] += component_value if not cls.physical_indices_are_transposed else component_value.transpose()
         return self
-    #@+node:gcross.20111107131531.1326: *5* physicalDimension
-    def physicalDimension(self,direction):
+    # }}}
+
+    def physicalDimension(self,direction): # {{{
         return self.dimension(self.physicalIndex(direction))
-    #@+node:gcross.20111107131531.1327: *5* physicalDimensions
-    def physicalDimensions(self):
+    # }}}
+
+    def physicalDimensions(self): # {{{
         return [self.dimension(i) for i in self.physicalIndices()]
-    #@+node:gcross.20111107131531.1328: *5* physicalIndex
+    # }}}
+
     @classmethod
-    def physicalIndex(self,direction):
+    def physicalIndex(self,direction): # {{{
         return self.physical_dimension_indices[direction]
-    #@+node:gcross.20111107131531.1329: *5* physicalIndices
+    # }}}
+
     @classmethod
-    def physicalIndices(self):
+    def physicalIndices(self): # {{{
         return self.physical_dimension_indices
-    #@+node:gcross.20111109104457.1640: *5* simple
+    # }}}
+
     @classmethod
-    def simple(cls,component):
+    def simple(cls,component): # {{{
         return cls.build([(name,1) for name in cls.bandwidth_dimension_names],[((0,) * cls.number_of_bandwidth_dimensions,component)])
-    #@-others
-#@+node:gcross.20111109104457.1792: *4* StateSiteTensor
-class StateSiteTensor(SiteTensor):
-    #@+others
-    #@+node:gcross.20111109104457.1791: *5* simpleObservation
+    # }}}
+
+# }}}
+
+class StateSiteTensor(SiteTensor): # {{{
+    """Hello, world"""
     @classmethod
     def simpleObservation(cls,physical_dimension,observation):
         return cls.simple(basisVector(physical_dimension,observation))
-    #@-others
-#@-others
+# }}}
 
-#@+<< Exports >>
-#@+node:gcross.20111107131531.1305: ** << Exports >>
+# }}}
+
+# Exports {{{
 __all__ = [
     "MetaTensor",
     "MetaSiteTensor",
@@ -223,5 +236,4 @@ __all__ = [
     "SiteTensor",
     "StateSiteTensor",
 ]
-#@-<< Exports >>
-#@-leo
+# }}}

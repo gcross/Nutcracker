@@ -1,23 +1,15 @@
-#@+leo-ver=5-thin
-#@+node:gcross.20111109104457.1643: * @file test_tensors.py
-#@+<< Imports >>
-#@+node:gcross.20111109104457.1644: ** << Imports >>
+# Imports {{{
 from . import *
 from ..tensors import SiteTensor
 
 from copy import copy
 from numpy import complex128, zeros
 from random import randint,shuffle
-#@-<< Imports >>
+# }}}
 
-#@+others
-#@+node:gcross.20111109104457.1645: ** Tests
-#@+node:gcross.20111109104457.1646: *3* SiteTensor
-class TestSiteTensor(TestCase):
-    #@+others
-    #@+node:gcross.20111109104457.1647: *4* test_build
+class TestSiteTensor(TestCase): # {{{
     @with_checker
-    def test_build(self,
+    def test_build(self, # {{{
         number_of_physical_dimensions=irange(0,2),
         number_of_bandwidth_dimensions=irange(0,4),
         number_of_components = irange(1,10)
@@ -48,9 +40,10 @@ class TestSiteTensor(TestCase):
         tensor = MySiteTensor.build(zip(bandwidth_dimension_names,bandwidth_dimensions),components)
         data = tensor.data.transpose(inverse_order)
         self.assertAllClose(data,correct_data)
-    #@+node:gcross.20111109104457.1649: *4* test_simple
+    # }}}
+
     @with_checker
-    def test_simple(self,
+    def test_simple(self, # {{{
         number_of_physical_dimensions=irange(0,2),
         number_of_bandwidth_dimensions=irange(0,4)
     ): 
@@ -80,6 +73,5 @@ class TestSiteTensor(TestCase):
         tensor = MySiteTensor.simple(components[0][1])
         data = tensor.data.transpose(inverse_order)
         self.assertAllClose(data,correct_data)
-    #@-others
-#@-others
-#@-leo
+    # }}}
+# }}}

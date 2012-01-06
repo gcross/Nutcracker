@@ -1,7 +1,4 @@
-#@+leo-ver=5-thin
-#@+node:gcross.20111107123726.3138: * @file test_core.py
-#@+<< Import needed modules >>
-#@+node:gcross.20111107123726.3139: ** << Import needed modules >>
+# Imports {{{
 import unittest
 from paycheck import *
 from numpy import array, zeros, all, double, tensordot, multiply, complex128, allclose, ones, diag, identity, dot, argmin, rank, set_printoptions
@@ -14,25 +11,20 @@ import __builtin__
 import nutcracker.core as core
 
 from . import *
-#@-<< Import needed modules >>
+# }}}
 
-#@+others
-#@+node:gcross.20111107123726.3140: ** Functions
-#@+node:gcross.20111107123726.3141: *3* Macro building functions
-#@+at
+# Helper functions {{{
+
+# Macro building functions {{{
+
 # These routines build macros to perform tensor contractions.  They do this
 # by construction a string of Python code which performs the contraction,
 # and then compiling the code into a function.
-#@@c
 
-#@+others
-#@+node:gcross.20111107123726.3142: *4* n2l
-#@+at
 # Utility function converting numbers to letters.
-#@@c
 n2l = map(chr,range(ord('A'),ord('Z')+1))
-#@+node:gcross.20111107123726.3143: *4* make_contractor
-def make_contractor(tensor_index_labels,index_join_pairs,result_index_labels,name="f"):    # pre-process parameters
+
+def make_contractor(tensor_index_labels,index_join_pairs,result_index_labels,name="f"): # {{{   # pre-process parameters
     tensor_index_labels = list(map(list,tensor_index_labels))
     index_join_pairs = list(index_join_pairs)
     result_index_labels = list([list(index_group) if hasattr(index_group,"__getitem__") else [index_group] for index_group in result_index_labels])
@@ -41,14 +33,10 @@ def make_contractor(tensor_index_labels,index_join_pairs,result_index_labels,nam
 
     function_definition_statements = ["def %s(%s):" % (name,",".join(n2l[:len(tensor_index_labels)]))]
 
-    #@+<< def build_statements >>
-    #@+node:gcross.20111107123726.3144: *5* << def build_statements >>
-    def build_statements(tensor_index_labels,index_join_pairs,result_index_labels):
-    #@+at
+    def build_statements(tensor_index_labels,index_join_pairs,result_index_labels): # {{{
     # This routine recursively builds a list of statements which performs the full tensor contraction.
     # 
     # First, if there is only one tensor left, then transpose and reshape it to match the result_index_labels.
-    #@@c
         if len(tensor_index_labels) == 1:
             if len(result_index_labels) == 0:
                 return ["return A"]
@@ -60,9 +48,7 @@ def make_contractor(tensor_index_labels,index_join_pairs,result_index_labels,nam
                 assert len(final_index_labels) == len(transposed_indices)
                 new_shape = ",".join(["(%s)" % "*".join(["shape[%i]"%index for index in index_group]) for index_group in result_indices])     
                 return ["shape=A.shape","return A.transpose(%s).reshape(%s)" % (transposed_indices,new_shape)]
-    #@+at
     # Second, if all joins have finished, then take outer products to combine all remaining tensors into one.
-    #@@c
         elif len(index_join_pairs) == 0:
             if tensor_index_labels[-1] is None:
                 return build_statements(tensor_index_labels[:-1],index_join_pairs,result_index_labels)
@@ -73,15 +59,10 @@ def make_contractor(tensor_index_labels,index_join_pairs,result_index_labels,nam
                 v = n2l[len(tensor_index_labels)-1]
                 tensor_index_labels[0] += tensor_index_labels[-1]
                 return ["A = multiply.outer(A,%s)" % v, "del %s" % v] + build_statements(tensor_index_labels[:-1],index_join_pairs,result_index_labels)
-    #@+at
     # Otherwise, do the first join, walking through index_join_pairs to find any other pairs which connect the same two tensors.
-    #@@c
         else:
-            #@+<< Search for all joins between these tensors >>
-            #@+node:gcross.20111107123726.3145: *6* << Search for all joins between these tensors >>
-            #@+at
+            # Search for all joins beween these tensors {{{
             # This function searches for the tensors which are joined, and reorders the indices in the join so that the index corresponding to the tensor appearing first in the list of tensors appears first in the join.
-            #@@c
             def find_tensor_ids(join):
                 reordered_join = [None,None]
                 tensor_ids = [0,0]
@@ -130,11 +111,8 @@ def make_contractor(tensor_index_labels,index_join_pairs,result_index_labels,nam
                     join_indices.append(i)
                     for j in xrange(2):
                         indices[j].append(reordered_join[j])
-
-            #@-<< Search for all joins between these tensors >>
-
-            #@+<< Build tensor contraction statements >>
-            #@+node:gcross.20111107123726.3146: *6* << Build tensor contraction statements >>
+            # }}}
+            # Build tensor contraction statements {{{
             tensor_vars = [n2l[id] for id in tensor_ids]
 
             statements = [
@@ -144,10 +122,8 @@ def make_contractor(tensor_index_labels,index_join_pairs,result_index_labels,nam
                 "except ValueError:",
                 "   raise ValueError('indices %%s do not match for tensor %%i, shape %%s, and tensor %%i, shape %%s.' %% (%s,%i,%s.shape,%i,%s.shape))" % (indices,tensor_ids[0],tensor_vars[0],tensor_ids[1],tensor_vars[1])
             ]
-            #@-<< Build tensor contraction statements >>
-
-            #@+<< Delete joins from list and update tensor specifications >>
-            #@+node:gcross.20111107123726.3147: *6* << Delete joins from list and update tensor specifications >>
+            # }}}
+            # Delete joins from list and update tensor specification {{{
             join_indices.reverse()
             for join_index in join_indices:
                 del index_join_pairs[join_index]
@@ -164,10 +140,10 @@ def make_contractor(tensor_index_labels,index_join_pairs,result_index_labels,nam
 
             tensor_index_labels[tensor_ids[0]] = new_tensor_index_labels_0+new_tensor_index_labels_1
             tensor_index_labels[tensor_ids[1]] = None
-            #@-<< Delete joins from list and update tensor specifications >>
 
             return statements + build_statements(tensor_index_labels,index_join_pairs,result_index_labels)
-    #@-<< def build_statements >>
+            # }}}
+    # }}}
 
     function_definition_statements += ["\t" + statement for statement in build_statements(tensor_index_labels,index_join_pairs,result_index_labels)]
 
@@ -181,8 +157,9 @@ def make_contractor(tensor_index_labels,index_join_pairs,result_index_labels,nam
     f = f_locals[name]
     f.source = function_definition
     return f
-#@+node:gcross.20111107123726.3148: *4* make_contractor_from_implicit_joins
-def make_contractor_from_implicit_joins(tensor_index_labels,result_index_labels,name="f"):
+# }}}
+
+def make_contractor_from_implicit_joins(tensor_index_labels,result_index_labels,name="f"): # {{{
     tensor_index_labels = list(map(list,tensor_index_labels))
     found_indices = {}
     index_join_pairs = []
@@ -202,12 +179,15 @@ def make_contractor_from_implicit_joins(tensor_index_labels,result_index_labels,
             else:
                 found_indices[index] = i
     return make_contractor(tensor_index_labels,index_join_pairs,result_index_labels,name)
-#@-others
-#@+node:gcross.20111107123726.3149: *3* crand
-def crand(*shape):
+# }}}
+
+# }}}
+
+def crand(*shape): # {{{
     return rand(*shape)*2-1+rand(*shape)*2j-1j
-#@+node:gcross.20111107123726.3150: *3* generate_random_sparse_matrices
-def generate_random_sparse_matrices(cl,cr,d,symmetric=False):
+# }}}
+
+def generate_random_sparse_matrices(cl,cr,d,symmetric=False): # {{{
     sparse_operator_indices = array([(randint(1,cl),randint(1,cr)) for _ in xrange(randint(2,cl+cr))]).transpose()
     sparse_operator_matrices = crand(d,d,sparse_operator_indices.shape[-1])
     if symmetric:
@@ -216,8 +196,9 @@ def generate_random_sparse_matrices(cl,cr,d,symmetric=False):
     for (index1,index2),matrix in zip(sparse_operator_indices.transpose(),sparse_operator_matrices.transpose(2,0,1)):
         operator_site_tensor[...,index2-1,index1-1] += matrix
     return sparse_operator_indices, sparse_operator_matrices, operator_site_tensor
-#@+node:gcross.20111107123726.3151: *3* form_contractor
-def form_contractor(edges,input_tensors,output_tensor):
+# }}}
+
+def form_contractor(edges,input_tensors,output_tensor): # {{{
     e = {}
 
     for index, (v1, v2) in enumerate(edges):
@@ -233,11 +214,15 @@ def form_contractor(edges,input_tensors,output_tensor):
         [[e[input_name+str(index)] for index in xrange(1,input_size+1)] for (input_name,input_size) in input_tensors],
         [e[output_name+str(index)] for index in xrange(1,output_size+1)],
     )
-#@+node:gcross.20111107123726.3157: ** Tests
-#@+node:gcross.20111107123726.3158: *3* Contractors
-#@+others
-#@+node:gcross.20111107123726.3177: *4* contract_matrix_left
-class contract_matrix_left(TestCase):
+# }}}
+
+# }}}
+
+# Tests {{{
+
+#   Contractors {{{
+
+class contract_matrix_left(TestCase): # {{{
 
     correct_contractor = staticmethod(form_contractor([
         ("L1","M2"),
@@ -269,8 +254,6 @@ class contract_matrix_left(TestCase):
         )
         self.assertEqual(actual_output_tensor.shape,correct_output_tensor.shape)
         self.assertAllClose(actual_output_tensor,correct_output_tensor)
-#@+node:gcross.20111107123726.3163: *4* contract_sos
-#@+node:gcross.20111107123726.3165: *5* contract_sos_right_stage_1
 contract_sos_right_stage_1_correct_contractor = form_contractor([
     ("R1","S*1"),
     ("R3","O4"),
@@ -282,8 +265,9 @@ contract_sos_right_stage_1_correct_contractor = form_contractor([
     ("S*",3),
 ], ("O",4)
 )
+# }}}
 
-class contract_sos_right_stage_1(TestCase):
+class contract_sos_right_stage_1(TestCase): # {{{
 
     @with_checker(number_of_calls=10)
     def test_agreement_with_contractor(self,
@@ -303,7 +287,6 @@ class contract_sos_right_stage_1(TestCase):
             state_site_tensor.conj(),
         )
         self.assertAllClose(actual_output_tensor,correct_output_tensor)
-#@+node:gcross.20111107123726.3166: *5* contract_sos_right_stage_2a
 contract_sos_right_stage_2a_correct_contractor = form_contractor([
     ("O2","I2"),
     ("O1","S3"),
@@ -315,7 +298,9 @@ contract_sos_right_stage_2a_correct_contractor = form_contractor([
 ], ("I",3)
 )
 
-class contract_sos_right_stage_2a(TestCase):
+# }}}
+
+class contract_sos_right_stage_2a(TestCase): # {{{
 
     @with_checker(number_of_calls=10)
     def test_agreement_with_contractor(self,
@@ -335,7 +320,6 @@ class contract_sos_right_stage_2a(TestCase):
             state_site_tensor
         )
         self.assertAllClose(actual_output_tensor,correct_output_tensor)
-#@+node:gcross.20111107123726.3167: *5* contract_sos_right_stage_2b
 contract_sos_right_stage_2b_correct_contractor = form_contractor([
     ("A3","B3"),
     ("A2","B2"),
@@ -347,7 +331,9 @@ contract_sos_right_stage_2b_correct_contractor = form_contractor([
 ], ("C",2)
 )
 
-class contract_sos_right_stage_2b(TestCase):
+# }}}
+
+class contract_sos_right_stage_2b(TestCase): # {{{
 
     @with_checker(number_of_calls=10)
     def test_agreement_with_contractor(self,
@@ -361,7 +347,6 @@ class contract_sos_right_stage_2b(TestCase):
         core.contract_sos_right_stage_2b(A,B,actual_output_tensor)
         correct_output_tensor = contract_sos_right_stage_2b_correct_contractor(A,B)
         self.assertAllClose(actual_output_tensor,correct_output_tensor)
-#@+node:gcross.20111107123726.3168: *5* contract_sos_right_stage_2
 contract_sos_right_stage_2_correct_contractor = form_contractor([
     ("I1","R1"),
     ("I2","O2"),
@@ -377,7 +362,9 @@ contract_sos_right_stage_2_correct_contractor = form_contractor([
 ], ("R",3)
 )
 
-class contract_sos_right_stage_2(TestCase):
+# }}}
+
+class contract_sos_right_stage_2(TestCase): # {{{
 
     @with_checker(number_of_calls=10)
     def test_agreement_with_contractor(self,
@@ -402,8 +389,6 @@ class contract_sos_right_stage_2(TestCase):
             state_site_tensor
         )
         self.assertAllClose(actual_output_tensor,correct_output_tensor)
-#@+node:gcross.20111107123726.3170: *4* contract_ss
-#@+node:gcross.20111107123726.3173: *5* form_overlap_vector
 form_overlap_vector_correct_contractor = form_contractor([
     ("R1","O3"),
     ("R2","N1"),
@@ -417,7 +402,9 @@ form_overlap_vector_correct_contractor = form_contractor([
 ], ("N",3)
 )
 
-class form_overlap_vector(TestCase):
+# }}}
+
+class form_overlap_vector(TestCase): # {{{
 
     @with_checker(number_of_calls=10)
     def test_agreement_with_contractor(self,
@@ -441,8 +428,9 @@ class form_overlap_vector(TestCase):
             old_state_site_tensor,
         )
         self.assertAllClose(actual_output_tensor,correct_output_tensor)
-#@+node:gcross.20111107123726.3176: *4* extend_state_vector_fragment
-class extend_state_vector_fragment(TestCase):
+# }}}
+
+class extend_state_vector_fragment(TestCase): # {{{
 
     correct_contractor = staticmethod(form_contractor([
         ("F2","N3"),
@@ -473,8 +461,6 @@ class extend_state_vector_fragment(TestCase):
             state_site_tensor,
         )
         self.assertAllClose(actual_output_tensor,correct_output_tensor)
-#@+node:gcross.20111107123726.3159: *4* iteration
-#@+node:gcross.20111107123726.3160: *5* iteration_stage_1
 iteration_stage_1_correct_contractor = form_contractor([
     ("L3","O4"),
     ("L2","I4"),
@@ -487,8 +473,9 @@ iteration_stage_1_correct_contractor = form_contractor([
     ("O",4),
 ], ("I",5)
 )
+# }}}
 
-class iteration_stage_1(TestCase):
+class iteration_stage_1(TestCase): # {{{
 
     @with_checker(number_of_calls=10)
     def test_agreement_with_contractor(self,
@@ -502,7 +489,6 @@ class iteration_stage_1(TestCase):
         actual_output_tensor = core.iteration_stage_1(cr,left_environment,sparse_operator_indices,sparse_operator_matrices)
         correct_output_tensor = iteration_stage_1_correct_contractor(left_environment,operator_site_tensor)
         self.assertAllClose(actual_output_tensor,correct_output_tensor)
-#@+node:gcross.20111107123726.3161: *5* iteration_stage_2
 iteration_stage_2_correct_contractor = form_contractor([
     ("I4","O3"),
     ("I5","O4"),
@@ -515,8 +501,9 @@ iteration_stage_2_correct_contractor = form_contractor([
     ("S",3),
 ], ("O",4)
 )
+# }}}
 
-class iteration_stage_2(TestCase):
+class iteration_stage_2(TestCase): # {{{
 
     @with_checker(number_of_calls=10)
     def test_agreement_with_contractor(self,
@@ -530,7 +517,6 @@ class iteration_stage_2(TestCase):
         actual_output_tensor = core.iteration_stage_2(iteration_stage_1_tensor,state_site_tensor)
         correct_output_tensor = iteration_stage_2_correct_contractor(iteration_stage_1_tensor,state_site_tensor)
         self.assertAllClose(actual_output_tensor,correct_output_tensor)
-#@+node:gcross.20111107123726.3162: *5* iteration_stage_3
 iteration_stage_3_correct_contractor = form_contractor([
     ("I3","O2"),
     ("I4","O3"),
@@ -542,8 +528,9 @@ iteration_stage_3_correct_contractor = form_contractor([
     ("R",3),
 ], ("O",3)
 )
+# }}}
 
-class iteration_stage_3(TestCase):
+class iteration_stage_3(TestCase): # {{{
 
     @with_checker(number_of_calls=10)
     def test_agreement_with_contractor(self,
@@ -557,10 +544,13 @@ class iteration_stage_3(TestCase):
         actual_output_tensor = core.iteration_stage_3(iteration_stage_2_tensor,right_environment)
         correct_output_tensor = iteration_stage_3_correct_contractor(iteration_stage_2_tensor,right_environment)
         self.assertAllClose(actual_output_tensor,correct_output_tensor)
-#@-others
-#@+node:gcross.20111107123726.3191: *3* Utility Functions
-#@+node:gcross.20111107123726.3192: *4* orthogonalize_matrix_in_place
-class orthogonalize_matrix_in_place(TestCase):
+# }}}
+
+#   }}}
+
+#   Utility functions {{{
+
+class orthogonalize_matrix_in_place(TestCase): # {{{
     @with_checker
     def test_orthogonality(self,projector_length=irange(8,20),number_of_projectors=irange(1,7)):
         projector_matrix = array(crand(projector_length,number_of_projectors),order='Fortran')
@@ -580,8 +570,9 @@ class orthogonalize_matrix_in_place(TestCase):
         projector_matrix = array(dot(crand(projector_length,rank),crand(rank,number_of_projectors)),order='Fortran')
         computed_rank = core.orthogonalize_matrix_in_place(projector_matrix)
         self.assertEqual(computed_rank,rank)
-#@+node:gcross.20111107123726.3193: *4* compute_orthogonal_basis
-class compute_orthogonal_basis(TestCase):
+# }}}
+
+class compute_orthogonal_basis(TestCase): # {{{
     @with_checker
     def test_shape(self,m=irange(8,20),n=irange(1,7)):
         vectors = array(crand(m,n),order='Fortran')
@@ -612,8 +603,9 @@ class compute_orthogonal_basis(TestCase):
         vectors = array(crand(m,n),order='Fortran')
         _, basis = core.compute_orthogonal_basis(m,vectors)
         self.assertAlmostEqual(norm(dot(basis[:,n:].conj().transpose(),vectors)),0)
-#@+node:gcross.20111107123726.3196: *4* swap_inplace
-class swap_inplace(TestCase):
+# }}}
+
+class swap_inplace(TestCase): # {{{
     @with_checker
     def test_correctness(self,n=irange(1,10)):
         swaps = [randint(1,n) for _ in xrange(n)]
@@ -635,8 +627,9 @@ class swap_inplace(TestCase):
         core.swap_inplace(swaps,vector)
         core.unswap_inplace(swaps,vector)
         self.assertAllEqual(vector,correct_vector)
-#@+node:gcross.20111107123726.3197: *4* unswap_inplace
-class unswap_inplace(TestCase):
+# }}}
+
+class unswap_inplace(TestCase): # {{{
     @with_checker
     def test_correctness(self,n=irange(1,10)):
         swaps = [randint(1,n) for _ in xrange(n)]
@@ -658,8 +651,9 @@ class unswap_inplace(TestCase):
         core.unswap_inplace(swaps,vector)
         core.swap_inplace(swaps,vector)
         self.assertAllEqual(vector,correct_vector)
-#@+node:gcross.20111107123726.3198: *4* swap_matrix_inplace
-class swap_matrix_inplace(TestCase):
+# }}}
+
+class swap_matrix_inplace(TestCase): # {{{
     @with_checker
     def test_correctness(self,n=irange(2,10)):
         swaps = [randint(1,n) for _ in xrange(n)]
@@ -697,10 +691,15 @@ class swap_matrix_inplace(TestCase):
         scalar = dot(vector_1,dot(matrix,vector_2))
 
         self.assertAlmostEqual(scalar,original_scalar)
-#@+node:gcross.20111107123726.3199: *3* Projectors
-#@+node:gcross.20111107123726.3200: *4* Functions
-#@+node:gcross.20111107123726.3201: *5* generate_reflectors
-def generate_reflectors(full_space_dimension,number_of_projectors=None,overproject=False):
+# }}}
+
+#   }}}
+
+#   Projectors {{{
+
+# Helper functions {{{
+
+def generate_reflectors(full_space_dimension,number_of_projectors=None,overproject=False): # {{{
     if number_of_projectors is None:
         if overproject:
             number_of_projectors = randint(1,full_space_dimension*3/2)
@@ -711,14 +710,18 @@ def generate_reflectors(full_space_dimension,number_of_projectors=None,overproje
     rank, coefficients, swaps = core.convert_vectors_to_reflectors(reflectors)
     orthogonal_subspace_dimension = full_space_dimension - rank
     return projectors, reflectors, coefficients, swaps, orthogonal_subspace_dimension
-#@+node:gcross.20111107123726.3202: *5* generate_q
-def generate_q(full_space_dimension):
+# }}}
+
+def generate_q(full_space_dimension): # {{{
     projectors, reflectors, coefficients, swaps, orthogonal_subspace_dimension = generate_reflectors(full_space_dimension,overproject=True)
     q = core.compute_q_from_reflectors(reflectors,coefficients,swaps)
     rank = full_space_dimension - orthogonal_subspace_dimension
     return projectors.conj().transpose(), q, rank
-#@+node:gcross.20111107123726.3203: *4* compute_overlap_with_projectors
-class compute_overlap_with_projectors(TestCase):
+# }}}
+
+# }}}
+
+class compute_overlap_with_projectors(TestCase): # {{{
     @with_checker
     def test_correctness(self,full_space_dimension=irange(2,10)):
         projectors, reflectors, coefficients, swaps, orthogonal_subspace_dimension = generate_reflectors(full_space_dimension,overproject=True)
@@ -728,8 +731,9 @@ class compute_overlap_with_projectors(TestCase):
             core.compute_overlap_with_projectors(reflectors,coefficients,swaps,vector),
             norm(dot(vector,projectors))
         )
-#@+node:gcross.20111107123726.3204: *4* compute_q_from_reflectors
-class compute_q_from_reflectors(TestCase):
+# }}}
+
+class compute_q_from_reflectors(TestCase): # {{{
     @with_checker
     def test_shape(self,full_space_dimension=irange(2,10)):
         projectors, q, rank = generate_q(full_space_dimension)
@@ -755,11 +759,9 @@ class compute_q_from_reflectors(TestCase):
         projectors, q, rank = generate_q(full_space_dimension)
         subspace = q[:,rank:]
         self.assertAlmostEqual(norm(dot(projectors,subspace)),0)
+# }}}
 
-#@+node:gcross.20111107123726.3205: *4* project_into_orthogonal_space
-class project_into_orthogonal_space(TestCase):
-    #@+others
-    #@+node:gcross.20111107123726.3206: *5* test_agreement_with_multiplication_by_q
+class project_into_orthogonal_space(TestCase): # {{{
     @with_checker
     def test_agreement_with_multiplication_by_q(self,full_space_dimension=irange(2,10)):
         projectors, reflectors, coefficients, swaps, orthogonal_subspace_dimension = generate_reflectors(full_space_dimension)
@@ -769,14 +771,12 @@ class project_into_orthogonal_space(TestCase):
         correct_projected_vector = dot(vector,q)[-orthogonal_subspace_dimension:]
         actual_projected_vector = core.project_into_orthogonal_space(orthogonal_subspace_dimension,reflectors,coefficients,swaps,vector)
         self.assertAllClose(correct_projected_vector,actual_projected_vector)
-    #@+node:gcross.20111107123726.3207: *5* test_kills_projectors
     @with_checker
     def test_kills_projectors(self,full_space_dimension=irange(2,10)):
         projectors, reflectors, coefficients, swaps, orthogonal_subspace_dimension = generate_reflectors(full_space_dimension)
         for projector in projectors.transpose():
             orthogonal_space_vector = core.project_into_orthogonal_space(orthogonal_subspace_dimension,reflectors,coefficients,swaps,projector.conj())
             self.assertAlmostEqual(norm(orthogonal_space_vector),0)
-    #@+node:gcross.20111107123726.3208: *5* test_unproject_dot_project_on_arbitrary_vector
     @with_checker
     def test_unproject_dot_project_on_arbitrary_vector(self,full_space_dimension=irange(2,10)):
         projectors, reflectors, coefficients, swaps, orthogonal_subspace_dimension = generate_reflectors(full_space_dimension)
@@ -786,7 +786,6 @@ class project_into_orthogonal_space(TestCase):
                 core.project_into_orthogonal_space(orthogonal_subspace_dimension,reflectors,coefficients,swaps,crand(full_space_dimension))
             )
         self.assertVanishing(dot(vector,projectors))
-    #@+node:gcross.20111107123726.3209: *5* test_unproject_dot_project_on_orthogonal_random
     @with_checker
     def test_unproject_dot_project_on_orthogonal_random(self,full_space_dimension=irange(2,10)):
         projectors, reflectors, coefficients, swaps, orthogonal_subspace_dimension = generate_reflectors(full_space_dimension)
@@ -798,12 +797,9 @@ class project_into_orthogonal_space(TestCase):
                 core.project_into_orthogonal_space(orthogonal_subspace_dimension,reflectors,coefficients,swaps,old_vector)
             )
         self.assertAllClose(old_vector,new_vector)
-    #@-others
+# }}}
 
-#@+node:gcross.20111107123726.3210: *4* unproject_from_orthogonal_space
-class unproject_from_orthogonal_space(TestCase):
-    #@+others
-    #@+node:gcross.20111107123726.3211: *5* test_agreement_with_multiplication_by_q
+class unproject_from_orthogonal_space(TestCase): # {{{
     @with_checker
     def test_agreement_with_multiplication_by_q(self,full_space_dimension=irange(2,10)):
         projectors, reflectors, coefficients, swaps, orthogonal_subspace_dimension = generate_reflectors(full_space_dimension)
@@ -813,14 +809,12 @@ class unproject_from_orthogonal_space(TestCase):
         correct_projected_vector = dot(vector,q[:,-orthogonal_subspace_dimension:].conj().transpose())
         actual_projected_vector = core.unproject_from_orthogonal_space(reflectors,coefficients,swaps,vector)
         self.assertAllClose(correct_projected_vector,actual_projected_vector)
-    #@+node:gcross.20111107123726.3212: *5* test_result_is_in_orthogonal_subspace
     @with_checker
     def test_result_is_in_orthogonal_subspace(self,full_space_dimension=irange(2,10)):
         projectors, reflectors, coefficients, swaps, orthogonal_subspace_dimension = generate_reflectors(full_space_dimension)
 
         vector = core.unproject_from_orthogonal_space(reflectors,coefficients,swaps,crand(orthogonal_subspace_dimension))
         self.assertVanishing(dot(vector,projectors))
-    #@+node:gcross.20111107123726.3213: *5* test_project_dot_unproject_is_identity
     @with_checker
     def test_project_dot_unproject_is_identity(self,full_space_dimension=irange(2,10)):
         projectors, reflectors, coefficients, swaps, orthogonal_subspace_dimension = generate_reflectors(full_space_dimension)
@@ -831,12 +825,9 @@ class unproject_from_orthogonal_space(TestCase):
                 core.unproject_from_orthogonal_space(reflectors,coefficients,swaps,old_vector)
             )
         self.assertAllClose(old_vector,new_vector)
-    #@-others
+# }}}
 
-#@+node:gcross.20111107123726.3214: *4* project_matrix_into_orthog_space
-class project_matrix_into_orthog_space(TestCase):
-    #@+others
-    #@+node:gcross.20111107123726.3215: *5* test_agreement_with_multiplication_by_q
+class project_matrix_into_orthog_space(TestCase): # {{{
     @with_checker
     def test_agreement_with_multiplication_by_q(self,full_space_dimension=irange(2,10)):
         projectors, reflectors, coefficients, swaps, orthogonal_subspace_dimension = generate_reflectors(full_space_dimension)
@@ -846,7 +837,6 @@ class project_matrix_into_orthog_space(TestCase):
         correct_projected_matrix = dot(q.transpose(),dot(matrix,q.conj()))[-orthogonal_subspace_dimension:,-orthogonal_subspace_dimension:]
         actual_projected_matrix = core.project_matrix_into_orthog_space(orthogonal_subspace_dimension,reflectors,coefficients,swaps,matrix)
         self.assertAllClose(correct_projected_matrix,actual_projected_matrix)
-    #@+node:gcross.20111107123726.3216: *5* test_agreement_with_project
     @with_checker
     def test_agreement_with_project(self,full_space_dimension=irange(2,10)):
         projectors, reflectors, coefficients, swaps, orthogonal_subspace_dimension = generate_reflectors(full_space_dimension)
@@ -865,32 +855,31 @@ class project_matrix_into_orthog_space(TestCase):
             )
 
         self.assertAllClose(result_1,result_2)
-    #@-others
-#@+node:gcross.20111107123726.3217: *4* filter_components_outside_orthog
-class filter_components_outside_orthog(TestCase):
+# }}}
+
+class filter_components_outside_orthog(TestCase): # {{{
     @with_checker
     def test_result_is_orthogonal(self,full_space_dimension=irange(2,10)):
         projectors, reflectors, coefficients, swaps, orthogonal_subspace_dimension = generate_reflectors(full_space_dimension,overproject=True)
         vector = dot(projectors.conj(),rand(projectors.shape[-1]))
         filtered_vector = core.filter_components_outside_orthog(orthogonal_subspace_dimension,reflectors,coefficients,swaps,vector)
         self.assertVanishing(dot(filtered_vector,projectors))
-#@+node:gcross.20111107123726.3221: *3* Bandwidth increase
-#@+node:gcross.20111107123726.3222: *4* create_bandwidth_increase_matrix
-class create_bandwidth_increase_matrix(TestCase):
-    #@+others
-    #@-others
+# }}}
 
+#    }}}
+
+#   Bandwidth increase {{{
+
+class create_bandwidth_increase_matrix(TestCase): # {{{
     @with_checker
     def testCorrectness(self,old_bandwidth=irange(2,8),new_bandwidth=irange(9,32)):
         matrix = core.create_bandwidth_increase_matrix(old_bandwidth,new_bandwidth)
         self.assertEqual((new_bandwidth,old_bandwidth),matrix.shape)
         should_be_identity = dot(matrix.transpose().conj(),matrix)
         self.assertAllClose(identity(old_bandwidth),should_be_identity)
-#@+node:gcross.20111107123726.3223: *4* absorb_bi_matrix_from_left
-class absorb_bi_matrix_from_left(TestCase):
-    #@+others
-    #@-others
+# }}}
 
+class absorb_bi_matrix_from_left(TestCase): # {{{
     @with_checker
     def testCorrectness(self,br=irange(1,4),bl=irange(2,8),new_bl=irange(9,32),d=irange(2,4)):
         old_state_site_tensor = crand(br,bl,d)
@@ -899,11 +888,9 @@ class absorb_bi_matrix_from_left(TestCase):
         self.assertAllClose(tensordot(old_state_site_tensor,matrix.transpose().conj(),(1,0)).transpose(0,2,1),new_state_site_tensor)
         new_state_site_tensor = core.absorb_bi_matrix_from_left(new_state_site_tensor,matrix.conj().transpose())
         self.assertAllClose(old_state_site_tensor,new_state_site_tensor)
-#@+node:gcross.20111107123726.3224: *4* absorb_bi_matrix_from_right
-class absorb_bi_matrix_from_right(TestCase):
-    #@+others
-    #@-others
+# }}}
 
+class absorb_bi_matrix_from_right(TestCase): # {{{
     @with_checker
     def testCorrectness(self,br=irange(2,8),new_br=irange(9,32),bl=irange(1,4),d=irange(2,4)):
         old_state_site_tensor = crand(br,bl,d)
@@ -912,11 +899,9 @@ class absorb_bi_matrix_from_right(TestCase):
         self.assertAllClose(tensordot(matrix,old_state_site_tensor,(1,0)),new_state_site_tensor)
         new_state_site_tensor = core.absorb_bi_matrix_from_right(new_state_site_tensor,matrix.transpose().conj())
         self.assertAllClose(old_state_site_tensor,new_state_site_tensor)
-#@+node:gcross.20111107123726.3225: *4* increase_bandwidth_between
-class increase_bandwidth_between(TestCase):
-    #@+others
-    #@-others
+# }}}
 
+class increase_bandwidth_between(TestCase): # {{{
     @with_checker
     def testCorrectness(self,
         bl=irange(2,4),
@@ -936,8 +921,12 @@ class increase_bandwidth_between(TestCase):
             tensordot(old_left_tensor,old_right_tensor,(0,1)),
             tensordot(new_left_tensor,new_right_tensor,(0,1)),
         )
-#@+node:gcross.20111107123726.3229: *3* non_hermitian_matrix_detection
-class non_hermitian_matrix_detection(TestCase):
+# }}}
+
+#   }}}
+
+#   Miscellaneous {{{
+class non_hermitian_matrix_detection(TestCase): # {{{
     @with_checker
     def test_hermitian_operators(self,number_of_sites=irange(2,10)):
         left_boundary_1 = ones((1,),complex128)
@@ -983,9 +972,11 @@ class non_hermitian_matrix_detection(TestCase):
         self.assertEqual(left_boundary_2.shape,(1,))
         if norm(left_boundary_1) > 1e-7:
             self.assertNotAlmostEqual(left_boundary_1.ravel(),left_boundary_2.conj().ravel())
-#@-others
+# }}}
+#   }}}
+
+# }}}
 
 if __name__ == "__main__":
     set_printoptions(linewidth=132)
     unittest.main()
-#@-leo

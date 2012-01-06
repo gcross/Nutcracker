@@ -1,18 +1,14 @@
-#@+leo-ver=5-thin
-#@+node:gcross.20111107131531.3618: * @file test_1d_environment.py
-#@+<< Imports >>
-#@+node:gcross.20111107131531.3619: ** << Imports >>
+# Imports {{{
 from random import randint
 
 from .._1d.environment import *
 from ..utils import *
 
 from . import *
-#@-<< Imports >>
+# }}}
 
-#@+others
-#@+node:gcross.20111107131531.3624: ** Functions
-#@+node:gcross.20111107131531.3622: *3* randomEnvironment
+# Helper functions {{{
+
 def randomEnvironment(cls=Environment):
     return cls.random(
         randint(1,5),
@@ -21,11 +17,13 @@ def randomEnvironment(cls=Environment):
         randint(1,5),
         randint(1,5)
     )
-#@+node:gcross.20111107131531.3620: ** Tests
-#@+node:gcross.20111107131531.3621: *3* Environment
-class TestEnvironment(TestCase):
-    #@+others
-    #@+node:gcross.20111107131531.3623: *4* computeExpectation
+
+# }}}
+
+# Tests {{{
+
+class TestEnvironment(TestCase): # {{{
+    # test computeExpectation {{{
     @prependContractor(
         ['L','R','S','S*','O',],
         [(('L',1),('S*',1))
@@ -51,7 +49,9 @@ class TestEnvironment(TestCase):
                 environment.operator_site.formDenseTensor().data,
             )
         )
-    #@+node:gcross.20111108100704.1445: *4* computeOptimizationMatrix
+    # }}}
+
+    # test computeOptimizationMatrix {{{
     @prependContractor(
         ['L','R','O',],
         [(('L',0),('O',0))
@@ -61,8 +61,9 @@ class TestEnvironment(TestCase):
         ,[('O',3),('L',2),('R',1)]
         ]
     )
+    # }}}
 
-    def test_computeOptimizationMatrix(contract,self):
+    def test_computeOptimizationMatrix(contract,self): # {{{
         environment = randomEnvironment()
         self.assertAllClose(
             environment.computeOptimizationMatrix(),
@@ -72,6 +73,8 @@ class TestEnvironment(TestCase):
                 environment.operator_site.formDenseTensor().data,
             )
         )
-    #@-others
-#@-others
-#@-leo
+    # }}}
+
+# }}}
+
+# }}}

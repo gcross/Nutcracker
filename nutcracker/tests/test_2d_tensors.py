@@ -1,21 +1,14 @@
-#@+leo-ver=5-thin
-#@+node:gcross.20111107154810.1418: * @file test_2d_tensors.py
-#@+<< Imports >>
-#@+node:gcross.20111107154810.1420: ** << Imports >>
+# Imports {{{
 from numpy import zeros
 
 from .._2d.enumerations import *
 from .._2d.tensors import *
 
 from . import *
-#@-<< Imports >>
+# }}}
 
-#@+others
-#@+node:gcross.20111009193003.1168: ** Tests
-#@+node:gcross.20111103170337.1371: *3* ExpectationSideBoundary
-class TestExpectationSideBoundary(TestCase):
-    #@+others
-    #@+node:gcross.20111103170337.1372: *4* absorbCounterClockwiseCornerBoundary
+class TestExpectationSideBoundary(TestCase): # {{{
+    # test absorbCounterClockwiseCornerBoundary {{{
     @prependContractor(
         ['S','C'],
         [
@@ -48,7 +41,9 @@ class TestExpectationSideBoundary(TestCase):
             contract(side.data,corner.data),
             side.absorbCounterClockwiseCornerBoundary(corner).data
         )
-    #@+node:gcross.20111103170337.1373: *4* absorbCounterClockwiseSideBoundary
+    # }}}
+
+    # test absorbCounterClockwiseSideBoundary {{{
     @prependContractor(
             ['A','B'],
             [
@@ -83,11 +78,11 @@ class TestExpectationSideBoundary(TestCase):
             contract(side1.data,side2.data),
             side1.absorbCounterClockwiseSideBoundary(side2).data
         )
-    #@-others
-#@+node:gcross.20111009193003.5248: *3* NormalizationSideBoundary
-class TestNormalizationSideBoundary(TestCase):
-    #@+others
-    #@+node:gcross.20111009193003.5250: *4* absorbCounterClockwiseCornerBoundary
+    # }}}
+# }}}
+
+class TestNormalizationSideBoundary(TestCase): # {{{
+    # test absorbCounterClockwiseCornerBoundary {{{
     @prependContractor(
         ['S','C'],
         [
@@ -118,7 +113,9 @@ class TestNormalizationSideBoundary(TestCase):
             contract(side.data,corner.data),
             side.absorbCounterClockwiseCornerBoundary(corner).data
         )
-    #@+node:gcross.20111009193003.5264: *4* absorbCounterClockwiseSideBoundary
+    # }}}
+
+    # test absorbCounterClockwiseSideBoundary {{{
     @prependContractor(
         ['A','B'],
         [
@@ -150,11 +147,11 @@ class TestNormalizationSideBoundary(TestCase):
             contract(side1.data,side2.data),
             side1.absorbCounterClockwiseSideBoundary(side2).data
         )
-    #@-others
-#@+node:gcross.20111103170337.1353: *3* OperatorCornerSite
-class TestOperatorCornerSite(TestCase):
-    #@+others
-    #@+node:gcross.20111103170337.1357: *4* absorbSideSiteAtClockwise
+    # }}}
+# }}}
+
+class TestOperatorCornerSite(TestCase): # {{{
+    # test absorbSideSiteAtClockwise {{{
     @prependContractor(
         ['C','S'],
         [
@@ -187,7 +184,9 @@ class TestOperatorCornerSite(TestCase):
             contract(corner.data,site.data),
             corner.absorbSideSiteAtClockwise(site).data
         )
-    #@+node:gcross.20111103170337.1361: *4* absorbSideSiteAtCounterClockwise
+    # }}}
+
+    # test absorbSideSiteAtCounterClockwise {{{
     @prependContractor(
         ['C','S'],
         [
@@ -220,7 +219,9 @@ class TestOperatorCornerSite(TestCase):
             contract(corner.data,site.data),
             corner.absorbSideSiteAtCounterClockwise(site).data
         )
-    #@+node:gcross.20111103170337.1355: *4* formExpectationBoundary
+    # }}}
+
+    # test formExpectationBoundary {{{
     @prependContractor(
         ['S','O','S*'],
         [
@@ -251,13 +252,12 @@ class TestOperatorCornerSite(TestCase):
             contract(state.data,operator.data,state.data.conj()),
             operator.formExpectationBoundary(state).data
         )
-    #@-others
-#@+node:gcross.20111103110300.1375: *3* OperatorSideSite
-class TestOperatorSideSite(TestCase):
-    #@+others
-    #@+node:gcross.20111103110300.1385: *4* absorbCenterSite
+    # }}}
+# }}}
+
+class TestOperatorSideSite(TestCase): # {{{
     @with_checker(number_of_calls=100)
-    def test_absorbCenterSite(self,direction=Direction):
+    def test_absorbCenterSite(self,direction=Direction): # {{{
         side = \
             OperatorSideSite.random(
                 physical_dimension = randint(1,5),
@@ -295,7 +295,9 @@ class TestOperatorSideSite(TestCase):
              )
             ,side.absorbCenterSite(center,direction).data
         )
-    #@+node:gcross.20111103110300.1380: *4* formExpectationBoundary
+    # }}}
+
+    # test formExpectationBoundary {{{
     @prependContractor(
         ['S','O','S*'],
         [
@@ -331,13 +333,12 @@ class TestOperatorSideSite(TestCase):
             contract(state.data,operator.data,state.data.conj()),
             operator.formExpectationBoundary(state).data
         )
-    #@-others
-#@+node:gcross.20111109104457.1796: *3* StateCenterSite
-class TestStateCenterSite(TestCase):
-    #@+others
-    #@+node:gcross.20111109104457.1798: *4* simpleObservable
+    # }}}
+# }}}
+
+class TestStateCenterSite(TestCase): # {{{
     @with_checker
-    def test_simpleObservation(self,physical_dimension=irange(1,10)):
+    def test_simpleObservation(self,physical_dimension=irange(1,10)): # {{{
         observation = randint(0,physical_dimension-1)
         state_site = StateCenterSite.simpleObservation(physical_dimension,observation)
         shape = [1]*StateCenterSite.number_of_dimensions
@@ -346,11 +347,11 @@ class TestStateCenterSite(TestCase):
         correct_data[observation] = 1
         correct_data = correct_data.reshape(shape)
         self.assertAllClose(state_site.data,correct_data)
-    #@-others
-#@+node:gcross.20111009193003.5240: *3* StateCornerSite
-class TestStateCornerSite(TestCase):
-    #@+others
-    #@+node:gcross.20111013080525.1205: *4* absorbSideSiteAtCounterClockwise
+    # }}}
+# }}}
+
+class TestStateCornerSite(TestCase): # {{{
+    # test absorbSideSiteAtCounterClockwise {{{
     @prependContractor(
         ['C','S'],
         [
@@ -382,7 +383,9 @@ class TestStateCornerSite(TestCase):
             contract(corner.data,site.data),
             corner.absorbSideSiteAtCounterClockwise(site).data
         )
-    #@+node:gcross.20111013080525.1209: *4* absorbSideSiteAtClockwise
+    # }}}
+
+    # test absorbSideSiteAtClockwise {{{
     @prependContractor(
         ['C','S'],
         [
@@ -414,7 +417,9 @@ class TestStateCornerSite(TestCase):
             contract(corner.data,site.data),
             corner.absorbSideSiteAtClockwise(site).data
         )
-    #@+node:gcross.20111009193003.5241: *4* formNormalizationBoundary
+    # }}}
+
+    # test formNormalizationBoundary {{{
     @prependContractor(
         ['S','S*'],
         [
@@ -437,13 +442,12 @@ class TestStateCornerSite(TestCase):
             contract(site.data,site.data.conj()),
             site.formNormalizationBoundary().data
         )
-    #@-others
-#@+node:gcross.20111009193003.1169: *3* StateSideSite
-class TestStateSideSite(TestCase):
-    #@+others
-    #@+node:gcross.20111103110300.1383: *4* absorbCenterSite
+    # }}}
+# }}}
+
+class TestStateSideSite(TestCase): # {{{
     @with_checker(number_of_calls=100)
-    def test_absorbCenterSite(self,direction=Direction):
+    def test_absorbCenterSite(self,direction=Direction): # {{{
         side = \
             StateSideSite.random(
                 physical_dimension = randint(1,5),
@@ -478,7 +482,9 @@ class TestStateSideSite(TestCase):
              )
             ,side.absorbCenterSite(center,direction).data
         )
-    #@+node:gcross.20111009193003.1170: *4* formNormalizationBoundary
+    # }}}
+
+    # test formNormalizationBoundary {{{
     @prependContractor(
         ['S','S*'],
         [
@@ -505,6 +511,5 @@ class TestStateSideSite(TestCase):
             contract(site.data,site.data.conj()),
             site.formNormalizationBoundary().data
         )
-    #@-others
-#@-others
-#@-leo
+    # }}}
+# }}}

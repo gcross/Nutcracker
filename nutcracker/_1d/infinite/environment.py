@@ -1,22 +1,14 @@
-#@+leo-ver=5-thin
-#@+node:gcross.20111109104457.1777: * @file environment.py
-#@+<< Imports >>
-#@+node:gcross.20111109104457.1779: ** << Imports >>
+# Imports {{{
 from numpy import array, complex128
 
 from .chains import *
 from ..enumerations import Direction
 from ..environment import Environment
 from ..tensors import *
-#@-<< Imports >>
+# }}}
 
-#@+others
-#@+node:gcross.20111109104457.1781: ** Classes
-#@+node:gcross.20111109104457.1782: *3* InfiniteEnvironment
-class InfiniteEnvironment(Environment):
-    #@+others
-    #@+node:gcross.20111109104457.1783: *4* __init__
-    def __init__(self,operator_chain,observation=0,state_chain=None):
+class InfiniteEnvironment(Environment): # {{{
+    def __init__(self,operator_chain,observation=0,state_chain=None): # {{{
         if state_chain is None:
             state_chain = \
                 StateChain.simpleObservation(
@@ -35,16 +27,18 @@ class InfiniteEnvironment(Environment):
             state_chain.site,
             operator_chain.site,
         )
-    #@+node:gcross.20111110233742.1820: *4* dangerouslyContractWithoutNormalizing
-    def dangerouslyContractWithoutNormalizing(self,direction):
+# }}}
+
+    def dangerouslyContractWithoutNormalizing(self,direction): # {{{
         if direction not in Direction.values():
             raise ValueError("contraction direction must be either Direction.left or Direction.right, not {}".format(direction))
         if direction == Direction.left:
             self.left_environment = self.left_environment.absorb(state_site=self.state_site,operator_site=self.operator_site)
         elif direction == Direction.right:
             self.right_environment = self.right_environment.absorb(state_site=self.state_site,operator_site=self.operator_site)
-    #@+node:gcross.20111109104457.1801: *4* normalizeAndContract
-    def normalizeAndContract(self,direction):
+# }}}
+
+    def normalizeAndContract(self,direction): # {{{
         if direction not in Direction.values():
             raise ValueError("contraction direction must be either Direction.left or Direction.right, not {}".format(direction))
         state_site_to_contract, self.state_site = self.state_site.normalizeAndDenormalize(direction,self.state_site)
@@ -52,9 +46,10 @@ class InfiniteEnvironment(Environment):
             self.left_environment = self.left_environment.absorb(state_site=state_site_to_contract,operator_site=self.operator_site)
         elif direction == Direction.right:
             self.right_environment = self.right_environment.absorb(state_site=state_site_to_contract,operator_site=self.operator_site)
-    #@+node:gcross.20111109104457.1810: *4* random
+# }}}
+
     @classmethod
-    def random(
+    def random( # {{{
         cls,
         physical_dimension,
         state_dimension,
@@ -84,17 +79,16 @@ class InfiniteEnvironment(Environment):
                 physical_dimension = physical_dimension,
             )
         return self
-    #@+node:gcross.20111109104457.1809: *4* trivial
-    @classmethod
-    def trivial(cls):
-        return cls(OperatorChain.trivial())
-    #@-others
-#@-others
+# }}}
 
-#@+<< Exports >>
-#@+node:gcross.20111109104457.1780: ** << Exports >>
+    @classmethod
+    def trivial(cls): # {{{
+        return cls(OperatorChain.trivial())
+    # }}}
+# }}}
+
+# Exports {{{
 __all__ = [
     "InfiniteEnvironment",
 ]
-#@-<< Exports >>
-#@-leo
+# }}}

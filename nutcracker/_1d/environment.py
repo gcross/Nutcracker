@@ -1,24 +1,17 @@
-#@+leo-ver=5-thin
-#@+node:gcross.20111107131531.3606: * @file environment.py
-#@+<< Imports >>
-#@+node:gcross.20111107131531.3608: ** << Imports >>
+# Imports {{{
 from .. import core
 from .tensors import LeftExpectationBoundary, RightExpectationBoundary, StateSite, OperatorSite
-#@-<< Imports >>
+# }}}
 
-#@+others
-#@+node:gcross.20111107131531.3610: ** Classes
-#@+node:gcross.20111107131531.3611: *3* Environment
 class Environment(object):
-    #@+others
-    #@+node:gcross.20111107131531.3612: *4* __init__
-    def __init__(self,left_environment,right_environment,state_site,operator_site):
+    def __init__(self,left_environment,right_environment,state_site,operator_site): # {{{
         self.left_environment = left_environment
         self.right_environment = right_environment
         self.state_site = state_site
         self.operator_site = operator_site
-    #@+node:gcross.20111107131531.3613: *4* computeExpectation
-    def computeExpectation(self):
+    # }}}
+
+    def computeExpectation(self): # {{{
         return core.compute_expectation(
             self.left_environment.data.transpose(),
             self.state_site.data.transpose(),
@@ -26,17 +19,19 @@ class Environment(object):
             self.operator_site.matrix_table.transpose(),
             self.right_environment.data.transpose()
         )
-    #@+node:gcross.20111108100704.1444: *4* computeOptimizationMatrix
-    def computeOptimizationMatrix(self):
+    # }}}
+
+    def computeOptimizationMatrix(self): # {{{
         return core.compute_optimization_matrix(
             self.left_environment.data.transpose(),
             self.operator_site.index_table.transpose(),
             self.operator_site.matrix_table.transpose(),
             self.right_environment.data.transpose()
         ).transpose().reshape((self.state_site.size(),)*2)
-    #@+node:gcross.20111107131531.3625: *4* random
+    # }}}
+
     @classmethod
-    def random(
+    def random( # {{{
         cls,
         physical_dimension,
         left_state_dimension,
@@ -67,13 +62,11 @@ class Environment(object):
                     physical_dimension = physical_dimension,
                 )
         )
-    #@-others
-#@-others
+    # }}}
 
-#@+<< Exports >>
-#@+node:gcross.20111107131531.3609: ** << Exports >>
+
+# Exports {{{
 __all__ = [
     "Environment",
 ]
-#@-<< Exports >>
-#@-leo
+# }}}

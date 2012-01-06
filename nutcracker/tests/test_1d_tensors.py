@@ -1,7 +1,4 @@
-#@+leo-ver=5-thin
-#@+node:gcross.20111107131531.1333: * @file test_1d_tensors.py
-#@+<< Imports >>
-#@+node:gcross.20111107131531.1334: ** << Imports >>
+# Imports {{{
 from numpy import identity, tensordot, zeros
 from paycheck import *
 from random import randint
@@ -11,14 +8,10 @@ from .._1d.tensors import *
 from ..utils import *
 
 from . import *
-#@-<< Imports >>
+# }}}
 
-#@+others
-#@+node:gcross.20111107131531.1347: ** Tests
-#@+node:gcross.20111107131531.1348: *3* LeftExpectationBoundary
-class TestLeftExpectationBoundary(TestCase):
-    #@+others
-    #@+node:gcross.20111107131531.1349: *4* absorb
+class TestLeftExpectationBoundary(TestCase): # {{{
+    # test absorb {{{
     @prependContractor(
         ['L','O','S','S*'],
         [(('L',LeftExpectationBoundary.operator_index),('O',OperatorSite.left_index))
@@ -59,11 +52,11 @@ class TestLeftExpectationBoundary(TestCase):
             L.absorb(state_site=S,operator_site=O).data,
             contract(L.data,O.formDenseTensor().data,S.data,S.data.conj())
         )
-    #@-others
-#@+node:gcross.20111108100704.1438: *3* LeftOverlapBoundary
-class TestLeftOverlapBoundary(TestCase):
-    #@+others
-    #@+node:gcross.20111108100704.1439: *4* absorb
+    # }}}
+# }}}
+
+class TestLeftOverlapBoundary(TestCase): # {{{
+    # test absorb {{{
     @prependContractor(
         ['L','V','S'],
         [(('L',LeftOverlapBoundary.overlap_index),('V',OverlapSite.left_index))
@@ -101,13 +94,12 @@ class TestLeftOverlapBoundary(TestCase):
             L.absorb(overlap_site=V,state_site=S).data,
             contract(L.data,V.data,S.data)
         )
-    #@-others
-#@+node:gcross.20111109104457.1820: *3* OperatorSite
-class TestOperatorSite(TestCase):
-    #@+others
-    #@+node:gcross.20111109104457.1821: *4* build
+    # }}}
+# }}}
+
+class TestOperatorSite(TestCase): # {{{
     @with_checker
-    def test_build(self,
+    def test_build(self, # {{{
         left_dimension=irange(1,5),
         right_dimension=irange(1,5),
         physical_dimension=irange(1,5),
@@ -126,9 +118,10 @@ class TestOperatorSite(TestCase):
             OperatorSite.build(bandwidth_dimensions,components).formDenseTensor().data,
             DenseOperatorSite.build(bandwidth_dimensions,components).data,
         )
-    #@+node:gcross.20111109104457.1823: *4* simple
+    # }}}
+
     @with_checker
-    def test_simple(self,
+    def test_simple(self, # {{{
         physical_dimension=irange(1,5),
         flip=bool
     ):
@@ -147,11 +140,11 @@ class TestOperatorSite(TestCase):
             OperatorSite.simple(components[0][1]).formDenseTensor().data,
             DenseOperatorSite.simple(components[0][1]).data,
         )
-    #@-others
-#@+node:gcross.20111107131531.3583: *3* RightExpectationBoundary
-class TestRightExpectationBoundary(TestCase):
-    #@+others
-    #@+node:gcross.20111107131531.3584: *4* absorb
+    # }}}
+# }}}
+
+class TestRightExpectationBoundary(TestCase): # {{{
+    # test absorb {{{
     @prependContractor(
         ['R','O','S','S*'],
         [(('R',RightExpectationBoundary.operator_index),('O',OperatorSite.right_index))
@@ -192,11 +185,11 @@ class TestRightExpectationBoundary(TestCase):
             R.absorb(state_site=S,operator_site=O).data,
             contract(R.data,O.formDenseTensor().data,S.data,S.data.conj())
         )
-    #@-others
-#@+node:gcross.20111108100704.1442: *3* RightOverlapBoundary
-class TestLeftOverlapBoundary(TestCase):
-    #@+others
-    #@+node:gcross.20111108100704.1443: *4* absorb
+    # }}}
+# }}}
+
+class TestLeftOverlapBoundary(TestCase): # {{{
+    # test absorb {{{
     @prependContractor(
         ['R','V','S'],
         [(('R',RightOverlapBoundary.overlap_index),('V',OverlapSite.right_index))
@@ -234,13 +227,12 @@ class TestLeftOverlapBoundary(TestCase):
             R.absorb(overlap_site=V,state_site=S).data,
             contract(R.data,V.data,S.data)
         )
-    #@-others
-#@+node:gcross.20111107131531.3591: *3* StateSite
-class TestStateSite(TestCase):
-    #@+others
-    #@+node:gcross.20111108100704.1372: *4* formNormalizedOverlapSites
+    # }}}
+# }}}
+
+class TestStateSite(TestCase): # {{{
     @with_checker
-    def test_formNormalizedOverlapSites(self,
+    def test_formNormalizedOverlapSites(self, # {{{
         left_physical_dimension = irange(2,4),
         right_physical_dimension = irange(2,4),
         leftmost_bandwidth_dimension = irange(2,4),
@@ -279,9 +271,10 @@ class TestStateSite(TestCase):
             )
         )
         self.assertNormalized(result.left_normalized_left_overlap_site.data,OverlapSite.right_index)
-    #@+node:gcross.20111107131531.5850: *4* formOverlapSite
+    # }}}
+
     @with_checker
-    def test_formOverlapSite(self,
+    def test_formOverlapSite(self, # {{{
         physical_dimension = irange(1,5),
         left_dimension = irange(1,5),
         right_dimension = irange(1,5)
@@ -295,9 +288,10 @@ class TestStateSite(TestCase):
             state_site.formOverlapSite().data,
             state_site.data.conj().transpose(2,0,1)
         )
-    #@+node:gcross.20111107131531.3593: *4* normalizeAndDenormalize
+    # }}}
+
     @with_checker
-    def test_normalizeAndDenormalize(self,
+    def test_normalizeAndDenormalize(self, # {{{
         direction=Direction,
         leftmost_dimension=irange(3,9),
         middle_dimension=irange(3,9),
@@ -328,9 +322,10 @@ class TestStateSite(TestCase):
             self.assertNormalized(new_right_site.data,StateSite.left_index)
         else:
             self.assertNormalized(new_left_site.data,StateSite.right_index)
-    #@+node:gcross.20111108100704.1419: *4* random (left normalized)
+    # }}}
+
     @with_checker
-    def test_random_left_normalized(self,
+    def test_random_left_normalized(self, # {{{
         physical_dimension = irange(3,9),
         left_dimension = irange(3,9),
         right_dimension = irange(3,9)
@@ -342,9 +337,10 @@ class TestStateSite(TestCase):
             right_dimension = right_dimension,
         )
         self.assertNormalized(state_site.data,StateSite.right_index)
-    #@+node:gcross.20111108100704.1383: *4* random (middle normalized)
+    # }}}
+
     @with_checker
-    def test_random_middle_normalized(self,
+    def test_random_middle_normalized(self, # {{{
         physical_dimension = irange(3,9),
         left_dimension = irange(3,9),
         right_dimension = irange(3,9)
@@ -356,9 +352,10 @@ class TestStateSite(TestCase):
             right_dimension = right_dimension,
         )
         self.assertAlmostEqual(norm(state_site.data),1)
-    #@+node:gcross.20111108100704.1423: *4* random (right normalized)
+    # }}}
+
     @with_checker
-    def test_random_right_normalized(self,
+    def test_random_right_normalized(self, # {{{
         physical_dimension = irange(3,9),
         left_dimension = irange(3,9),
         right_dimension = irange(3,9)
@@ -370,9 +367,10 @@ class TestStateSite(TestCase):
             right_dimension = right_dimension,
         )
         self.assertNormalized(state_site.data,StateSite.left_index)
-    #@+node:gcross.20111109104457.1793: *4* simpleObservable
+    # }}}
+
     @with_checker
-    def test_simpleObservation(self,physical_dimension=irange(1,10)):
+    def test_simpleObservation(self,physical_dimension=irange(1,10)): # {{{
         observation = randint(0,physical_dimension-1)
         state_site = StateSite.simpleObservation(physical_dimension,observation)
         shape = [1]*StateSite.number_of_dimensions
@@ -381,6 +379,5 @@ class TestStateSite(TestCase):
         correct_data[observation] = 1
         correct_data = correct_data.reshape(shape)
         self.assertAllClose(state_site.data,correct_data)
-    #@-others
-#@-others
-#@-leo
+    # }}}
+# }}}
