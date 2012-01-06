@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <leo_file xmlns:leo="http://www.leo-editor.org/2011/leo" >
 <vnodes>
-<v t="gcross.20111107123726.1213"><vh>@file setup.py</vh></v>
 <v t="gcross.20111107123726.3232"><vh>@path nutcracker</vh>
 <v t="gcross.20111107123726.1214"><vh>@file __init__.py</vh></v>
 <v t="gcross.20111107123726.1123"><vh>@file core.f95</vh></v>
