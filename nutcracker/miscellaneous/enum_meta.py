@@ -283,7 +283,10 @@ class EnumMeta(type):
     def make_new_random_generator(self):
 
         while True:
-            yield random.choice(self.values())
+            yield self.randomChoice()
+
+    def randomChoice(self):
+        return random.choice(self.values())
 
 # Make a class out of the metaclass, so that it can be subclassed.
 # Grabbed this trick from:
