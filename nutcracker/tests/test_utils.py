@@ -1,5 +1,7 @@
 # Imports {{{
+from copy import copy
 from paycheck import *
+from random import sample, shuffle
 
 from ..utils import normalize
 from . import *
@@ -197,6 +199,73 @@ class TestCompressConnectionUsingFirstTensorBetween(TestCase): # {{{
             tensordot(compressed_tensor_1,compressed_tensor_2,(index_1,index_2)),
         )
     # }}}
+# }}}
+
+class TestContractAndTransposeAndJoin(TestCase): # {{{
+    @with_checker
+    def test_correctness(self,array_ranks=(irange(1,8),)*2): # {{{
+        array_shapes = [[randint(1,3) for _ in xrange(rank)] for rank in array_ranks]
+        number_of_dimensions_to_join = randint(0,min(array_ranks))
+        array_axes = [sample(range(rank),number_of_dimensions_to_join) for rank in array_ranks]
+        for axis_0, axis_1 in zip(*array_axes):
+            array_shapes[1][axis_1] = array_shapes[0][axis_0]
+        arrays = [crand(*shape) for shape in array_shapes]
+        indices_being_contracted_for = map(frozenset,array_axes)
+        remaining_indices = []
+        for tensor_number, rank in enumerate(array_ranks):
+            for index in xrange(rank):
+                if index not in indices_being_contracted_for[tensor_number]:
+                    remaining_indices.append(TensorNumberAndIndex(tensor_number,index))
+        shuffle(remaining_indices)
+        number_of_remaining_indices = len(remaining_indices)
+        number_of_partitions = randint(0,number_of_remaining_indices)
+        partition_indices = [randint(0,number_of_remaining_indices) for _ in xrange(number_of_partitions)]
+        partition_indices.sort()
+        partition_indices = [0] + partition_indices + [number_of_remaining_indices]
+        new_grouped_order = [remaining_indices[partition_indices[i]:partition_indices[i+1]] for i in xrange(number_of_partitions+1)]
+        contractor = \
+            formContractor(
+                [0,1],
+                zip(*[[(i,index) for index in axes] for (i,axes) in enumerate(array_axes)]),
+                new_grouped_order,
+            )
+        self.assertAllClose(
+            contractor(*arrays),
+            contractAndTransposeAndJoin(arrays,array_axes,new_grouped_order),
+        )
+    # }}}
+# }}}
+
+class TestComputePostContractionIndexMap(TestCase): # {{{
+    @with_checker
+    def test_correct_number_of_entries(self, # {{{
+        number_of_dimensions_increment=irange(1,10),
+        indices_being_contracted=[irange(0,20)]
+    ):
+        old_number_of_dimensions = (
+            max(indices_being_contracted) if len(indices_being_contracted) > 0 else 0
+        ) + number_of_dimensions_increment
+        self.assertEqual(
+            old_number_of_dimensions-len(set(indices_being_contracted)),
+            len(computePostContractionIndexMap(old_number_of_dimensions,indices_being_contracted))
+        )
+    # }}}
+
+    @with_checker
+    def test_no_contracted_old_indices(self, # {{{
+        number_of_dimensions_increment=irange(1,10),
+        indices_being_contracted=[irange(0,20)]
+    ):
+        old_number_of_dimensions = (
+            max(indices_being_contracted) if len(indices_being_contracted) > 0 else 0
+        ) + number_of_dimensions_increment
+        old_to_new_index_map = computePostContractionIndexMap(old_number_of_dimensions,indices_being_contracted)
+        self.assertEqual(
+            frozenset(xrange(old_number_of_dimensions)),
+            frozenset(indices_being_contracted) ^ old_to_new_index_map.viewkeys(),
+        )
+    # }}}
+
 # }}}
 
 class TestFormContractor(TestCase): # {{{
