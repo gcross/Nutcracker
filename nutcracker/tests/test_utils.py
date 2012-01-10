@@ -199,6 +199,38 @@ class TestCompressConnectionUsingFirstTensorBetween(TestCase): # {{{
     # }}}
 # }}}
 
+class TestComputePostContractionIndexMap(TestCase): # {{{
+    @with_checker
+    def test_correct_number_of_entries(self, # {{{
+        number_of_dimensions_increment=irange(1,10),
+        indices_being_contracted=[irange(0,20)]
+    ):
+        old_number_of_dimensions = (
+            max(indices_being_contracted) if len(indices_being_contracted) > 0 else 0
+        ) + number_of_dimensions_increment
+        self.assertEqual(
+            old_number_of_dimensions-len(set(indices_being_contracted)),
+            len(computePostContractionIndexMap(old_number_of_dimensions,indices_being_contracted))
+        )
+    # }}}
+
+    @with_checker
+    def test_no_contracted_old_indices(self, # {{{
+        number_of_dimensions_increment=irange(1,10),
+        indices_being_contracted=[irange(0,20)]
+    ):
+        old_number_of_dimensions = (
+            max(indices_being_contracted) if len(indices_being_contracted) > 0 else 0
+        ) + number_of_dimensions_increment
+        old_to_new_index_map = computePostContractionIndexMap(old_number_of_dimensions,indices_being_contracted)
+        self.assertEqual(
+            frozenset(xrange(old_number_of_dimensions)),
+            frozenset(indices_being_contracted) ^ old_to_new_index_map.viewkeys(),
+        )
+    # }}}
+
+# }}}
+
 class TestFormContractor(TestCase): # {{{
     @with_checker(number_of_calls=10)
     def test_trivial_case_1D(self, # {{{

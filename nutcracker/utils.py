@@ -66,6 +66,19 @@ def compressHermitianConnectionUsingFirstTensorOnlyBetweenTensors(tensor_1,index
     )
 # }}}
 
+def computePostContractionIndexMap(old_number_of_dimensions,indices_being_contracted,offset=0): # {{{
+    indices_being_contracted = frozenset(indices_being_contracted)
+    new_number_of_dimensions = old_number_of_dimensions - len(indices_being_contracted)
+    current_old_index = 0
+    old_to_new_index_map = {}
+    for current_new_index in xrange(new_number_of_dimensions):
+        while current_old_index in indices_being_contracted:
+            current_old_index += 1
+        old_to_new_index_map[current_old_index] = current_new_index + offset
+        current_old_index += 1
+    return old_to_new_index_map
+# }}}
+
 def constructFilterFrom(keep=None,threshold=None): # {{{
     if keep is None and threshold is None:
         raise ValueError("either keep or threshold needs to be specified")
@@ -399,6 +412,7 @@ __all__ = [
     "compressConnectionUsingFirstTensorOnlyBetweenTensors",
     "compressHermitianConnectionUsingFirstTensorOnlyBetween",
     "compressHermitianConnectionUsingFirstTensorOnlyBetweenTensors",
+    "computePostContractionIndexMap",
     "CW",
     "firstIndexBelowMagnitude",
     "formContractor",
