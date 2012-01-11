@@ -1,5 +1,5 @@
 # Imports {{{
-from numpy import array, complex128, inner, ndarray, tensordot
+from numpy import array, complex128, ndarray
 
 from ..tensors import *
 from ..utils import *
@@ -71,37 +71,33 @@ class ExpectationSideBoundary(Tensor): # {{{
     dimension_names = ["clockwise","counterclockwise","inward_state","inward_operator","inward_state_conjugate"]
     def absorbCounterClockwiseCornerBoundary(self,corner): # {{{
         return type(self)(
-             tensordot(self.data,corner.data,(self.counterclockwise_index,corner.clockwise_index))
-            .transpose(
-                self.clockwise_index,
-                corner.counterclockwise_index+4-1,
-                self.inward_state_index-1,
-                self.inward_operator_index-1,
-                self.inward_state_conjugate_index-1,
-             )
+            contractAndTranspose(
+                (self.data,corner.data),
+                ([self.counterclockwise_index],[corner.clockwise_index]),
+                new_order=[
+                    indexOfFirstTensor(self.clockwise_index),
+                    indexOfSecondTensor(corner.counterclockwise_index),
+                    indexOfFirstTensor(self.inward_state_index),
+                    indexOfFirstTensor(self.inward_operator_index),
+                    indexOfFirstTensor(self.inward_state_conjugate_index),
+                ]
+            )
         )
     # }}}
 
     def absorbCounterClockwiseSideBoundary(self,side): # {{{
         return type(self)(
-             tensordot(self.data,side.data,(self.counterclockwise_index,side.clockwise_index))
-            .transpose(
-                self.clockwise_index,
-                side.counterclockwise_index+4-1,
-                self.inward_state_index-1,
-                side.inward_state_index+4-1,
-                self.inward_operator_index-1,
-                side.inward_operator_index+4-1,
-                self.inward_state_conjugate_index-1,
-                side.inward_state_conjugate_index+4-1,
-             )
-            .reshape(
-                self.clockwise_dimension,
-                side.counterclockwise_dimension,
-                self.inward_state_dimension*side.inward_state_dimension,
-                self.inward_operator_dimension*side.inward_operator_dimension,
-                self.inward_state_conjugate_dimension*side.inward_state_conjugate_dimension,
-             )
+            contractAndTransposeAndJoin(
+                (self.data,side.data,),
+                ([self.counterclockwise_index],[side.clockwise_index]),
+                new_grouped_order=[
+                    [indexOfFirstTensor(self.clockwise_index)],
+                    [indexOfSecondTensor(side.counterclockwise_index)],
+                    [indexOfFirstTensor(self.inward_state_index),indexOfSecondTensor(side.inward_state_index)],
+                    [indexOfFirstTensor(self.inward_operator_index),indexOfSecondTensor(side.inward_operator_index)],
+                    [indexOfFirstTensor(self.inward_state_conjugate_index),indexOfSecondTensor(side.inward_state_conjugate_index)],
+                ]
+            )
         )
     # }}}
 # }}}
@@ -111,33 +107,31 @@ class NormalizationSideBoundary(Tensor): # {{{
 
     def absorbCounterClockwiseCornerBoundary(self,corner): # {{{
         return type(self)(
-             tensordot(self.data,corner.data,(self.counterclockwise_index,corner.clockwise_index))
-            .transpose(
-                self.clockwise_index,
-                corner.counterclockwise_index+3-1,
-                self.inward_index-1,
-                self.inward_conjugate_index-1,
-             )
+            contractAndTranspose(
+                (self.data,corner.data),
+                ([self.counterclockwise_index],[corner.clockwise_index]),
+                [
+                    indexOfFirstTensor(self.clockwise_index),
+                    indexOfSecondTensor(corner.counterclockwise_index),
+                    indexOfFirstTensor(self.inward_index),
+                    indexOfFirstTensor(self.inward_conjugate_index),
+                ]
+            )
         )
     # }}}
 
     def absorbCounterClockwiseSideBoundary(self,side): # {{{
         return type(self)(
-             tensordot(self.data,side.data,(self.counterclockwise_index,side.clockwise_index))
-            .transpose(
-                self.clockwise_index,
-                side.counterclockwise_index+3-1,
-                self.inward_index-1,
-                side.inward_index+3-1,
-                self.inward_conjugate_index-1,
-                side.inward_conjugate_index+3-1,
-             )
-            .reshape(
-                self.clockwise_dimension,
-                side.counterclockwise_dimension,
-                self.inward_dimension*side.inward_dimension,
-                self.inward_dimension*side.inward_dimension,
-             )
+            contractAndTransposeAndJoin(
+                (self.data,side.data,),
+                ([self.counterclockwise_index],[side.clockwise_index]),
+                [
+                    [indexOfFirstTensor(self.clockwise_index)],
+                    [indexOfSecondTensor(side.counterclockwise_index)],
+                    [indexOfFirstTensor(self.inward_index), indexOfSecondTensor(side.inward_index)],
+                    [indexOfFirstTensor(self.inward_conjugate_index), indexOfSecondTensor(side.inward_conjugate_index)],
+                ]
+            )
         )
     # }}}
 # }}}
@@ -151,65 +145,55 @@ class OperatorCornerSite(SiteTensor): # {{{
 
     def absorbSideSiteAtClockwise(self,side): # {{{
         return type(self)(
-             tensordot(self.data,side.data,(self.clockwise_index,side.counterclockwise_index))
-            .transpose(
-                self.physical_index,
-                side.physical_index+3,
-                self.physical_conjugate_index,
-                side.physical_conjugate_index+3,
-                side.clockwise_index+3,
-                self.counterclockwise_index-1,
-                side.inward_index+3-1,
-             )
-            .reshape(
-                self.physical_dimension*side.physical_dimension,
-                self.physical_conjugate_dimension*side.physical_conjugate_dimension,
-                side.clockwise_dimension,
-                self.counterclockwise_dimension*side.inward_dimension,
-             )
+            contractAndTransposeAndJoin(
+                (self.data,side.data),
+                ([self.clockwise_index],[side.counterclockwise_index]),
+                [
+                    [indexOfFirstTensor(self.physical_index),indexOfSecondTensor(side.physical_index)],
+                    [indexOfFirstTensor(self.physical_conjugate_index),indexOfSecondTensor(side.physical_conjugate_index)],
+                    [indexOfSecondTensor(side.clockwise_index)],
+                    [indexOfFirstTensor(self.counterclockwise_index),indexOfSecondTensor(side.inward_index)],
+                ]
+            )
         )
     # }}}
 
     def absorbSideSiteAtCounterClockwise(self,side): # {{{
         return type(self)(
-             tensordot(self.data,side.data,(self.counterclockwise_index,side.clockwise_index))
-            .transpose(
-                self.physical_index,
-                side.physical_index+3,
-                self.physical_conjugate_index,
-                side.physical_conjugate_index+3,
-                self.clockwise_index,
-                side.inward_index+3-1,
-                side.counterclockwise_index+3-1,
-             )
-            .reshape(
-                self.physical_dimension*side.physical_dimension,
-                self.physical_conjugate_dimension*side.physical_conjugate_dimension,
-                self.clockwise_dimension*side.inward_dimension,
-                side.counterclockwise_dimension,
-             )
+            contractAndTransposeAndJoin(
+                (self.data,side.data),
+                ([self.counterclockwise_index],[side.clockwise_index]),
+                [
+                    [indexOfFirstTensor(self.physical_index),indexOfSecondTensor(side.physical_index)],
+                    [indexOfFirstTensor(self.physical_conjugate_index),indexOfSecondTensor(side.physical_conjugate_index)],
+                    [indexOfFirstTensor(self.clockwise_index),indexOfSecondTensor(side.inward_index)],
+                    [indexOfSecondTensor(side.counterclockwise_index)],
+                ]
+            )
         )
     # }}}
 
     def formExpectationBoundary(self,state): # {{{
         return CornerBoundary(
-             tensordot(
-                tensordot(state.data,self.data,(state.physical_index,self.physical_index)),
-                state.data.conj(),
-                (self.physical_index+2,state.physical_index),
-             )
-            .transpose(
-                state.clockwise_index-1,
-                self.clockwise_index+2-2,
-                state.clockwise_index+4-1,
-                state.counterclockwise_index-1,
-                self.counterclockwise_index+2-2,
-                state.counterclockwise_index+4-1,
-             )
-            .reshape(
-                state.clockwise_dimension*self.clockwise_dimension*state.clockwise_dimension,
-                state.counterclockwise_dimension*self.counterclockwise_dimension*state.counterclockwise_dimension,
-             )
+            contractAndTransposeAndJoin(
+                (
+                    contractAndTransposeAndJoin(
+                        (state.data,self.data),
+                        ([state.physical_index],[self.physical_index]),
+                        [
+                            [indexOfSecondTensor(self.physical_conjugate_index)],
+                            [indexOfFirstTensor(state.clockwise_index),indexOfSecondTensor(self.clockwise_index)],
+                            [indexOfFirstTensor(state.counterclockwise_index),indexOfSecondTensor(self.counterclockwise_index)],
+                        ]
+                    ),
+                    state.data.conj(),
+                ),
+                ([0],[state.physical_index]),
+                [
+                    [indexOfFirstTensor(1),indexOfSecondTensor(state.clockwise_index)],
+                    [indexOfFirstTensor(2),indexOfSecondTensor(state.counterclockwise_index)],
+                ],
+            )
         )
     # }}}
 # }}}
@@ -220,29 +204,30 @@ class OperatorSideSite(SideSiteTensor): # {{{
 
     def formExpectationBoundary(self,state): # {{{
         return ExpectationSideBoundary(
-             tensordot(
-                tensordot(state.data,self.data,(state.physical_index,self.physical_index)),
-                state.data.conj(),
-                (self.physical_index+3,state.physical_index),
-             )
-            .transpose(
-                state.clockwise_index-1,
-                self.clockwise_index+3-2,
-                state.clockwise_index+6-1,
-                state.counterclockwise_index-1,
-                self.counterclockwise_index+3-2,
-                state.counterclockwise_index+6-1,
-                state.inward_index-1,
-                self.inward_index+3-2,
-                state.inward_index+6-1,
-             )
-            .reshape(
-                state.clockwise_dimension*self.clockwise_dimension*state.clockwise_dimension,
-                state.counterclockwise_dimension*self.counterclockwise_dimension*state.counterclockwise_dimension,
-                state.inward_dimension,
-                self.inward_dimension,
-                state.inward_dimension,
-             )
+            contractAndTransposeAndJoin(
+                (
+                    contractAndTransposeAndJoin(
+                        (state.data,self.data),
+                        ([state.physical_index],[self.physical_index]),
+                        [
+                            [indexOfSecondTensor(self.physical_conjugate_index)],
+                            [indexOfFirstTensor(state.clockwise_index),indexOfSecondTensor(self.clockwise_index)],
+                            [indexOfFirstTensor(state.counterclockwise_index),indexOfSecondTensor(self.counterclockwise_index)],
+                            [indexOfFirstTensor(state.inward_index)],
+                            [indexOfSecondTensor(self.inward_index)],
+                        ]
+                    ),
+                    state.data.conj(),
+                ),
+                ([0],[state.physical_index]),
+                [
+                    [indexOfFirstTensor(1),indexOfSecondTensor(state.clockwise_index)],
+                    [indexOfFirstTensor(2),indexOfSecondTensor(state.counterclockwise_index)],
+                    [indexOfFirstTensor(3)],
+                    [indexOfFirstTensor(4)],
+                    [indexOfSecondTensor(state.inward_index)],
+                ],
+            )
         )
     # }}}
 # }}}
@@ -256,52 +241,41 @@ class StateCornerSite(SiteTensor): # {{{
 
     def absorbSideSiteAtClockwise(self,side): # {{{
         return type(self)(
-             tensordot(self.data,side.data,(self.clockwise_index,side.counterclockwise_index))
-            .transpose(
-                self.physical_index,
-                side.physical_index+2,
-                side.clockwise_index+2,
-                self.counterclockwise_index-1,
-                side.inward_index+2-1,
-             )
-            .reshape(
-                self.physical_dimension*side.physical_dimension,
-                side.clockwise_dimension,
-                self.counterclockwise_dimension*side.inward_dimension,
+             contractAndTransposeAndJoin(
+                (self.data,side.data),
+                ([self.clockwise_index],[side.counterclockwise_index]),
+                [
+                    [indexOfFirstTensor(self.physical_index),indexOfSecondTensor(side.physical_index)],
+                    [indexOfSecondTensor(side.clockwise_index)],
+                    [indexOfFirstTensor(self.counterclockwise_index),indexOfSecondTensor(side.inward_index),]
+                ]
              )
         )
     # }}}
 
     def absorbSideSiteAtCounterClockwise(self,side): # {{{
         return type(self)(
-             tensordot(self.data,side.data,(self.counterclockwise_index,side.clockwise_index))
-            .transpose(
-                self.physical_index,
-                side.physical_index+2,
-                self.clockwise_index,
-                side.inward_index+2-1,
-                side.counterclockwise_index+2-1
-             )
-            .reshape(
-                self.physical_dimension*side.physical_dimension,
-                self.clockwise_dimension*side.inward_dimension,
-                side.counterclockwise_dimension,
+             contractAndTransposeAndJoin(
+                (self.data,side.data),
+                ([self.counterclockwise_index],[side.clockwise_index]),
+                [
+                    [indexOfFirstTensor(self.physical_index),indexOfSecondTensor(side.physical_index)],
+                    [indexOfFirstTensor(self.clockwise_index),indexOfSecondTensor(side.inward_index)],
+                    [indexOfSecondTensor(side.counterclockwise_index)],
+                ]
              )
         )
     # }}}
 
     def formNormalizationBoundary(self): # {{{
         return CornerBoundary(
-             tensordot(self.data,self.data.conj(),(self.physical_index,)*2)
-            .transpose(
-                self.clockwise_index-1,
-                self.clockwise_index+2-1,
-                self.counterclockwise_index-1,
-                self.counterclockwise_index+2-1,
-             )
-            .reshape(
-                self.clockwise_dimension*self.clockwise_dimension,
-                self.counterclockwise_dimension*self.counterclockwise_dimension,
+             contractAndTransposeAndJoin(
+                (self.data,self.data.conj()),
+                ([self.physical_index],)*2,
+                [
+                    [indexOfFirstTensor(self.clockwise_index),indexOfSecondTensor(self.clockwise_index)],
+                    [indexOfFirstTensor(self.counterclockwise_index),indexOfSecondTensor(self.counterclockwise_index)],
+                ],
              )
         )
     # }}}
@@ -321,21 +295,16 @@ class StateSideSite(SideSiteTensor): # {{{
 
     def formNormalizationBoundary(self): # {{{
         return NormalizationSideBoundary(
-             tensordot(self.data,self.data.conj(),(self.physical_index,)*2)
-            .transpose(
-                self.clockwise_index-1,
-                self.clockwise_index+3-1,
-                self.counterclockwise_index-1,
-                self.counterclockwise_index+3-1,
-                self.inward_index-1,
-                self.inward_index+3-1,
-             )
-            .reshape(
-                self.clockwise_dimension*self.clockwise_dimension,
-                self.counterclockwise_dimension*self.counterclockwise_dimension,
-                self.inward_dimension,
-                self.inward_dimension
-             )
+            contractAndTransposeAndJoin(
+                (self.data,self.data.conj()),
+                ([self.physical_index],)*2,
+                [
+                    [indexOfFirstTensor(self.clockwise_index),indexOfSecondTensor(self.clockwise_index)],
+                    [indexOfFirstTensor(self.counterclockwise_index),indexOfSecondTensor(self.counterclockwise_index)],
+                    [indexOfFirstTensor(self.inward_index)],
+                    [indexOfSecondTensor(self.inward_index)],
+                ]
+            )
         )
     # }}}
 

@@ -1,5 +1,5 @@
 # Imports {{{
-from numpy import dot, identity, product, tensordot
+from numpy import dot, identity, product
 from numpy.linalg import cond, svd
 
 from .tensors import *
@@ -106,36 +106,32 @@ class NormalizationEnvironment(object): # {{{
     # }}}
 
     def computeNormalizationMatrix(self): # {{{
-        submatrix = self.computeNormalizationSubmatrix()
-        return (
-             tensordot(
-                identity(self.physical_dimension),
-                submatrix,
-                ((),()),
-             )
-            .transpose(0,2,1,3)
-            .reshape(*((self.physical_dimension*submatrix.shape[0],)*2))
+        return contractAndTransposeAndJoin(
+            (identity(self.physical_dimension),self.computeNormalizationSubmatrix()),
+            ([],[]),
+            [
+                [indexOfFirstTensor(i),indexOfSecondTensor(i)]
+                for i in [0,1]
+            ]
         )
     # }}}
 
     def computeNormalizationSubmatrix(self): # {{{
         side_boundaries = [side.formNormalizationBoundary().absorbCounterClockwiseCornerBoundary(corner.formNormalizationBoundary()) for (side,corner) in zip(self.sides,self.corners)]
         final_dimension = product(self.bandwidthDimensions())
-        return (
-             tensordot(
+        return contractAndTransposeAndJoin(
+            (
                 side_boundaries[0].absorbCounterClockwiseSideBoundary(side_boundaries[1]).data,
                 side_boundaries[2].absorbCounterClockwiseSideBoundary(side_boundaries[3]).data,
-                ((NormalizationSideBoundary.clockwise_index,NormalizationSideBoundary.counterclockwise_index)
-                ,(NormalizationSideBoundary.counterclockwise_index,NormalizationSideBoundary.clockwise_index)
-                )
-             )
-            .transpose(
-                NormalizationSideBoundary.inward_index-2,
-                NormalizationSideBoundary.inward_index+2-2,
-                NormalizationSideBoundary.inward_conjugate_index-2,
-                NormalizationSideBoundary.inward_conjugate_index+2-2,
-             )
-            .reshape(final_dimension,final_dimension)
+            ),
+            (
+                [NormalizationSideBoundary.clockwise_index,NormalizationSideBoundary.counterclockwise_index],
+                [NormalizationSideBoundary.counterclockwise_index,NormalizationSideBoundary.clockwise_index]
+            ),
+            [
+                [indexOfFirstTensor(NormalizationSideBoundary.inward_index),indexOfSecondTensor(NormalizationSideBoundary.inward_index)],
+                [indexOfFirstTensor(NormalizationSideBoundary.inward_conjugate_index),indexOfSecondTensor(NormalizationSideBoundary.inward_conjugate_index)],
+            ]
         )
     # }}}
 
@@ -252,33 +248,30 @@ class ExpectationEnvironment(NormalizationEnvironment): # {{{
         total_state_bandwidth_dimension = product(self.bandwidthDimensions())
         total_operator_bandwidth_dimension = product(self.O_center.bandwidthDimensions())
         matrix_dimension = self.physical_dimension*total_state_bandwidth_dimension
-        return (
-             tensordot(
-                 self.O_center.data.reshape(self.physical_dimension,self.physical_dimension,product(total_operator_bandwidth_dimension))
-                ,tensordot(
-                    side_boundaries[0].absorbCounterClockwiseSideBoundary(side_boundaries[1]).data,
-                    side_boundaries[2].absorbCounterClockwiseSideBoundary(side_boundaries[3]).data,
-                    ((ExpectationSideBoundary.clockwise_index,ExpectationSideBoundary.counterclockwise_index)
-                    ,(ExpectationSideBoundary.counterclockwise_index,ExpectationSideBoundary.clockwise_index)
-                    )
-                 )
-                .transpose(
-                    ExpectationSideBoundary.inward_operator_index-2,
-                    ExpectationSideBoundary.inward_operator_index+3-2,
-                    ExpectationSideBoundary.inward_state_index-2,
-                    ExpectationSideBoundary.inward_state_index+3-2,
-                    ExpectationSideBoundary.inward_state_conjugate_index-2,
-                    ExpectationSideBoundary.inward_state_conjugate_index+3-2,
-                 )
-                .reshape(
-                    total_operator_bandwidth_dimension,
-                    total_state_bandwidth_dimension,
-                    total_state_bandwidth_dimension,
-                 )
-                ,axes=1
-             )
-            .transpose(0,2,1,3)
-            .reshape(matrix_dimension,matrix_dimension)
+        return contractAndTransposeAndJoin(
+            (
+                self.O_center.data.reshape(self.physical_dimension,self.physical_dimension,product(total_operator_bandwidth_dimension)),
+                contractAndTransposeAndJoin(
+                    (
+                        side_boundaries[0].absorbCounterClockwiseSideBoundary(side_boundaries[1]).data,
+                        side_boundaries[2].absorbCounterClockwiseSideBoundary(side_boundaries[3]).data,
+                    ),
+                    (
+                        [ExpectationSideBoundary.clockwise_index,ExpectationSideBoundary.counterclockwise_index],
+                        [ExpectationSideBoundary.counterclockwise_index,ExpectationSideBoundary.clockwise_index],
+                    ),
+                    [
+                        [indexOfFirstTensor(ExpectationSideBoundary.inward_operator_index),indexOfSecondTensor(ExpectationSideBoundary.inward_operator_index)],
+                        [indexOfFirstTensor(ExpectationSideBoundary.inward_state_index),indexOfSecondTensor(ExpectationSideBoundary.inward_state_index)],
+                        [indexOfFirstTensor(ExpectationSideBoundary.inward_state_conjugate_index),indexOfSecondTensor(ExpectationSideBoundary.inward_state_conjugate_index)],
+                    ],
+                )
+            ),
+            ([2],[0]),
+            [
+                [indexOfFirstTensor(i),indexOfSecondTensor(i+1)]
+                for i in [0,1]
+            ]
         )
     # }}}
 
