@@ -95,6 +95,8 @@ def contractAndTranspose(arrays,array_axes,new_order): # {{{
 # }}}
 
 def contractAndTransposeAndJoin(arrays,array_axes,new_grouped_order): # {{{
+    if array_axes[0] != array_axes[1]:
+        raise ValueError("the number of indices to be contracted is inconsistent ({} != {})".format(*array_axes))
     old_to_new_maps = map(computePostContractionIndexMap,array_axes)
     shapes = [array.shape for array in arrays]
     contracted_axes_sets = map(frozenset,array_axes)

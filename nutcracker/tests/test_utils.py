@@ -1,5 +1,7 @@
 # Imports {{{
+from copy import copy
 from paycheck import *
+from random import sample
 
 from ..utils import normalize
 from . import *
@@ -196,6 +198,17 @@ class TestCompressConnectionUsingFirstTensorBetween(TestCase): # {{{
             tensordot(tensor_1,tensor_2,(index_1,index_2)),
             tensordot(compressed_tensor_1,compressed_tensor_2,(index_1,index_2)),
         )
+    # }}}
+# }}}
+
+class TestContractAndTransposeAndJoin(TestCase): # {{{
+    @with_checker
+    def test_correctness(self,array_ranks=(irange(1,8),)*2): # {{{
+        array_shapes = [randint(1,3) for _ in xrange(rank)) for rank in array_ranks]
+        arrays = [crand(*shape) for shape in array_shapes]
+        number_of_dimensions_to_join = randint(0,min(array_ranks))
+        array_axes = [sample(shape,number_of_dimensions_to_join) for shape in array_shapes]
+        
     # }}}
 # }}}
 
