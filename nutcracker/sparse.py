@@ -7,12 +7,10 @@ import operator
 
 # Classes {{{
 
-class VirtualIndex(object): # {{{
-    def __init__(self,entries):
-        self.entries = entries
-        self.size = reduce(operator.mul,(entry.size for entry in entries),1)
-    def sizes(self):
-        return [entry.size for entry in self.indices]
+class VirtualIndex(tuple): # {{{
+    def __init__(self,*args):
+        super(VirtualIndex,self).__init__(*args)
+        self.size = reduce(operator.mul,(entry.size for entry in self),1)
 # }}}
 
 VirtualIndexEntry = namedtuple("VirtualIndexEntry",["index","size","sparsity"])
@@ -24,7 +22,7 @@ VirtualIndexEntry = namedtuple("VirtualIndexEntry",["index","size","sparsity"])
 def reconcileVirtualIndices(virtual_shape_1,virtual_shape_2): # {{{
     if virtual_shape_1.size != virtual_shape_2.size:
         raise ValueError("unable to reconcile group of size {} with group of size {}".format(virtual_shape_1.size,virtual_shape_1.size))
-    groups = [map(reconcileVirtualIndices.Element.fromVirtualIndexEntry,reversed(virtual_shape.entries)) for virtual_shape in [virtual_shape_1,virtual_shape_2]]
+    groups = [map(reconcileVirtualIndices.Element.fromVirtualIndexEntry,reversed(virtual_shape)) for virtual_shape in [virtual_shape_1,virtual_shape_2]]
     reconciled_virtual_shapes = [[],[]]
     virtual_shape_splits = [defaultdict(lambda: []) for _ in xrange(2)]
     while len(groups[0]) > 0:

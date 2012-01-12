@@ -72,7 +72,7 @@ class TestReconcileVirtualIndices(TestCase): # {{{
     def test_correct_split_total(self,pair_of_virtual_shapes=pair_of_virtual_shapes): # {{{
         (_,splits) = reconcileVirtualIndices(*pair_of_virtual_shapes)
         for (virtual_shape, split) in zip(pair_of_virtual_shapes,splits):
-            for entry in virtual_shape.entries:
+            for entry in virtual_shape:
                 self.assertEqual(entry.size,reduce(operator.mul,split[entry.index],1))
     # }}}
 
@@ -86,7 +86,7 @@ class TestReconcileVirtualIndices(TestCase): # {{{
     @with_checker
     def test_entries_matich_after_reconciliation(self,pair_of_virtual_shapes=pair_of_virtual_shapes): # {{{
         (pair_of_reconciled_virtual_shapes,_) = reconcileVirtualIndices(*pair_of_virtual_shapes)
-        for (entry_1,entry_2) in zip(*(virtual_shape.entries for virtual_shape in pair_of_reconciled_virtual_shapes)):
+        for (entry_1,entry_2) in zip(*pair_of_reconciled_virtual_shapes):
             self.assertEqual(entry_1.size,entry_2.size)
     # }}}
 
