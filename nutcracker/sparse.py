@@ -15,6 +15,13 @@ class VirtualIndex(tuple): # {{{
 
 VirtualIndexEntry = namedtuple("VirtualIndexEntry",["index","size","sparsity"])
 
+class VirtualShape(tuple): # {{{
+    def __init__(self,*args):
+        super(VirtualShape,self).__init__(*args)
+        self.shape = tuple(index.size for index in self)
+        self.size = reduce(operator.mul,self.shape,1)
+# }}}
+
 # }}}
 
 # Functions {{{
