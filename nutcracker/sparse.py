@@ -7,19 +7,29 @@ import operator
 
 # Classes {{{
 
-class VirtualIndex(tuple): # {{{
-    def __init__(self,*args):
-        super(VirtualIndex,self).__init__(*args)
+class SizedEntryContainer(object): # {{{
+    def __init__(self,entries):
+        self._entries = tuple(entries)
         self.size = reduce(operator.mul,(entry.size for entry in self),1)
+    def __getitem__(self,index):
+        return self._entries[index]
+    def __iter__(self):
+        return iter(self._entries)
+    def __len__(self):
+        return len(self._entries)
 # }}}
 
 VirtualIndexEntry = namedtuple("VirtualIndexEntry",["index","size","sparsity"])
 
-class VirtualShape(tuple): # {{{
-    def __init__(self,*args):
-        super(VirtualShape,self).__init__(*args)
+class VirtualIndex(SizedEntryContainer): # {{{
+    pass
+# }}}
+
+class VirtualShape(SizedEntryContainer): # {{{
+    def __init__(self,indices):
+        super(SizedEntryContainer,self)(indices)
         self.shape = tuple(index.size for index in self)
-        self.size = reduce(operator.mul,self.shape,1)
+# }}}
 # }}}
 
 # }}}
