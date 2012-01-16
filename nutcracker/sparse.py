@@ -1,7 +1,7 @@
 # Imports {{{
 from collections import defaultdict, namedtuple
 from itertools import izip
-from numpy import prod
+from numpy import array, ndarray, prod, uint32, zeros
 import operator
 # }}}
 
@@ -74,6 +74,64 @@ class SparseData(object): # {{{
 
 # Functions {{{
 
+def computeJoinedIndexTableAndMatrixJoinTableFromSparseJoinTable(index_tables,sparse_to_sparse_join_axis_lists,sparse_to_dense_join_axis_lists,remaining_axis_lists): # {{{
+    SparseJoin = computeJoinedIndexTableAndMatrixJoinTableFromSparseJoinTable.SparseJoin
+    # Check that the index tables have the correct ranks {{{
+    if [index_table.ndim for index_table in index_tables] != [2,2]:
+        raise ValueError("Each index table must be a 2D array where each row (i.e. entry in the first dimension) supplies a list of indices in the sparse dimensions (ndims = ({},{}) != (2,2))".format(*[index_table.ndim for index_table in index_tables]))
+    del index_table
+    # }}}
+    # Make sure that all of the lists are actually lists, since list slicing behaves differently from tuple slicing {{{
+    sparse_to_sparse_join_axis_lists = map(list,sparse_to_sparse_join_axis_lists)
+    sparse_to_dense_join_axis_lists = map(list,sparse_to_dense_join_axis_lists)
+    remaining_axis_lists = map(list,remaining_axis_lists)
+    # }}}
+    # Compute the set of sparse-to-sparse indices that are shared {{{
+    sparse_to_sparse_index_lists = [
+        frozenset(
+            tuple(row[sparse_to_sparse_join_axis_list])
+            for row in index_table
+        )
+        for (index_table,sparse_to_sparse_join_axis_list) in zip(index_tables,sparse_to_sparse_join_axis_lists)
+    ]
+    sparse_to_sparse_index_filter = sparse_to_sparse_index_lists[0] & sparse_to_sparse_index_lists[1]
+    if not sparse_to_sparse_index_filter:
+        return zeros(shape=(0,sum(map(len,remaining_axis_lists))),dtype=uint32), []
+    del sparse_to_sparse_index_lists
+    # }}}
+    # Create a map with all of the non-zero sparse terms {{{
+    sparse_to_sparse_index_map = defaultdict(lambda: ([],[]))
+    for tensor_number in xrange(2):
+        sparse_to_sparse_join_axis_list = sparse_to_sparse_join_axis_lists[tensor_number]
+        sparse_to_dense_join_axis_list = sparse_to_dense_join_axis_lists[tensor_number]
+        remaining_axis_list = remaining_axis_lists[tensor_number]
+        index_table = index_tables[tensor_number]
+        for row_number, row in enumerate(index_table):
+            sparse_indices = tuple(row[sparse_to_sparse_join_axis_list])
+            if sparse_indices in sparse_to_sparse_index_filter:
+                sparse_to_sparse_index_map[sparse_indices][tensor_number].append(
+                    SparseJoin(
+                        tuple(row[remaining_axis_list]),
+                        row_number,
+                        tuple(row[sparse_to_dense_join_axis_list])
+                    )
+                )
+    del sparse_to_sparse_index_filter
+    # }}}
+    # Compute the joined index map {{{
+    joined_index_map = defaultdict(lambda: [])
+    for joins in sparse_to_sparse_index_map.itervalues():
+        for left_join in joins[0]:
+            for right_join in joins[1]:
+                joined_index_map[left_join.remaining_indices + right_join.remaining_indices].append((
+                    ( left_join.row_number, left_join.sparse_to_dense_join_indices),
+                    (right_join.row_number,right_join.sparse_to_dense_join_indices),
+                ))
+    # }}}
+    return array(joined_index_map.keys(),dtype=uint32), joined_index_map.values()
+computeJoinedIndexTableAndMatrixJoinTableFromSparseJoinTable.SparseJoin = namedtuple("SparseJoin",["remaining_indices","row_number","sparse_to_dense_join_indices"])
+# }}}
+
 def reconcileVirtualIndices(virtual_shape_1,virtual_shape_2): # {{{
     if virtual_shape_1.size != virtual_shape_2.size:
         raise ValueError("unable to reconcile group of size {} with group of size {}".format(virtual_shape_1.size,virtual_shape_1.size))
@@ -135,6 +193,7 @@ __all__ = [
     "VirtualIndex",
     "VirtualIndexEntry",
 
+    "computeJoinedIndexTableAndMatrixJoinTableFromSparseJoinTable",
     "reconcileVirtualIndices",
 ]
 # }}}
