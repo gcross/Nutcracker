@@ -647,6 +647,29 @@ class TestIncreaseDimensionUsingFirstTensorOnlyBetween(TestCase): # {{{
     # }}}
 # }}}
 
+class test_invertPermutation(TestCase): # {{{
+    @with_checker
+    def test_identity_on_range(self,number_of_elements=irange(0,20)): # {{{
+        self.assertEqual(range(number_of_elements),invertPermutation(range(number_of_elements)))
+    # }}}
+
+    @with_checker
+    def test_self_inverse(self,number_of_elements=irange(0,20)): # {{{
+        permutation = range(number_of_elements)
+        shuffle(permutation)
+        self.assertEqual(permutation,invertPermutation(invertPermutation(permutation)))
+    # }}}
+
+    @with_checker
+    def test_correct_when_applied_to_data(self,number_of_elements=irange(0,20)): # {{{
+        data = [randint(0,100) for _ in xrange(number_of_elements)]
+        permutation = range(number_of_elements)
+        shuffle(permutation)
+        permuted_data = [data[i] for i in permutation]
+        self.assertEqual(data,[permuted_data[i] for i in invertPermutation(permutation)])
+    # }}}
+# }}}
+
 class TestNormalizeAndDenormalize(TestCase): # {{{
     @with_checker
     def test_random(self, # {{{

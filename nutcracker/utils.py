@@ -333,6 +333,10 @@ def indexOfSecondTensor(index): # {{{
     return TensorNumberAndIndex(1,index)
 # }}}
 
+def invertPermutation(permutation): # {{{
+    return [permutation.index(i) for i in xrange(len(permutation))]
+# }}}
+
 def mapFunctions(functions,data): # {{{
     for f, x in zip(functions,data):
         yield f(x)
@@ -483,6 +487,7 @@ __all__ = [
     "increaseDimensionUsingFirstTensorOnlyBetweenTensors",
     "indexOfFirstTensor",
     "indexOfSecondTensor",
+    "invertPermutation",
     "mapFunctions",
     "multiplyTensorByMatrixAtIndex",
     "normalize",
