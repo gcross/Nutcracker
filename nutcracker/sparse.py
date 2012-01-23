@@ -29,6 +29,24 @@ class SparseDescriptor(SizedEntryContainer): # {{{
     def __init__(self,indices):
         super(SizedEntryContainer,self)(indices)
         self.shape = tuple(index.size for index in self)
+        self.sparse_shape, self.dense_shape = (
+            tuple(
+                entry.size
+                for entry in index
+                for index in self
+                if entry.sparsity == sparsity
+            )
+            for sparsity in (Sparsity.sparse,Sparsity.dense)
+        )
+        self.number_of_sparse_indices = len(self.sparse_shape)
+        self.number_of_dense_indices = len(self.dense_shape)
+        self.dense_form_indices = [
+            entry.index + (self.number_of_sparse_indices if entry.sparsity == Sparsity.sparse else 0)
+            for entry in index
+            for index in self
+        ]
+        self.dense_form_shape = [entry.shape for entry in index for index in self]
+        self.inverse_dense_form_indices = invertPermutation(self.dense_form_indices)
 # }}}
 
 class SparseData(SparseDescriptor): # {{{
@@ -73,6 +91,28 @@ class SparseData(SparseDescriptor): # {{{
 # }}}
 
 # Functions {{{
+
+def applyMatrixJoins(matrix_tables,matrix_join_lists,sparse_to_dense_axis_lists,dense_to_dense_axis_lists,remaining_axis_lists): # {{{
+    if len(dense_to_dense_axis_lists[0]) != len(dense_to_dense_axis_lists[1]):
+        raise ValueError("The list of dense-to-dense joined indices must have the same lengths. ({} != {})".format(len(x) for x in dense_to_dense_axis_lists))
+    number_of_dense_to_dense_axes = len(dense_to_dense_axis_lists[0])
+    joined_matrix_table = zeros(
+        shape = (len(matrix_joins),) + sum(tuple(matrix_table.shape[i] for i in remaining_axis_list) for matrix_table, remaining_axis_list in zip(matrix_tables,remaining_axis_lists)),
+        dtype = matrix_table.dtype,
+    )
+    transposed_matrix_tables = [
+        matrix_tables[0].transpose(sparse_to_dense_axis_lists[0],remaining_axis_lists[0],dense_to_dense_axis_lists[0]),
+        matrix_tables[1].transpose(sparse_to_dense_axis_lists[1],dense_to_dense_axis_lists[1],remaining_axis_lists[1]),
+    ]
+    for joined_matrix_row, matrix_join_list in zip(matrix_table,matrix_join_lists):
+        for matrix_join in matrix_join_list:
+            tensordot_arguments = []
+            for (row_number, indices), transposed_matrix_table in zip(matrix_join):
+                tensordot_arguments.append(transposed_matrix_table[row_number,indices,...])
+            tensordot_arguments.append(number_of_dense_to_dense_axes)
+            joined_matrix_row[...] += tensordot(*tensordot_arguments)
+    return joined_matrix_table
+# }}}
 
 def computeJoinedIndexTableAndMatrixJoinTableFromSparseJoinTable(index_tables,sparse_to_sparse_join_axis_lists,sparse_to_dense_join_axis_lists,remaining_axis_lists): # {{{
     SparseJoin = computeJoinedIndexTableAndMatrixJoinTableFromSparseJoinTable.SparseJoin
@@ -131,6 +171,14 @@ def computeJoinedIndexTableAndMatrixJoinTableFromSparseJoinTable(index_tables,sp
     # }}}
     return array(joined_index_map.keys(),dtype=index_table_dtype), joined_index_map.values()
 computeJoinedIndexTableAndMatrixJoinTableFromSparseJoinTable.SparseJoin = namedtuple("SparseJoin",["remaining_indices","row_number","sparse_to_dense_join_indices"])
+# }}}
+
+def convertSparseToDense(index_table,matrix_table,sparse_decriptor): # {{{
+    matrix = zeros(shape = sparse_descriptor.shape, dtype = matrix_table.dtype)
+    transposed_matrix = matrix.reshape(sparse_descriptor.dense_form_shape).transpose(sparse_descriptor.inverse_dense_form_indices)
+    for index_table_row, matrix_table_row in (index_table,matrix_table):
+        transposed_matrix[tuple(index_table_row)] += matrix_table_row
+    return matrix
 # }}}
 
 def reconcileSparseDescriptors(sparse_descriptor_1,sparse_descriptor_2): # {{{
