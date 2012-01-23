@@ -62,13 +62,13 @@ def randomVirtualIndexFromPrimes(primes): # {{{
 
 # Generators {{{
 
-class PairOfVirtualIndicesGenerator(generator.PayCheckGenerator): # {{{
+class PairOfSparseDescriptorsGenerator(generator.PayCheckGenerator): # {{{
     def __init__(self,upper_bound_on_primes=20):
         self.prime_list_generator = self.get([choiceof(primesUpTo(upper_bound_on_primes))])
     def __next__(self):
         primes = next(self.prime_list_generator)
         return (randomVirtualIndexFromPrimes(primes),randomVirtualIndexFromPrimes(primes))
-pair_of_virtual_shapes = PairOfVirtualIndicesGenerator
+pair_of_sparse_descriptors = PairOfSparseDescriptorsGenerator
 # }}}
 
 # }}}
@@ -217,31 +217,31 @@ class test_computeJoinedIndexTableAndMatrixJoinTableFromSparseJoinTable(TestCase
 
 class TestPairOfVirtualIndicesGenerator(TestCase): # {{{
     @with_checker
-    def test_both_shapes_have_the_same_size(self,pair_of_virtual_shapes=pair_of_virtual_shapes): # {{{
-        self.assertEqual(pair_of_virtual_shapes[0].size,pair_of_virtual_shapes[1].size)
+    def test_both_shapes_have_the_same_size(self,pair_of_sparse_descriptors=pair_of_sparse_descriptors): # {{{
+        self.assertEqual(pair_of_sparse_descriptors[0].size,pair_of_sparse_descriptors[1].size)
     # }}}
 # }}}
 
-class TestReconcileVirtualIndices(TestCase): # {{{
+class test_reconcileSparseDescriptors(TestCase): # {{{
     @with_checker
-    def test_correct_split_total(self,pair_of_virtual_shapes=pair_of_virtual_shapes): # {{{
-        (_,splits) = reconcileVirtualIndices(*pair_of_virtual_shapes)
-        for (virtual_shape, split) in zip(pair_of_virtual_shapes,splits):
-            for entry in virtual_shape:
+    def test_correct_split_total(self,pair_of_sparse_descriptors=pair_of_sparse_descriptors): # {{{
+        (_,splits) = reconcileSparseDescriptors(*pair_of_sparse_descriptors)
+        for (sparse_descriptor, split) in zip(pair_of_sparse_descriptors,splits):
+            for entry in sparse_descriptor:
                 self.assertEqual(entry.size,reduce(operator.mul,split[entry.index],1))
     # }}}
 
     @with_checker
-    def test_size_unchanged_by_reconciliation(self,pair_of_virtual_shapes=pair_of_virtual_shapes): # {{{
-        (pair_of_reconciled_virtual_shapes,_) = reconcileVirtualIndices(*pair_of_virtual_shapes)
-        for (virtual_shape,reconciled_virtual_shape) in zip(pair_of_virtual_shapes,pair_of_reconciled_virtual_shapes):
-            self.assertEqual(virtual_shape.size,reconciled_virtual_shape.size)
+    def test_size_unchanged_by_reconciliation(self,pair_of_sparse_descriptors=pair_of_sparse_descriptors): # {{{
+        (pair_of_reconciled_sparse_descriptors,_) = reconcileSparseDescriptors(*pair_of_sparse_descriptors)
+        for (sparse_descriptor,reconciled_sparse_descriptor) in zip(pair_of_sparse_descriptors,pair_of_reconciled_sparse_descriptors):
+            self.assertEqual(sparse_descriptor.size,reconciled_sparse_descriptor.size)
     # }}}
 
     @with_checker
-    def test_entries_matich_after_reconciliation(self,pair_of_virtual_shapes=pair_of_virtual_shapes): # {{{
-        (pair_of_reconciled_virtual_shapes,_) = reconcileVirtualIndices(*pair_of_virtual_shapes)
-        for (entry_1,entry_2) in zip(*pair_of_reconciled_virtual_shapes):
+    def test_entries_matich_after_reconciliation(self,pair_of_sparse_descriptors=pair_of_sparse_descriptors): # {{{
+        (pair_of_reconciled_sparse_descriptors,_) = reconcileSparseDescriptors(*pair_of_sparse_descriptors)
+        for (entry_1,entry_2) in zip(*pair_of_reconciled_sparse_descriptors):
             self.assertEqual(entry_1.size,entry_2.size)
     # }}}
 

@@ -25,21 +25,21 @@ class VirtualIndex(SizedEntryContainer): # {{{
     pass
 # }}}
 
-class VirtualShape(SizedEntryContainer): # {{{
+class SparseDescriptor(SizedEntryContainer): # {{{
     def __init__(self,indices):
         super(SizedEntryContainer,self)(indices)
         self.shape = tuple(index.size for index in self)
 # }}}
 
-class SparseData(object): # {{{
-    def __init__(self,index_table,matrix_table,virtual_shape=None,sparse_shape=None):
-        if virtual_shape is None and sparse_shape is None:
+class SparseData(SparseDescriptor): # {{{
+    def __init__(self,index_table,matrix_table,sparse_descriptor=None,sparse_shape=None):
+        if sparse_descriptor is None and sparse_shape is None:
             raise ValueError("Either the shape of the sparse indices or the virtual shape must be specified.")
-        elif virtual_shape is not None:
+        elif sparse_descriptor is not None:
             specified_shapes = {Sparsity.dense: matrix_table.shape}
             if sparse_shape is not None:
                 specified_shapes[Sparsity.sparse] = sparse_shape
-            for virtual_index in virtual_shape:
+            for virtual_index in sparse_descriptor:
                 for entry in virtual_index:
                     if entry.sparsity in specified_shapes:
                         specified_shape = specified_shapes[entry.sparsity]
@@ -50,7 +50,7 @@ class SparseData(object): # {{{
                             raise ValueError("The virtual shape says that {} index {} should have size {}, but the specified shape says it should have size {}".format(entry.sparsity,entry.index,entry.size,specified_size))
             if sparse_shape is None:
                 sparse_shape = [None]*index_table.shape[0]
-                for virtual_index in virtual_shape:
+                for virtual_index in sparse_descriptor:
                     for entry in virtual_index:
                         if entry.sparsity == Sparsity.sparse:
                             if entry.index > len(sparse_shape):
@@ -60,7 +60,7 @@ class SparseData(object): # {{{
                     if size is None:
                         raise ValueError("Index {} of the sparse shape is missing from the virtual shape.".format(index))
         else:
-            virtual_shape = VirtualShape(
+            sparse_descriptor = VirtualShape(
                 [VirtualIndex(VirtualIndexEntry(index=index,size=size,sparsity=Sparsity.sparse)) for (index,size) in enumerate(sparse_shape)] +
                 [VirtualIndex(VirtualIndexEntry(index=index,size=size,sparsity=Sparsity.dense)) for (index,size) in enumerate(matrix_table.shape)]
             )
@@ -132,20 +132,21 @@ def computeJoinedIndexTableAndMatrixJoinTableFromSparseJoinTable(index_tables,sp
 computeJoinedIndexTableAndMatrixJoinTableFromSparseJoinTable.SparseJoin = namedtuple("SparseJoin",["remaining_indices","row_number","sparse_to_dense_join_indices"])
 # }}}
 
-def reconcileVirtualIndices(virtual_shape_1,virtual_shape_2): # {{{
-    if virtual_shape_1.size != virtual_shape_2.size:
-        raise ValueError("unable to reconcile group of size {} with group of size {}".format(virtual_shape_1.size,virtual_shape_1.size))
-    groups = [map(reconcileVirtualIndices.Element.fromVirtualIndexEntry,reversed(virtual_shape)) for virtual_shape in [virtual_shape_1,virtual_shape_2]]
-    reconciled_virtual_shapes = [[],[]]
-    virtual_shape_splits = [defaultdict(lambda: []) for _ in xrange(2)]
+def reconcileSparseDescriptors(sparse_descriptor_1,sparse_descriptor_2): # {{{
+    if sparse_descriptor_1.size != sparse_descriptor_2.size:
+        raise ValueError("unable to reconcile group of size {} with group of size {}".format(sparse_descriptor_1.size,sparse_descriptor_1.size))
+    Element = reconcileSparseDescriptors.Element
+    groups = [map(Element.fromVirtualIndexEntry,reversed(sparse_descriptor)) for sparse_descriptor in [sparse_descriptor_1,sparse_descriptor_2]]
+    reconciled_sparse_descriptors = [[],[]]
+    sparse_descriptor_splits = [defaultdict(lambda: []) for _ in xrange(2)]
     while len(groups[0]) > 0:
         elements = [group.pop() for group in groups]
         for a, b in [(0,1),(1,0)]:
             if elements[a].size > elements[b].size:
                 if elements[a].size % elements[b].size != 0:
-                    raise ValueError("virtual shapes {} and {} cannot be reconciled into a common product of factors ({} % {} != 0)".format(virtual_shape_1.sizes(),virtual_shape_2.sizes(),elements[a].size,elements[b].size))
+                    raise ValueError("virtual shapes {} and {} cannot be reconciled into a common product of factors ({} % {} != 0)".format(sparse_descriptor_1.sizes(),sparse_descriptor_2.sizes(),elements[a].size,elements[b].size))
                 groups[a].append(
-                    reconcileVirtualIndices.Element(
+                    Element(
                         index=elements[a].index,
                         subindex=elements[a].subindex+1,
                         size=elements[a].size/elements[b].size,
@@ -154,35 +155,35 @@ def reconcileVirtualIndices(virtual_shape_1,virtual_shape_2): # {{{
                 )
                 elements[a].size = elements[b].size
         assert elements[0].size == elements[1].size
-        for (element,reconciled_virtual_shape,virtual_shape_split) in izip(elements,reconciled_virtual_shapes,virtual_shape_splits):
-            reconciled_virtual_shape.append(VirtualIndexEntry(
+        for (element,reconciled_sparse_descriptor,sparse_descriptor_split) in izip(elements,reconciled_sparse_descriptors,sparse_descriptor_splits):
+            reconciled_sparse_descriptor.append(VirtualIndexEntry(
                 index=(element.index,element.subindex),
                 size=element.size,
                 sparsity=element.sparsity
             ))
-            virtual_shape_split[element.index].append(element.size)
+            sparse_descriptor_split[element.index].append(element.size)
     for group in groups:
         assert len(group) == 0
-    reconciled_virtual_shapes = map(VirtualIndex,reconciled_virtual_shapes)
-    assert reconciled_virtual_shapes[0].size == reconciled_virtual_shapes[1].size
-    return reconciled_virtual_shapes, virtual_shape_splits
+    reconciled_sparse_descriptors = map(VirtualIndex,reconciled_sparse_descriptors)
+    assert reconciled_sparse_descriptors[0].size == reconciled_sparse_descriptors[1].size
+    return reconciled_sparse_descriptors, sparse_descriptor_splits
 
-class reconcileVirtualIndices_Element(object):
+class reconcileSparseDescriptors_Element(object):
     def __init__(self,index,subindex,size,sparsity):
         self.index = index
         self.subindex = subindex
         self.size = size
         self.sparsity = sparsity
     @classmethod
-    def fromVirtualIndexEntry(cls,virtual_shape_entry):
+    def fromVirtualIndexEntry(cls,sparse_descriptor_entry):
         return cls(
-            index = virtual_shape_entry.index,
+            index = sparse_descriptor_entry.index,
             subindex = 0,
-            size = virtual_shape_entry.size,
-            sparsity = virtual_shape_entry.sparsity,
+            size = sparse_descriptor_entry.size,
+            sparsity = sparse_descriptor_entry.sparsity,
         )
-reconcileVirtualIndices.Element = reconcileVirtualIndices_Element
-del reconcileVirtualIndices_Element
+reconcileSparseDescriptors.Element = reconcileSparseDescriptors_Element
+del reconcileSparseDescriptors_Element
 
 # }}}
 
@@ -194,6 +195,6 @@ __all__ = [
     "VirtualIndexEntry",
 
     "computeJoinedIndexTableAndMatrixJoinTableFromSparseJoinTable",
-    "reconcileVirtualIndices",
+    "reconcileSparseDescriptors",
 ]
 # }}}
