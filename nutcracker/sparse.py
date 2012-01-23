@@ -1,7 +1,7 @@
 # Imports {{{
 from collections import defaultdict, namedtuple
 from itertools import izip
-from numpy import array, ndarray, prod, uint32, zeros
+from numpy import array, ndarray, prod, zeros
 import operator
 # }}}
 
@@ -76,6 +76,7 @@ class SparseData(SparseDescriptor): # {{{
 
 def computeJoinedIndexTableAndMatrixJoinTableFromSparseJoinTable(index_tables,sparse_to_sparse_join_axis_lists,sparse_to_dense_join_axis_lists,remaining_axis_lists): # {{{
     SparseJoin = computeJoinedIndexTableAndMatrixJoinTableFromSparseJoinTable.SparseJoin
+    index_table_dtype = index_tables[0].dtype
     # Check that the index tables have the correct ranks {{{
     if [index_table.ndim for index_table in index_tables] != [2,2]:
         raise ValueError("Each index table must be a 2D array where each row (i.e. entry in the first dimension) supplies a list of indices in the sparse dimensions (ndims = ({},{}) != (2,2))".format(*[index_table.ndim for index_table in index_tables]))
@@ -96,7 +97,7 @@ def computeJoinedIndexTableAndMatrixJoinTableFromSparseJoinTable(index_tables,sp
     ]
     sparse_to_sparse_index_filter = sparse_to_sparse_index_lists[0] & sparse_to_sparse_index_lists[1]
     if not sparse_to_sparse_index_filter:
-        return zeros(shape=(0,sum(map(len,remaining_axis_lists))),dtype=uint32), []
+        return zeros(shape=(0,sum(map(len,remaining_axis_lists))),dtype=index_table_dtype), []
     del sparse_to_sparse_index_lists
     # }}}
     # Create a map with all of the non-zero sparse terms {{{
@@ -128,7 +129,7 @@ def computeJoinedIndexTableAndMatrixJoinTableFromSparseJoinTable(index_tables,sp
                     (right_join.row_number,right_join.sparse_to_dense_join_indices),
                 ))
     # }}}
-    return array(joined_index_map.keys(),dtype=uint32), joined_index_map.values()
+    return array(joined_index_map.keys(),dtype=index_table_dtype), joined_index_map.values()
 computeJoinedIndexTableAndMatrixJoinTableFromSparseJoinTable.SparseJoin = namedtuple("SparseJoin",["remaining_indices","row_number","sparse_to_dense_join_indices"])
 # }}}
 
