@@ -65,42 +65,11 @@ class SparseDescriptor(SizedEntryContainer): # {{{
 # }}}
 
 class SparseData(SparseDescriptor): # {{{
-    def __init__(self,index_table,matrix_table,sparse_descriptor=None,sparse_shape=None):
-        if sparse_descriptor is None and sparse_shape is None:
-            raise ValueError("Either the shape of the sparse indices or the virtual shape must be specified.")
-        elif sparse_descriptor is not None:
-            specified_shapes = {Sparsity.dense: matrix_table.shape}
-            if sparse_shape is not None:
-                specified_shapes[Sparsity.sparse] = sparse_shape
-            for virtual_index in sparse_descriptor:
-                for entry in virtual_index:
-                    if entry.sparsity in specified_shapes:
-                        specified_shape = specified_shapes[entry.sparsity]
-                        if entry.index >= len(specified_shape):
-                            raise ValueError("The virtual shape refers to index {} that does not exist in the specified shape of the {} indicies.".format(entry.index,entry.sparsity))
-                        specified_size = specified_shape[size]
-                        if entry.size != specified_size:
-                            raise ValueError("The virtual shape says that {} index {} should have size {}, but the specified shape says it should have size {}".format(entry.sparsity,entry.index,entry.size,specified_size))
-            if sparse_shape is None:
-                sparse_shape = [None]*index_table.shape[0]
-                for virtual_index in sparse_descriptor:
-                    for entry in virtual_index:
-                        if entry.sparsity == Sparsity.sparse:
-                            if entry.index > len(sparse_shape):
-                                raise ValueError("The virtual shape refers to an index that is greater than the number of sparse indices ({} >= {})".format(entry.index,len(sparse_shape)))
-                            sparse_shape[entry.index] = entry.size
-                for index, size in enumerate(sparse_shape):
-                    if size is None:
-                        raise ValueError("Index {} of the sparse shape is missing from the virtual shape.".format(index))
-        else:
-            sparse_descriptor = VirtualShape(
-                [VirtualIndex(VirtualIndexEntry(index=index,size=size,sparsity=Sparsity.sparse)) for (index,size) in enumerate(sparse_shape)] +
-                [VirtualIndex(VirtualIndexEntry(index=index,size=size,sparsity=Sparsity.dense)) for (index,size) in enumerate(matrix_table.shape)]
-            )
-        self.sparse_shape = sparse_shape
-        self.shape = sparse_shape
+    def __init__(self,index_table,matrix_table,sparse_descriptor): # {{{
+        SparseDescriptor.__init__(self,sparse_descriptor)
         self.index_table = index_table
         self.matrix_table = matrix_table
+    # }}}
 # }}}
 
 # }}}
