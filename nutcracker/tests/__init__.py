@@ -5,7 +5,7 @@ from numpy import all, allclose, array, dot, identity, product, tensordot
 from numpy.linalg import norm
 from numpy.random import rand
 from paycheck import *
-from random import randint
+from random import randint, shuffle
 import unittest
 
 from ..utils import *
@@ -50,6 +50,15 @@ def randomNormalizableTensorAndIndex(ndim): # {{{
     return crand(*shape), index
 # }}}
 
+def randomPartition(elements): # {{{
+    number_of_elements = len(elements)
+    number_of_partitions = randint(0,number_of_elements)
+    partition_indices = [randint(0,number_of_elements) for _ in xrange(number_of_partitions)]
+    partition_indices.sort()
+    partition_indices = [0] + partition_indices + [number_of_elements]
+    return [elements[partition_indices[i]:partition_indices[i+1]] for i in xrange(number_of_partitions+1)]
+# }}}
+
 def randomShape(ndim): # {{{
     return [randint(1,5) for _ in range(ndim)]
 # }}}
@@ -59,6 +68,11 @@ def randomShapeAgreeingWith(ndim,index,other_dimension): # {{{
     shape[index] = other_dimension
     return shape
 # }}}
+
+def randomShuffledPartition(elements):
+    elements = list(elements)
+    shuffle(elements)
+    return randomPartition(elements)
 
 def randomTensor(ndim): # {{{
     return crand(*randomShape(ndim))

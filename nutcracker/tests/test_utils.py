@@ -216,13 +216,7 @@ class TestContractAndTransposeAndJoin(TestCase): # {{{
             for index in xrange(rank):
                 if index not in indices_being_contracted_for[tensor_number]:
                     remaining_indices.append(TensorNumberAndIndex(tensor_number,index))
-        shuffle(remaining_indices)
-        number_of_remaining_indices = len(remaining_indices)
-        number_of_partitions = randint(0,number_of_remaining_indices)
-        partition_indices = [randint(0,number_of_remaining_indices) for _ in xrange(number_of_partitions)]
-        partition_indices.sort()
-        partition_indices = [0] + partition_indices + [number_of_remaining_indices]
-        new_grouped_order = [remaining_indices[partition_indices[i]:partition_indices[i+1]] for i in xrange(number_of_partitions+1)]
+        new_grouped_order = randomShuffledPartition(remaining_indices)
         contractor = \
             formContractor(
                 [0,1],
