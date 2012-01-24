@@ -245,6 +245,50 @@ class test_convertSparseToDense(TestCase): # {{{
             ))
         )
     # }}}
+
+    @with_checker
+    def test_simple_sparse_and_dense_case(self,ndims=(irange(0,3),)*2,number_of_rows=irange(0,100)): # {{{
+        shapes = [tuple(random_integers(low=1,high=10,size=ndim)) for ndim in ndims]
+        sparse_shape, dense_shape = shapes
+        index_table = array([[randint(0,size-1) for _ in xrange(number_of_rows)] for size in sparse_shape]).transpose()
+        matrix_table = crand(number_of_rows,*tuple(dense_shape))
+        matrix = zeros(sparse_shape + dense_shape,dtype=matrix_table.dtype)
+        for indices, values in izip(index_table,matrix_table):
+            matrix[tuple(indices)] += values
+        self.assertAllEqual(
+            matrix,
+            convertSparseToDense(index_table,matrix_table,SparseDescriptor(sum((
+                tuple(
+                    VirtualIndex.withSingleEntry(index = i, size = size, sparsity = sparsity)
+                    for i, size in enumerate(shape)
+                )
+                for (shape,sparsity) in izip(shapes,(Sparsity.sparse,Sparsity.dense))
+            ),tuple())))
+        )
+    # }}}
+
+    @with_checker
+    def test_full_case(self,ndims=(irange(0,3),)*2,number_of_rows=irange(0,100)): # {{{
+        if sum(ndims) == 0:
+            return
+        shapes = [tuple(random_integers(low=1,high=10,size=ndim)) for ndim in ndims]
+        sparse_shape, dense_shape = shapes
+        index_table = array([[randint(0,size-1) for _ in xrange(number_of_rows)] for size in sparse_shape]).transpose()
+        matrix_table = crand(number_of_rows,*tuple(dense_shape))
+        matrix = zeros(sparse_shape + dense_shape,dtype=matrix_table.dtype)
+        for indices, values in izip(index_table,matrix_table):
+            matrix[tuple(indices)] += values
+        sparse_descriptor = SparseDescriptor(map(VirtualIndex,(randomShuffledPartition(
+            VirtualIndexEntry(index = i, size = size, sparsity = sparsity)
+            for (shape,sparsity) in zip(shapes,(Sparsity.sparse,Sparsity.dense))
+            for (i, size) in enumerate(shape)
+        ))))
+        self.assertAllEqual(
+            matrix.transpose(sparse_descriptor.dense_form_indices).reshape(sparse_descriptor.shape),
+            convertSparseToDense(index_table,matrix_table,sparse_descriptor),
+        )
+    # }}}
+
 # }}}
 
 class TestPairOfVirtualIndicesGenerator(TestCase): # {{{
