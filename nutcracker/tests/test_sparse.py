@@ -11,7 +11,6 @@ from random import randint, shuffle
 from uuid import uuid4
 
 from . import *
-from ..enumerations import *
 from ..sparse import *
 # }}}
 

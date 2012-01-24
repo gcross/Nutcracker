@@ -3,6 +3,17 @@ from collections import defaultdict, namedtuple
 from itertools import izip
 from numpy import array, ndarray, prod, zeros
 import operator
+
+from .miscellaneous.enum_meta import Enum
+from .utils import invertPermutation
+# }}}
+
+# Enumerations {{{
+
+class Sparsity(Enum):
+    dense = "dense"
+    sparse = "sparse"
+
 # }}}
 
 # Classes {{{
@@ -240,6 +251,7 @@ del reconcileSparseDescriptors_Element
 
 # Exports {{{
 __all__ = [
+    "Sparsity",
     "VirtualIndex",
     "VirtualIndexEntry",
 
