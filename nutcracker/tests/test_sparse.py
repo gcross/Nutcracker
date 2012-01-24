@@ -222,11 +222,15 @@ class test_convertSparseToDense(TestCase): # {{{
         matrix = array(crand(*shape))
         index_table = zeros(shape=(1,0))
         matrix_table = matrix.reshape((1,) + matrix.shape)
+        sparse_descriptor = SparseDescriptor(
+                VirtualIndex.withSingleEntry(index = i, size = size, sparsity = Sparsity.dense) for i, size in enumerate(shape)
+            )
+        SparseData(index_table,matrix_table,sparse_descriptor)
         self.assertAllEqual(
             matrix,
-            convertSparseToDense(index_table,matrix_table,SparseDescriptor(
+            SparseData(index_table,matrix_table,SparseDescriptor(
                 VirtualIndex.withSingleEntry(index = i, size = size, sparsity = Sparsity.dense) for i, size in enumerate(shape)
-            ))
+            )).convertToDense()
         )
     # }}}
 
@@ -240,9 +244,9 @@ class test_convertSparseToDense(TestCase): # {{{
             matrix[tuple(indices)] += value
         self.assertAllEqual(
             matrix,
-            convertSparseToDense(index_table,matrix_table,SparseDescriptor(
+            SparseData(index_table,matrix_table,SparseDescriptor(
                 VirtualIndex.withSingleEntry(index = i, size = size, sparsity = Sparsity.sparse) for i, size in enumerate(shape)
-            ))
+            )).convertToDense()
         )
     # }}}
 
@@ -257,13 +261,13 @@ class test_convertSparseToDense(TestCase): # {{{
             matrix[tuple(indices)] += values
         self.assertAllEqual(
             matrix,
-            convertSparseToDense(index_table,matrix_table,SparseDescriptor(sum((
+            SparseData(index_table,matrix_table,SparseDescriptor(sum((
                 tuple(
                     VirtualIndex.withSingleEntry(index = i, size = size, sparsity = sparsity)
                     for i, size in enumerate(shape)
                 )
                 for (shape,sparsity) in izip(shapes,(Sparsity.sparse,Sparsity.dense))
-            ),tuple())))
+            ),tuple()))).convertToDense()
         )
     # }}}
 
@@ -284,8 +288,8 @@ class test_convertSparseToDense(TestCase): # {{{
             for (i, size) in enumerate(shape)
         ))))
         self.assertAllEqual(
-            matrix.transpose(sparse_descriptor.dense_form_indices).reshape(sparse_descriptor.shape),
-            convertSparseToDense(index_table,matrix_table,sparse_descriptor),
+            matrix.transpose(sparse_descriptor.computeRawFormIndices()).reshape(sparse_descriptor.shape),
+            SparseData(index_table,matrix_table,sparse_descriptor).convertToDense(),
         )
     # }}}
 

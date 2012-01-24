@@ -41,27 +41,25 @@ class VirtualIndex(SizedEntryContainer): # {{{
 # }}}
 
 class SparseDescriptor(SizedEntryContainer): # {{{
-    def __init__(self,indices):
-        super(self.__class__,self).__init__(indices)
-        self.sparse_shape, self.dense_shape = (
-            tuple(
-                entry.size
-                for index in self
-                for entry in index
-                if entry.sparsity == sparsity
-            )
-            for sparsity in (Sparsity.sparse,Sparsity.dense)
-        )
-        self.number_of_sparse_indices = len(self.sparse_shape)
-        self.number_of_dense_indices = len(self.dense_shape)
-        dense_index_offset = self.number_of_sparse_indices
-        self.dense_form_indices = [
-            entry.index + (0 if entry.sparsity == Sparsity.sparse else dense_index_offset)
+    def computeRawFormIndices(self): # {{{
+        number_of_sparse_indices = 0
+        for index in self:
+            for entry in index:
+                if entry.sparsity == Sparsity.sparse:
+                    number_of_sparse_indices += 1
+        dense_index_offset = number_of_sparse_indices
+        return [
+            entry.index + (0 if entry.sparsity == Sparsity.sparse else number_of_sparse_indices)
             for index in self
             for entry in index
         ]
-        self.dense_form_shape = [entry.size for index in self for entry in index]
-        self.inverse_dense_form_indices = invertPermutation(self.dense_form_indices)
+    # }}}
+
+    def transposeAndReshapeDenseToRaw(self,matrix): # {{{
+        raw_dense_form_shape = [entry.size for index in self for entry in index]
+        inverse_raw_dense_form_indices = invertPermutation(self.computeRawFormIndices())
+        return matrix.reshape(raw_dense_form_shape).transpose(inverse_raw_dense_form_indices)
+    # }}}
 # }}}
 
 class SparseData(SparseDescriptor): # {{{
@@ -69,6 +67,14 @@ class SparseData(SparseDescriptor): # {{{
         SparseDescriptor.__init__(self,sparse_descriptor)
         self.index_table = index_table
         self.matrix_table = matrix_table
+    # }}}
+
+    def convertToDense(self): # {{{
+        matrix = zeros(shape = self.shape, dtype = self.matrix_table.dtype)
+        transposed_matrix = self.transposeAndReshapeDenseToRaw(matrix)
+        for index_table_row, matrix_table_row in izip(self.index_table,self.matrix_table):
+            transposed_matrix[tuple(index_table_row)] += matrix_table_row
+        return matrix
     # }}}
 # }}}
 
@@ -157,14 +163,6 @@ def computeJoinedIndexTableAndMatrixJoinTableFromSparseJoinTable(index_tables,sp
 computeJoinedIndexTableAndMatrixJoinTableFromSparseJoinTable.SparseJoin = namedtuple("SparseJoin",["remaining_indices","row_number","sparse_to_dense_join_indices"])
 # }}}
 
-def convertSparseToDense(index_table,matrix_table,sparse_descriptor): # {{{
-    matrix = zeros(shape = sparse_descriptor.shape, dtype = matrix_table.dtype)
-    transposed_matrix = matrix.reshape(sparse_descriptor.dense_form_shape).transpose(sparse_descriptor.inverse_dense_form_indices)
-    for index_table_row, matrix_table_row in izip(index_table,matrix_table):
-        transposed_matrix[tuple(index_table_row)] += matrix_table_row
-    return matrix
-# }}}
-
 def reconcileSparseDescriptors(sparse_descriptor_1,sparse_descriptor_2): # {{{
     if sparse_descriptor_1.size != sparse_descriptor_2.size:
         raise ValueError("unable to reconcile group of size {} with group of size {}".format(sparse_descriptor_1.size,sparse_descriptor_1.size))
@@ -224,13 +222,13 @@ del reconcileSparseDescriptors_Element
 
 # Exports {{{
 __all__ = [
+    "SparseData",
     "SparseDescriptor",
     "Sparsity",
     "VirtualIndex",
     "VirtualIndexEntry",
 
     "computeJoinedIndexTableAndMatrixJoinTableFromSparseJoinTable",
-    "convertSparseToDense",
     "reconcileSparseDescriptors",
 ]
 # }}}
