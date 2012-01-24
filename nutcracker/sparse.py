@@ -60,6 +60,10 @@ class SparseDescriptor(SizedEntryContainer): # {{{
         inverse_raw_dense_form_indices = invertPermutation(self.computeRawFormIndices())
         return matrix.reshape(raw_dense_form_shape).transpose(inverse_raw_dense_form_indices)
     # }}}
+
+    def reconcileWith(self,other): # {{{
+        return reconcileSparseDescriptors(self,other)
+    # }}}
 # }}}
 
 class SparseData(SparseDescriptor): # {{{
