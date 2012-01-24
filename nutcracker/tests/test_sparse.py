@@ -2,6 +2,7 @@
 from collections import defaultdict
 from copy import copy
 import itertools
+from itertools import izip
 from numpy import prod, split, uint32, zeros
 from numpy.random import random_integers
 import operator
@@ -212,6 +213,38 @@ class test_computeJoinedIndexTableAndMatrixJoinTableFromSparseJoinTable(TestCase
         self.assertEqual(expected_join_counts,observed_join_counts)
     # }}}
 
+# }}}
+
+class test_convertSparseToDense(TestCase): # {{{
+    @with_checker
+    def test_fully_dense_case(self,ndim=irange(0,5)): # {{{
+        shape = random_integers(low=0,high=10,size=ndim)
+        matrix = array(crand(*shape))
+        index_table = zeros(shape=(1,0))
+        matrix_table = matrix.reshape((1,) + matrix.shape)
+        self.assertAllEqual(
+            matrix,
+            convertSparseToDense(index_table,matrix_table,SparseDescriptor(
+                VirtualIndex.withSingleEntry(index = i, size = size, sparsity = Sparsity.dense) for i, size in enumerate(shape)
+            ))
+        )
+    # }}}
+
+    @with_checker
+    def test_fully_sparse_case(self,ndim=irange(0,5),number_of_rows=irange(0,100)): # {{{
+        shape = random_integers(low=1,high=10,size=ndim)
+        index_table = array([[randint(0,size-1) for _ in xrange(number_of_rows)] for size in shape]).transpose()
+        matrix_table = crand(number_of_rows)
+        matrix = zeros(shape,dtype=matrix_table.dtype)
+        for indices, value in izip(index_table,matrix_table):
+            matrix[tuple(indices)] += value
+        self.assertAllEqual(
+            matrix,
+            convertSparseToDense(index_table,matrix_table,SparseDescriptor(
+                VirtualIndex.withSingleEntry(index = i, size = size, sparsity = Sparsity.sparse) for i, size in enumerate(shape)
+            ))
+        )
+    # }}}
 # }}}
 
 class TestPairOfVirtualIndicesGenerator(TestCase): # {{{

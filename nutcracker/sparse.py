@@ -40,20 +40,21 @@ class SparseDescriptor(SizedEntryContainer): # {{{
         self.sparse_shape, self.dense_shape = (
             tuple(
                 entry.size
-                for entry in index
                 for index in self
+                for entry in index
                 if entry.sparsity == sparsity
             )
             for sparsity in (Sparsity.sparse,Sparsity.dense)
         )
         self.number_of_sparse_indices = len(self.sparse_shape)
         self.number_of_dense_indices = len(self.dense_shape)
+        dense_index_offset = self.number_of_sparse_indices
         self.dense_form_indices = [
-            entry.index + (self.number_of_sparse_indices if entry.sparsity == Sparsity.sparse else 0)
-            for entry in index
+            entry.index + (0 if entry.sparsity == Sparsity.sparse else dense_index_offset)
             for index in self
+            for entry in index
         ]
-        self.dense_form_shape = [entry.shape for entry in index for index in self]
+        self.dense_form_shape = [entry.size for index in self for entry in index]
         self.inverse_dense_form_indices = invertPermutation(self.dense_form_indices)
 # }}}
 
@@ -181,10 +182,10 @@ def computeJoinedIndexTableAndMatrixJoinTableFromSparseJoinTable(index_tables,sp
 computeJoinedIndexTableAndMatrixJoinTableFromSparseJoinTable.SparseJoin = namedtuple("SparseJoin",["remaining_indices","row_number","sparse_to_dense_join_indices"])
 # }}}
 
-def convertSparseToDense(index_table,matrix_table,sparse_decriptor): # {{{
+def convertSparseToDense(index_table,matrix_table,sparse_descriptor): # {{{
     matrix = zeros(shape = sparse_descriptor.shape, dtype = matrix_table.dtype)
     transposed_matrix = matrix.reshape(sparse_descriptor.dense_form_shape).transpose(sparse_descriptor.inverse_dense_form_indices)
-    for index_table_row, matrix_table_row in (index_table,matrix_table):
+    for index_table_row, matrix_table_row in izip(index_table,matrix_table):
         transposed_matrix[tuple(index_table_row)] += matrix_table_row
     return matrix
 # }}}
@@ -248,11 +249,13 @@ del reconcileSparseDescriptors_Element
 
 # Exports {{{
 __all__ = [
+    "SparseDescriptor",
     "Sparsity",
     "VirtualIndex",
     "VirtualIndexEntry",
 
     "computeJoinedIndexTableAndMatrixJoinTableFromSparseJoinTable",
+    "convertSparseToDense",
     "reconcileSparseDescriptors",
 ]
 # }}}
