@@ -181,7 +181,7 @@ class test_computeJoinedIndexTableAndMatrixJoinTableFromSparseJoinTable(TestCase
                         remaining_indices = tuple()
                     counts_table[sparse_to_sparse_indices][i][remaining_indices] += 1
             index_tables[i] = index_table[...,permutations[i]]
-        del i, index_table, sparse_to_sparse_indices, number_of_remaining_axes
+        del i, index_table, number_of_remaining_axes
         # }}}
         # Compute expected join counts table {{{
         expected_join_counts = defaultdict(lambda: 0)
