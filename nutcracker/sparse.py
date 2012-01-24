@@ -18,11 +18,17 @@ class Sparsity(Enum):
 
 # Classes {{{
 
-class SizedEntryContainer(tuple): # {{{
-    def __init__(self,*args):
-        super(SizedEntryContainer,self).__init__(*args)
-        self.shape = tuple(entry.size for entry in self)
-        self.size = reduce(operator.mul,(size for size in self.shape),1)
+class SizedEntryContainer(object): # {{{
+    def __init__(self,entries):
+        self._entries = tuple(entries)
+        self.size = reduce(operator.mul,(entry.size for entry in self),1)
+        self.shape = tuple(index.size for index in self)
+    def __getitem__(self,index):
+        return self._entries[index]
+    def __iter__(self):
+        return iter(self._entries)
+    def __len__(self):
+        return len(self._entries)
 # }}}
 
 VirtualIndexEntry = namedtuple("VirtualIndexEntry",["index","size","sparsity"])
