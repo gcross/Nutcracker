@@ -108,17 +108,17 @@ def applyMatrixJoins(matrix_tables,matrix_join_lists,sparse_to_dense_axis_lists,
         raise ValueError("The list of dense-to-dense joined indices must have the same lengths. ({} != {})".format(len(x) for x in dense_to_dense_axis_lists))
     number_of_dense_to_dense_axes = len(dense_to_dense_axis_lists[0])
     joined_matrix_table = zeros(
-        shape = (len(matrix_joins),) + sum(tuple(matrix_table.shape[i] for i in remaining_axis_list) for matrix_table, remaining_axis_list in zip(matrix_tables,remaining_axis_lists)),
+        shape = (len(matrix_joins),) + sum(tuple(matrix_table.shape[i] for i in remaining_axis_list) for matrix_table, remaining_axis_list in izip(matrix_tables,remaining_axis_lists)),
         dtype = matrix_table.dtype,
     )
     transposed_matrix_tables = [
         matrix_tables[0].transpose(sparse_to_dense_axis_lists[0],remaining_axis_lists[0],dense_to_dense_axis_lists[0]),
         matrix_tables[1].transpose(sparse_to_dense_axis_lists[1],dense_to_dense_axis_lists[1],remaining_axis_lists[1]),
     ]
-    for joined_matrix_row, matrix_join_list in zip(matrix_table,matrix_join_lists):
+    for joined_matrix_row, matrix_join_list in izip(matrix_table,matrix_join_lists):
         for matrix_join in matrix_join_list:
             tensordot_arguments = []
-            for (row_number, indices), transposed_matrix_table in zip(matrix_join):
+            for (row_number, indices), transposed_matrix_table in izip(matrix_join):
                 tensordot_arguments.append(transposed_matrix_table[row_number,indices,...])
             tensordot_arguments.append(number_of_dense_to_dense_axes)
             joined_matrix_row[...] += tensordot(*tensordot_arguments)
@@ -144,7 +144,7 @@ def computeJoinedIndexTableAndMatrixJoinTableFromSparseJoinTable(index_tables,sp
             tuple(row[sparse_to_sparse_join_axis_list])
             for row in index_table
         )
-        for (index_table,sparse_to_sparse_join_axis_list) in zip(index_tables,sparse_to_sparse_join_axis_lists)
+        for (index_table,sparse_to_sparse_join_axis_list) in izip(index_tables,sparse_to_sparse_join_axis_lists)
     ]
     sparse_to_sparse_index_filter = sparse_to_sparse_index_lists[0] & sparse_to_sparse_index_lists[1]
     if not sparse_to_sparse_index_filter:
