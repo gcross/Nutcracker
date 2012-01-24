@@ -18,28 +18,25 @@ class Sparsity(Enum):
 
 # Classes {{{
 
-class SizedEntryContainer(object): # {{{
-    def __init__(self,entries):
-        self._entries = tuple(entries)
-        self.size = reduce(operator.mul,(entry.size for entry in self),1)
-    def __getitem__(self,index):
-        return self._entries[index]
-    def __iter__(self):
-        return iter(self._entries)
-    def __len__(self):
-        return len(self._entries)
+class SizedEntryContainer(tuple): # {{{
+    def __init__(self,*args):
+        super(SizedEntryContainer,self).__init__(*args)
+        self.shape = tuple(entry.size for entry in self)
+        self.size = reduce(operator.mul,(size for size in self.shape),1)
 # }}}
 
 VirtualIndexEntry = namedtuple("VirtualIndexEntry",["index","size","sparsity"])
 
 class VirtualIndex(SizedEntryContainer): # {{{
-    pass
+    @classmethod
+    def withSingleEntry(cls,index,size,sparsity):  # {{{
+        return cls((VirtualIndexEntry(index,size,sparsity),))
+    # }}}
 # }}}
 
 class SparseDescriptor(SizedEntryContainer): # {{{
     def __init__(self,indices):
-        super(SizedEntryContainer,self)(indices)
-        self.shape = tuple(index.size for index in self)
+        super(self.__class__,self).__init__(indices)
         self.sparse_shape, self.dense_shape = (
             tuple(
                 entry.size
