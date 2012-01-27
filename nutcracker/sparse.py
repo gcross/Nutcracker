@@ -213,6 +213,7 @@ def reconcileVirtualIndices(virtual_index_1,virtual_index_2): # {{{
     virtual_index_splits = [defaultdict(lambda: defaultdict(lambda: [])) for _ in xrange(2)]
     while len(groups[0]) > 0:
         elements = [group.pop() for group in groups]
+        # Check whether the overlapping virtual index entries need to be split {{{
         for a, b in [(0,1),(1,0)]:
             if elements[a].size > elements[b].size:
                 if elements[a].size % elements[b].size != 0:
@@ -227,6 +228,7 @@ def reconcileVirtualIndices(virtual_index_1,virtual_index_2): # {{{
                 )
                 elements[a].size = elements[b].size
         assert elements[0].size == elements[1].size
+        # }}}
         for (element,reconciled_virtual_index,virtual_index_split) in izip(elements,reconciled_virtual_indices,virtual_index_splits):
             reconciled_virtual_index.append(VirtualIndexEntry(
                 index=(element.index,element.subindex),
