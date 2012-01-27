@@ -41,15 +41,36 @@ class VirtualIndex(SizedEntryContainer): # {{{
 # }}}
 
 class SparseDescriptor(SizedEntryContainer): # {{{
-    def computeRawFormIndices(self): # {{{
-        number_of_sparse_indices = 0
+    def __init__(self,indices): # {{{
+        SizedEntryContainer.__init__(self,indices)
+        number_of_indices_of_kind = defaultdict(lambda: 0)
         for index in self:
             for entry in index:
-                if entry.sparsity == Sparsity.sparse:
-                    number_of_sparse_indices += 1
-        dense_index_offset = number_of_sparse_indices
+                number_of_indices_of_kind[entry.sparsity] += 1
+        shape_of_kind = {sparsity: [None]*number_of_indices_of_kind[sparsity] for sparsity in Sparsity}
+        for index in self:
+            for entry in index:
+                try:
+                    shape_of_kind[entry.sparsity][entry.index] = entry.size
+                except IndexError:
+                    raise ValueError("raw {} index {} is greater than the number of indices of that kind".format(entry.sparsity,entry.index))
+        for sparsity, shape, in shape_of_kind.iteritems():
+            missing_indices = set()
+            for index, size in enumerate(shape):
+                if size is None:
+                    missing_indices.add(index)
+            if missing_indices:
+                raise ValueError("the following {} indices are missing: {}".format(sparsity,missing_indices))
+        for sparsity in Sparsity:
+            shape_of_kind[sparsity] = tuple(shape_of_kind[sparsity])
+        self.number_of_indices_of_kind = number_of_indices_of_kind
+        self.shape_of_kind = shape_of_kind
+    # }}}
+
+    def computeRawFormIndices(self): # {{{
+        dense_index_offset = self.number_of_indices_of_kind[Sparsity.sparse]
         return [
-            entry.index + (0 if entry.sparsity == Sparsity.sparse else number_of_sparse_indices)
+            entry.index + (0 if entry.sparsity == Sparsity.sparse else dense_index_offset)
             for index in self
             for entry in index
         ]
