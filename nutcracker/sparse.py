@@ -188,6 +188,22 @@ def computeJoinedIndexTableAndMatrixJoinTableFromSparseJoinTable(index_tables,sp
 computeJoinedIndexTableAndMatrixJoinTableFromSparseJoinTable.SparseJoin = namedtuple("SparseJoin",["remaining_indices","row_number","sparse_to_dense_join_indices"])
 # }}}
 
+def reconcileSparseDescriptors(sparse_descriptors,axes_to_join): # {{{
+    indices = [list(sparse_descriptor) for sparse_descriptor in sparse_descriptors]
+    splits = [defaultdict(lambda: defaultdict(lambda: [])) for _ in xrange(2)]
+    observed_axes_list = [set() for _ in xrange(2)]
+    splits = [{} for _ in xrange(2)]
+    for axes in zip(*axes_to_join):
+        for i, (axis, observed_axes) in enumerate(izip(axes,observed_axes_list)):
+            if axis in observed_axes:
+                raise ValueError("the join axis {} appears twice in tensor {}".format(i,axis))
+            observed_axes.add(axis)
+        (indices[0][axis_0], indices[1][axis_1]), new_splits = reconcileVirtualIndices(indices[0][axis_0],indices[1][axis_1])
+        for split, new_split in izip(splits,new_splits):
+            split.update(new_split)
+    return map(tuple,indices), splits
+    # }}}
+
 def reconcileVirtualIndices(virtual_index_1,virtual_index_2): # {{{
     if virtual_index_1.size != virtual_index_2.size:
         raise ValueError("unable to reconcile index of size {} with index of size {}".format(virtual_index_1.size,virtual_index_1.size))
