@@ -62,13 +62,13 @@ def randomVirtualIndexFromPrimes(primes): # {{{
 
 # Generators {{{
 
-class PairOfSparseDescriptorsGenerator(generator.PayCheckGenerator): # {{{
+class PairOfVirtualIndicesGenerator(generator.PayCheckGenerator): # {{{
     def __init__(self,upper_bound_on_primes=20):
         self.prime_list_generator = self.get([choiceof(primesUpTo(upper_bound_on_primes))])
     def __next__(self):
         primes = next(self.prime_list_generator)
         return (randomVirtualIndexFromPrimes(primes),randomVirtualIndexFromPrimes(primes))
-pair_of_sparse_descriptors = PairOfSparseDescriptorsGenerator
+pair_of_virtual_indices = PairOfVirtualIndicesGenerator
 # }}}
 
 # }}}
@@ -297,30 +297,30 @@ class test_convertSparseToDense(TestCase): # {{{
 
 class TestPairOfVirtualIndicesGenerator(TestCase): # {{{
     @with_checker
-    def test_both_shapes_have_the_same_size(self,pair_of_sparse_descriptors=pair_of_sparse_descriptors): # {{{
-        self.assertEqual(pair_of_sparse_descriptors[0].size,pair_of_sparse_descriptors[1].size)
+    def test_both_shapes_have_the_same_size(self,pair_of_virtual_indices=pair_of_virtual_indices): # {{{
+        self.assertEqual(pair_of_virtual_indices[0].size,pair_of_virtual_indices[1].size)
     # }}}
 # }}}
 
-class test_reconcileSparseDescriptors(TestCase): # {{{
+class test_reconcileVirtualIndices(TestCase): # {{{
     @with_checker
-    def test_correct_split_total(self,pair_of_sparse_descriptors=pair_of_sparse_descriptors): # {{{
-        (_,splits) = reconcileSparseDescriptors(*pair_of_sparse_descriptors)
-        for (sparse_descriptor, split) in zip(pair_of_sparse_descriptors,splits):
+    def test_correct_split_total(self,pair_of_virtual_indices=pair_of_virtual_indices): # {{{
+        (_,splits) = reconcileVirtualIndices(*pair_of_virtual_indices)
+        for (sparse_descriptor, split) in zip(pair_of_virtual_indices,splits):
             for entry in sparse_descriptor:
-                self.assertEqual(entry.size,reduce(operator.mul,split[entry.index],1))
+                self.assertEqual(entry.size,reduce(operator.mul,split[entry.sparsity][entry.index],1))
     # }}}
 
     @with_checker
-    def test_size_unchanged_by_reconciliation(self,pair_of_sparse_descriptors=pair_of_sparse_descriptors): # {{{
-        (pair_of_reconciled_sparse_descriptors,_) = reconcileSparseDescriptors(*pair_of_sparse_descriptors)
-        for (sparse_descriptor,reconciled_sparse_descriptor) in zip(pair_of_sparse_descriptors,pair_of_reconciled_sparse_descriptors):
+    def test_size_unchanged_by_reconciliation(self,pair_of_virtual_indices=pair_of_virtual_indices): # {{{
+        (pair_of_reconciled_sparse_descriptors,_) = reconcileVirtualIndices(*pair_of_virtual_indices)
+        for (sparse_descriptor,reconciled_sparse_descriptor) in zip(pair_of_virtual_indices,pair_of_reconciled_sparse_descriptors):
             self.assertEqual(sparse_descriptor.size,reconciled_sparse_descriptor.size)
     # }}}
 
     @with_checker
-    def test_entries_matich_after_reconciliation(self,pair_of_sparse_descriptors=pair_of_sparse_descriptors): # {{{
-        (pair_of_reconciled_sparse_descriptors,_) = reconcileSparseDescriptors(*pair_of_sparse_descriptors)
+    def test_entries_matich_after_reconciliation(self,pair_of_virtual_indices=pair_of_virtual_indices): # {{{
+        (pair_of_reconciled_sparse_descriptors,_) = reconcileVirtualIndices(*pair_of_virtual_indices)
         for (entry_1,entry_2) in zip(*pair_of_reconciled_sparse_descriptors):
             self.assertEqual(entry_1.size,entry_2.size)
     # }}}

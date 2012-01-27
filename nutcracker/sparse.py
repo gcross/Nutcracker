@@ -167,19 +167,19 @@ def computeJoinedIndexTableAndMatrixJoinTableFromSparseJoinTable(index_tables,sp
 computeJoinedIndexTableAndMatrixJoinTableFromSparseJoinTable.SparseJoin = namedtuple("SparseJoin",["remaining_indices","row_number","sparse_to_dense_join_indices"])
 # }}}
 
-def reconcileSparseDescriptors(sparse_descriptor_1,sparse_descriptor_2): # {{{
-    if sparse_descriptor_1.size != sparse_descriptor_2.size:
-        raise ValueError("unable to reconcile group of size {} with group of size {}".format(sparse_descriptor_1.size,sparse_descriptor_1.size))
-    Element = reconcileSparseDescriptors.Element
-    groups = [map(Element.fromVirtualIndexEntry,reversed(sparse_descriptor)) for sparse_descriptor in [sparse_descriptor_1,sparse_descriptor_2]]
-    reconciled_sparse_descriptors = [[],[]]
-    sparse_descriptor_splits = [defaultdict(lambda: []) for _ in xrange(2)]
+def reconcileVirtualIndices(virtual_index_1,virtual_index_2): # {{{
+    if virtual_index_1.size != virtual_index_2.size:
+        raise ValueError("unable to reconcile index of size {} with index of size {}".format(virtual_index_1.size,virtual_index_1.size))
+    Element = reconcileVirtualIndices.Element
+    groups = [map(Element.fromVirtualIndexEntry,reversed(virtual_index)) for virtual_index in [virtual_index_1,virtual_index_2]]
+    reconciled_virtual_indices = [[],[]]
+    virtual_index_splits = [defaultdict(lambda: defaultdict(lambda: [])) for _ in xrange(2)]
     while len(groups[0]) > 0:
         elements = [group.pop() for group in groups]
         for a, b in [(0,1),(1,0)]:
             if elements[a].size > elements[b].size:
                 if elements[a].size % elements[b].size != 0:
-                    raise ValueError("virtual shapes {} and {} cannot be reconciled into a common product of factors ({} % {} != 0)".format(sparse_descriptor_1.sizes(),sparse_descriptor_2.sizes(),elements[a].size,elements[b].size))
+                    raise ValueError("virtual shapes {} and {} cannot be reconciled into a common product of factors ({} % {} != 0)".format(virtual_index_1.sizes(),virtual_index_2.sizes(),elements[a].size,elements[b].size))
                 groups[a].append(
                     Element(
                         index=elements[a].index,
@@ -190,35 +190,35 @@ def reconcileSparseDescriptors(sparse_descriptor_1,sparse_descriptor_2): # {{{
                 )
                 elements[a].size = elements[b].size
         assert elements[0].size == elements[1].size
-        for (element,reconciled_sparse_descriptor,sparse_descriptor_split) in izip(elements,reconciled_sparse_descriptors,sparse_descriptor_splits):
-            reconciled_sparse_descriptor.append(VirtualIndexEntry(
+        for (element,reconciled_virtual_index,virtual_index_split) in izip(elements,reconciled_virtual_indices,virtual_index_splits):
+            reconciled_virtual_index.append(VirtualIndexEntry(
                 index=(element.index,element.subindex),
                 size=element.size,
                 sparsity=element.sparsity
             ))
-            sparse_descriptor_split[element.index].append(element.size)
+            virtual_index_split[element.sparsity][element.index].append(element.size)
     for group in groups:
         assert len(group) == 0
-    reconciled_sparse_descriptors = map(VirtualIndex,reconciled_sparse_descriptors)
-    assert reconciled_sparse_descriptors[0].size == reconciled_sparse_descriptors[1].size
-    return reconciled_sparse_descriptors, sparse_descriptor_splits
+    reconciled_virtual_indices = map(VirtualIndex,reconciled_virtual_indices)
+    assert reconciled_virtual_indices[0].size == reconciled_virtual_indices[1].size
+    return reconciled_virtual_indices, virtual_index_splits
 
-class reconcileSparseDescriptors_Element(object):
+class reconcileVirtualIndices_Element(object):
     def __init__(self,index,subindex,size,sparsity):
         self.index = index
         self.subindex = subindex
         self.size = size
         self.sparsity = sparsity
     @classmethod
-    def fromVirtualIndexEntry(cls,sparse_descriptor_entry):
+    def fromVirtualIndexEntry(cls,virtual_index_entry):
         return cls(
-            index = sparse_descriptor_entry.index,
+            index = virtual_index_entry.index,
             subindex = 0,
-            size = sparse_descriptor_entry.size,
-            sparsity = sparse_descriptor_entry.sparsity,
+            size = virtual_index_entry.size,
+            sparsity = virtual_index_entry.sparsity,
         )
-reconcileSparseDescriptors.Element = reconcileSparseDescriptors_Element
-del reconcileSparseDescriptors_Element
+reconcileVirtualIndices.Element = reconcileVirtualIndices_Element
+del reconcileVirtualIndices_Element
 
 # }}}
 
@@ -233,6 +233,6 @@ __all__ = [
     "VirtualIndexEntry",
 
     "computeJoinedIndexTableAndMatrixJoinTableFromSparseJoinTable",
-    "reconcileSparseDescriptors",
+    "reconcileVirtualIndices",
 ]
 # }}}
