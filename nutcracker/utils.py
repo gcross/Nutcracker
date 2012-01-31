@@ -14,6 +14,10 @@ TensorNumberAndIndex = namedtuple("TensorNumberAndIndex",["tensor","index"])
 
 # Functions {{{
 
+def applyPermutationTo(permutation,vector): # {{{
+    return list(vector[permutation[i]] for i in xrange(len(vector)))
+# }}}
+
 def appended(vector,entry): # {{{
     copy_of_vector = list(vector)
     if copy_of_vector is vector:
@@ -463,6 +467,7 @@ __all__ = [
     "TensorNumberAndIndex",
 
     "appended",
+    "applyPermutationTo",
     "basisVector",
     "CCW",
     "crand",

@@ -659,8 +659,7 @@ class test_invertPermutation(TestCase): # {{{
         data = [randint(0,100) for _ in xrange(number_of_elements)]
         permutation = range(number_of_elements)
         shuffle(permutation)
-        permuted_data = [data[i] for i in permutation]
-        self.assertEqual(data,[permuted_data[i] for i in invertPermutation(permutation)])
+        self.assertEqual(data,applyPermutationTo(invertPermutation(permutation),applyPermutationTo(permutation,data)))
     # }}}
 # }}}
 
