@@ -5,34 +5,34 @@
 
 class MetaTensor(type): # {{{
     def __new__(cls,class_name,bases,data):
-        if "dimension_names" in data:
-            dimension_names = data["dimension_names"]
+        if "index_names" in data:
+            index_names = data["index_names"]
             # Check that no dimension name is repeated {{{
-            observed_dimension_names = set()
-            for name in dimension_names:
-                if name in observed_dimension_names:
-                    raise ValueError("repeated dimension name '{}'".format(name))
+            observed_index_names = set()
+            for name in index_names:
+                if name in observed_index_names:
+                    raise ValueError("repeated index name '{}'".format(name))
                 else:
-                    observed_dimension_names.add(name)
+                    observed_index_names.add(name)
             # }}}
             # Check that conjugated dimensions have a non-conjugated partner {{{
-            dimension_names_with_conjugate = {}
-            for name in dimension_names:
+            index_names_with_conjugate = {}
+            for name in index_names:
                 if name.endswith("_conjugate"):
                     non_conjugate_name = name[:-10]
-                    if non_conjugate_name not in observed_dimension_names:
-                        raise ValueError("dimension name {} does not have a non-conjugated partner")
+                    if non_conjugate_name not in observed_index_names:
+                        raise ValueError("index name {} does not have a non-conjugated partner")
                     else:
-                        dimension_names_with_conjugate[non_conjugate_name] = name
-            data["dimension_names_with_conjugate"] = dimension_names_with_conjugate
+                        index_names_with_conjugate[non_conjugate_name] = name
+            data["index_names_with_conjugate"] = index_names_with_conjugate
             # }}}
             # Add properties for each of the dimensions {{{
-            dimension_indices = {}
-            for (index,name) in enumerate(data["dimension_names"]):
-                dimension_indices[name] = index
+            indices = {}
+            for (index,name) in enumerate(data["index_names"]):
+                indices[name] = index
                 data[name + "_index"] = index
                 data[name + "_dimension"] = property(lambda self: self.shape[index])
-            data["dimension_indices"] = dimension_indices
+            data["indices"] = indices
             # }}}
         return type.__new__(cls,class_name,bases,data)
 # }}}
