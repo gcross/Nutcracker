@@ -1,505 +1,305 @@
 # Imports {{{
-from collections import namedtuple
-from copy import copy
-from numpy import array, complex128, dot, ndarray, product, sqrt, tensordot, zeros
-from numpy.linalg import eigh, norm, qr, svd
+
+from collections import defaultdict, namedtuple
 from numpy.random import rand
 
-from . import core
+# }}} Imports
+
+# Exceptions {{{
+
+class DimensionMismatchError(ValueError): # {{{
+    def __init__(self,left_tensor_number,left_index,left_dimension,right_tensor_number,right_index,right_dimension): # {{{
+        self.left_tensor_number = left_tensor_number
+        self.left_index = left_index
+        self.left_dimension = left_dimension
+        self.right_tensor_number = right_tensor_number
+        self.right_index = right_index
+        self.right_dimension = right_dimension
+        ValueError.__init__(self,"tensor {left_tensor_number}'s index {left_index} has dimension {left_dimension}, whereas tensor {right_tensor_number}'s index {right_index} has dimension {right_dimension}".format(**self.__dict__))
+    # }}}
 # }}}
 
-# Types {{{
-TensorNumberAndIndex = namedtuple("TensorNumberAndIndex",["tensor","index"])
+class UnexpectedTensorRankError(ValueError): # {{{
+    def __init__(self,tensor_number,expected_rank,actual_rank): # {{{
+        self.tensor_number = tensor_number
+        self.expected_rank = expected_rank
+        self.actual_rank = actual_rank
+        ValueError.__init__(self,"tensor {tensor_number} was expected to have rank {expected_rank} but actually has rank {actual_rank}".format(**self.__dict__))
+    # }}}
+# }}}
+
+# }}}
+
+# Classes {{{
+
+class Join: # {{{
+    def __init__( # {{{
+        self
+        ,left_tensor_number
+        ,left_tensor_indices
+        ,right_tensor_number
+        ,right_tensor_indices
+    ):
+        if not hasattr(left_tensor_indices,"__len__"):
+            left_tensor_indices = [left_tensor_indices]
+        if not hasattr(right_tensor_indices,"__len__"):
+            right_tensor_indices = [right_tensor_indices]
+        if len(left_tensor_indices) != len(right_tensor_indices):
+            raise ValueError("number of left indices does not match number of right indices (len({}) != len({}))".format(left_tensor_indices,right_tensor_indices))
+        self.left_tensor_number = left_tensor_number
+        self.left_tensor_indices = left_tensor_indices
+        self.right_tensor_number = right_tensor_number
+        self.right_tensor_indices = right_tensor_indices
+        self.checkOrderAndSwap()
+    # }}}
+    def __repr__(self): # {{{
+        return "Join({left_tensor_number},{left_tensor_indices},{right_tensor_number},{right_tensor_indices})".format(**self.__dict__)
+    # }}}
+    def checkOrderAndSwap(self): # {{{
+        if self.left_tensor_number == self.right_tensor_number:
+            raise ValueError(
+                ("attempted to create a self-join for tensor {} (indices = {},{})"
+                ).format(
+                    self.left_tensor_number,
+                    self.left_tensor_indices,
+                    self.right_tensor_indices
+                )
+            )
+        if self.right_tensor_number < self.left_tensor_number:
+            right_tensor_number = self.right_tensor_number
+            right_tensor_indices = self.right_tensor_indices
+            self.right_tensor_number = self.left_tensor_number
+            self.right_tensor_indices = self.left_tensor_indices
+            self.left_tensor_number = right_tensor_number
+            self.left_tensor_indices = right_tensor_indices
+    # }}}
+    def mergeWith(self,other): # {{{
+        assert self.left_tensor_number == other.left_tensor_number
+        assert self.right_tensor_number == other.right_tensor_number
+        self.left_tensor_indices  += other.left_tensor_indices
+        self.right_tensor_indices += other.right_tensor_indices
+    # }}}
+    def update(self,old_tensor_number,new_tensor_number,index_map): # {{{
+        if self.left_tensor_number == old_tensor_number:
+            self.left_tensor_number = new_tensor_number
+            self.left_tensor_indices = applyIndexMapTo(index_map,self.left_tensor_indices)
+            self.checkOrderAndSwap()
+        elif self.right_tensor_number == old_tensor_number:
+            self.right_tensor_number = new_tensor_number
+            self.right_tensor_indices = applyIndexMapTo(index_map,self.right_tensor_indices)
+            self.checkOrderAndSwap()
+    # }}}
+# }}}
+
 # }}}
 
 # Functions {{{
 
-def appended(vector,entry): # {{{
-    copy_of_vector = list(vector)
-    if copy_of_vector is vector:
-        copy_of_vector = copy(vector)
-    copy_of_vector.append(entry)
-    return copy_of_vector
+def applyIndexMapTo(index_map,indices): # {{{
+    return [index_map[index] for index in indices]
 # }}}
 
-def basisVector(dimension,index,dtype=complex128): # {{{
-    vector = zeros(dimension,dtype=dtype)
-    vector[index] = 1
-    return vector
+def applyPermutation(permutation,values): # {{{
+    return [values[i] for i in permutation]
 # }}}
 
-def CCW(i): # {{{
-    return (i+1)%4
+def computeLengthAndCheckForGaps(indices,error_message): # {{{
+    if len(indices) == 0:
+        return 0
+    length = max(indices)+1
+    unobserved_indices = set(xrange(length))
+    for index in indices:
+        unobserved_indices.remove(index)
+    if unobserved_indices:
+        raise ValueError(error_message + ": " + str(unobserved_indices))
+    return length
 # }}}
 
-def compressConnectionBetween(tensor_1,index_1,tensor_2,index_2,keep=None,threshold=None): # {{{
-    return truncateConnectionBetween(tensor_1,index_1,tensor_2,index_2,constructFilterFrom(keep=keep,threshold=threshold))
-# }}}
-
-def compressConnectionBetweenTensors(tensor_1,index_1,tensor_2,index_2,keep=None,threshold=None): # {{{
-    return mapFunctions(
-        (type(tensor_1),type(tensor_2)),
-        compressConnectionBetween(tensor_1.data,index_1,tensor_2.data,index_2,keep,threshold)
-    )
-# }}}
-
-def compressConnectionToSelf(tensor,index,keep=None,threshold=None): # {{{
-    return truncateConnectionToSelf(tensor,index,constructFilterFrom(keep=keep,threshold=threshold))
-# }}}
-
-def compressConnectionToSelfTensor(tensor,index,keep=None,threshold=None): # {{{
-    return type(tensor)(compressConnectionToSelf(tensor.data,index,keep,threshold))
-# }}}
-
-def compressConnectionUsingFirstTensorOnlyBetween(tensor_1,index_1,tensor_2,index_2,keep=None,threshold=None): # {{{
-    return truncateConnectionUsingFirstTensorOnlyBetween(tensor_1,index_1,tensor_2,index_2,constructFilterFrom(keep=keep,threshold=threshold))
-# }}}
-
-def compressConnectionUsingFirstTensorOnlyBetweenTensors(tensor_1,index_1,tensor_2,index_2,keep=None,threshold=None): # {{{
-    return mapFunctions(
-        (type(tensor_1),type(tensor_2)),
-        compressConnectionUsingFirstTensorOnlyBetween(tensor_1.data,index_1,tensor_2.data,index_2,keep,threshold)
-    )
-# }}}
-
-def compressHermitianConnectionUsingFirstTensorOnlyBetween(tensor_1,index_1,tensor_2,index_2,index_2c,keep=None,threshold=None): # {{{
-    return truncateHermitianConnectionUsingFirstTensorOnlyBetween(tensor_1,index_1,tensor_2,index_2,index_2c,constructFilterFrom(keep=keep,threshold=threshold))
-# }}}
-
-def compressHermitianConnectionUsingFirstTensorOnlyBetweenTensors(tensor_1,index_1,tensor_2,index_2,index_2c,keep=None,threshold=None): # {{{
-    return mapFunctions(
-        (type(tensor_1),type(tensor_2)),
-        compressHermitianConnectionUsingFirstTensorOnlyBetween(tensor_1.data,index_1,tensor_2.data,index_2,index_2c,keep,threshold)
-    )
-# }}}
-
-def computePostContractionIndexMap(old_number_of_dimensions,indices_being_contracted,offset=0): # {{{
-    indices_being_contracted = frozenset(indices_being_contracted)
-    new_number_of_dimensions = old_number_of_dimensions - len(indices_being_contracted)
-    current_old_index = 0
-    old_to_new_index_map = {}
-    for current_new_index in xrange(new_number_of_dimensions):
-        while current_old_index in indices_being_contracted:
-            current_old_index += 1
-        old_to_new_index_map[current_old_index] = current_new_index + offset
-        current_old_index += 1
-    return old_to_new_index_map
-# }}}
-
-def contract(arrays,array_axes): # {{{
-    return tensordot(data_1,data_2,(axes_1,axes_2))
-# }}}
-
-def contractAndTranspose(arrays,array_axes,new_order): # {{{
-    return contractAndTransposeAndJoin(arrays,array_axes,[[x] for x in new_order])
-# }}}
-
-def contractAndTransposeAndJoin(arrays,array_axes,new_grouped_order): # {{{
-    if len(array_axes[0]) != len(array_axes[1]):
-        raise ValueError("the number of indices to be contracted is inconsistent ({} != {})".format(*array_axes))
-    old_to_new_maps = [computePostContractionIndexMap(arrays[0].ndim,array_axes[0])]
-    old_to_new_maps.append(computePostContractionIndexMap(arrays[1].ndim,array_axes[1],offset=len(old_to_new_maps[0])))
-    shapes = [array.shape for array in arrays]
-    contracted_axes_sets = map(frozenset,array_axes)
-    non_contracted_axes_sets = [
-        set(xrange(array.ndim)) - contracted_axes_set
-        for (array,contracted_axes_set) in zip (arrays,contracted_axes_sets)
-    ]
-    new_order = []
-    new_shape = []
-    for group in new_grouped_order:
-        dimension = 1
-        for tensor_number, index in group:
-            if tensor_number not in [0,1]:
-                raise ValueError("the tensor index must be either 0 or 1, not {}".format(index))
-            if index in contracted_axes_sets[tensor_number]:
-                raise ValueError("index {} of tensor {} appears both in the list of indices to contract and in the final order".format(index,tensor_number))
-            if index not in non_contracted_axes_sets[tensor_number]:
-                raise ValueError("index {} of tensor {} appears twice in the final ordering".format(index,tensor_number))
-            non_contracted_axes_sets[tensor_number].remove(index)
-            new_order.append(old_to_new_maps[tensor_number][index])
-            dimension *= shapes[tensor_number][index]
-        new_shape.append(dimension)
-    if any(non_contracted_axes_sets):
-        raise ValueError("the follow indices of respectively tensor 0 and tensor 1 appear nowhere in either the axes to contract or in the final ordering: {}, {}".format(*non_contracted_axes_sets))
-    return tensordot(arrays[0],arrays[1],array_axes).transpose(new_order).reshape(new_shape)
-# }}}
-
-def constructFilterFrom(keep=None,threshold=None): # {{{
-    if keep is None and threshold is None:
-        raise ValueError("either keep or threshold needs to be specified")
-    if keep is not None and threshold is not None:
-        raise ValueError("both keep and threshold cannot be simultaneously specified")
-    if keep is not None:
-        return keep
-    if threshold is not None:
-        if threshold == 0:
-            threshold = 1e-10
-        return lambda arr: firstIndexBelowMagnitude(arr,threshold)
+def computePostContractionIndexMap(rank,contracted_indices,offset=0): # {{{
+    contracted_indices = set(contracted_indices)
+    index_map = dict()
+    new_index = 0
+    for old_index in xrange(rank):
+        if old_index not in contracted_indices:
+            index_map[old_index] = new_index + offset
+            new_index += 1
+    return index_map
 # }}}
 
 def crand(*shape): # {{{
     return rand(*shape)*2-1+rand(*shape)*2j-1j
 # }}}
 
-def CW(i): # {{{
-    return (i-1)%4
-# }}}
-
-def firstIndexBelowMagnitude(arr,magnitude): # {{{
-    index = 0
-    for x in arr:
-        if abs(x) < magnitude:
-            break
-        index += 1
-    return index
-# }}}
-
-def firstIndexWithNonZeroMagnitude(arr): # {{{
-    return firstIndexBelowMagnitude(arr,1e-13)
-# }}}
-
-def formContractor(order,joins,result_joins): # {{{
-    observed_tensor_indices = {}
-
-    # Tabulate all of the observed tensor indices {{{
-    for (tensor_id,index) in sum([list(x) for x in joins] + [list(x) for x in result_joins],[]):
-        if index < 0:
-            raise ValueError("index {} of tensor {} is negative".format(index,tensor_id))
-        try:
-            observed_indices = observed_tensor_indices[tensor_id]
-        except KeyError:
-            observed_indices = set()
-            observed_tensor_indices[tensor_id] = observed_indices
-        if index in observed_indices:
-            raise ValueError("index {} of tensor {} appears more than once in the joins".format(index,tensor_id))
-        observed_indices.add(index)
-
-    for tensor_id in observed_tensor_indices:
-        if tensor_id not in order:
-            raise ValueError("tensor {} does not appear in the list of arguments ({})".format(tensor_id,order))
-    # }}}
-
-    tensor_join_ids = {}
-
-    # Check the observed tensor indices and initialize the map of tensor joins {{{
-    for (tensor_id,observed_indices) in observed_tensor_indices.items():
-        tensor_dimension = max(observed_indices)+1
-        expected_indices = set(range(tensor_dimension))
-        invalid_indices = observed_indices - expected_indices
-        missing_indices = expected_indices - observed_indices
-        if len(invalid_indices) > 0:
-            raise ValueError('the invalid indices {} have appeared in joins involving tendor {}'.format(invalid_indices,tensor_id))
-        if len(missing_indices) > 0:
-            raise ValueError('the expected indices {} do not appear in any of the joins for tensor {}'.format(missing_indices,tensor_id))
-        if tensor_id not in order:
-            raise ValueError('tensor {} does not appear in the list of arguments'.format(tensor_id))
-        tensor_join_ids[tensor_id] = [None]*tensor_dimension
-    # }}}
-
-    result_join_ids = []
-
-    # Label each join with a unique id {{{
-    current_join_id = 0
-    for join in joins:
-        for (tensor_id,index) in join:
-            tensor_join_ids[tensor_id][index] = current_join_id
-        current_join_id += 1
-    for join in result_joins:
-        join_ids = []
-        for (tensor_id,index) in join:
-            join_ids.append(current_join_id)
-            tensor_join_ids[tensor_id][index] = current_join_id
-            current_join_id += 1
-        result_join_ids.append(join_ids)
-    # }}}
-
-    argument_join_ids = [tensor_join_ids[tensor_id] for tensor_id in order]
-
-    # Form the contractor function {{{
-    def contract(*arguments):
-        if len(arguments) != len(order):
-            raise ValueError("wrong number of arguments;  expected {} but received {}".format(len(order),len(arguments)))
-        for (i, (tensor_id, argument)) in enumerate(zip(order,arguments)):
-            if argument.ndim != len(tensor_join_ids[tensor_id]):
-                raise ValueError("argument {} ('{}') has rank {} when it was expected to have rank {}".format(i,order[i],argument.ndim,len(tensor_join_ids[tensor_id])))
-        arguments = list(arguments)
-        join_ids_index = -1
-        current_tensor = arguments.pop()
-        current_join_ids = argument_join_ids[join_ids_index]
-        while len(arguments) > 0:
-            join_ids_index -= 1
-            next_tensor = arguments.pop()
-            next_join_ids = argument_join_ids[join_ids_index]
-            try:
-                first_axes = []
-                second_axes = []
-                first_axis_index = 0
-                common_join_ids = set()
-                for join_id in current_join_ids:
-                    if join_id in next_join_ids:
-                        common_join_ids.add(join_id)
-                        first_axes.append(first_axis_index)
-                        second_axes.append(next_join_ids.index(join_id))
-                    first_axis_index += 1
-                current_tensor = tensordot(current_tensor,next_tensor,(first_axes,second_axes))
-                current_join_ids = [i for i in current_join_ids+next_join_ids if i not in common_join_ids]
-            except Exception as e:
-                raise ValueError("Error when joining tensor {}: '{}' (first tensor axes are {} with dimensions {}, second ({}) axes are {} with dimensions {})".format(order[join_ids_index],str(e),first_axes,[current_tensor.shape[i] for i in first_axes],order[join_ids_index],second_axes,[next_tensor.shape[i] for i in second_axes]))
-        current_tensor = current_tensor.transpose([current_join_ids.index(i) for i in sum([list(x) for x in result_join_ids],[])])
-        old_shape = current_tensor.shape
-        new_shape = []
-        index = 0
-        for join in result_join_ids:
-            dimension = 1
-            for _ in join:
-                dimension *= old_shape[index]
-                index += 1
-            new_shape.append(dimension)
-        return current_tensor.reshape(new_shape)
-    # }}}
-
-    return contract
-# }}}
-
-def increaseDimensionNaivelyBetween(tensor_1,index_1,tensor_2,index_2,new_dimension): # {{{
-    if tensor_1.shape[index_1] != tensor_2.shape[index_2]:
-        raise ValueError("dimension {} of tensor 1 has different size than dimension {} ({} != {})".format(index_1,index_2,tensor_1.shape[index_1],tensor_2.shape[index_2]))
-    old_dimension = tensor_1.shape[index_1]
-    if new_dimension < old_dimension:
-        raise ValueError("new dimension ({}) must be at least the old dimension ({})".format(new_dimension,old_dimension))
-    if new_dimension == old_dimension:
-        return tensor_1, tensor_2
-    matrix, _ = qr(crand(new_dimension,old_dimension))
-    matrix = matrix.transpose()
-    return (
-        multiplyTensorByMatrixAtIndex(tensor_1,matrix,index_1),
-        multiplyTensorByMatrixAtIndex(tensor_2,matrix.conj(),index_2),
-    )
-# }}}
-
-def increaseDimensionNaivelyBetweenTensors(tensor_1,index_1,tensor_2,index_2,new_dimension): # {{{
-    return mapFunctions(
-        (type(tensor_1),type(tensor_2)),
-        increaseDimensionNaivelyBetween(tensor_1.data,index_1,tensor_2.data,index_2,new_dimension)
-    )
-# }}}
-
-def increaseDimensionUsingFirstTensorOnlyBetween(tensor_1,index_1,tensor_2,index_2,new_dimension): # {{{
-    if tensor_1.shape[index_1] != tensor_2.shape[index_2]:
-        raise ValueError("dimension {} of tensor 1 has different size than dimension {} ({} != {})".format(index_1,index_2,tensor_1.shape[index_1],tensor_2.shape[index_2]))
-    old_dimension = tensor_1.shape[index_1]
-    if new_dimension < old_dimension:
-        raise ValueError("new dimension ({}) must be at least the old dimension ({})".format(new_dimension,old_dimension))
-    if new_dimension == old_dimension:
-        return tensor_1, tensor_2
-    maximum_dimension = product(withoutIndex(tensor_1.shape,index_1))
-    if new_dimension > maximum_dimension:
-        raise ValueError("new dimension ({}) cannot be greater than the product of the rest of its dimensions ({})".format(new_dimension,maximum_dimension))
-    reshaped_tensor_1, inverseTransformation_1 = transposeAndReshapeAndReturnInverseTransformation(tensor_1,index_1)
-
-    q, r = qr(reshaped_tensor_1)
-
-    vlen = q.shape[0]
-    new_q = ndarray(shape=(vlen,new_dimension),dtype=q.dtype)
-    new_q[:,:old_dimension] = q
-    for d in range(old_dimension,new_dimension):
-        vn = 0
-        while vn < 1e-15:
-            v = crand(vlen)
-            v -= dot(new_q[:,:d],dot(v,new_q[:,:d].conj()))
-            vn = norm(v)
-        new_q[:,d] = v / vn
-
-    expander, _ = qr(crand(new_dimension,new_dimension))
-    return (
-        inverseTransformation_1(dot(new_q,expander[:,:].transpose().conj())),
-        multiplyTensorByMatrixAtIndex(tensor_2,dot(r.transpose(),expander[:,:old_dimension].transpose()),index_2),
-    )
-# }}}
-
-def increaseDimensionUsingFirstTensorOnlyBetweenTensors(tensor_1,index_1,tensor_2,index_2,new_dimension): # {{{
-    return mapFunctions(
-        (type(tensor_1),type(tensor_2)),
-        increaseDimensionUsingFirstTensorOnlyBetween(tensor_1.data,index_1,tensor_2.data,index_2,new_dimension)
-    )
-# }}}
-
-def indexOfFirstTensor(index): # {{{
-    return TensorNumberAndIndex(0,index)
-# }}}
-
-def indexOfSecondTensor(index): # {{{
-    return TensorNumberAndIndex(1,index)
-# }}}
-
 def invertPermutation(permutation): # {{{
     return [permutation.index(i) for i in xrange(len(permutation))]
 # }}}
 
-def mapFunctions(functions,data): # {{{
-    for f, x in zip(functions,data):
-        yield f(x)
-# }}}
-
-def multiplyTensorByMatrixAtIndex(tensor,matrix,index): # {{{
-    tensor_new_indices = list(range(tensor.ndim-1))
-    tensor_new_indices.insert(index,tensor.ndim-1)
-    return tensordot(tensor,matrix,(index,0)).transpose(tensor_new_indices)
-# }}}
-
-def normalize(tensor,index): # {{{
-    reshaped_tensor, inverseTransformation = transposeAndReshapeAndReturnInverseTransformation(tensor,index)
-    reshaped_tensor = array(reshaped_tensor,order='F')
-    core.orthogonalize_matrix_in_place(reshaped_tensor)
-    return inverseTransformation(reshaped_tensor)
-# }}}
-
-def normalizeAndDenormalize(tensor_1,index_1,tensor_2,index_2): # {{{
-    if tensor_1.shape[index_1] != tensor_2.shape[index_2]:
-        raise ValueError("The dimension to be normalized in the first tensor (index {}) is not equal to the dimension to be denormalized in the second tensor (index {}). ({} != {})".format(index_1,index_2,tensor_1.shape[index_1],tensor_2.shape[index_2]))
-    new_tensor_1, inverse_normalizer = normalizeAndReturnInverseNormalizer(tensor_1,index_1)
-    new_tensor_2 = multiplyTensorByMatrixAtIndex(tensor_2,inverse_normalizer,index_2)
-
-    return new_tensor_1, new_tensor_2
-# }}}
-
-def normalizeAndDenormalizeTensors(tensor_1,index_1,tensor_2,index_2): # {{{
-    return mapFunctions(
-        (type(tensor_1),type(tensor_2)),
-        normalizeAndDenormalize(tensor_1.data,index_1,tensor_2.data,index_2)
+def makeDataContractor(joins,final_groups,tensor_ranks=None): # {{{
+    # Tabulate all of the tensor indices to compute the number of arguments and their ranks {{{
+    observed_tensor_indices = defaultdict(lambda: set())
+    observed_joins = set()
+    def observeTensorIndices(tensor_number,*indices):
+        if tensor_number < 0:
+            raise ValueError("tensor numbers must be non-negative, not {}".format(tensor_number))
+        observed_indices = observed_tensor_indices[tensor_number]
+        for index in indices:
+            if index in observed_indices:
+                raise ValueError("index {} of tensor {} appears twice".format(index,tensor_number))
+            observed_indices.add(index)
+    for join in joins:
+        observeTensorIndices(join.left_tensor_number,*join.left_tensor_indices)
+        observeTensorIndices(join.right_tensor_number,*join.right_tensor_indices)
+        if (join.left_tensor_number,join.right_tensor_number) in observed_joins:
+            raise ValueError("two joins appear between tensors {} and {} (recall that specified joins can contain multiple indices".format(join.left_tensor_number,join.right_tensor_number))
+    for group in final_groups:
+        for (tensor_number,index) in group:
+            observeTensorIndices(tensor_number,index)
+    number_of_tensors = computeLengthAndCheckForGaps(
+        observed_tensor_indices.keys(),
+        "the following tensor numbers were expected but not observed"
     )
+    if number_of_tensors == 0:
+        raise ValueError("no tensors have been specified to be contracted")
+    observed_tensor_ranks = [
+        computeLengthAndCheckForGaps(
+            observed_tensor_indices[tensor_number],
+            "the following indices of tensor {} were expected but not observed".format(tensor_number)
+        )
+        for tensor_number in xrange(number_of_tensors)
+    ]
+    if tensor_ranks is None:
+        tensor_ranks = observed_tensor_ranks
+    else:
+        if tensor_ranks != observed_tensor_ranks:
+            raise ValueError("the ranks of the arguments were specified to be {}, but inferred to be {}".format(tensor_ranks,observed_tensor_ranks))
+    # }}}
+    # Build the prelude for the function {{{
+    function_lines = [
+        "def contract(" + ",".join(["_{}".format(tensor_number) for tensor_number in xrange(number_of_tensors)]) + "):",
+    ]
+    # Build the documentation string {{{
+    function_lines.append('"""')
+    for tensor_number in xrange(number_of_tensors):
+        function_lines.append("_{} - tensor of rank {}".format(tensor_number,tensor_ranks[tensor_number]))
+    function_lines.append('"""')
+    # }}}
+    # Check that the tensors have the correct ranks {{{
+    for tensor_number, expected_rank in enumerate(tensor_ranks):
+        function_lines.append("if _{tensor_number}.ndim != {expected_rank}: raise UnexpectedTensorRankError({tensor_number},{expected_rank},_{tensor_number}.ndim)".format(tensor_number=tensor_number,expected_rank=expected_rank))
+    # }}}
+    # Check that the tensors have matching dimensions {{{
+    for join in joins:
+        for (left_index,right_index) in zip(join.left_tensor_indices,join.right_tensor_indices):
+            function_lines.append('if _{left_tensor_number}.shape[{left_index}] != _{right_tensor_number}.shape[{right_index}]: raise DimensionMismatchError({left_tensor_number},{left_index},_{left_tensor_number}.shape[{left_index}],{right_tensor_number},{right_index},_{right_tensor_number}.shape[{right_index}])'.format(
+                left_tensor_number = join.left_tensor_number,
+                left_index = left_index,
+                right_tensor_number = join.right_tensor_number,
+                right_index = right_index,
+            ))
+    # }}}
+    # }}}
+    # Build the main part of the function {{{
+    next_tensor_number = number_of_tensors
+    active_tensor_numbers = set(xrange(number_of_tensors))
+    joins.reverse()
+    while joins:
+        join = joins.pop()
+        left_tensor_number = join.left_tensor_number
+        left_tensor_indices = join.left_tensor_indices
+        right_tensor_number = join.right_tensor_number
+        right_tensor_indices = join.right_tensor_indices
+        active_tensor_numbers.remove(left_tensor_number)
+        active_tensor_numbers.remove(right_tensor_number)
+        active_tensor_numbers.add(next_tensor_number)
+        tensor_ranks.append(tensor_ranks[left_tensor_number]+tensor_ranks[right_tensor_number]-2*len(left_tensor_indices))
+        # Add the lines to the function {{{
+        function_lines.append("_{} = _{}.contractWith(_{},{},{})".format(
+            next_tensor_number,
+            left_tensor_number,
+            right_tensor_number,
+            left_tensor_indices,
+            right_tensor_indices,
+        ))
+        function_lines.append("del _{}, _{}".format(left_tensor_number,right_tensor_number))
+        # }}}
+        # Update the remaining joins {{{
+        left_index_map = computePostContractionIndexMap(tensor_ranks[left_tensor_number],left_tensor_indices)
+        right_index_map = computePostContractionIndexMap(tensor_ranks[right_tensor_number],right_tensor_indices,len(left_index_map))
+        i = len(joins)-1
+        observed_joins = dict()
+        while i >= 0:
+            join_to_update = joins[i]
+            join_to_update.update(left_tensor_number,next_tensor_number,left_index_map)
+            join_to_update.update(right_tensor_number,next_tensor_number,right_index_map)
+            observed_join_tensor_numbers = (join_to_update.left_tensor_number,join_to_update.right_tensor_number)
+            if observed_join_tensor_numbers in observed_joins:
+                observed_joins[observed_join_tensor_numbers].mergeWith(join_to_update)
+                del joins[i]
+            else:
+                observed_joins[observed_join_tensor_numbers] = join_to_update
+            i -= 1
+        # }}}
+        # Update the final groups {{{
+        for group in final_groups:
+            for i, (tensor_number,tensor_index) in enumerate(group):
+                if tensor_number == left_tensor_number:
+                    group[i] = (next_tensor_number,left_index_map[tensor_index])
+                elif tensor_number == right_tensor_number:
+                    group[i] = (next_tensor_number,right_index_map[tensor_index])
+        # }}}
+        next_tensor_number += 1
+    # }}}
+    # Build the finale of the function {{{
+    # Combine any remaining tensors using outer products {{{
+    active_tensor_numbers = list(active_tensor_numbers)
+    final_tensor_number = active_tensor_numbers[0]
+    for tensor_number in active_tensor_numbers[1:]: 
+        function_lines.append("_{final_tensor_number} = _{final_tensor_number}.contractWith(_{tensor_number},[],[])".format(final_tensor_number=final_tensor_number,tensor_number=tensor_number))
+        function_lines.append("del _{}".format(tensor_number))
+    # }}}
+    if len(final_groups) > 0:
+        # Compute index map and apply the index map to the final groups {{{
+        index_offset = 0
+        index_map = {}
+        for tensor_number in active_tensor_numbers:
+            for index in xrange(tensor_ranks[tensor_number]):
+                index_map[(tensor_number,index)] = index+index_offset
+            index_offset += tensor_ranks[tensor_number]
+        final_groups = [applyIndexMapTo(index_map,group) for group in final_groups]
+        # }}}
+        function_lines.append("return _{}.join({})".format(final_tensor_number,final_groups))
+    else:
+        function_lines.append("return _{}.extractScalar()".format(final_tensor_number))
+    # }}}
+    # Compile and return the function {{{
+    function_source = "\n    ".join(function_lines)
+    captured_definition = {}
+    visible_exceptions = {}
+    for exception_name in ["DimensionMismatchError","UnexpectedTensorRankError"]:
+        visible_exceptions[exception_name] = globals()[exception_name]
+    exec function_source in visible_exceptions, captured_definition
+    contract = captured_definition["contract"]
+    contract.source = function_source
+    return contract
+    # }}}
 # }}}
 
-def normalizeAndReturnInverseNormalizer(tensor,index): # {{{
-    new_tensor, inverseTransformation = transposeAndReshapeAndReturnInverseTransformation(tensor,index)
-    if new_tensor.shape[1] > new_tensor.shape[0]:
-        raise ValueError("The dimension to be normalized is larger than the product of the rest of the dimensions. ({} > {})".format(new_tensor.shape[1],new_tensor.shape[0]))
-
-    q, r = qr(new_tensor)
-
-    return inverseTransformation(q), r.transpose()
-# }}}
-
-def OPP(i): # {{{
-    return (i+2)%4
-# }}}
-
-def otimes(A,B,axes=0): # {{{
-    return tensordot(A,B,axes).transpose(0,2,1,3).reshape(*[A.shape[i]*B.shape[i] for i in range(2)])
-# }}}
-
-def transposeAndReshapeAndReturnInverseTransformation(tensor,index): # {{{
-    new_indices = withoutIndex(range(tensor.ndim),index)
-    new_indices.append(index)
-
-    old_shape = withoutIndex(tensor.shape,index)
-    new_shape = (product(old_shape),tensor.shape[index])
-
-    inverse_indices = list(range(tensor.ndim-1))
-    inverse_indices.insert(index,tensor.ndim-1)
-
-    def inverseTransformer(tensor):
-        inverse_shape = appended(old_shape,tensor.shape[1])
-        return tensor.reshape(inverse_shape).transpose(inverse_indices)
-
-    return tensor.transpose(new_indices).reshape(new_shape), inverseTransformer
-# }}}
-
-def truncateConnectionAndReturnCompressor(tensor,index,filter): # {{{
-    reshaped_tensor, inverseTransformation = transposeAndReshapeAndReturnInverseTransformation(tensor,index)
-    u, s, v = svd(reshaped_tensor,full_matrices=False)
-    s[s < 0] = 0
-    keep = filter(s/s[0] if s[0] != 0 else s) if callable(filter) else filter
-    return (
-        inverseTransformation(u[:,:keep]*s[:keep].reshape(1,keep)),
-        v[:keep].transpose()
-    )
-# }}}
-
-def truncateConnectionBetween(tensor_1,index_1,tensor_2,index_2,filter): # {{{
-    reshaped_tensor_1, inverseTransformation_1 = transposeAndReshapeAndReturnInverseTransformation(tensor_1,index_1)
-    reshaped_tensor_2, inverseTransformation_2 = transposeAndReshapeAndReturnInverseTransformation(tensor_2,index_2)
-    u, s, v = svd(tensordot(reshaped_tensor_1,reshaped_tensor_2,(1,1)),full_matrices=False)
-    s[s < 0] = 0
-    keep = filter(s/s[0] if s[0] != 0 else s) if callable(filter) else filter
-    s = sqrt(s[:keep]).reshape(1,keep)
-    return (inverseTransformation_1(s*u[:,:keep]),inverseTransformation_2(s*(v.transpose()[:,:keep])))
-# }}}
-
-def truncateConnectionToSelf(tensor,index,filter): # {{{
-    reshaped_tensor, inverseTransformation = transposeAndReshapeAndReturnInverseTransformation(tensor,index)
-    evals, evecs = eigh(tensordot(reshaped_tensor,reshaped_tensor.conj(),(1,1)))
-    sorted_indices = evals.argsort()[::-1]
-    evals = evals[sorted_indices]
-    evecs = evecs[:,sorted_indices]
-    evals[evals < 0] = 0
-    keep = filter(evals/evals[0] if evals[0] != 0 else evals) if callable(filter) else filter
-    return inverseTransformation(sqrt(evals[:keep])*evecs[:,:keep])
-# }}}
-
-def truncateConnectionUsingFirstTensorOnlyBetween(tensor_1,index_1,tensor_2,index_2,filter): # {{{
-    new_tensor_1, compressor = truncateConnectionAndReturnCompressor(tensor_1,index_1,filter)
-    return new_tensor_1, multiplyTensorByMatrixAtIndex(tensor_2,compressor,index_2)
-# }}}
-
-def truncateHermitianConnectionUsingFirstTensorOnlyBetween(tensor_1,index_1,tensor_2,index_2,index_2c,filter): # {{{
-    new_tensor_1, compressor = truncateConnectionAndReturnCompressor(tensor_1,index_1,filter)
-    return new_tensor_1, multiplyTensorByMatrixAtIndex(multiplyTensorByMatrixAtIndex(tensor_2,compressor,index_2),compressor.conj(),index_2c)
-# }}}
-
-def withoutIndex(vector,index): # {{{
-    copy_of_vector = list(vector)
-    if copy_of_vector is vector:
-        copy_of_vector = copy(vector)
-    del copy_of_vector[index]
-    return copy_of_vector
-# }}}
-
-# }}}
+# }}} Functions
 
 # Exports {{{
 __all__ = [
-    "TensorNumberAndIndex",
-
-    "appended",
-    "basisVector",
-    "CCW",
+    # Exceptions {{{
+    "DimensionMismatchError",
+    "UnexpectedTensorRankError",
+    # }}}
+    # Classes {{{
+    "Join",
+    # }}}
+    # Functions {{{
+    "applyPermutation",
     "crand",
-    "compressConnectionBetween",
-    "compressConnectionBetweenTensors",
-    "compressConnectionToSelf",
-    "compressConnectionToSelfTensor",
-    "compressConnectionUsingFirstTensorOnlyBetween",
-    "compressConnectionUsingFirstTensorOnlyBetweenTensors",
-    "compressHermitianConnectionUsingFirstTensorOnlyBetween",
-    "compressHermitianConnectionUsingFirstTensorOnlyBetweenTensors",
-    "computePostContractionIndexMap",
-    "contract",
-    "contractAndTranspose",
-    "contractAndTransposeAndJoin",
-    "CW",
-    "firstIndexBelowMagnitude",
-    "formContractor",
-    "increaseDimensionNaivelyBetween",
-    "increaseDimensionNaivelyBetweenTensors",
-    "increaseDimensionUsingFirstTensorOnlyBetween",
-    "increaseDimensionUsingFirstTensorOnlyBetweenTensors",
-    "indexOfFirstTensor",
-    "indexOfSecondTensor",
     "invertPermutation",
-    "mapFunctions",
-    "multiplyTensorByMatrixAtIndex",
-    "normalize",
-    "normalizeAndDenormalize",
-    "normalizeAndDenormalizeTensors",
-    "normalizeAndReturnInverseNormalizer",
-    "OPP",
-    "transposeAndReshapeAndReturnInverseTransformation",
-    "truncateConnectionBetween",
-    "truncateConnectionToSelf",
-    "truncateConnectionUsingFirstTensorOnlyBetween",
-    "truncateHermitianConnectionUsingFirstTensorOnlyBetween",
-    "withoutIndex",
+    "makeDataContractor",
+    # }}}
 ]
 # }}}

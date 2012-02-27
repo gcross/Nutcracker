@@ -1,517 +1,278 @@
 # Imports {{{
-from copy import copy
+
+from numpy import dot, multiply
 from paycheck import *
-from random import sample, shuffle
+from random import randint, sample, shuffle
 
-from ..utils import normalize
+from ..data import *
+from ..utils import *
+
 from . import *
+
 # }}}
 
-class TestNormalize(TestCase): # {{{
+# Helper classes {{{
+
+class TaggedNDArrayData(NDArrayData): # {{{
+    def __init__(self,arr,tag):
+        NDArrayData.__init__(self,arr)
+        self.tag = tag
+    def contractWith(self,other,self_axes,other_axes):
+        return TaggedNDArrayData(NDArrayData.contractWith(self,other,self_axes,other_axes).asArray(),(self.tag,other.tag))
+    def join(self,groups):
+        return TaggedNDArrayData(NDArrayData.join(self,groups).asArray(),self.tag)
+# }}}
+
+# }}}
+
+# Tests {{{
+
+class test_makeDataContractor(TestCase): # {{{
     @with_checker
-    def test_correctness(self,number_of_dimensions = irange(2,5)):
-        tensor, index = randomNormalizableTensorAndIndex(number_of_dimensions)
-        self.assertNormalized(normalize(tensor,index),index)
-# }}}
-
-class TestCompressConnectionBetween(TestCase): # {{{
-    @with_checker(number_of_calls=10)
-    def test_matrix_invariant_under_keep_all(self, # {{{
-        tensor_1_ndim = irange(1,5),
-        tensor_2_ndim = irange(1,5),
-    ):
-        index_1 = randint(0,tensor_1_ndim-1)
-        tensor_1_shape = [randint(1,5) for _ in range(tensor_1_ndim)]
-        tensor_1 = crand(*tensor_1_shape)
-
-        index_2 = randint(0,tensor_2_ndim-1)
-        tensor_2_shape = [randint(1,5) for _ in range(tensor_2_ndim)]
-        tensor_2_shape[index_2] = tensor_1_shape[index_1]
-        tensor_2 = crand(*tensor_2_shape)
-
-        compressed_tensor_1, compressed_tensor_2 = \
-            compressConnectionBetween(tensor_1,index_1,tensor_2,index_2,keep=len)
-
-        self.assertEqual(
-            compressed_tensor_1.shape[index_1],
-            compressed_tensor_2.shape[index_2],
-        )
-        self.assertEqual(
-            withoutIndex(compressed_tensor_1.shape,index_1),
-            withoutIndex(tensor_1.shape,index_1),
-        )
-        self.assertEqual(
-            withoutIndex(compressed_tensor_2.shape,index_2),
-            withoutIndex(tensor_2.shape,index_2),
-        )
-        self.assertAllClose(
-            tensordot(tensor_1,tensor_2,(index_1,index_2)),
-            tensordot(compressed_tensor_1,compressed_tensor_2,(index_1,index_2)),
-        )
+    def test_single_tensor_outer_product(self,ndim=irange(1,5)): # {{{
+        data = NDArrayData.newRandom(randomShape(ndim))
+        contract = makeDataContractor([],[[(0,i) for i in xrange(ndim)]])
+        contracted_data = contract(data)
+        raveled_data = data.join([range(ndim)])
+        self.assertDataAlmostEqual(raveled_data,contracted_data)
     # }}}
 
-    @with_checker(number_of_calls=10)
-    def test_matrix_invariant_under_threshold_zero(self, # {{{
-        tensor_1_ndim = irange(1,5),
-        tensor_2_ndim = irange(1,5),
-    ):
-        index_1 = randint(0,tensor_1_ndim-1)
-        tensor_1_shape = [randint(1,5) for _ in range(tensor_1_ndim)]
-        tensor_1 = crand(*tensor_1_shape)
-
-        index_2 = randint(0,tensor_2_ndim-1)
-        tensor_2_shape = [randint(1,5) for _ in range(tensor_2_ndim)]
-        tensor_2_shape[index_2] = tensor_1_shape[index_1]
-        tensor_2 = crand(*tensor_2_shape)
-
-        compressed_tensor_1, compressed_tensor_2 = \
-            compressConnectionBetween(tensor_1,index_1,tensor_2,index_2,threshold=0)
-
-        self.assertEqual(
-            compressed_tensor_1.shape[index_1],
-            compressed_tensor_2.shape[index_2],
-        )
-        self.assertLessEqual(
-            withoutIndex(compressed_tensor_1.shape,index_1),
-            withoutIndex(tensor_1.shape,index_1),
-        )
-        self.assertLessEqual(
-            withoutIndex(compressed_tensor_2.shape,index_2),
-            withoutIndex(tensor_2.shape,index_2),
-        )
-        self.assertAllClose(
-            tensordot(tensor_1,tensor_2,(index_1,index_2)),
-            tensordot(compressed_tensor_1,compressed_tensor_2,(index_1,index_2)),
-        )
-    # }}}
-# }}}
-
-class TestCompressConnectionToSelf(TestCase): # {{{
-    @with_checker(number_of_calls=10)
-    def test_matrix_invariant_under_keep_all(self, # {{{
-        tensor_ndim = irange(2,5),
-    ):
-        index = randint(0,tensor_ndim-1)
-        tensor_shape = [randint(1,5) for _ in range(tensor_ndim)]
-        tensor = crand(*tensor_shape)
-
-        compressed_tensor = compressConnectionToSelf(tensor,index,keep=len)
-
-        self.assertEqual(
-            withoutIndex(tensor.shape,index),
-            withoutIndex(compressed_tensor.shape,index)
-        )
-        self.assertAllClose(
-            tensordot(tensor,tensor.conj(),(index,index)),
-            tensordot(compressed_tensor,compressed_tensor.conj(),(index,index))
-        )
-    # }}}
-
-    @with_checker(number_of_calls=10)
-    def test_matrix_invariant_under_threshold_zero(self, #{{{
-        tensor_ndim = irange(2,5),
-    ):
-        index = randint(0,tensor_ndim-1)
-        tensor_shape = [randint(1,5) for _ in range(tensor_ndim)]
-        tensor = crand(*tensor_shape)
-
-        compressed_tensor = compressConnectionToSelf(tensor,index,threshold=0)
-
-        self.assertTrue(compressed_tensor.shape[index] <= tensor.shape[index])
-        self.assertEqual(
-            withoutIndex(tensor.shape,index),
-            withoutIndex(compressed_tensor.shape,index)
-        )
-        self.assertAllClose(
-            tensordot(tensor,tensor.conj(),(index,index)),
-            tensordot(compressed_tensor,compressed_tensor.conj(),(index,index))
-        )
-    # }}}
-# }}}
-
-class TestCompressConnectionUsingFirstTensorBetween(TestCase): # {{{
-    @with_checker(number_of_calls=10)
-    def test_join_invariant_under_keep_all(self, # {{{
-        tensor_1_ndim = irange(1,5),
-        tensor_2_ndim = irange(1,5),
-    ):
-        index_1 = randint(0,tensor_1_ndim-1)
-        tensor_1_shape = [randint(1,5) for _ in range(tensor_1_ndim)]
-        tensor_1 = crand(*tensor_1_shape)
-
-        index_2 = randint(0,tensor_2_ndim-1)
-        tensor_2_shape = [randint(1,5) for _ in range(tensor_2_ndim)]
-        tensor_2_shape[index_2] = tensor_1_shape[index_1]
-        tensor_2 = crand(*tensor_2_shape)
-
-        compressed_tensor_1, compressed_tensor_2 = \
-            compressConnectionUsingFirstTensorOnlyBetween(tensor_1,index_1,tensor_2,index_2,keep=len)
-
-        self.assertEqual(
-            compressed_tensor_1.shape[index_1],
-            compressed_tensor_2.shape[index_2],
-        )
-        self.assertEqual(
-            withoutIndex(compressed_tensor_1.shape,index_1),
-            withoutIndex(tensor_1.shape,index_1),
-        )
-        self.assertEqual(
-            withoutIndex(compressed_tensor_2.shape,index_2),
-            withoutIndex(tensor_2.shape,index_2),
-        )
-        self.assertAllClose(
-            tensordot(tensor_1,tensor_2,(index_1,index_2)),
-            tensordot(compressed_tensor_1,compressed_tensor_2,(index_1,index_2)),
-        )
-    # }}}
-
-    @with_checker(number_of_calls=10)
-    def test_join_invariant_under_threshold_zero(self, # {{{
-        tensor_1_ndim = irange(1,5),
-        tensor_2_ndim = irange(1,5),
-    ):
-        index_1 = randint(0,tensor_1_ndim-1)
-        tensor_1_shape = [randint(1,5) for _ in range(tensor_1_ndim)]
-        tensor_1 = crand(*tensor_1_shape)
-
-        index_2 = randint(0,tensor_2_ndim-1)
-        tensor_2_shape = [randint(1,5) for _ in range(tensor_2_ndim)]
-        tensor_2_shape[index_2] = tensor_1_shape[index_1]
-        tensor_2 = crand(*tensor_2_shape)
-
-        compressed_tensor_1, compressed_tensor_2 = \
-            compressConnectionUsingFirstTensorOnlyBetween(tensor_1,index_1,tensor_2,index_2,threshold=0)
-
-        self.assertEqual(
-            compressed_tensor_1.shape[index_1],
-            compressed_tensor_2.shape[index_2],
-        )
-        self.assertLessEqual(
-            withoutIndex(compressed_tensor_1.shape,index_1),
-            withoutIndex(tensor_1.shape,index_1),
-        )
-        self.assertLessEqual(
-            withoutIndex(compressed_tensor_2.shape,index_2),
-            withoutIndex(tensor_2.shape,index_2),
-        )
-        self.assertAllClose(
-            tensordot(tensor_1,tensor_2,(index_1,index_2)),
-            tensordot(compressed_tensor_1,compressed_tensor_2,(index_1,index_2)),
-        )
-    # }}}
-# }}}
-
-class TestContractAndTransposeAndJoin(TestCase): # {{{
     @with_checker
-    def test_correctness(self,array_ranks=(irange(1,8),)*2): # {{{
-        array_shapes = [[randint(1,3) for _ in xrange(rank)] for rank in array_ranks]
-        number_of_dimensions_to_join = randint(0,min(array_ranks))
-        array_axes = [sample(range(rank),number_of_dimensions_to_join) for rank in array_ranks]
-        for axis_0, axis_1 in zip(*array_axes):
-            array_shapes[1][axis_1] = array_shapes[0][axis_0]
-        arrays = [crand(*shape) for shape in array_shapes]
-        indices_being_contracted_for = map(frozenset,array_axes)
-        remaining_indices = []
-        for tensor_number, rank in enumerate(array_ranks):
-            for index in xrange(rank):
-                if index not in indices_being_contracted_for[tensor_number]:
-                    remaining_indices.append(TensorNumberAndIndex(tensor_number,index))
-        new_grouped_order = randomShuffledPartition(remaining_indices)
-        contractor = \
-            formContractor(
-                [0,1],
-                zip(*[[(i,index) for index in axes] for (i,axes) in enumerate(array_axes)]),
-                new_grouped_order,
-            )
-        self.assertAllClose(
-            contractor(*arrays),
-            contractAndTransposeAndJoin(arrays,array_axes,new_grouped_order),
+    def test_multiple_tensors_outer_product(self,number_of_tensors=irange(1,5)): # {{{
+        tensors = [NDArrayData.newRandom(randomShape(randint(1,3),3)) for _ in xrange(number_of_tensors)]
+        contraction = makeDataContractor([],[[(tensor_number,i)] for tensor_number, tensor in enumerate(tensors) for i in xrange(tensor.ndim)])(*tensors)
+        self.assertDataAlmostEqual(
+            reduce(lambda x,y: x.contractWith(y,[],[]),tensors),
+            contraction
         )
-    # }}}
-# }}}
-
-class TestComputePostContractionIndexMap(TestCase): # {{{
-    @with_checker
-    def test_correct_number_of_entries(self, # {{{
-        number_of_dimensions_increment=irange(1,10),
-        indices_being_contracted=[irange(0,20)]
-    ):
-        old_number_of_dimensions = (
-            max(indices_being_contracted) if len(indices_being_contracted) > 0 else 0
-        ) + number_of_dimensions_increment
-        self.assertEqual(
-            old_number_of_dimensions-len(set(indices_being_contracted)),
-            len(computePostContractionIndexMap(old_number_of_dimensions,indices_being_contracted))
+        self.assertAllClose(
+            reduce(lambda x,y: multiply.outer(x,y),[tensor.asArray() for tensor in tensors]),
+            contraction.asArray()
         )
     # }}}
 
     @with_checker
-    def test_no_contracted_old_indices(self, # {{{
-        number_of_dimensions_increment=irange(1,10),
-        indices_being_contracted=[irange(0,20)]
+    def test_two_tensors_inner_product_resulting_in_scalar(self,ndim=irange(1,5)): # {{{
+        A_shape = randomShape(ndim)
+        A = NDArrayData.newRandom(A_shape)
+        B_permutation = randomPermutation(ndim)
+        B_inverse_permutation = invertPermutation(B_permutation)
+        B_shape = applyPermutation(B_permutation,A_shape)
+        B = NDArrayData.newRandom(B_shape)
+        axes = zip(range(ndim),B_inverse_permutation)
+        shuffle(axes)
+        A_axes, B_axes = zip(*axes)
+        contraction = makeDataContractor([Join(0,A_axes,1,B_axes)],[])(A,B)
+        self.assertAlmostEqual(
+            A.contractWith(B,A_axes,B_axes).extractScalar(),
+            contraction
+        )
+        self.assertAlmostEqual(
+            dot(A.asArray().ravel(),B.asArray().transpose(B_inverse_permutation).ravel()),
+            contraction
+        )
+    # }}}
+
+    @with_checker
+    def test_two_tensors_inner_product_resulting_in_tensor(self, # {{{
+        left_ndim=irange(1,3),
+        middle_ndim=irange(1,3),
+        right_ndim=irange(1,3),
     ):
-        old_number_of_dimensions = (
-            max(indices_being_contracted) if len(indices_being_contracted) > 0 else 0
-        ) + number_of_dimensions_increment
-        old_to_new_index_map = computePostContractionIndexMap(old_number_of_dimensions,indices_being_contracted)
+        left_shape = randomShape(left_ndim,3)
+        middle_shape = randomShape(middle_ndim,3)
+        right_shape = randomShape(right_ndim,3)
+
+        A_ndim = left_ndim + middle_ndim
+        A_permutation = randomPermutation(A_ndim)
+        A_shape = applyPermutation(A_permutation,left_shape + middle_shape)
+        A_axes = applyPermutation(invertPermutation(A_permutation),range(A_ndim))
+        A_left_axes, A_middle_axes = A_axes[:left_ndim], A_axes[left_ndim:]
+        A = NDArrayData.newRandom(A_shape)
+
+        B_ndim = middle_ndim + right_ndim
+        B_permutation = randomPermutation(B_ndim)
+        B_shape = applyPermutation(B_permutation,middle_shape + right_shape)
+        B_axes = applyPermutation(invertPermutation(B_permutation),range(B_ndim))
+        B_middle_axes, B_right_axes = B_axes[:middle_ndim], B_axes[middle_ndim:]
+        B = NDArrayData.newRandom(B_shape)
+
+        A_left_axes.sort()
+        B_right_axes.sort()
+
+        contraction = makeDataContractor(
+            [Join(0,A_middle_axes,1,B_middle_axes)],
+            [[(tensor_number,axis)] for tensor_number, axes in enumerate([A_left_axes,B_right_axes]) for axis in axes]
+        )(A,B)
+
+        self.assertDataAlmostEqual(
+            A.contractWith(B,A_middle_axes,B_middle_axes),
+            contraction
+        )
+    # }}}
+
+    @with_checker
+    def test_matrix_multiplication_two_matrices(self,m=irange(1,10),k=irange(1,10),n=irange(1,10)): # {{{
+        A = NDArrayData.newRandom((m,k))
+        B = NDArrayData.newRandom((k,n))
+        contraction = makeDataContractor([Join(0,1,1,0)],[[(0,0)],[(1,1)]])(A,B)
+        self.assertDataAlmostEqual(
+            A.contractWith(B,[1],[0]),
+            contraction
+        )
+        self.assertAllClose(
+            dot(A.asArray(),B.asArray()),
+            contraction.asArray()
+        )
+    # }}}
+
+    @with_checker
+    def test_matrix_multiplication_four_matrices_with_order_checking(self, # {{{
+        a=irange(1,10),
+        b=irange(1,10),
+        c=irange(1,10),
+        d=irange(1,10),
+        e=irange(1,10),
+    ):
+
+        A = TaggedNDArrayData(crand(a,b),'A')
+        B = TaggedNDArrayData(crand(b,c),'B')
+        C = TaggedNDArrayData(crand(c,d),'C')
+        D = TaggedNDArrayData(crand(d,e),'D')
+
+        correct_value = reduce(dot,[tensor.asArray() for tensor in [A,B,C,D]])
+        contraction = makeDataContractor(
+            [
+                Join(0,1,1,0),
+                Join(2,1,3,0),
+                Join(1,1,2,0),
+            ],
+            [[(0,0)],[(3,1)]]
+        )(A,B,C,D)
+        self.assertAllClose(
+            correct_value,
+            contraction.asArray()
+        )
         self.assertEqual(
-            frozenset(xrange(old_number_of_dimensions)),
-            frozenset(indices_being_contracted) ^ old_to_new_index_map.viewkeys(),
+            (('A','B'),('C','D')),
+            contraction.tag
         )
     # }}}
 
-# }}}
-
-class TestFormContractor(TestCase): # {{{
-    @with_checker(number_of_calls=10)
-    def test_trivial_case_1D(self, # {{{
-        d = irange(1,10),
+    @with_checker
+    def test_matrix_multiplication_three_matrices(self, # {{{
+        a=irange(1,10),
+        b=irange(1,10),
+        c=irange(1,10),
+        d=irange(1,10),
     ):
-        x = crand(d)
-        self.assertAllEqual(x,formContractor(['A'],[],[[('A',0)]])(x))
-    # }}}
-
-    @with_checker(number_of_calls=100)
-    def test_trivial_case_ND(self, # {{{
-        n = irange(1,8),
-    ):
-        x = crand(*[randint(1,3) for _ in range(n)])
-        self.assertAllEqual(x,formContractor(['A'],[],[[('A',i)] for i in range(n)])(x))
-    # }}}
-
-    @with_checker(number_of_calls=100)
-    def test_trivial_case_ND_flattened(self, # {{{
-        n = irange(1,8),
-    ):
-        x = crand(*[randint(1,3) for _ in range(n)])
-        self.assertAllEqual(x.ravel(),formContractor(['A'],[],[[('A',i) for i in range(n)]])(x))
-    # }}}
-
-    @with_checker(number_of_calls=10)
-    def test_matvec(self, # {{{
-        m = irange(1,10),
-        n = irange(1,10),
-    ):
-        M = crand(m,n)
-        v = crand(n)
-        self.assertAllEqual(
-            dot(M,v),
-            formContractor(
-                ['M','v'],
-                [(('M',1),('v',0))],
-                [[('M',0)]]
-            )(M,v)
-        )
-    # }}}
-
-    @with_checker(number_of_calls=10)
-    def test_matvec_transposed(self, # {{{
-        m = irange(1,10),
-        n = irange(1,10)
-    ):
-        M = crand(n,m)
-        v = crand(n)
-        self.assertAllEqual(
-            dot(v,M),
-            formContractor(
-                ['v','M'],
-                [(('M',0),('v',0))],
-                [[('M',1)]]
-            )(v,M)
-        )
-    # }}}
-    
-    @with_checker(number_of_calls=10)
-    def test_matmat(self, # {{{
-        m = irange(1,10),
-        n = irange(1,10),
-        o = irange(1,10),
-    ):
-        A = crand(m,n)
-        B = crand(n,o)
+        A = NDArrayData.newRandom((a,b))
+        B = NDArrayData.newRandom((b,c))
+        C = NDArrayData.newRandom((c,d))
+        correct_value = reduce(dot,[tensor.asArray() for tensor in [A,B,C]])
+        joins = [
+            Join(0,1,1,0),
+            Join(1,1,2,0),
+        ]
+        shuffle(joins)
+        contraction = makeDataContractor(joins,[[(0,0)],[(2,1)]])(A,B,C)
         self.assertAllClose(
-            dot(A,B),
-            formContractor(
-                ['A','B'],
-                [(('A',1),('B',0))],
-                [[('A',0)],[('B',1)]]
-            )(A,B)
+            correct_value,
+            contraction.asArray()
         )
     # }}}
 
-    @with_checker(number_of_calls=10)
-    def test_matmat_flattened(self, # {{{
-        m = irange(1,10),
-        n = irange(1,10),
-        o = irange(1,10),
-    ):
-        A = crand(m,n)
-        B = crand(n,o)
+    @with_checker
+    def test_matrix_multiplication_many_matrices(self, number_of_matrices=irange(1,10)): # {{{
+        dimensions = [randint(1,10) for _ in xrange(number_of_matrices+1)]
+        matrices = [NDArrayData.newRandom((dimensions[i],dimensions[i+1])) for i in xrange(number_of_matrices)]
+        correct_value = reduce(dot,[matrix.asArray() for matrix in matrices])
+        joins = [Join(i,1,i+1,0) for i in xrange(number_of_matrices-1)]
+        shuffle(joins)
+        contraction = makeDataContractor(joins,[[(0,0)],[(number_of_matrices-1,1)]])(*matrices)
         self.assertAllClose(
-            dot(A,B).ravel(),
-            formContractor(
-                ['A','B'],
-                [(('A',1),('B',0))],
-                [[('A',0),('B',1)]]
-            )(A,B)
+            correct_value,
+            contraction.asArray()
         )
     # }}}
 
-    @with_checker(number_of_calls=10)
-    def test_matmat_transposed(self, # {{{
-        m = irange(1,10),
-        n = irange(1,10),
-        o = irange(1,10),
-    ):
-        A = crand(m,n)
-        B = crand(n,o)
-        self.assertAllClose(
-            dot(A,B).transpose(),
-            formContractor(
-                ['A','B'],
-                [(('A',1),('B',0))],
-                [[('B',1)],[('A',0)]]
-            )(A,B)
-        )
+    @with_checker
+    def test_unexpected_tensor_rank_detected(self,number_of_tensors=irange(1,5)): # {{{
+        ndims = [randint(1,5) for _ in xrange(number_of_tensors)]
+        tensors = [NDArrayData.newRandom(randomShape(ndim)) for ndim in ndims]
+        broken_tensor_number = randint(0,len(ndims)-1)
+        actual_rank = ndims[broken_tensor_number]
+        expected_rank = actual_rank + 1
+        ndims[broken_tensor_number] += 1
+        try:
+            makeDataContractor([],[[(tensor_number,index)] for tensor_number in xrange(number_of_tensors) for index in xrange(ndims[tensor_number])])(*tensors)
+            self.fail("exception was not thrown")
+        except UnexpectedTensorRankError as e:
+            self.assertEqual(e.tensor_number,broken_tensor_number)
+            self.assertEqual(e.expected_rank,expected_rank)
+            self.assertEqual(e.actual_rank,actual_rank)
     # }}}
 
-    @with_checker(number_of_calls=10)
-    def test_matmat_swapped_and_transposed(self, # {{{
-        m = irange(1,10),
-        n = irange(1,10),
-        o = irange(1,10),
-    ):
-        A = crand(n,m)
-        B = crand(o,n)
-        self.assertAllClose(
-            dot(B,A).transpose(),
-            formContractor(
-                ['A','B'],
-                [(('A',0),('B',1))],
-                [[('A',1)],[('B',0)]]
-            )(A,B)
-        )
-    # }}}
-    
-    @with_checker(number_of_calls=10)
-    def test_r3r3(self, # {{{
-        a = irange(1,10),
-        b = irange(1,10),
-        c = irange(1,10),
-        d = irange(1,10),
-        e = irange(1,10),
-    ):
-        A = crand(a,b,c)
-        B = crand(c,d,e)
-        self.assertAllClose(
-            dot(A.reshape(a*b,c),B.reshape(c,d*e)).reshape(a,b,d,e),
-            formContractor(
-                ['A','B'],
-                [(('A',2),('B',0))],
-                [[('A',0)],[('A',1)],[('B',1)],[('B',2)]]
-            )(A,B)
-        )
-    # }}}
+    @with_checker
+    def test_dimension_mismatch_detected(self,left_ndim=irange(1,5),right_ndim=irange(1,5)): # {{{
+        left_tensor_number = randint(0,1)
 
-    @with_checker(number_of_calls=10)
-    def test_r3r3_semi_flattened(self, # {{{
-        a = irange(1,10),
-        b = irange(1,10),
-        c = irange(1,10),
-        d = irange(1,10),
-        e = irange(1,10),
-    ):
-        A = crand(a,b,c)
-        B = crand(c,d,e)
-        self.assertAllClose(
-            dot(A.reshape(a*b,c),B.reshape(c,d*e)),
-            formContractor(
-                ['A','B'],
-                [(('A',2),('B',0))],
-                [[('A',0),('A',1)],[('B',1),('B',2)]]
-            )(A,B)
-        )
-    # }}}
+        left_shared_shape = randomShape(left_ndim)
+        left_permutation = randomPermutation(left_ndim)
+        left_inverse_permutation = invertPermutation(left_permutation) 
+        left_shape = applyPermutation(left_permutation,left_shared_shape)
+        if left_tensor_number == 0:
+            right_tensor_number = 1
+            right_index = randint(0,left_ndim-1)
+            right_dimension = left_shared_shape[right_index]
+            left_index = left_inverse_permutation[right_index]
+            left_shape[left_index] += 1
+            left_dimension = left_shape[left_index]
+        left_tensor = NDArrayData.newRandom(left_shape)
 
-    @with_checker(number_of_calls=10)
-    def test_r3r3_semi_transposed_and_flattened(self, # {{{
-        a = irange(1,10),
-        b = irange(1,10),
-        c = irange(1,10),
-        d = irange(1,10),
-        e = irange(1,10),
-    ):
-        A = crand(a,b,c)
-        B = crand(c,d,e)
-        self.assertAllClose(
-            dot(A.reshape(a*b,c),B.reshape(c,d*e)).transpose().reshape(d,e,a,b).transpose(1,0,2,3).reshape(e*d,a,b),
-            formContractor(
-                ['A','B'],
-                [(('A',2),('B',0))],
-                [[('B',2),('B',1)],[('A',0)],[('A',1)]]
-            )(A,B)
-        )
-    # }}}
+        right_shared_shape = randomShape(right_ndim)
+        right_permutation = randomPermutation(right_ndim)
+        right_inverse_permutation = invertPermutation(right_permutation)
+        right_shape = applyPermutation(right_permutation,right_shared_shape)
+        if left_tensor_number == 1:
+            right_tensor_number = 2
+            left_index = randint(0,right_ndim-1)
+            left_dimension = right_shared_shape[left_index]
+            right_index = right_inverse_permutation[left_index]
+            right_shape[right_index] += 1
+            right_dimension = right_shape[right_index]
+            left_index += left_ndim
+        right_tensor = NDArrayData.newRandom(right_shape)
 
-    @with_checker(number_of_calls=10)
-    def test_r3r2(self, # {{{
-        a = irange(1,10),
-        b = irange(1,10),
-        c = irange(1,10),
-        d = irange(1,10),
-    ):
-        A = crand(a,b,c)
-        B = crand(c,d)
-        self.assertAllClose(
-            dot(A.reshape(a*b,c),B.reshape(c,d)).reshape(a,b,d),
-            formContractor(
-                ['A','B'],
-                [(('A',2),('B',0))],
-                [[('A',0)],[('A',1)],[('B',1)]]
-            )(A,B)
-        )
-    # }}}
-
-    @with_checker(number_of_calls=10)
-    def test_r3r3_semi_flattened(self, # {{{
-        a = irange(1,10),
-        b = irange(1,10),
-        c = irange(1,10),
-        d = irange(1,10),
-    ):
-        A = crand(a,b,c)
-        B = crand(c,d)
-        self.assertAllClose(
-            dot(A.reshape(a*b,c),B.reshape(c,d)).reshape(a,b*d),
-            formContractor(
-                ['A','B'],
-                [(('A',2),('B',0))],
-                [[('A',0)],[('A',1),('B',1)]]
-            )(A,B)
-        )
-    # }}}
-    
-    @with_checker(number_of_calls=10)
-    def test_matmatmat(self, # {{{
-        a = irange(1,10),
-        b = irange(1,10),
-        c = irange(1,10),
-        d = irange(1,10),
-    ):
-        A = crand(a,b)
-        B = crand(b,c)
-        C = crand(c,d)
-        self.assertAllClose(
-            dot(dot(A,B),C),
-            formContractor(
-                ['A','B','C'],
+        middle_tensor = NDArrayData.newRandom(left_shared_shape + right_shared_shape)
+        try:
+            makeDataContractor(
                 [
-                    (('A',1),('B',0)),
-                    (('B',1),('C',0)),
+                    Join(0,left_inverse_permutation,1,range(left_ndim)),
+                    Join(2,right_inverse_permutation,1,range(left_ndim,left_ndim+right_ndim))
                 ],
-                [[('A',0)],[('C',1)]]
-            )(A,B,C)
-        )
+            [])(left_tensor,middle_tensor,right_tensor)
+            self.fail("exception not thrown")
+        except DimensionMismatchError as e:
+            self.assertEqual(e.left_tensor_number,left_tensor_number)
+            self.assertEqual(e.left_index,left_index)
+            self.assertEqual(e.left_dimension,left_dimension)
+            self.assertEqual(e.right_tensor_number,right_tensor_number)
+            self.assertEqual(e.right_index,right_index)
+            self.assertEqual(e.right_dimension,right_dimension)
+    # }}}
+
+    @with_checker
+    def test_bad_rank_specification_detected(self,number_of_tensors=irange(1,5)): # {{{
+        tensor_ranks = [randint(1,5) for _ in xrange(number_of_tensors)]
+        observed_tensor_ranks = tensor_ranks
+        while observed_tensor_ranks == tensor_ranks:
+            observed_tensor_ranks = [randint(1,5) for _ in xrange(number_of_tensors)]
+        try:
+            makeDataContractor([],[[(tensor_number,index)] for tensor_number, tensor_rank in enumerate(observed_tensor_ranks) for index in xrange(tensor_rank)],tensor_ranks=tensor_ranks)
+            self.fail("exception was not thrown")
+        except ValueError:
+            pass
     # }}}
 
     @with_checker(number_of_calls=10)
@@ -523,21 +284,24 @@ class TestFormContractor(TestCase): # {{{
         e = irange(1,10),
         f = irange(1,10),
     ):
-        A = crand(a,e,b)
-        B = crand(c,b,f)
-        C = crand(d,a,c)
-        AB = tensordot(A,B,(2,1))
-        ABC = tensordot(AB,C,((0,2),(1,2)))
-        self.assertAllClose(
-            ABC,
-            formContractor(
-                ['A','B','C'],
+        A = NDArrayData.newRandom((a,e,b))
+        B = NDArrayData.newRandom((c,b,f))
+        C = NDArrayData.newRandom((d,a,c))
+        joins = [
+            Join(0,0,2,1),
+            Join(0,2,1,1),
+            Join(1,0,2,2),
+        ]
+        shuffle(joins)
+        self.assertDataAlmostEqual(
+            A.contractWith(B,[2],[1]).contractWith(C,[0,2],[1,2]),
+            makeDataContractor(
+                joins,
                 [
-                    (('A',0),('C',1)),
-                    (('A',2),('B',1)),
-                    (('B',0),('C',2)),
-                ],
-                [[('A',1)],[('B',2)],[('C',0)]]
+                    [(0,1)],
+                    [(1,2)],
+                    [(2,0)]
+                ]
             )(A,B,C)
         )
     # }}}
@@ -551,20 +315,16 @@ class TestFormContractor(TestCase): # {{{
         e = irange(1,10),
         f = irange(1,10),
     ):
-        A = crand(a,b,c)
-        B = crand(d,e,c,f)
-        AB = tensordot(A,B,(2,2)).transpose(0,2,1,3,4).reshape(a*d,b*e,f)
-        self.assertAllClose(
-            AB,
-            formContractor(
-                ['A','B'],
+        A = NDArrayData.newRandom((a,b,c))
+        B = NDArrayData.newRandom((d,e,c,f))
+        self.assertDataAlmostEqual(
+            A.contractWith(B,[2],[2]).join([[0,2],[1,3],[4]]),
+            makeDataContractor(
+                [Join(0,2,1,2)],
                 [
-                    (('A',2),('B',2)),
-                ],
-                [
-                    [('A',0),('B',0)],
-                    [('A',1),('B',1)],
-                    [('B',3)],
+                    [(0,0),(1,0)],
+                    [(0,1),(1,1)],
+                    [(1,3)],
                 ]
             )(A,B)
         )
@@ -582,158 +342,21 @@ class TestFormContractor(TestCase): # {{{
         h = irange(1,5),
         i = irange(1,5),
     ):
-        A = crand(a,b,c,d)
-        B = crand(e,f,d,h,i)
-        AB = tensordot(A,B,(3,2)).transpose(0,3,1,4,2,5,6).reshape(a*e,b*f,c*h,i)
-        self.assertAllClose(
-            AB,
-            formContractor(
-                ['A','B'],
+        A = NDArrayData.newRandom((a,b,c,d))
+        B = NDArrayData.newRandom((e,f,d,h,i))
+        self.assertDataAlmostEqual(
+            A.contractWith(B,[3],[2]).join([[0,3],[1,4],[2,5],[6]]),
+            makeDataContractor(
+                [Join(0,3,1,2)],
                 [
-                    (('A',3),('B',2)),
-                ],
-                [
-                    [('A',0),('B',0)],
-                    [('A',1),('B',1)],
-                    [('A',2),('B',3)],
-                    [('B',4)],
+                    [(0,0),(1,0)],
+                    [(0,1),(1,1)],
+                    [(0,2),(1,3)],
+                    [(1,4)],
                 ]
             )(A,B)
         )
     # }}}
 # }}}
 
-class TestIncreaseDimensionUsingFirstTensorOnlyBetween(TestCase): # {{{
-    @with_checker
-    def test_invariant_when_new_dimension_same_as_old(self, # {{{
-        m=irange(2,5),
-        n=irange(1,5),
-    ):
-        tensor_1, index_1 = randomTensorAndIndex(m)
-        old_dimension = tensor_1.shape[index_1]
-        tensor_2, index_2 = randomTensorAndIndexAgreeingWith(n,old_dimension)
-        new_tensor_1, new_tensor_2 = increaseDimensionUsingFirstTensorOnlyBetween(tensor_1,index_1,tensor_2,index_2,old_dimension)
-        self.assertAllClose(
-            tensordot(tensor_1,tensor_2,(index_1,index_2)),
-            tensordot(new_tensor_1,new_tensor_2,(index_1,index_2)),
-        )
-    # }}}
-    
-    @with_checker
-    def test_invariant_when_new_dimension_more_than_old(self, # {{{
-        m=irange(2,5),
-        n=irange(1,5),
-    ):
-        index_1 = randomIndex(m)
-        tensor_1_shape = randomShape(m)
-        tensor_1_shape[index_1] = randint(1,product(withoutIndex(tensor_1_shape,index_1)))
-        tensor_1 = crand(*tensor_1_shape)
-        old_dimension = tensor_1.shape[index_1]
-        tensor_2, index_2 = randomTensorAndIndexAgreeingWith(n,old_dimension)
-        new_dimension = randint(old_dimension,product(withoutIndex(tensor_1.shape,index_1)))
-        new_tensor_1, new_tensor_2 = increaseDimensionUsingFirstTensorOnlyBetween(tensor_1,index_1,tensor_2,index_2,new_dimension)
-        self.assertEqual(new_tensor_1.shape[index_1],new_dimension)
-        self.assertEqual(new_tensor_2.shape[index_2],new_dimension)
-        self.assertAllClose(
-            tensordot(tensor_1,tensor_2,(index_1,index_2)),
-            tensordot(new_tensor_1,new_tensor_2,(index_1,index_2)),
-        )
-    # }}}
-# }}}
-
-class test_invertPermutation(TestCase): # {{{
-    @with_checker
-    def test_identity_on_range(self,number_of_elements=irange(0,20)): # {{{
-        self.assertEqual(range(number_of_elements),invertPermutation(range(number_of_elements)))
-    # }}}
-
-    @with_checker
-    def test_self_inverse(self,number_of_elements=irange(0,20)): # {{{
-        permutation = range(number_of_elements)
-        shuffle(permutation)
-        self.assertEqual(permutation,invertPermutation(invertPermutation(permutation)))
-    # }}}
-
-    @with_checker
-    def test_correct_when_applied_to_data(self,number_of_elements=irange(0,20)): # {{{
-        data = [randint(0,100) for _ in xrange(number_of_elements)]
-        permutation = range(number_of_elements)
-        shuffle(permutation)
-        permuted_data = [data[i] for i in permutation]
-        self.assertEqual(data,[permuted_data[i] for i in invertPermutation(permutation)])
-    # }}}
-# }}}
-
-class TestNormalizeAndDenormalize(TestCase): # {{{
-    @with_checker
-    def test_random(self, # {{{
-        tensor_1_ndim = irange(1,5),
-        tensor_2_ndim = irange(1,5),
-    ):
-        index_1 = randint(0,tensor_1_ndim-1)
-        tensor_1_shape = [randint(1,5) for _ in range(tensor_1_ndim)]
-        tensor_1_shape_without_index = copy(tensor_1_shape)
-        del tensor_1_shape_without_index[index_1]
-        tensor_1_degrees_of_freedom = product(tensor_1_shape_without_index)
-        tensor_1_shape[index_1] = min(tensor_1_shape[index_1],tensor_1_degrees_of_freedom)
-        tensor_1 = crand(*tensor_1_shape)
-
-        index_2 = randint(0,tensor_2_ndim-1)
-        tensor_2_shape = [randint(1,5) for _ in range(tensor_2_ndim)]
-        tensor_2_shape[index_2] = tensor_1_shape[index_1]
-        tensor_2 = crand(*tensor_2_shape)
-
-        new_tensor_1, new_tensor_2 = normalizeAndDenormalize(tensor_1,index_1,tensor_2,index_2)
-        self.assertEqual(tensor_1.shape,new_tensor_1.shape)
-        self.assertEqual(tensor_2.shape,new_tensor_2.shape)
-
-        self.assertNormalized(new_tensor_1,index_1)
-        self.assertAllClose(
-            tensordot(tensor_1,tensor_2,(index_1,index_2)),
-            tensordot(new_tensor_1,new_tensor_2,(index_1,index_2))
-        )
-    # }}}
-# }}}
-
-class TestTruncateConnectionToSelf(TestCase): # {{{
-    @with_checker(number_of_calls=10)
-    def test_matrix_invariant_under_unfiltered(self, # {{{
-        tensor_ndim = irange(2,5),
-    ):
-        index = randint(0,tensor_ndim-1)
-        tensor_shape = [randint(1,5) for _ in range(tensor_ndim)]
-        tensor = crand(*tensor_shape)
-
-        truncated_tensor = truncateConnectionToSelf(tensor,index,len)
-
-        self.assertEqual(
-            withoutIndex(tensor.shape,index),
-            withoutIndex(truncated_tensor.shape,index)
-        )
-        self.assertAllClose(
-            tensordot(tensor,tensor.conj(),(index,index)),
-            tensordot(truncated_tensor,truncated_tensor.conj(),(index,index))
-        )
-    # }}}
-
-    @with_checker(number_of_calls=10)
-    def test_matrix_invariant_under_zero_filtered(self, # {{{
-        tensor_ndim = irange(2,5),
-    ):
-        index = randint(0,tensor_ndim-1)
-        tensor_shape = [randint(1,5) for _ in range(tensor_ndim)]
-        tensor = crand(*tensor_shape)
-
-        truncated_tensor = truncateConnectionToSelf(tensor,index,lambda arr: firstIndexBelowMagnitude(arr,1e-10))
-
-        self.assertTrue(truncated_tensor.shape[index] <= tensor.shape[index])
-        self.assertEqual(
-            withoutIndex(tensor.shape,index),
-            withoutIndex(truncated_tensor.shape,index)
-        )
-        self.assertAllClose(
-            tensordot(tensor,tensor.conj(),(index,index)),
-            tensordot(truncated_tensor,truncated_tensor.conj(),(index,index))
-        )
-    # }}}
 # }}}
