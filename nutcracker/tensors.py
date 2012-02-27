@@ -37,44 +37,6 @@ class MetaTensor(type): # {{{
         return type.__new__(cls,class_name,bases,data)
 # }}}
 
-class MetaSiteTensor(MetaTensor): # {{{
-    def __new__(cls,class_name,bases,data):
-        if "dimension_names" in data:
-            physical_dimension_names = []
-            physical_dimension_indices = {}
-            physical_indices = []
-            bandwidth_dimension_names = []
-            bandwidth_dimension_indices = {}
-            bandwidth_indices = []
-            dimension_names = data["dimension_names"]
-            for (index,name) in enumerate(dimension_names):
-                if name.startswith("physical"):
-                    physical_dimension_names.append(name)
-                    physical_dimension_indices[name] = index
-                    physical_indices.append(index)
-                else:
-                    bandwidth_dimension_names.append(name)
-                    bandwidth_dimension_indices[name] = index
-                    bandwidth_indices.append(index)
-            for varname in [
-                "physical_dimension_indices",
-                "physical_dimension_names",
-                "physical_indices",
-                "bandwidth_dimension_indices",
-                "bandwidth_dimension_names",
-                "bandwidth_indices",
-            ]:
-                data[varname] = locals()[varname]
-            data["number_of_physical_dimensions"] = len(physical_dimensions)
-            data["number_of_bandwidth_dimensions"] = len(bandwidth_dimensions)
-            data["physical_indices_are_transposed"] = (
-                "physical" in dimensions and
-                "physical_conjugate" in dimensions and
-                physical_dimension_indices["physical"] < physical_dimension_indices["physical_conjugate"]
-            )
-        return MetaTensor.__new__(cls,class_name,bases,data)
-# }}}
-
 # }}}
 
 # Base Classes {{{
@@ -129,19 +91,10 @@ class Tensor(object):# {{{
 
 # }}}
 
-class SiteTensor(Tensor): # {{{
-    __metaclass__ = MetaSiteTensor
+# }}}
 
-  # Instance methods {{{
 
-    def __init__(self,data): # {{{
-        Tensor.__init__(self,data)
-        shape = self.shape
-        self.bandwidth_dimensions = tuple(shape[index] for index in self.bandwidth_dimension_indices)
-        self.physical_dimensions = tuple(shape[index] for index in self.physical_dimension_indices)
-    # }}}
 
-  # }}}
 
 # }}}
 
