@@ -64,7 +64,7 @@ class Tensor(object):# {{{
   # Class methods {{{
 
     @classmethod
-    def constrctShape(cls,*args,**keywords): # {{{
+    def constructShape(cls,*args,**keywords): # {{{
         for (name,conjugated_name) in cls.dimension_names_with_conjugate:
             if name in keywords:
                 keywords[conjugated_name] = keywords[name]
