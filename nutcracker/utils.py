@@ -40,9 +40,9 @@ class Join: # {{{
         ,right_tensor_number
         ,right_tensor_indices
     ):
-        if not hasattr(left_tensor_indices,"__len__"):
+        if not hasattr(left_tensor_indices,"__len__") or isinstance(left_tensor_indices,str):
             left_tensor_indices = [left_tensor_indices]
-        if not hasattr(right_tensor_indices,"__len__"):
+        if not hasattr(right_tensor_indices,"__len__") or isinstance(right_tensor_indices,str):
             right_tensor_indices = [right_tensor_indices]
         if len(left_tensor_indices) != len(right_tensor_indices):
             raise ValueError("number of left indices does not match number of right indices (len({}) != len({}))".format(left_tensor_indices,right_tensor_indices))

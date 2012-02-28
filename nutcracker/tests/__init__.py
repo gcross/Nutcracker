@@ -28,6 +28,10 @@ class TestCase(unittest.TestCase):
         self.assertTrue(v1.allcloseTo(v2,rtol=rtol,atol=atol))
     # }}}
 
+    def assertTensorsAlmostEqual(self,v1,v2,rtol=1e-05,atol=1e-08): # {{{
+        self.assertDataAlmostEqual(self,v1.data,v2.data,rtol,atol)
+    # }}}
+
     def assertNormalized(self,tensor,index): # {{{
         self.assertAllClose(
             tensordot(tensor.conj(),tensor,(withoutIndex(range(tensor.ndim),index),)*2),
