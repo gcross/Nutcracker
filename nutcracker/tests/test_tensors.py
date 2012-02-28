@@ -10,6 +10,65 @@ from . import *
 
 # Tests {{{
 
+class test_Tensor_constructShape(TestCase): # {{{
+    def test_1(self): # {{{
+        class A(Tensor):
+            index_names = ["left","middle","right"]
+        self.assertEqual(
+            A.constructShape(2,3,5),
+            (2,3,5)
+        )
+        self.assertEqual(
+            A.constructShape(left=2,middle=3,right=5),
+            (2,3,5)
+        )
+        self.assertEqual(
+            A.constructShape(2,right=5,middle=3),
+            (2,3,5)
+        )
+        try:
+            A.constructShape(2,3)
+        except ValueError:
+            pass
+        try:
+            A.constructShape(2,3,5,down=4)
+        except ValueError:
+            pass
+    # }}}
+    def test_2(self): # {{{
+        class A(Tensor):
+            index_names = ["left","middle","left_conjugate"]
+        self.assertEqual(
+            A.constructShape(2,3),
+            (2,3,2)
+        )
+        self.assertEqual(
+            A.constructShape(left=2,middle=3),
+            (2,3,2)
+        )
+        self.assertEqual(
+            A.constructShape(left=2,middle=3,left_conjugate=2),
+            (2,3,2)
+        )
+        self.assertEqual(
+            A.constructShape(2,middle=3),
+            (2,3,2)
+        )
+        try:
+            A.constructShape(2)
+        except ValueError:
+            pass
+        try:
+            A.constructShape(left=2,middle=3,left_conjugate=1)
+        except ValueError:
+            pass
+        try:
+            A.constructShape(2,3,1)
+        except ValueError:
+            pass
+    # }}}
+# }}}
+
 class test_makeTensorContractor(TestCase): # {{{
   # Tensor classes {{{
     class L(Tensor):

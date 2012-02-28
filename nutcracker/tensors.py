@@ -73,25 +73,29 @@ class Tensor(object):# {{{
 
     @classmethod
     def constructShape(cls,*args,**keywords): # {{{
-        for (name,conjugated_name) in cls.dimension_names_with_conjugate:
-            if name in keywords:
-                keywords[conjugated_name] = keywords[name]
-        dimension_indices = self.dimension_indices
+        indices = cls.indices
         for name in keywords.keys():
-            if name not in dimension_indices:
+            if name not in indices:
                 raise ValueError("{} is not a recognized dimension for this tensor".format(name))
-        if len(args) > self.number_of_dimensions:
-            raise ValueError("{} dimensions were provided for a tensor with only {}".format(len(args),self.number_of_dimensions))
-        shape = list(args) + [None]*(self.number_of_dimensions-len(args))
-        for (name, dimension) in keywords:
-            index = dimension_indices[name]
+        if len(args) > cls.rank:
+            raise ValueError("{} dimensions were provided for a tensor with only {}".format(len(args),cls.rank))
+        shape = list(args) + [None]*(cls.rank-len(args))
+        for (name, dimension) in keywords.iteritems():
+            index = indices[name]
             if shape[index] is not None:
                 raise ValueError("dimension '{}' is specified both in the position and in the keyword arguments (respectively as {} and {})".format(name,shape[index],dimension))
             else:
                 shape[index] = dimension
-        for index, dimension in shape:
+        for (name,conjugate_name) in cls.index_names_with_conjugate.iteritems():
+            index = indices[name]
+            conjugate_index = indices[conjugate_name]
+            if shape[conjugate_index] is None:
+                shape[conjugate_index] = shape[index]
+            elif shape[index] is not None and shape[conjugate_index] != shape[index]:
+                raise ValueError("the values for the dimension of {} and its conjugate {} must agree ({} != {})".format(name,conjugate_name,shape[index],shape[conjugate_index]))
+        for index_name, dimension in zip(cls.index_names,shape):
             if dimension is None:
-                raise ValueError("missing a value for dimension {}".format(self.dimension_names[index]))
+                raise ValueError("missing a value for dimension {}".format(index_name))
         return tuple(shape)
     # }}}
 
