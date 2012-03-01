@@ -10,28 +10,28 @@ from . import *
 
 # Tests {{{
 
-class test_Tensor_constructShape(TestCase): # {{{
+class test_Tensor_constructOrderedTuple(TestCase): # {{{
     def test_1(self): # {{{
         class A(Tensor):
             index_names = ["left","middle","right"]
         self.assertEqual(
-            A.constructShape(2,3,5),
+            A.constructOrderedTuple(2,3,5),
             (2,3,5)
         )
         self.assertEqual(
-            A.constructShape(left=2,middle=3,right=5),
+            A.constructOrderedTuple(left=2,middle=3,right=5),
             (2,3,5)
         )
         self.assertEqual(
-            A.constructShape(2,right=5,middle=3),
+            A.constructOrderedTuple(2,right=5,middle=3),
             (2,3,5)
         )
         try:
-            A.constructShape(2,3)
+            A.constructOrderedTuple(2,3)
         except ValueError:
             pass
         try:
-            A.constructShape(2,3,5,down=4)
+            A.constructOrderedTuple(2,3,5,down=4)
         except ValueError:
             pass
     # }}}
@@ -39,31 +39,43 @@ class test_Tensor_constructShape(TestCase): # {{{
         class A(Tensor):
             index_names = ["left","middle","left_conjugate"]
         self.assertEqual(
-            A.constructShape(2,3),
+            A.constructOrderedTuple(2,3),
             (2,3,2)
         )
         self.assertEqual(
-            A.constructShape(left=2,middle=3),
+            A.constructOrderedTuple(left=2,middle=3),
             (2,3,2)
         )
         self.assertEqual(
-            A.constructShape(left=2,middle=3,left_conjugate=2),
+            A.constructOrderedTuple(left=2+1j,middle=3,conjugate=complex.conjugate),
+            (2+1j,3,2-1j)
+        )
+        self.assertEqual(
+            A.constructOrderedTuple(left=2,middle=3,left_conjugate=2),
             (2,3,2)
         )
         self.assertEqual(
-            A.constructShape(2,middle=3),
+            A.constructOrderedTuple(left=2+1j,middle=3,left_conjugate=2-1j,conjugate=complex.conjugate),
+            (2+1j,3,2-1j)
+        )
+        self.assertEqual(
+            A.constructOrderedTuple(2,middle=3),
             (2,3,2)
         )
         try:
-            A.constructShape(2)
+            A.constructOrderedTuple(2)
         except ValueError:
             pass
         try:
-            A.constructShape(left=2,middle=3,left_conjugate=1)
+            A.constructOrderedTuple(left=2,middle=3,left_conjugate=1)
         except ValueError:
             pass
         try:
-            A.constructShape(2,3,1)
+            A.constructOrderedTuple(left=2+1j,middle=3,left_conjugate=2+1j,conjugate=complex.conjugate)
+        except ValueError:
+            pass
+        try:
+            A.constructOrderedTuple(2,3,1)
         except ValueError:
             pass
     # }}}
@@ -100,10 +112,10 @@ class test_makeTensorContractor(TestCase): # {{{
         contractTensors = makeTensorContractor(
             [self.L,self.R],self.LR_as_matrix,
             [Join(0,"middle",1,"middle")],
-            [
-                [(0,"left")],
-                [(1,"right")],
-            ]
+            {
+                "left": [(0,"left")],
+                "right": [(1,"right")],
+            }
         )
         l = self.L(NDArrayData.newRandom((m,k)))
         r = self.R(NDArrayData.newRandom((k,n)))
@@ -123,9 +135,9 @@ class test_makeTensorContractor(TestCase): # {{{
         contractTensors = makeTensorContractor(
             [self.L,self.R],self.LR_as_vector,
             [Join(0,"middle",1,"middle")],
-            [
-                [(0,"left"),(1,"right")],
-            ]
+            {
+                "leftright": [(0,"left"),(1,"right")],
+            }
         )
         l = self.L(NDArrayData.newRandom((m,k)))
         r = self.R(NDArrayData.newRandom((k,n)))
@@ -144,10 +156,10 @@ class test_makeTensorContractor(TestCase): # {{{
             makeTensorContractor(
                 [self.L,self.R],self.LR,
                 [Join(0,"left",1,"middle")],
-                [
-                    [(0,"middle")],
-                    [(1,"right")],
-                ]
+                {
+                    "left": [(0,"middle")],
+                    "right": [(1,"right")],
+                }
             )
         except IllegalJoinError as e:
             self.assertEqual(e.left_tensor_class,self.L)
@@ -160,39 +172,35 @@ class test_makeTensorContractor(TestCase): # {{{
             makeTensorContractor(
                 [self.L,self.R],self.LR_as_matrix,
                 [Join(0,"middle",1,"middle")],
-                [
-                    [(1,"right")],
-                    [(0,"left")],
-                ]
+                {
+                    "left": [(1,"right")],
+                    "right": [(0,"left")],
+                }
             )
-        except IllegalGroupingError as e:
-            self.assertEqual(e.tensor_class,self.LR_as_matrix)
-            self.assertEqual(e.index_name,"left")
-            self.assertEqual(e.grouping,[(self.R,"right")])
+        except IllegalGroupingError:
+            pass
     # }}}
     def test_bad_grouping_2(self): # {{{
         try:
             makeTensorContractor(
                 [self.L,self.R],self.LR_as_matrix,
                 [Join(0,"middle",1,"middle")],
-                [
-                    [(0,"left"),(1,"right")],
-                    [],
-                ]
+                {
+                    "left": [(0,"left"),(1,"right")],
+                    "right": [],
+                }
             )
-        except IllegalGroupingError as e:
-            self.assertEqual(e.tensor_class,self.LR_as_matrix)
-            self.assertEqual(e.index_name,"left")
-            self.assertEqual(e.grouping,[(self.L,"left"),(self.R,"right")])
+        except IllegalGroupingError:
+            pass
     # }}}
     def test_bad_grouping_3(self): # {{{
         try:
             makeTensorContractor(
                 [self.L,self.R],self.LR_as_vector,
                 [Join(0,"middle",1,"middle")],
-                [
-                    [(1,"right"),(0,"left")],
-                ]
+                {
+                    "leftright": [(1,"right"),(0,"left")],
+                }
             )
         except IllegalGroupingError as e:
             self.assertEqual(e.tensor_class,self.LR_as_vector)

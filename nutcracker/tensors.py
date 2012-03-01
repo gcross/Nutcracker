@@ -72,31 +72,36 @@ class Tensor(object): # {{{
   # Class methods {{{
 
     @classmethod
-    def constructShape(cls,*args,**keywords): # {{{
+    def constructOrderedTuple(cls,*args,**keywords): # {{{
+        if "conjugate" in keywords:
+            conjugate = keywords["conjugate"]
+            del keywords["conjugate"]
+        else:
+            conjugate = lambda x: x
         indices = cls.indices
         for name in keywords.keys():
             if name not in indices:
-                raise ValueError("{} is not a recognized dimension for this tensor".format(name))
+                raise ValueError("{} is not a recognized index for this tensor".format(name))
         if len(args) > cls.rank:
-            raise ValueError("{} dimensions were provided for a tensor with only {}".format(len(args),cls.rank))
-        shape = list(args) + [None]*(cls.rank-len(args))
-        for (name, dimension) in keywords.iteritems():
+            raise ValueError("{} indices were provided for a tensor with only {}".format(len(args),cls.rank))
+        ordered_tuple = list(args) + [None]*(cls.rank-len(args))
+        for (name, value) in keywords.iteritems():
             index = indices[name]
-            if shape[index] is not None:
-                raise ValueError("dimension '{}' is specified both in the position and in the keyword arguments (respectively as {} and {})".format(name,shape[index],dimension))
+            if ordered_tuple[index] is not None:
+                raise ValueError("'{}' is specified both in the position and in the keyword arguments (respectively as {} and {})".format(name,ordered_tuple[index],value))
             else:
-                shape[index] = dimension
+                ordered_tuple[index] = value
         for (name,conjugate_name) in cls.index_names_with_conjugate.iteritems():
             index = indices[name]
             conjugate_index = indices[conjugate_name]
-            if shape[conjugate_index] is None:
-                shape[conjugate_index] = shape[index]
-            elif shape[index] is not None and shape[conjugate_index] != shape[index]:
-                raise ValueError("the values for the dimension of {} and its conjugate {} must agree ({} != {})".format(name,conjugate_name,shape[index],shape[conjugate_index]))
-        for index_name, dimension in zip(cls.index_names,shape):
-            if dimension is None:
+            if ordered_tuple[conjugate_index] is None:
+                ordered_tuple[conjugate_index] = conjugate(ordered_tuple[index])
+            elif ordered_tuple[index] is not None and ordered_tuple[conjugate_index] != conjugate(ordered_tuple[index]):
+                raise ValueError("the (conjugated) value for '{}' and its conjugate index '{}' must agree ({} != {})".format(name,conjugate_name,conjugate(ordered_tuple[index]),ordered_tuple[conjugate_index]))
+        for index_name, value in zip(cls.index_names,ordered_tuple):
+            if value is None:
                 raise ValueError("missing a value for dimension {}".format(index_name))
-        return tuple(shape)
+        return tuple(ordered_tuple)
     # }}}
 
     @classmethod
@@ -175,10 +180,8 @@ def makeTensorContractor(tensor_classes,result_class,joins,final_groups): # {{{
     del translated_joins
   # }}}
   # Next, check that all the groups are legal {{{
-    if len(final_groups) != result_class.rank:
-        raise ValueError("the result of this contraction has rank {}, but the specified result class {} expects rank {}".format(len(final_groups),result_class,result_class.rank))
-    translated_final_groups = []
-    for result_index_name, group in zip(result_class.index_names,final_groups):
+    translated_final_groups = [None] * result_class.rank
+    for result_index_name, group in final_groups.iteritems():
         grouping = []
         translated_group = []
         for (tensor_number,tensor_index_name) in group:
@@ -187,7 +190,10 @@ def makeTensorContractor(tensor_classes,result_class,joins,final_groups): # {{{
             tensor_index = tensor_class.getIndexForName(tensor_index_name)
             translated_group.append((tensor_number,tensor_index))
         ensureGroupingIsLegal(result_class,result_index_name,grouping)
-        translated_final_groups.append(translated_group)
+        translated_final_groups[result_class.indices[result_index_name]] = translated_group
+    for i, translated_group in enumerate(translated_final_groups):
+        if translated_group is None:
+            raise ValueError("Missing a final group for index {} of the result class {}".format(result_class.index_names[i],result_class.__name__))
     final_groups = translated_final_groups
     del translated_final_groups
   # }}}
