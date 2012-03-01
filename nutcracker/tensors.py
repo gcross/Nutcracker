@@ -49,7 +49,7 @@ class MetaTensor(type): # {{{
 
 # Base Classes {{{
 
-class Tensor(object):# {{{
+class Tensor(object): # {{{
     __metaclass__ = MetaTensor
 
   # Instance methods {{{
