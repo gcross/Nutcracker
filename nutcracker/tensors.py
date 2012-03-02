@@ -112,6 +112,11 @@ class Tensor(object): # {{{
             raise ValueError("tensor class {} does not have an index named '{}'".format(cls,name))
     # }}}
 
+    @classmethod # newTrivial {{{
+    def newTrivial(cls,data_class):
+        return cls(data_class.newTrivial((1,)*cls.rank))
+    # }}}
+
   # }}}
 
 # }}}
@@ -253,6 +258,7 @@ __all__ = [
     # Base classes {{{
     "Tensor",
     # }}}
+    "Join", # re-export from utils
   # }}}
   # Exceptions {{{
     "IllegalGroupingError",

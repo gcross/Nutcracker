@@ -1,6 +1,6 @@
 # Imports {{{
 
-from numpy import allclose, prod, tensordot
+from numpy import allclose, ones, prod, tensordot
 
 from utils import crand
 
@@ -25,9 +25,19 @@ class NDArrayData(object): # {{{
         return NDArrayData(_arr)
     # }}}
 
+    @classmethod # newOuterProduct {{{
+    def newOuterProduct(cls,factors):
+        return cls(reduce(multiply.outer,factors))
+    # }}}
+
     @classmethod # newRandom {{{
     def newRandom(cls,shape):
         return cls(crand(*shape))
+    # }}}
+
+    @classmethod # newTrivial {{{
+    def newTrivial(cls,shape,dtype=int):
+        return cls(ones(shape,dtype=dtype))
     # }}}
 
   # }}}
@@ -52,6 +62,10 @@ class NDArrayData(object): # {{{
 
     def allcloseTo(self,other,rtol=1e-05,atol=1e-08): # {{{
         return allclose(self._arr,other._arr,rtol=rtol,atol=atol)
+    # }}}
+
+    def conj(self): # {{{
+        return self.__class__(self._arr.conj())
     # }}}
 
     def contractWith(self,other,self_axes,other_axes): # {{{
