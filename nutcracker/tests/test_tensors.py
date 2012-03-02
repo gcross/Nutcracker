@@ -88,6 +88,7 @@ class test_makeTensorContractor(TestCase): # {{{
     class R(Tensor):
         index_names = ["middle","right"]
     registerLegalJoin(L,"middle",R,"middle")
+    registerLegalJoin(L,"left",R,"right")
 
     class LR(Tensor):
         index_names = ["left","right"]
@@ -150,6 +151,23 @@ class test_makeTensorContractor(TestCase): # {{{
             ]
         )
         self.assertDataAlmostEqual(lr.data,contractData(l.data,r.data))
+    # }}}
+    @with_checker
+    def test_scalar_contractor(self,m=irange(1,10),n=irange(1,10)): # {{{
+        contractTensors = makeTensorContractor(
+            [self.L,self.R],None,
+            [Join(0,["middle","left"],1,["middle","right"])],
+            None
+        )
+        l = self.L(NDArrayData.newRandom((m,n)))
+        r = self.R(NDArrayData.newRandom((n,m)))
+        lr = contractTensors(l,r)
+        self.assertFalse(isinstance(lr,Tensor))
+        contractData = makeDataContractor(
+            [Join(0,[1,0],1,[0,1])],
+            []
+        )
+        self.assertAlmostEqual(lr,contractData(l.data,r.data))
     # }}}
     def test_bad_join(self): # {{{
         try:
