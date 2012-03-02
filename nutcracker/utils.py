@@ -150,7 +150,9 @@ def makeDataContractor(joins,final_groups,tensor_ranks=None): # {{{
         observeTensorIndices(join.left_tensor_number,*join.left_tensor_indices)
         observeTensorIndices(join.right_tensor_number,*join.right_tensor_indices)
         if (join.left_tensor_number,join.right_tensor_number) in observed_joins:
-            raise ValueError("two joins appear between tensors {} and {} (recall that specified joins can contain multiple indices".format(join.left_tensor_number,join.right_tensor_number))
+            raise ValueError("two joins appear between tensors {} and {} (recall that specified joins can contain multiple indices)".format(join.left_tensor_number,join.right_tensor_number))
+        else:
+            observed_joins.add((join.left_tensor_number,join.right_tensor_number))
     for group in final_groups:
         for (tensor_number,index) in group:
             observeTensorIndices(tensor_number,index)
