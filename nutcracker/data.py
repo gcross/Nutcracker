@@ -29,6 +29,11 @@ class NDArrayData(object): # {{{
     def newRandom(cls,shape): # {{{
         return cls(crand(*shape))
     # }}}
+
+    @classmethod
+    def newOuterProduct(cls,factors): # {{{
+        return cls(reduce(multiply.outer,factors))
+    # }}}
 # }}}
 
 # Instance methods {{{

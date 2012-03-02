@@ -180,35 +180,47 @@ def makeTensorContractor(tensor_classes,result_class,joins,final_groups): # {{{
     del translated_joins
   # }}}
   # Next, check that all the groups are legal {{{
-    translated_final_groups = [None] * result_class.rank
-    for result_index_name, group in final_groups.iteritems():
-        grouping = []
-        translated_group = []
-        for (tensor_number,tensor_index_name) in group:
-            tensor_class = getClassFor(tensor_number)
-            grouping.append((tensor_class,tensor_index_name))
-            tensor_index = tensor_class.getIndexForName(tensor_index_name)
-            translated_group.append((tensor_number,tensor_index))
-        ensureGroupingIsLegal(result_class,result_index_name,grouping)
-        translated_final_groups[result_class.indices[result_index_name]] = translated_group
-    for i, translated_group in enumerate(translated_final_groups):
-        if translated_group is None:
-            raise ValueError("Missing a final group for index {} of the result class {}".format(result_class.index_names[i],result_class.__name__))
+    if result_class is None:
+        translated_final_groups = []
+        if final_groups:
+            raise ValueError("final groups specified for null result class: {}".format(final_groups))
+    else:
+        translated_final_groups = [None] * result_class.rank
+        for result_index_name, group in final_groups.iteritems():
+            grouping = []
+            translated_group = []
+            for (tensor_number,tensor_index_name) in group:
+                tensor_class = getClassFor(tensor_number)
+                grouping.append((tensor_class,tensor_index_name))
+                tensor_index = tensor_class.getIndexForName(tensor_index_name)
+                translated_group.append((tensor_number,tensor_index))
+            ensureGroupingIsLegal(result_class,result_index_name,grouping)
+            translated_final_groups[result_class.indices[result_index_name]] = translated_group
+        for i, translated_group in enumerate(translated_final_groups):
+            if translated_group is None:
+                raise ValueError("Missing a final group for index {} of the result class {}".format(result_class.index_names[i],result_class.__name__))
     final_groups = translated_final_groups
     del translated_final_groups
   # }}}
   # Construct and return the contractor {{{
-    function_source = "\n    ".join([
-        "def contract(" + ",".join("_{}".format(i) for i in xrange(len(tensor_classes))) + "):",
-            '"""',
-    ] + [   "_{} - a {}".format(i,cls.__name__) for (i,cls) in enumerate(tensor_classes)] + [
-            '"""',
-    ] + [   'if not isinstance(_{i},_{i}_class): raise TypeError("argument {i} must be a tensor of class {cls}")'.format(i=i,cls=cls.__name__) for (i,cls) in enumerate(tensor_classes)] + [
-            "return wrapInTensor(contractData(" + ",".join("_{}.data".format(i) for i in range(len(tensor_classes))) + "))"
-    ])
+    function_lines = []
+    function_lines.append("def contract(" + ",".join("_{}".format(i) for i in xrange(len(tensor_classes))) + "):")
+    function_lines.append('"""')
+    for (i,cls) in enumerate(tensor_classes):
+        function_lines.append("_{} - a {}".format(i,cls.__name__))
+    function_lines.append('"""')
+    for (i,cls) in enumerate(tensor_classes):
+        function_lines.append('if not isinstance(_{i},_{i}_class): raise TypeError("argument {i} must be a tensor of class {cls}")'.format(i=i,cls=cls.__name__))
+    if result_class is None:
+        function_lines.append("return contractData(" + ",".join("_{}.data".format(i) for i in range(len(tensor_classes))) + ")")
+    else:
+        function_lines.append("return wrapInTensor(contractData(" + ",".join("_{}.data".format(i) for i in range(len(tensor_classes))) + "))")
+    function_source = '\n    '.join(function_lines)
     contractData = makeDataContractor(joins,final_groups,tensor_ranks=[cls.rank for cls in tensor_classes])
     captured_definitions = {}
-    environment = {"ValueError": ValueError,"contractData": contractData,"wrapInTensor":result_class}
+    environment = {"ValueError": ValueError,"contractData": contractData}
+    if result_class is not None:
+        environment["wrapInTensor"] = result_class
     for i, tensor_class in enumerate(tensor_classes):
         environment["_{}_class".format(i)] = tensor_class
     exec function_source in environment, captured_definitions
