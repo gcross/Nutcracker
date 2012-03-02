@@ -71,8 +71,8 @@ class Tensor(object): # {{{
 
   # Class methods {{{
 
-    @classmethod
-    def constructOrderedTuple(cls,*args,**keywords): # {{{
+    @classmethod # constructOrderedTuple {{{
+    def constructOrderedTuple(cls,*args,**keywords):
         if "conjugate" in keywords:
             conjugate = keywords["conjugate"]
             del keywords["conjugate"]
@@ -104,8 +104,8 @@ class Tensor(object): # {{{
         return tuple(ordered_tuple)
     # }}}
 
-    @classmethod
-    def getIndexForName(cls,name): # {{{
+    @classmethod # getIndexForName {{{
+    def getIndexForName(cls,name):
         try:
             return cls.indices[name]
         except KeyError:

@@ -10,14 +10,14 @@ from utils import crand
 
 class NDArrayData(object): # {{{
 
-# Class construction methods {{{
+  # Class construction methods {{{
 
     def __init__(self,_arr): # {{{
         self._arr = _arr
     # }}}
 
-    @classmethod
-    def newFilled(cls,shape,value,dtype=None): # {{{
+    @classmethod # newFilled {{{
+    def newFilled(cls,shape,value,dtype=None):
         if not dtype:
             dtype = typeof(value)
         _arr = nd_array(shape,dtype)
@@ -25,13 +25,14 @@ class NDArrayData(object): # {{{
         return NDArrayData(_arr)
     # }}}
 
-    @classmethod
-    def newRandom(cls,shape): # {{{
+    @classmethod # newRandom {{{
+    def newRandom(cls,shape):
         return cls(crand(*shape))
     # }}}
-# }}}
 
-# Instance methods {{{
+  # }}}
+
+  # Instance methods {{{
 
     def __iadd__(self,other): # {{{
         self._arr += other._arr
@@ -64,7 +65,7 @@ class NDArrayData(object): # {{{
             return self._arr
     # }}}
 
-    def join(self,groups): # {{{
+    def join(self,groups): #{{{
         _arr = self._arr.transpose([index for group in groups for index in group])
         shape = []
         index = 0
@@ -78,14 +79,14 @@ class NDArrayData(object): # {{{
         return NDArrayData(self,self._arr.transpose(*args))
     # }}}
 
-# }}}
+  # }}}
 
-    # Properties {{{
+  # Properties {{{
 
     ndim = property(fget = lambda self: self._arr.ndim)
     shape = property(fget = lambda self: self._arr.shape)
 
-    # }}}
+  # }}}
 
 # }}}
 
