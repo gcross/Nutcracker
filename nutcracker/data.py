@@ -22,7 +22,7 @@ class NDArrayData(object): # {{{
             dtype = typeof(value)
         _arr = nd_array(shape,dtype)
         _arr[...] = value
-        return NDArrayData(value)
+        return NDArrayData(_arr)
     # }}}
 
     @classmethod
