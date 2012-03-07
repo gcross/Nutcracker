@@ -67,7 +67,7 @@ def randomPermutation(size): # {{{
 # }}}
 
 def randomShape(ndim,maximum=5): # {{{
-    return [randint(1,maximum) for _ in range(ndim)]
+    return tuple(randint(1,maximum) for _ in range(ndim))
 # }}}
 
 # }}}
