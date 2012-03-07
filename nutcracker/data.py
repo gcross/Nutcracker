@@ -90,7 +90,7 @@ class NDArrayData(object): # {{{
     # }}}
 
     def transpose(self,args): # {{{
-        return NDArrayData(self,self._arr.transpose(*args))
+        return NDArrayData(self._arr.transpose(*args))
     # }}}
 
   # }}}
