@@ -46,6 +46,7 @@ class NDArrayData(object): # {{{
 
     def __iadd__(self,other): # {{{
         self._arr += other._arr
+        return self
     # }}}
 
     def __getitem__(self,index): # {{{
