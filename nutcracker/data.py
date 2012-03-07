@@ -56,7 +56,7 @@ class NDArrayData(object): # {{{
         self._arr[index] = value._arr
     # }}}
 
-    def asArray(self):  #{{{
+    def toArray(self):  #{{{
         return self._arr
     # }}}
 
