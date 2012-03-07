@@ -32,7 +32,7 @@ class NDArrayData(object): # {{{
 
     @classmethod # newRandom {{{
     def newRandom(cls,shape):
-        return cls(crand(*shape))
+        return cls(randomComplexSample(shape))
     # }}}
 
     @classmethod # newTrivial {{{
