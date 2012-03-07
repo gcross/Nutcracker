@@ -18,9 +18,9 @@ class TaggedNDArrayData(NDArrayData): # {{{
         NDArrayData.__init__(self,arr)
         self.tag = tag
     def contractWith(self,other,self_axes,other_axes):
-        return TaggedNDArrayData(NDArrayData.contractWith(self,other,self_axes,other_axes).asArray(),(self.tag,other.tag))
+        return TaggedNDArrayData(NDArrayData.contractWith(self,other,self_axes,other_axes).toArray(),(self.tag,other.tag))
     def join(self,groups):
-        return TaggedNDArrayData(NDArrayData.join(self,groups).asArray(),self.tag)
+        return TaggedNDArrayData(NDArrayData.join(self,groups).toArray(),self.tag)
 # }}}
 
 # }}}
@@ -46,8 +46,8 @@ class test_makeDataContractor(TestCase): # {{{
             contraction
         )
         self.assertAllClose(
-            reduce(lambda x,y: multiply.outer(x,y),[tensor.asArray() for tensor in tensors]),
-            contraction.asArray()
+            reduce(lambda x,y: multiply.outer(x,y),[tensor.toArray() for tensor in tensors]),
+            contraction.toArray()
         )
     # }}}
 
@@ -68,7 +68,7 @@ class test_makeDataContractor(TestCase): # {{{
             contraction
         )
         self.assertAlmostEqual(
-            dot(A.asArray().ravel(),B.asArray().transpose(B_inverse_permutation).ravel()),
+            dot(A.toArray().ravel(),B.toArray().transpose(B_inverse_permutation).ravel()),
             contraction
         )
     # }}}
@@ -121,8 +121,8 @@ class test_makeDataContractor(TestCase): # {{{
             contraction
         )
         self.assertAllClose(
-            dot(A.asArray(),B.asArray()),
-            contraction.asArray()
+            dot(A.toArray(),B.toArray()),
+            contraction.toArray()
         )
     # }}}
 
@@ -140,7 +140,7 @@ class test_makeDataContractor(TestCase): # {{{
         C = TaggedNDArrayData(crand(c,d),'C')
         D = TaggedNDArrayData(crand(d,e),'D')
 
-        correct_value = reduce(dot,[tensor.asArray() for tensor in [A,B,C,D]])
+        correct_value = reduce(dot,[tensor.toArray() for tensor in [A,B,C,D]])
         contraction = makeDataContractor(
             [
                 Join(0,1,1,0),
@@ -151,7 +151,7 @@ class test_makeDataContractor(TestCase): # {{{
         )(A,B,C,D)
         self.assertAllClose(
             correct_value,
-            contraction.asArray()
+            contraction.toArray()
         )
         self.assertEqual(
             (('A','B'),('C','D')),
@@ -169,7 +169,7 @@ class test_makeDataContractor(TestCase): # {{{
         A = NDArrayData.newRandom((a,b))
         B = NDArrayData.newRandom((b,c))
         C = NDArrayData.newRandom((c,d))
-        correct_value = reduce(dot,[tensor.asArray() for tensor in [A,B,C]])
+        correct_value = reduce(dot,[tensor.toArray() for tensor in [A,B,C]])
         joins = [
             Join(0,1,1,0),
             Join(1,1,2,0),
@@ -178,7 +178,7 @@ class test_makeDataContractor(TestCase): # {{{
         contraction = makeDataContractor(joins,[[(0,0)],[(2,1)]])(A,B,C)
         self.assertAllClose(
             correct_value,
-            contraction.asArray()
+            contraction.toArray()
         )
     # }}}
 
@@ -186,13 +186,13 @@ class test_makeDataContractor(TestCase): # {{{
     def test_matrix_multiplication_many_matrices(self, number_of_matrices=irange(1,10)): # {{{
         dimensions = [randint(1,10) for _ in xrange(number_of_matrices+1)]
         matrices = [NDArrayData.newRandom((dimensions[i],dimensions[i+1])) for i in xrange(number_of_matrices)]
-        correct_value = reduce(dot,[matrix.asArray() for matrix in matrices])
+        correct_value = reduce(dot,[matrix.toArray() for matrix in matrices])
         joins = [Join(i,1,i+1,0) for i in xrange(number_of_matrices-1)]
         shuffle(joins)
         contraction = makeDataContractor(joins,[[(0,0)],[(number_of_matrices-1,1)]])(*matrices)
         self.assertAllClose(
             correct_value,
-            contraction.asArray()
+            contraction.toArray()
         )
     # }}}
 

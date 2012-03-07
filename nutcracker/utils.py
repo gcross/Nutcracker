@@ -1,7 +1,7 @@
 # Imports {{{
 
 from collections import defaultdict, namedtuple
-from numpy.random import rand
+from numpy.random import random_sample
 
 # }}} Imports
 
@@ -126,8 +126,12 @@ def computePostContractionIndexMap(rank,contracted_indices,offset=0): # {{{
     return index_map
 # }}}
 
-def crand(*shape): # {{{
-    return rand(*shape)*2-1+rand(*shape)*2j-1j
+def crand(*dimensions): # {{{
+    return randomComplexSample(dimensions)
+# }}}
+
+def randomComplexSample(shape): # {{{
+    return random_sample(shape)*2-1+random_sample(shape)*2j-1j
 # }}}
 
 def invertPermutation(permutation): # {{{
@@ -302,6 +306,7 @@ __all__ = [
     "crand",
     "invertPermutation",
     "makeDataContractor",
+    "randomComplexSample",
     # }}}
 ]
 # }}}

@@ -4,6 +4,8 @@ from numpy import allclose, array
 from random import randint, shuffle
 import unittest
 
+from ..utils import randomComplexSample
+
 # }}}
 
 # Classes {{{
@@ -60,6 +62,19 @@ class prependDataContractor(object): # {{{
 
 # Functions {{{
 
+def randomIndices(shape): # {{{
+    return tuple(randint(0,dimension-1) for dimension in shape)
+# }}}
+
+def randomPartitioningOf(values,number_of_partitions=None): # {{{
+    if not number_of_partitions:
+        number_of_partitions = randint(1,len(values))
+    partitions = [[] for _ in xrange(number_of_partitions)]
+    for value in values:
+        partitions[randint(0,number_of_partitions-1)].append(value)
+    return partitions
+# }}}
+
 def randomPermutation(size): # {{{
     permutation = range(size)
     shuffle(permutation)
@@ -67,7 +82,7 @@ def randomPermutation(size): # {{{
 # }}}
 
 def randomShape(ndim,maximum=5): # {{{
-    return [randint(1,maximum) for _ in range(ndim)]
+    return tuple(randint(1,maximum) for _ in range(ndim))
 # }}}
 
 # }}}
@@ -81,6 +96,8 @@ __all__ = [
     "prependDataContractor",
     # }}}
     # Functions {{{
+    "randomIndices",
+    "randomPartitioningOf",
     "randomPermutation",
     "randomShape",
     # }}}
