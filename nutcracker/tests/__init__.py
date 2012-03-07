@@ -60,6 +60,19 @@ class prependDataContractor(object): # {{{
 
 # Functions {{{
 
+def randomIndices(shape): # {{{
+    return tuple(randint(0,dimension-1) for dimension in shape)
+# }}}
+
+def randomPartitioningOf(values,number_of_partitions=None): # {{{
+    if not number_of_partitions:
+        number_of_partitions = randint(1,len(values))
+    partitions = [[] for _ in xrange(number_of_partitions)]
+    for value in values:
+        partitions[randint(0,number_of_partitions-1)].append(value)
+    return partitions
+# }}}
+
 def randomPermutation(size): # {{{
     permutation = range(size)
     shuffle(permutation)
@@ -81,6 +94,8 @@ __all__ = [
     "prependDataContractor",
     # }}}
     # Functions {{{
+    "randomIndices",
+    "randomPartitioningOf",
     "randomPermutation",
     "randomShape",
     # }}}
