@@ -1,6 +1,6 @@
 #@+leo-ver=5-thin
 #@+node:gcross.20110125120748.2417: * @file CMakeLists.txt
-cmake_minimum_required (VERSION 2.8)
+cmake_minimum_required (VERSION 2.8.8)
 project (Nutcracker C CXX Fortran)
 
 set(VERSION 1)
