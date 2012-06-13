@@ -280,12 +280,6 @@ TemporaryFilepath::TemporaryFilepath() {}
 TemporaryFilepath::TemporaryFilepath(path const& filepath)
   : filepath(filepath)
 { if(exists(filepath)) remove(filepath); }
-
-TemporaryFilepath::TemporaryFilepath(BOOST_RV_REF(TemporaryFilepath) other) {
-    if(exists(filepath)) remove(filepath);
-    filepath = other.filepath;
-    other.filepath.clear();
-}
 //@+node:gcross.20110511190907.3828: *4* (destructors)
 TemporaryFilepath::~TemporaryFilepath() { if(exists(filepath)) remove(filepath); }
 //@+node:gcross.20110511190907.3829: *4* operator*/->

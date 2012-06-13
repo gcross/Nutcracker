@@ -67,7 +67,7 @@ void Nutcracker_Operator_simpleSolveForLeastEigenvalues(NutcrackerOperator const
 }
 //@+node:gcross.20110908152849.2996: *3* simpleSolveForLeastEigenvaluesWithEigenvectors
 void Nutcracker_Operator_simpleSolveForLeastEigenvaluesWithEigenvectors(NutcrackerOperator const* op, uint32_t number_of_levels, float* eigenvalues, NutcrackerState** eigenvectors) {
-    boost::container::vector<Nutcracker::Solution> solutions =
+    boost::container::vector<Nutcracker::Solution> solutions; solutions =
         Nutcracker::Chain(*op,
             Nutcracker::ChainOptions()
                 .setOptimizerMode(Nutcracker::OptimizerMode::least_value)

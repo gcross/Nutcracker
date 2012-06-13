@@ -52,7 +52,13 @@ protected:
 public:
     TemporaryFilepath();
     TemporaryFilepath(path const& filepath);
-    TemporaryFilepath(BOOST_RV_REF(TemporaryFilepath) other);
+
+    TemporaryFilepath(BOOST_RV_REF(TemporaryFilepath) other) {
+        if(exists(filepath)) remove(filepath);
+        filepath = other.filepath;
+        other.filepath.clear();
+    }
+
     ~TemporaryFilepath();
 
     path const& operator*() const;
