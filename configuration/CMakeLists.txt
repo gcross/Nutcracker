@@ -1,8 +1,4 @@
-#@+leo-ver=5-thin
-#@+node:gcross.20110910153757.2917: * @file CMakeLists.txt
-#@+others
-#@+node:gcross.20110427003658.2449: ** Doxyfile
-if(DOXYGEN_FOUND AND INKSCAPE)
+if(DOXYGEN_FOUND AND INKSCAPE) # {{{
     configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.in ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile @ONLY)
 
     file(GLOB svg-file-paths ${CMAKE_SOURCE_DIR}/documentation/images/*.svg)
@@ -37,8 +33,6 @@ if(DOXYGEN_FOUND AND INKSCAPE)
         VERBATIM
     )
 
-endif(DOXYGEN_FOUND AND INKSCAPE)
-#@+node:gcross.20110910164923.2933: ** Header
+endif(DOXYGEN_FOUND AND INKSCAPE) # }}}
+
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/_config.h.in ${CMAKE_CURRENT_BINARY_DIR}/_config.h @ONLY)
-#@-others
-#@-leo

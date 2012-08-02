@@ -1,5 +1,3 @@
-#@+leo-ver=5-thin
-#@+node:gcross.20110125120748.2426: * @file CMakeLists.txt
 include_directories(".")
 include_directories(${PROTO_INCLUDE})
 include_directories ( ${Illuminate_INCLUDE_DIRS} )
@@ -32,4 +30,3 @@ set_property(TARGET test PROPERTY RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}
 add_executable(stress EXCLUDE_FROM_ALL stress test_utils)
 target_link_libraries(stress Nutcracker illuminate-main illuminate)
 set_property(TARGET stress PROPERTY RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR})
-#@-leo

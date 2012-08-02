@@ -1,7 +1,3 @@
-#@+leo-ver=5-thin
-#@+node:gcross.20110521115623.3151: * @file FixBundle.cmake.in
-#@@tabwidth -2
-
 set(CMAKE_MODULE_PATH "@CMAKE_SOURCE_DIR@/CMakeModules/;@CMAKE_BINARY_DIR@/miscellaneous")
 include (BundleUtilities)
 include (GetPrerequisitesOverrides)
@@ -11,4 +7,3 @@ fixup_bundle(
     ""
     "@LIBRARY_OUTPUT_PATH@"
 )
-#@-leo

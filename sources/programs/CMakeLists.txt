@@ -1,5 +1,3 @@
-#@+leo-ver=5-thin
-#@+node:gcross.20110220141808.2949: * @file CMakeLists.txt
 add_executable(nutcracker
     nutcracker
 )
@@ -27,4 +25,3 @@ if(BUNDLE_REQUIRED_SHARED_LIBRARIES)
     )
     install(SCRIPT ${CMAKE_BINARY_DIR}/miscellaneous/FixBundle.cmake)
 endif()
-#@-leo

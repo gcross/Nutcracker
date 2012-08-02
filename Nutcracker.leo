@@ -7,17 +7,6 @@
 <find_panel_settings/>
 <vnodes>
 <v t="gcross.20091113142219.1658"><vh>@chapters</vh></v>
-<v t="gcross.20110125120748.2417"><vh>@file CMakeLists.txt</vh></v>
-<v t="gcross.20110220093853.2005"><vh>@path CMakeModules</vh>
-<v t="gcross.20110127123226.2818"><vh>@file FindARPACK.cmake</vh></v>
-<v t="gcross.20110220093853.2006"><vh>@file FindYamlCXX.cmake</vh></v>
-</v>
-<v t="gcross.20110910153757.2915"><vh>@path configuration</vh>
-<v t="gcross.20110910153757.2917"><vh>@file CMakeLists.txt</vh></v>
-<v t="gcross.20110426163859.2445"><vh>@file Doxyfile.in</vh></v>
-<v t="gcross.20110910164923.2932"><vh>@file _config.h.in</vh></v>
-</v>
-<v t="gcross.20110501233304.2056"><vh>@path documentation</vh></v>
 <v t="gcross.20110904224519.2700"><vh>@path includes</vh>
 <v t="gcross.20110902235008.2736"><vh>@file nutcracker.h</vh></v>
 <v t="gcross.20110124161335.1866"><vh>@path nutcracker</vh>
@@ -54,9 +43,7 @@
 </v>
 </v>
 <v t="gcross.20091106154604.9812"><vh>@path sources</vh>
-<v t="gcross.20110125120748.2419"><vh>@file CMakeLists.txt</vh></v>
 <v t="gcross.20110823131135.2569"><vh>@path c-interface</vh>
-<v t="gcross.20110823131135.2599"><vh>@file CMakeLists.txt</vh></v>
 <v t="gcross.20110906155043.4972"><vh>Headers</vh>
 <v t="gcross.20110904213222.2777"><vh>@file common.hpp</vh></v>
 <v t="gcross.20110906155043.4953"><vh>@file terms.hpp</vh></v>
@@ -74,7 +61,6 @@
 <v t="gcross.20110910181738.4763"><vh>@file version.cpp</vh></v>
 </v>
 <v t="gcross.20110124161335.1865"><vh>@path common</vh>
-<v t="gcross.20110125120748.2421"><vh>@file CMakeLists.txt</vh></v>
 <v t="gcross.20110214155808.1862"><vh>@file boundaries.cpp</vh></v>
 <v t="gcross.20110130170743.1674"><vh>@file chain.cpp</vh></v>
 <v t="gcross.20110805222031.2351"><vh>@file compiler.cpp</vh></v>
@@ -96,15 +82,11 @@
 <v t="gcross.20110430163445.2609"><vh>@file yaml.cpp</vh></v>
 </v>
 <v t="gcross.20110220141808.2711"><vh>@path programs</vh>
-<v t="gcross.20110220141808.2949"><vh>@file CMakeLists.txt</vh></v>
-<v t="gcross.20110521115623.3151"><vh>@file FixBundle.cmake.in</vh></v>
-<v t="gcross.20110802140615.2338"><vh>@file GetPrerequisitesOverrides.cmake.in</vh></v>
 <v t="gcross.20110220141808.2717"><vh>@file nutcracker.cpp</vh></v>
 <v t="gcross.20110511141322.2238"><vh>@file print-object-sizes.cpp</vh></v>
 </v>
 </v>
 <v t="gcross.20091106154604.1972"><vh>@path tests</vh>
-<v t="gcross.20110125120748.2426"><vh>@file CMakeLists.txt</vh></v>
 <v t="gcross.20110215235924.1881"><vh>@file boundaries.cpp</vh></v>
 <v t="gcross.20110905151655.2845"><vh>@file c-interface.cpp</vh></v>
 <v t="gcross.20110130170743.1679"><vh>@file chain.cpp</vh></v>
@@ -198,7 +180,6 @@ namespace Nutcracker {
 <t tx="gcross.20110213233103.1926"></t>
 <t tx="gcross.20110213233103.1927"></t>
 <t tx="gcross.20110215235924.1877"></t>
-<t tx="gcross.20110220093853.2005"></t>
 <t tx="gcross.20110220141808.2711"></t>
 <t tx="gcross.20110220182654.1998"></t>
 <t tx="gcross.20110220182654.2000"></t>
@@ -224,7 +205,6 @@ Redistribution and use in source and binary forms, with or without modification,
 
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 @c</t>
-<t tx="gcross.20110501233304.2056"></t>
 <t tx="gcross.20110518164918.2513"></t>
 <t tx="gcross.20110518164918.2514"></t>
 <t tx="gcross.20110805222031.4658">@language cplusplus
@@ -312,6 +292,5 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 <t tx="gcross.20110823131135.2577"></t>
 <t tx="gcross.20110904224519.2700"></t>
 <t tx="gcross.20110906155043.4972"></t>
-<t tx="gcross.20110910153757.2915"></t>
 </tnodes>
 </leo_file>

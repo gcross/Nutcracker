@@ -1,20 +1,17 @@
-#@+leo-ver=5-thin
-#@+node:gcross.20110125120748.2417: * @file CMakeLists.txt
 cmake_minimum_required (VERSION 2.8.8)
 project (Nutcracker C CXX Fortran)
 
 set(VERSION 1)
 
-#@+<< Settings >>
-#@+node:gcross.20110426132142.2444: ** << Settings >>
-#@+others
-#@+node:gcross.20110802111539.2331: *3* Bundle required shared libraries
+# Settings {{{
+# Bundle required shared libraries {{{
 set (BUNDLE_REQUIRED_SHARED_LIBRARIES
     NO
     CACHE BOOL
     "If true, then required shared libraries are bundled with the package."
     )
-#@+node:gcross.20110531152523.3452: *3* Output paths
+# }}}
+# Output paths {{{
 set (LIBRARY_OUTPUT_PATH
     ${PROJECT_BINARY_DIR}/lib
     CACHE PATH
@@ -31,7 +28,8 @@ mark_as_advanced(
     LIBRARY_OUTPUT_PATH
     EXECUTABLE_OUTPUT_PATH
     )
-#@+node:gcross.20110531152523.3453: *3* Offline HTML+
+# }}}
+# Offline HTML+ {{{
 set (OFFLINE_HTML
     NO
     CACHE BOOL
@@ -43,61 +41,64 @@ if(${OFFLINE_HTML})
 else(${OFFLINE_HTML})
     set(USE_MATHJAX YES)
 endif(${OFFLINE_HTML})
-#@-others
-#@-<< Settings >>
+# }}}
+# }}}
 
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/CMakeModules/")
 
-#@+<< Platform-specific tweaks >>
-#@+node:gcross.20110427003658.2447: ** << Platform-specific tweaks >>
+# Platform-specific tweaks {{{
 if(CMAKE_COMPILER_IS_GNUCC)
     add_definitions(-Wall -Wno-strict-aliasing)
 endif(CMAKE_COMPILER_IS_GNUCC)
-#@-<< Platform-specific tweaks >>
+# }}}
 
-#@+<< Find packages >>
-#@+node:gcross.20110426132142.2438: ** << Find packages >>
-#@+others
-#@+node:gcross.20110426132142.2442: *3* ARPACK
+# Find packages {{{
+# ARPACK {{{
 find_package( ARPACK REQUIRED )
 link_directories ( ${ARPACK_LIBRARY_DIRS} )
-#@+node:gcross.20110426132142.2440: *3* BLAS
+# }}}
+# BLAS {{{
 find_package( BLAS REQUIRED )
 link_directories ( ${BLAS_LIBRARY_DIRS} )
 include_directories ( ${BLAS_INCLUDE_DIRS} )
-#@+node:gcross.20110426132142.2439: *3* Boost
+# }}}
+# Boost {{{
 find_package( Boost 1.48 COMPONENTS filesystem program_options signals system thread REQUIRED )
 link_directories ( ${Boost_LIBRARY_DIRS} )
 include_directories ( ${Boost_INCLUDE_DIRS} )
-#@+node:gcross.20110910153757.2916: *3* Doxygen & Inkscape
+# }}}
+# Doxygen & Inkscape {{{
 find_package(Doxygen)
 find_program(INKSCAPE inkscape)
-#@+node:gcross.20110524225044.2475: *3* HDF++
+# }}}
+# HDF++ {{{
 find_package( HDF++ 0.3 REQUIRED )
 include_directories ( ${HDF++_INCLUDE_DIRS} )
 link_directories ( ${HDF++_LIBRARY_DIRS} )
-#@+node:gcross.20110426132142.2441: *3* LAPACK
+# }}}
+# LAPACK {{{
 find_package( LAPACK REQUIRED )
 link_directories ( ${LAPACK_LIBRARY_DIRS} )
 include_directories ( ${LAPACK_INCLUDE_DIRS} )
-#@+node:gcross.20110831211534.2642: *3* Protobuf
+# }}}
+# Protobuf {{{
 find_package(Protobuf REQUIRED)
 include_directories(${PROTOBUF_INCLUDE_DIRS})
-#@+node:gcross.20110426132142.2443: *3* YamlCXX
+# }}}
+# YamlCXX {{{
 find_package( YamlCXX 0.2.6 REQUIRED )
 link_directories ( ${YAMLCXX_LIBRARY_DIRS} )
 include_directories ( ${YAMLCXX_INCLUDE_DIRS} )
-#@-others
-#@-<< Find packages >>
+# }}}
+# }}}
 
-#@+<< Configure build type >>
-#@+node:gcross.20110427003658.2448: ** << Configure build type >>
+# Configure build type {{{
 if( NOT CMAKE_BUILD_TYPE )
 set( CMAKE_BUILD_TYPE "RelWithDebInfo" )
 endif ()
 
 message (STATUS "Build type is " ${CMAKE_BUILD_TYPE})
-#@-<< Configure build type >>
+# }}}
 
 include_directories ("includes")
 
@@ -106,8 +107,7 @@ include_directories (${CMAKE_BINARY_DIR}/configuration)
 
 add_subdirectory ("sources")
 
-#@+<< Configure tests >>
-#@+node:gcross.20110624000550.2294: ** << Configure tests >>
+# Configure tests {{{
 find_package( Illuminate )
 
 if(${Illuminate_FOUND})
@@ -117,5 +117,4 @@ else(${Illuminate_FOUND})
         COMMAND ${CMAKE_COMMAND} -E echo "The Illuminate library is required to build the tests."
     )
 endif(${Illuminate_FOUND})
-#@-<< Configure tests >>
-#@-leo
+# }}}

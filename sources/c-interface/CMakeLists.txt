@@ -1,5 +1,3 @@
-#@+leo-ver=5-thin
-#@+node:gcross.20110823131135.2599: * @file CMakeLists.txt
 include_directories(".")
 
 add_library(Nutcracker SHARED
@@ -16,4 +14,3 @@ add_library(Nutcracker SHARED
     version
 )
 target_link_libraries(Nutcracker Nutcracker++)
-#@-leo

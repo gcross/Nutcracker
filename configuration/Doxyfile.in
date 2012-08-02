@@ -1,5 +1,3 @@
-#@+leo-ver=5-thin
-#@+node:gcross.20110426163859.2445: * @file Doxyfile.in
 # Doxyfile 1.7.2
 
 # This file describes the settings to be used by the documentation system
@@ -1656,4 +1654,3 @@ GENERATE_LEGEND        = YES
 # the various graphs.
 
 DOT_CLEANUP            = YES
-#@-leo

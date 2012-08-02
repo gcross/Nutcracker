@@ -1,5 +1,3 @@
-#@+leo-ver=5-thin
-#@+node:gcross.20110220093853.2006: * @file FindYamlCXX.cmake
 # - Try to find YamlCXX
 # Once done this will define
 #  YAMLCXX_FOUND - System has YamlCXX
@@ -28,4 +26,3 @@ find_package_handle_standard_args(YamlCXX  DEFAULT_MSG
                                   YAMLCXX_LIBRARY YAMLCXX_INCLUDE_DIR)
 
 mark_as_advanced(YAMLCXX_INCLUDE_DIR YAMLCXX_LIBRARY )
-#@-leo
