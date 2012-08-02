@@ -94,16 +94,11 @@
 <v t="gcross.20110202223558.1713"><vh>@file test_utils.hpp</vh></v>
 <v t="gcross.20110206092738.1736"><vh>@file test_utils.cpp</vh></v>
 </v>
-<v t="gcross.20091111171052.1604"><vh>@path python</vh>
-<v t="gcross.20091110205054.1950"><vh>@file Makefile</vh></v>
-<v t="gcross.20091106154604.1979"><vh>@file test.py</vh></v>
-</v>
 </v>
 </vnodes>
 <tnodes>
 <t tx="gcross.20091106154604.1972"></t>
 <t tx="gcross.20091106154604.9812"></t>
-<t tx="gcross.20091111171052.1604"></t>
 <t tx="gcross.20091113142219.1658"></t>
 <t tx="gcross.20110124161335.1865"></t>
 <t tx="gcross.20110124161335.1866"></t>

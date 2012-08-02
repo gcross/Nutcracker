@@ -1,8 +1,3 @@
-#@+leo-ver=5-thin
-#@+node:gcross.20091110205054.1950: * @file Makefile
-#@@language Makefile
-#@@tabwidth 4
-
 test: vmps.so
 
 vmps.so: ../../sources/common/core.f95 Makefile
@@ -10,4 +5,3 @@ vmps.so: ../../sources/common/core.f95 Makefile
 
 clean:
 	rm -f vmps.so
-#@-leo
