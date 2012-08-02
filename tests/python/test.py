@@ -1234,13 +1234,34 @@ class lapack_eigenvalue_minimizer(TestCase): # {{{
         matrix = crand(n,n)
         matrix += matrix.transpose().conj()
         correct_eigenvalues, correct_eigenvectors = eigh(matrix)
-        observed_eigenvalue, observed_eigenvector = vmps.lapack_eigenvalue_minimizer(matrix)
-        correct_minimal_eigenvalue = correct_eigenvalues[0]
-        self.assertAlmostEqual(observed_eigenvalue,correct_minimal_eigenvalue)
-        correct_minimal_eigenvector = correct_eigenvectors[:,0]
-        correct_minimal_eigenvector /= correct_minimal_eigenvector[0]
-        observed_eigenvector /= observed_eigenvector[0]
-        self.assertAllClose(observed_eigenvector,correct_minimal_eigenvector)
+
+        observed_minimum_eigenvalue, observed_minimum_eigenvector = vmps.lapack_eigenvalue_real_optimizer(matrix,"SR")
+        correct_minimum_eigenvalue = correct_eigenvalues[0]
+        self.assertAlmostEqual(observed_minimum_eigenvalue,correct_minimum_eigenvalue)
+        correct_minimum_eigenvector = correct_eigenvectors[:,0]
+        correct_minimum_eigenvector /= correct_minimum_eigenvector[0]
+        observed_minimum_eigenvector /= observed_minimum_eigenvector[0]
+        self.assertAllClose(observed_minimum_eigenvector,correct_minimum_eigenvector)
+
+        observed_maximum_eigenvalue, observed_maximum_eigenvector = vmps.lapack_eigenvalue_real_optimizer(matrix,"LR")
+        correct_maximum_eigenvalue = correct_eigenvalues[-1]
+        self.assertAlmostEqual(observed_maximum_eigenvalue,correct_maximum_eigenvalue)
+        correct_maximum_eigenvector = correct_eigenvectors[:,-1]
+        correct_maximum_eigenvector /= correct_maximum_eigenvector[0]
+        observed_maximum_eigenvector /= observed_maximum_eigenvector[0]
+        self.assertAllClose(observed_maximum_eigenvector,correct_maximum_eigenvector)
+
+        observed_biggest_eigenvalue, observed_biggest_eigenvector = vmps.lapack_eigenvalue_mag_maximizer(matrix)
+        if abs(correct_minimum_eigenvalue) > abs(correct_maximum_eigenvalue):
+            correct_biggest_eigenvalue = correct_minimum_eigenvalue
+            correct_biggest_eigenvector = correct_minimum_eigenvector
+        else:
+            correct_biggest_eigenvalue = correct_maximum_eigenvalue
+            correct_biggest_eigenvector = correct_maximum_eigenvector
+        self.assertAlmostEqual(observed_biggest_eigenvalue,correct_biggest_eigenvalue)
+        observed_biggest_eigenvector /= observed_biggest_eigenvector[0]
+        self.assertAllClose(observed_biggest_eigenvector,correct_biggest_eigenvector)
+
 # }}}
 class swap_inplace(TestCase): # {{{
     @with_checker
