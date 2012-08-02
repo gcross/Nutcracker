@@ -22,7 +22,6 @@
 #include <algorithm>
 #include <cstdlib>
 #include <boost/foreach.hpp>
-#include <boost/local_function.hpp>
 #include <boost/range/adaptor/indirected.hpp>
 #include <boost/range/algorithm/equal.hpp>
 #include <boost/range/algorithm/generate.hpp>
