@@ -75,6 +75,7 @@ struct WrongTensorRankException : public std::runtime_error {
 
 //@+<< Outside namespace >>
 //@+node:gcross.20110524225044.2431: ** << Outside namespace >>
+namespace HDF {
 //@+others
 //@+node:gcross.20110511190907.2294: *3* I/O Operators
 //@+others
@@ -160,6 +161,7 @@ HDF::Container operator<<(HDF::Location const& location, Nutcracker::Operator co
 void operator>>(HDF::Location const& location, Nutcracker::Operator& operator_sites);
 //@-others
 //@-others
+}
 //@-<< Outside namespace >>
 
 #endif

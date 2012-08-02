@@ -38,6 +38,7 @@
 #include <boost/iterator/iterator_facade.hpp>
 #include <boost/lambda/lambda.hpp>
 #include <boost/range/adaptor/reversed.hpp>
+#include <boost/range/algorithm/copy.hpp>
 #include <boost/range/algorithm/fill.hpp>
 #include <boost/range/algorithm/reverse.hpp>
 #include <boost/range/algorithm/reverse_copy.hpp>
@@ -68,6 +69,7 @@ namespace Nutcracker {
 //@+node:gcross.20110125202132.2158: ** << Usings >>
 using boost::adaptors::reversed;
 using boost::container::vector;
+using boost::copy;
 using boost::format;
 using boost::forward_traversal_tag;
 using boost::irange;

@@ -208,6 +208,8 @@ void installYAMLFormat() {
 using namespace Nutcracker;
 using namespace std;
 
+namespace YAML {
+
 //@+others
 //@+node:gcross.20110430163445.2632: *3* I/O Operators
 //@+node:gcross.20110430163445.2647: *4* Operator
@@ -356,5 +358,8 @@ Emitter& operator << (Emitter& out, OperatorSite const& operator_site) {
     return out;
 }
 //@-others
+
+}
+
 //@-<< Outside namespace >>
 //@-leo

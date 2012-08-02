@@ -25,7 +25,6 @@
 #include <boost/format.hpp>
 #include <boost/lambda/bind.hpp>
 #include <boost/lambda/lambda.hpp>
-#include <boost/local/function.hpp>
 #include <boost/range/algorithm/equal.hpp>
 #include <boost/range/algorithm/max_element.hpp>
 #include <boost/range/irange.hpp>
@@ -465,6 +464,27 @@ TEST_CASE(expectation_matches_computeExpectationValue) {
 //@+node:gcross.20110218150430.2590: *3* solveForMultipleLevels
 TEST_SUITE(solveForMultipleLevels) {
 
+struct checkEnergies_checkOverlap {
+    Chain const& chain;
+    checkEnergies_checkOverlap(Chain const& chain) : chain(chain) {}
+    void operator()(unsigned int const number_of_iterations=0) {
+        ASSERT_NEAR_REL(0,chain.computeProjectorOverlapAtCurrentSite(),1e-12);
+    }
+};
+
+struct checkEnergies_postEnergy {
+    Chain const& chain; bool absolute; vector<double>& actual_energies;
+    checkEnergies_postEnergy(Chain const& chain, bool absolute, vector<double>& actual_energies)
+        : chain(chain), absolute(absolute), actual_energies(actual_energies) {}
+    void operator()() {
+        if(absolute) {
+            actual_energies.push_back(abs(chain.getEnergy()));
+        } else {
+            actual_energies.push_back(chain.getEnergy());
+        }
+    }
+};
+
 //@+others
 //@+node:gcross.20110219101843.1944: *4* function checkEnergies
 void checkEnergies(
@@ -475,26 +495,11 @@ void checkEnergies(
 ) {
     unsigned int const number_of_levels = correct_energies.size();
     chain.signalOptimizeSiteFailure.connect(rethrow<OptimizerFailure>);
-    void BOOST_LOCAL_FUNCTION_PARAMS(
-        unsigned int const number_of_iterations, default 0,
-        const bind& chain
-    ) {
-        ASSERT_NEAR_REL(0,chain.computeProjectorOverlapAtCurrentSite(),1e-12);
-    } BOOST_LOCAL_FUNCTION_NAME(checkOverlap)
+    checkEnergies_checkOverlap checkOverlap(chain);
     chain.signalOptimizeSiteSuccess.connect(checkOverlap);
     chain.signalChainReset.connect(checkOverlap);
     vector<double> actual_energies; actual_energies.reserve(number_of_levels);
-    void BOOST_LOCAL_FUNCTION_PARAMS(
-        const bind& chain,
-        const bind absolute,
-        bind& actual_energies
-    ) {
-        if(absolute) {
-            actual_energies.push_back(abs(chain.getEnergy()));
-        } else {
-            actual_energies.push_back(chain.getEnergy());
-        }
-    } BOOST_LOCAL_FUNCTION_NAME(postEnergy)
+    checkEnergies_postEnergy postEnergy(chain,absolute,actual_energies);
     chain.signalChainOptimized.connect(postEnergy);
     chain.solveForMultipleLevels(number_of_levels);
     BOOST_FOREACH(unsigned int const i, irange(0u,number_of_levels)) {

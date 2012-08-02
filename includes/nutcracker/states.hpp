@@ -109,7 +109,7 @@ Specifically, this class contains an immutable matrix product state such that th
 \note This class is moveable but not copyable, and uses Boost.Move to implement these semantics.
 */
 //@-<< Description >>
-struct State {
+class State : boost::noncopyable {
     //@+others
     //@+node:gcross.20110430223656.2181: *4* [Move support]
     private:

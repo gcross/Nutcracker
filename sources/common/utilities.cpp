@@ -44,6 +44,7 @@ using boost::accumulate;
 using boost::irange;
 
 using std::ceil;
+using std::make_pair;
 using std::multiplies;
 //@-<< Usings >>
 

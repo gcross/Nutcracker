@@ -88,6 +88,8 @@ struct WrongDataLengthYAMLInputError: public YAMLInputError {
 //! \defgroup YAMLSerializationOperators YAML serialization operators
 //! @{
 
+namespace YAML {
+
 //@+others
 //@+node:gcross.20110430163445.2653: *4* Reading
 //! \defgroup YAMLSerializationOperatorsReading Reading
@@ -156,12 +158,16 @@ YAML::Emitter& operator << (YAML::Emitter& emitter, Nutcracker::OperatorSite con
 //! @}
 //@-others
 
+}
+
 //! @}
 //@+node:gcross.20110511190907.3543: *3* Boost
 namespace boost {
 
 template<> struct range_iterator<YAML::Node> { typedef YAML::Iterator type; };
 template<> struct range_const_iterator<YAML::Node> { typedef YAML::Iterator type; };
+
+namespace foreach { template<> struct is_noncopyable<YAML::Node> : mpl::true_ {}; }
 
 }
 //@+node:gcross.20110511190907.3544: *3* std

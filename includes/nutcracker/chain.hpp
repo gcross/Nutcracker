@@ -180,7 +180,7 @@ struct ChainOptions {
 
 };
 //@+node:gcross.20110202175920.1704: *3* Chain
-class Chain: public ChainOptions {
+class Chain: boost::noncopyable, public ChainOptions {
 public:
     unsigned int const number_of_sites;
 protected:

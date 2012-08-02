@@ -470,7 +470,7 @@ to indicate that the result of \c f should be \a moved into \c a.
 Note that the interface of \c BaseTensor has been designed so that copies will never be made unless you explicitly ask for them, so if you fail to use the correct syntax to move the data between objects then you will get a compiler error rather than having a copy be silently made.
 */
 //@-<< Description >>
-class BaseTensor {
+class BaseTensor : boost::noncopyable {
     //@+others
     //@+node:gcross.20110428160636.2509: *5* [Move support]
     private:
@@ -2188,6 +2188,12 @@ inline unsigned int operator|(
 //@-others
 
 }
+ 
+namespace boost { namespace foreach {
+
+template<typename T> struct is_noncopyable<boost::container::vector<Nutcracker::StateSite<T> > > : mpl::true_ {};
+
+} }
 
 #endif
 //@-leo

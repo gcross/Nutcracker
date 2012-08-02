@@ -20,7 +20,6 @@
 //@+<< Includes >>
 //@+node:gcross.20110220141808.2718: ** << Includes >>
 #include <boost/bind.hpp>
-#include <boost/local/function.hpp>
 #include <boost/format.hpp>
 #include <boost/none.hpp>
 #include <boost/none_t.hpp>

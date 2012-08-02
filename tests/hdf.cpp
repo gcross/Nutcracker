@@ -22,7 +22,7 @@
 #include <algorithm>
 #include <cstdlib>
 #include <boost/foreach.hpp>
-#include <boost/local/function.hpp>
+#include <boost/local_function.hpp>
 #include <boost/range/adaptor/indirected.hpp>
 #include <boost/range/algorithm/equal.hpp>
 #include <boost/range/algorithm/generate.hpp>
@@ -61,6 +61,17 @@ TEST_SUITE(Format) {
 
 //@+others
 //@+node:gcross.20110511190907.3822: *4* Output
+
+struct Output_postResult {
+    Chain const& chain; bool const output_states; vector<double>& levels; vector<State>& states;
+    Output_postResult(Chain const& chain, bool const output_states, vector<double>& levels, vector<State>& states)
+        : chain(chain), output_states(output_states), levels(levels), states(states) {}
+    void operator()() const {
+        levels.push_back(chain.getEnergy());
+        if(output_states) states.push_back(chain.makeCopyOfState());
+    }
+};
+
 TEST_CASE(Output) {
     RNG random;
 
@@ -102,15 +113,7 @@ TEST_CASE(Output) {
         vector<double> levels;
         vector<State> states;
 
-        void BOOST_LOCAL_FUNCTION_PARAMS(
-            const bind& chain,
-            const bind& output_states,
-            bind& levels,
-            bind& states
-        ) {
-            levels.push_back(chain.getEnergy());
-            if(output_states) states.push_back(chain.makeCopyOfState());
-        } BOOST_LOCAL_FUNCTION_NAME(postResult)
+        Output_postResult postResult(chain,output_states,levels,states);
 
         chain.signalChainOptimized.connect(postResult);
 

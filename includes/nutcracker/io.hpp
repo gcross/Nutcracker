@@ -357,7 +357,7 @@ struct InputFormat : public InputFormatBase {
 //@+node:gcross.20110511190907.3631: *3* OutputFormat
 extern const char* output_format_type_name;
 struct OutputFormat;
-struct Chain;
+class Chain;
 typedef Format<OutputFormat,output_format_type_name> OutputFormatBase;
 struct OutputFormat : public OutputFormatBase {
     //@+others

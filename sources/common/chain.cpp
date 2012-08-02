@@ -23,7 +23,6 @@
 #include <boost/bind.hpp>
 #include <boost/foreach.hpp>
 #include <boost/lambda/lambda.hpp>
-#include <boost/local/function.hpp>
 #include <boost/range/adaptor/reversed.hpp>
 #include <boost/range/adaptor/transformed.hpp>
 #include <boost/range/algorithm/reverse_copy.hpp>

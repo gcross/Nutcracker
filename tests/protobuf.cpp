@@ -19,7 +19,6 @@
 
 //@+<< Includes >>
 //@+node:gcross.20110901221152.2686: ** << Includes >>
-#include <boost/local/function.hpp>
 #include <illuminate.hpp>
 #include <fstream>
 
@@ -51,6 +50,17 @@ TEST_SUITE(Format) {
 
 //@+others
 //@+node:gcross.20110903120540.2694: *4* Output
+
+struct Output_postResult {
+    Chain const& chain; bool const output_states; vector<double>& levels; vector<State>& states;
+    Output_postResult(Chain const& chain, bool const output_states, vector<double>& levels, vector<State>& states)
+        : chain(chain), output_states(output_states), levels(levels), states(states) {}
+    void operator()() const {
+        levels.push_back(chain.getEnergy());
+        if(output_states) states.push_back(chain.makeCopyOfState());
+    }
+};
+
 TEST_CASE(Output) {
     RNG random;
 
@@ -70,15 +80,7 @@ TEST_CASE(Output) {
 
             Chain chain(constructTransverseIsingModelOperator(random(2,5),random));
 
-            void BOOST_LOCAL_FUNCTION_PARAMS(
-                const bind& chain,
-                const bind& output_states,
-                bind& levels,
-                bind& states
-            ) {
-                levels.push_back(chain.getEnergy());
-                if(output_states) states.push_back(chain.makeCopyOfState());
-            } BOOST_LOCAL_FUNCTION_NAME(postResult)
+            Output_postResult postResult(chain,output_states,levels,states);
 
             chain.signalChainOptimized.connect(postResult);
 

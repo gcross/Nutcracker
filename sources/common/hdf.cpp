@@ -256,6 +256,7 @@ void installFormat() {
 using namespace HDF;
 using namespace Nutcracker;
 
+namespace HDF {
 //@+others
 //@+node:gcross.20110511190907.2301: *3* I/O Operators
 //@+node:gcross.20110511190907.3531: *4* Operator
@@ -359,5 +360,6 @@ GroupArray operator>>(Location const& location, State& state) {
     return group;
 }
 //@-others
+}
 //@-<< Outside namespace >>
 //@-leo

@@ -67,7 +67,7 @@ struct NeighborSignalConflict : public std::logic_error {
         unsigned int right_site_number,
         RangeType1 left_site_right_signals,
         RangeType2 right_site_left_signals
-    )
+    ) throw ()
       : std::logic_error((
             boost::format("The left signals at site %1%, %2%, do not match the right signals of its left neighbor, %3%.")
               % right_site_number
@@ -78,6 +78,7 @@ struct NeighborSignalConflict : public std::logic_error {
       , left_site_right_signals(boost::begin(left_site_right_signals),boost::end(left_site_right_signals))
       , right_site_left_signals(boost::begin(right_site_left_signals),boost::end(right_site_left_signals))
     {}
+    ~NeighborSignalConflict() throw () {}
 };
 //@+node:gcross.20110815001337.2471: *3* NonSquareMatrix
 struct NonSquareMatrix : public std::logic_error {
@@ -102,8 +103,8 @@ struct SiteNumberTooLarge : public std::logic_error {
 //@+node:gcross.20110805222031.2389: *3* WrongDimensionForSite
 struct WrongDimensionForSite : public std::logic_error {
     unsigned int site_number, site_dimension, matrix_dimension;
-    WrongDimensionForSite(unsigned int site_number, unsigned int site_dimension, unsigned int dimension)
-      : std::logic_error((format("Attempted to add matrix which has dimension %3% to site number %1% which has dimension %2%. (%3% != %2%)") % site_number % site_dimension % dimension).str())
+    WrongDimensionForSite(unsigned int site_number, unsigned int site_dimension, unsigned int matrix_dimension)
+      : std::logic_error((format("Attempted to add matrix which has dimension %3% to site number %1% which has dimension %2%. (%3% != %2%)") % site_number % site_dimension % matrix_dimension).str())
       , site_number(site_number)
       , site_dimension(site_dimension)
       , matrix_dimension(matrix_dimension)
