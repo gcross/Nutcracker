@@ -1,6 +1,3 @@
-#@+leo-ver=5-thin
-#@+node:gcross.20110518164918.2520: * @file transverse-ising-model.py
-#@@language python
 import h5py, sys
 from numpy import array, complex128
 
@@ -57,4 +54,3 @@ with h5py.File(output_file,"w-") as f: # Fail if exists;  use "w" to truncate if
         site.attrs["right dimension"] = 1
         site["matrices"] = array([I,    X2,   Z  ],dtype=complex128).reshape(3,2,2)
         site["indices"] = array(  [3,1,  2,1,  1,1]).reshape(3,2)
-#@-leo

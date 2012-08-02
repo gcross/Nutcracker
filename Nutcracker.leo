@@ -29,19 +29,6 @@
 <v t="gcross.20110430163445.2593"><vh>@file yaml.hpp</vh></v>
 </v>
 </v>
-<v t="gcross.20110220182654.1998"><vh>@path examples</vh>
-<v t="gcross.20110220182654.2000"><vh>@path generate</vh>
-<v t="gcross.20110518164918.2514"><vh>@path hdf</vh>
-<v t="gcross.20110518164918.2516"><vh>@file external-field.py</vh></v>
-<v t="gcross.20110518164918.2520"><vh>@file transverse-ising-model.py</vh></v>
-</v>
-<v t="gcross.20110518164918.2513"><vh>@path yaml</vh>
-<v t="gcross.20110220182654.1999"><vh>@file external-field.py</vh></v>
-<v t="gcross.20110220182654.2002"><vh>@file external-field-using-anchors.py</vh></v>
-<v t="gcross.20110220182654.2005"><vh>@file transverse-ising-model.py</vh></v>
-</v>
-</v>
-</v>
 <v t="gcross.20091106154604.9812"><vh>@path sources</vh>
 <v t="gcross.20110823131135.2569"><vh>@path c-interface</vh>
 <v t="gcross.20110906155043.4972"><vh>Headers</vh>
@@ -122,10 +109,6 @@
 <t tx="gcross.20110124161335.1866"></t>
 <t tx="gcross.20110215235924.1877"></t>
 <t tx="gcross.20110220141808.2711"></t>
-<t tx="gcross.20110220182654.1998"></t>
-<t tx="gcross.20110220182654.2000"></t>
-<t tx="gcross.20110518164918.2513"></t>
-<t tx="gcross.20110518164918.2514"></t>
 <t tx="gcross.20110823131135.2569"></t>
 <t tx="gcross.20110904224519.2700"></t>
 <t tx="gcross.20110906155043.4972"></t>

@@ -1,6 +1,3 @@
-#@+leo-ver=5-thin
-#@+node:gcross.20110220182654.1999: * @file external-field.py
-#@@language python
 import sys
 
 if len(sys.argv) != 2:
@@ -58,4 +55,3 @@ sites:
          data: [1,0,0,1]
 sequence: %s
 """ % (number_of_sites,[1] + [2]*(number_of_sites-2) + [3])
-#@-leo

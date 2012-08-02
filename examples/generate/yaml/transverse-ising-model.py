@@ -1,6 +1,3 @@
-#@+leo-ver=5-thin
-#@+node:gcross.20110220182654.2005: * @file transverse-ising-model.py
-#@@language python
 import sys
 
 if len(sys.argv) != 3:
@@ -84,4 +81,3 @@ sites:
          data: *I
 sequence: %s
 """ % (coupling_strength,number_of_sites,coupling_strength,coupling_strength,[1] + [2]*(number_of_sites-2) + [3])
-#@-leo
