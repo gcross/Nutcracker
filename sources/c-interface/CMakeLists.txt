@@ -14,3 +14,4 @@ add_library(Nutcracker SHARED
     version
 )
 target_link_libraries(Nutcracker Nutcracker++)
+install (TARGETS Nutcracker LIBRARY DESTINATION lib)

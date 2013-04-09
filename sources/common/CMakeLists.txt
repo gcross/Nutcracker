@@ -35,3 +35,4 @@ target_link_libraries(Nutcracker++
     ${YAMLCXX_LIBRARIES}
     HDF++
 )
+install (TARGETS Nutcracker++ LIBRARY DESTINATION lib)
