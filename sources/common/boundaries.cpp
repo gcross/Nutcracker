@@ -1,29 +1,14 @@
-//@+leo-ver=5-thin
-//@+node:gcross.20110214155808.1862: * @file boundaries.cpp
-//@@language cplusplus
-//@+<< Documentation >>
-//@+node:gcross.20110509141853.2170: ** << Documentation >>
 /*!
 \file boundaries.cpp
 \brief Boundary-related functions
 */
-//@-<< Documentation >>
 
-//@+<< Includes >>
-//@+node:gcross.20110214155808.1863: ** << Includes >>
 #include "nutcracker/boundaries.hpp"
 #include "nutcracker/core.hpp"
-//@-<< Includes >>
 
 namespace Nutcracker {
 
-//@+<< Usings >>
-//@+node:gcross.20110214155808.1864: ** << Usings >>
-//@-<< Usings >>
 
-//@+others
-//@+node:gcross.20110214155808.1873: ** Functions
-//@+node:gcross.20110214155808.1874: *3* computeExpectationValueAtSite
 complex<double> computeExpectationValueAtSite(
       ExpectationBoundary<Left> const& left_boundary
     , StateSite<Middle> const& state_site
@@ -42,7 +27,6 @@ complex<double> computeExpectationValueAtSite(
         ,right_boundary
     );
 }
-//@+node:gcross.20110214155808.1875: *3* contractExpectationBoundaries
 complex<double> contractExpectationBoundaries(
       ExpectationBoundary<Left> const& left_boundary
     , ExpectationBoundary<Right> const& right_boundary
@@ -64,7 +48,6 @@ complex<double> contractExpectationBoundaries(
         ,right_boundary
     );
 }
-//@+node:gcross.20110215235924.2010: *3* contractSOSLeft
 ExpectationBoundary<Left> contractSOSLeft(
       ExpectationBoundary<Left> const& old_boundary
     , StateSite<Left> const& state_site
@@ -72,7 +55,6 @@ ExpectationBoundary<Left> contractSOSLeft(
 ) {
     return Unsafe::contractSOSLeft(old_boundary,state_site,operator_site);
 }
-//@+node:gcross.20110214155808.1877: *3* contractSOSRight
 ExpectationBoundary<Right> contractSOSRight(
       ExpectationBoundary<Right> const& old_boundary
     , StateSite<Right> const& state_site
@@ -95,7 +77,6 @@ ExpectationBoundary<Right> contractSOSRight(
     );
     return boost::move(new_boundary);
 }
-//@+node:gcross.20110216193817.1923: *3* contractVSLeft
 OverlapBoundary<Left> contractVSLeft(
       OverlapBoundary<Left> const& old_boundary
     , OverlapSite<Left> const& overlap_site
@@ -103,7 +84,6 @@ OverlapBoundary<Left> contractVSLeft(
 ) {
     return Unsafe::contractVSLeft(old_boundary,overlap_site,state_site);
 }
-//@+node:gcross.20110214155808.1879: *3* contractVSRight
 OverlapBoundary<Right> contractVSRight(
       OverlapBoundary<Right> const& old_boundary
     , OverlapSite<Right> const& overlap_site
@@ -126,11 +106,8 @@ OverlapBoundary<Right> contractVSRight(
     );
     return boost::move(new_boundary);
 }
-//@+node:gcross.20110215235924.2011: *3* Unsafe
 namespace Unsafe {
 
-//@+others
-//@+node:gcross.20110214155808.1878: *4* contractVSLeft
 OverlapBoundary<Left> contractVSLeft(
       OverlapBoundary<Left> const& old_boundary
     , OverlapSiteAny const& overlap_site
@@ -153,7 +130,6 @@ OverlapBoundary<Left> contractVSLeft(
     );
     return boost::move(new_boundary);
 }
-//@+node:gcross.20110214155808.1876: *4* contractSOSLeft
 ExpectationBoundary<Left> contractSOSLeft(
       ExpectationBoundary<Left> const& old_boundary
     , StateSiteAny const& state_site
@@ -176,10 +152,7 @@ ExpectationBoundary<Left> contractSOSLeft(
     );
     return boost::move(new_boundary);
 }
-//@-others
 
 }
-//@-others
 
 }
-//@-leo

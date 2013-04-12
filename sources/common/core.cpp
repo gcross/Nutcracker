@@ -1,30 +1,13 @@
-//@+leo-ver=5-thin
-//@+node:gcross.20091112145455.1619: * @file core.cpp
-//@@language cplusplus
-//@+<< Documentation >>
-//@+node:gcross.20110509212455.3995: ** << Documentation >>
 /*!
 \file core.cpp
 \brief Core numeric kernels
 */
-//@-<< Documentation >>
 
-//@+<< Includes >>
-//@+node:gcross.20110125120748.2118: ** << Includes >>
 #include "nutcracker/core.hpp"
-//@-<< Includes >>
 
 namespace Nutcracker { namespace Core {
 
-//@+<< Usings >>
-//@+node:gcross.20110125120748.2430: ** << Usings >>
-//@-<< Usings >>
 
-//@+others
-//@+node:gcross.20110124175241.1623: ** Functions
-//@+others
-//@+node:gcross.20110124175241.1638: *3* apply_single_site_operator
-//@+at
 // extern "C" void apply_single_site_operator_(
 //     uint32_t const* br,
 //     uint32_t const* bl,
@@ -44,7 +27,6 @@ namespace Nutcracker { namespace Core {
 // ) {
 //     return apply_single_site_operator_(&br,&bl,&d,state_site_tensor,local_operator,new_state_site_tensor);
 // }
-//@+node:gcross.20110124175241.1624: *3* compute_expectation
 extern "C" void compute_expectation_(
     uint32_t const*,
     uint32_t const*,
@@ -84,7 +66,6 @@ complex<double> compute_expectation(
     );
     return expectation;
 }
-//@+node:gcross.20110124175241.1643: *3* compute_overlap_with_projectors
 extern "C" void compute_overlap_with_projectors_(
       uint32_t const* number_of_projectors
     , uint32_t const* number_of_reflectors
@@ -113,7 +94,6 @@ complex<double> compute_overlap_with_projectors(
     );
     return overlap;
 }
-//@+node:gcross.20110128003411.1644: *3* contract_expectation_boundaries
 extern "C" void contract_expectation_boundaries_(
       uint32_t const* b
     , uint32_t const* c
@@ -138,7 +118,6 @@ complex<double> contract_expectation_boundaries(
     );
     return expectation;
 }
-//@+node:gcross.20110214183844.3003: *3* contract_matrix_left
 extern "C" void contract_matrix_left_(
     uint32_t const* bl
   , uint32_t const* br
@@ -162,7 +141,6 @@ void contract_matrix_left(
         ,new_left_environment
     );
 }
-//@+node:gcross.20110124175241.1626: *3* contract_sos_left
 extern "C" void contract_sos_left_(
     uint32_t const* bl,
     uint32_t const* br,
@@ -198,7 +176,6 @@ void contract_sos_left(
         new_left_environment
     );
 }
-//@+node:gcross.20110124175241.1627: *3* contract_sos_right
 extern "C" void contract_sos_right_(
     uint32_t const* bl,
     uint32_t const* br,
@@ -234,7 +211,6 @@ void contract_sos_right(
         new_right_environment
     );
 }
-//@+node:gcross.20110124175241.1628: *3* contract_vs_left
 extern "C" void contract_vs_left_(
     uint32_t const* b_left_old, uint32_t const* b_right_old,
     uint32_t const* b_left_new, uint32_t const* b_right_new,
@@ -264,7 +240,6 @@ void contract_vs_left(
         new_left_environment
     );
 }
-//@+node:gcross.20110124175241.1629: *3* contract_vs_right
 extern "C" void contract_vs_right_(
     uint32_t const* b_left_old, uint32_t const* b_right_old,
     uint32_t const* b_left_new, uint32_t const* b_right_new,
@@ -294,7 +269,6 @@ void contract_vs_right(
         new_right_environment
     );
 }
-//@+node:gcross.20110124175241.1640: *3* convert_vectors_to_reflectors
 extern "C" uint32_t convert_vectors_to_reflectors_(
     uint32_t const* n,
     uint32_t const* m,
@@ -322,7 +296,6 @@ uint32_t convert_vectors_to_reflectors(
     );
     return rank;
 }
-//@+node:gcross.20110213161858.1800: *3* extend_state_vector_fragment
 extern "C" void extend_state_vector_fragment_(
     uint32_t const* bm
   , uint32_t const* br
@@ -352,7 +325,6 @@ void extend_state_vector_fragment(
         ,new_state_vector_fragment
     );
 }
-//@+node:gcross.20110124175241.1641: *3* filter_components_outside_orthog
 extern "C" void filter_components_outside_orthog_(
     uint32_t const* full_space_dimension
   , uint32_t const* number_of_projectors
@@ -383,7 +355,6 @@ void filter_components_outside_orthog(
         output
     );
 }
-//@+node:gcross.20110124175241.1637: *3* form_norm_overlap_tensors
 extern "C" void form_norm_overlap_tensors_(
     uint32_t const* bl, uint32_t const* bm, uint32_t const* br,
     uint32_t const* dl, uint32_t const* dr,
@@ -417,7 +388,6 @@ void form_norm_overlap_tensors(
         right_norm_overlap_tensor_2
     );
 }
-//@+node:gcross.20110124175241.1636: *3* form_overlap_site_tensor
 extern "C" void form_overlap_site_tensor_(
     uint32_t const* br,
     uint32_t const* bl,
@@ -435,7 +405,6 @@ void form_overlap_site_tensor(
 ) {
     return form_overlap_site_tensor_(&br,&bl,&d,state_site_tensor,overlap_site_tensor);
 }
-//@+node:gcross.20110124175241.1630: *3* form_overlap_vector
 extern "C" void form_overlap_vector_(
     uint32_t const* b_left_old, uint32_t const* b_right_old,
     uint32_t const* b_left_new, uint32_t const* b_right_new,
@@ -465,7 +434,6 @@ void form_overlap_vector(
         overlap_vector
     );
 }
-//@+node:gcross.20110124175241.1635: *3* increase_bandwidth_between
 extern "C" int increase_bandwidth_between_(
     uint32_t const* bl, uint32_t const* bm, uint32_t const* br,
     uint32_t const* dl, uint32_t const* dr,
@@ -496,7 +464,6 @@ int increase_bandwidth_between(
         denormalized_site_tensor
     );
 }
-//@+node:gcross.20110124175241.1633: *3* norm_denorm_going_left
 extern "C" int norm_denorm_going_left_(
     uint32_t const* bll, uint32_t const* bl, uint32_t const* br,
     uint32_t const* dl, uint32_t const* d,
@@ -524,7 +491,6 @@ int norm_denorm_going_left(
         normalized_site_tensor
     );
 }
-//@+node:gcross.20110124175241.1634: *3* norm_denorm_going_right
 extern "C" int norm_denorm_going_right_(
     uint32_t const* bl, uint32_t const* br, uint32_t const* brr,
     uint32_t const* d, uint32_t const* dr,
@@ -552,7 +518,6 @@ int norm_denorm_going_right(
         denormalized_site_tensor
     );
 }
-//@+node:gcross.20110124175241.1625: *3* optimize
 extern "C" uint32_t optimize_(
     uint32_t const* bl,
     uint32_t const* br,
@@ -610,7 +575,6 @@ uint32_t optimize(
         &normal
     );
 }
-//@+node:gcross.20110124175241.1632: *3* rand_norm_state_site_tensor
 extern "C" void rand_norm_state_site_tensor_(
     uint32_t const* br,
     uint32_t const* bl,
@@ -626,7 +590,6 @@ void rand_norm_state_site_tensor(
 ) {
     rand_norm_state_site_tensor_(&br,&bl,&d,state_site_tensor);
 }
-//@+node:gcross.20110124175241.1631: *3* rand_unnorm_state_site_tensor
 extern "C" void rand_unnorm_state_site_tensor_(
     uint32_t const* br,
     uint32_t const* bl,
@@ -642,7 +605,6 @@ void rand_unnorm_state_site_tensor(
 ) {
     rand_unnorm_state_site_tensor_(&br,&bl,&d,state_site_tensor);
 }
-//@+node:gcross.20110124175241.1642: *3* random_projector_matrix
 extern "C" void random_projector_matrix_(
     uint32_t const* projector_length, uint32_t const* number_of_projectors,
     uint32_t const* rank,
@@ -657,8 +619,5 @@ uint32_t random_projector_matrix(
     random_projector_matrix_(&projector_length,&number_of_projectors,&rank,reflectors,coefficients,swaps);
     return rank;
 }
-//@-others
-//@-others
 
 }}
-//@-leo

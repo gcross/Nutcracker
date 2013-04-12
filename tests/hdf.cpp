@@ -1,8 +1,3 @@
-//@+leo-ver=5-thin
-//@+node:gcross.20110511190907.2319: * @file hdf.cpp
-//@@language cplusplus
-//@+<< Includes >>
-//@+node:gcross.20110511190907.2322: ** << Includes >>
 #include <algorithm>
 #include <cstdlib>
 #include <boost/foreach.hpp>
@@ -32,18 +27,11 @@ using boost::generate;
 using boost::irange;
 
 using std::equal;
-//@-<< Includes >>
 
-//@+others
-//@+node:gcross.20110511190907.2325: ** Tests
 TEST_SUITE(HDF) {
 
-//@+others
-//@+node:gcross.20110511190907.3821: *3* Format
 TEST_SUITE(Format) {
 
-//@+others
-//@+node:gcross.20110511190907.3822: *4* Output
 
 struct Output_postResult {
     Chain const& chain; bool const output_states; vector<double>& levels; vector<State>& states;
@@ -142,14 +130,10 @@ TEST_CASE(Output) {
 
     }
 }
-//@-others
 
 }
-//@+node:gcross.20110511190907.3522: *3* State
 TEST_SUITE(State) {
 
-//@+others
-//@+node:gcross.20110511190907.3524: *4* encode
 TEST_CASE(encode) {
     RNG random;
 
@@ -180,7 +164,6 @@ TEST_CASE(encode) {
         }
     }
 }
-//@+node:gcross.20110511190907.3525: *4* encode then decode
 TEST_CASE(encode_then_decode) {
     RNG random;
 
@@ -199,18 +182,12 @@ TEST_CASE(encode_then_decode) {
         checkStatesEqual(state_1,state_2);
     }
 }
-//@-others
 
 }
-//@+node:gcross.20110511190907.2326: *3* StateSite
 TEST_SUITE(StateSite) {
 
-//@+others
-//@+node:gcross.20110512151124.2485: *4* data
 TEST_SUITE(data) {
 
-//@+others
-//@+node:gcross.20110512151124.2484: *5* decode
 TEST_CASE(decode) {
     RNG random;
 
@@ -242,7 +219,6 @@ TEST_CASE(decode) {
         EXPECT_TRUE(equal(state_site_tensor,data));
     }
 }
-//@+node:gcross.20110511190907.2328: *5* encode
 TEST_CASE(encode) {
     RNG random;
 
@@ -277,7 +253,6 @@ TEST_CASE(encode) {
         EXPECT_TRUE(equal(state_site_tensor,data));
     }
 }
-//@+node:gcross.20110511190907.2332: *5* encode then decode
 TEST_CASE(encode_then_decode) {
     RNG random;
 
@@ -305,14 +280,10 @@ TEST_CASE(encode_then_decode) {
         checkSiteTensorsEqual(state_site_tensor_1,state_site_tensor_2);
     }
 }
-//@-others
 
 }
-//@+node:gcross.20110512151124.2486: *4* normalization
 TEST_SUITE(normalization) {
 
-//@+others
-//@+node:gcross.20110512151124.2487: *5* decode
 TEST_CASE(decode) {
     TemporaryMemoryFile file;
 
@@ -386,7 +357,6 @@ TEST_CASE(decode) {
         FAIL("A right-normalized state site accepted an unnormalized tensor!");
     } catch (WrongTensorNormalizationException const& _) {}
 }
-//@+node:gcross.20110512151124.2491: *5* encode
 TEST_CASE(encode) {
     TemporaryMemoryFile file;
 
@@ -414,17 +384,12 @@ TEST_CASE(encode) {
         FAIL((format("Unnormalized site has a non-empty normalization: %1%") % normalization).str());
     } catch (NoSuchAttributeException const& _) {}
 }
-//@-others
 
 }
-//@-others
 
 }
-//@+node:gcross.20110512151124.2496: *3* OperatorSite
 TEST_SUITE(OperatorSite) {
 
-//@+others
-//@+node:gcross.20110512151124.2497: *4* decode
 TEST_CASE(decode) {
     RNG random;
 
@@ -473,7 +438,6 @@ TEST_CASE(decode) {
         EXPECT_TRUE(equal((uint32_t*)operator_site_tensor,((uint32_t*)operator_site_tensor)+indices_data.size(),indices_data.begin()));
     }
 }
-//@+node:gcross.20110512151124.2501: *4* encode
 TEST_CASE(encode) {
     RNG random;
 
@@ -528,7 +492,6 @@ TEST_CASE(encode) {
 
     }
 }
-//@+node:gcross.20110512151124.2512: *4* encode then decode
 TEST_CASE(encode_then_decode) {
     RNG random;
 
@@ -547,14 +510,10 @@ TEST_CASE(encode_then_decode) {
         checkOperatorSitesEqual(operator_site_tensor_1,operator_site_tensor_2);
     }
 }
-//@-others
 
 }
-//@+node:gcross.20110511190907.3572: *3* Operator
 TEST_SUITE(Operator) {
 
-//@+others
-//@+node:gcross.20110511190907.3571: *4* encode then decode
 TEST_CASE(encode_then_decode) {
 
     RNG random;
@@ -575,11 +534,8 @@ TEST_CASE(encode_then_decode) {
     }
 
 }
-//@+node:gcross.20110511190907.3581: *4* examples
 TEST_SUITE(examples) {
 
-//@+others
-//@+node:gcross.20110511190907.3582: *5* external field
 TEST_CASE(external_field) {
 
     RNG random;
@@ -613,14 +569,9 @@ TEST_CASE(external_field) {
     }
 
 }
-//@-others
 
 }
-//@-others
 
 }
-//@-others
 
 }
-//@-others
-//@-leo

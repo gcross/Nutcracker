@@ -1,8 +1,3 @@
-//@+leo-ver=5-thin
-//@+node:gcross.20110901221152.2684: * @file protobuf.cpp
-//@@language cplusplus
-//@+<< Includes >>
-//@+node:gcross.20110901221152.2686: ** << Includes >>
 #include <illuminate.hpp>
 #include <fstream>
 
@@ -22,18 +17,11 @@ using Nutcracker::Protobuf::StateBuffer;
 
 using std::auto_ptr;
 using std::ifstream;
-//@-<< Includes >>
 
-//@+others
-//@+node:gcross.20110901221152.2687: ** Tests
 TEST_SUITE(Protobuf) {
 
-//@+others
-//@+node:gcross.20110903120540.2693: *3* Format
 TEST_SUITE(Format) {
 
-//@+others
-//@+node:gcross.20110903120540.2694: *4* Output
 
 struct Output_postResult {
     Chain const& chain; bool const output_states; vector<double>& levels; vector<State>& states;
@@ -102,14 +90,10 @@ TEST_CASE(Output) {
         }
     }
 }
-//@-others
 
 }
-//@+node:gcross.20110902105950.2706: *3* Operator
 TEST_SUITE(Operator) {
 
-//@+others
-//@+node:gcross.20110902105950.2709: *4* external_field
 TEST_CASE(external_field) {
     BOOST_FOREACH(unsigned int const number_of_sites, irange(4u,21u)) {
         Operator operator_1 = constructExternalFieldOperator(number_of_sites,Pauli::Z), operator_2;
@@ -122,7 +106,6 @@ TEST_CASE(external_field) {
         }
     }
 }
-//@+node:gcross.20110902105950.2708: *4* random
 TEST_CASE(random) {
     RNG random;
 
@@ -136,10 +119,8 @@ TEST_CASE(random) {
         checkOperatorsEqual(operator_1,operator_2);
     }
 }
-//@-others
 
 }
-//@+node:gcross.20110902105950.2698: *3* OperatorSite
 TEST_CASE(OperatorSite) {
     RNG random;
 
@@ -153,7 +134,6 @@ TEST_CASE(OperatorSite) {
         checkOperatorSitesEqual(tensor_1,tensor_2);
     }
 }
-//@+node:gcross.20110902105950.2690: *3* State
 TEST_CASE(State) {
     RNG random;
 
@@ -167,11 +147,8 @@ TEST_CASE(State) {
         checkStatesEqual(state_1,state_2);
     }
 }
-//@+node:gcross.20110901221152.2691: *3* StateSite
 TEST_SUITE(StateSite) {
 
-//@+others
-//@+node:gcross.20110901221152.2692: *4* data
 TEST_CASE(data) {
     RNG random;
 
@@ -201,7 +178,6 @@ TEST_CASE(data) {
         checkSiteTensorsEqual(state_site_tensor_1,state_site_tensor_2);
     }
 }
-//@+node:gcross.20110901221152.2693: *4* normalization
 TEST_CASE(normalization) {
     StateSiteBuffer
         left_buffer,
@@ -272,11 +248,7 @@ TEST_CASE(normalization) {
         FAIL("A right-normalized state site accepted an unnormalized tensor!");
     } catch (WrongTensorNormalizationException const& _) {}
 }
-//@-others
 
 }
-//@-others
 
 }
-//@-others
-//@-leo

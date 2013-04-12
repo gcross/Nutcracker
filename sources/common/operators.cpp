@@ -1,8 +1,3 @@
-//@+leo-ver=5-thin
-//@+node:gcross.20110206185121.1777: * @file operators.cpp
-//@@language cplusplus
-//@+<< Includes >>
-//@+node:gcross.20110206185121.1778: ** << Includes >>
 #include <boost/make_shared.hpp>
 #include <boost/range/algorithm/copy.hpp>
 #include <boost/tuple/tuple.hpp>
@@ -12,12 +7,9 @@
 #include <utility>
 
 #include "nutcracker/operators.hpp"
-//@-<< Includes >>
 
 namespace Nutcracker {
 
-//@+<< Usings >>
-//@+node:gcross.20110206185121.1779: ** << Usings >>
 using boost::irange;
 using boost::make_shared;
 using boost::make_tuple;
@@ -25,11 +17,7 @@ using boost::tuple;
 
 using std::make_pair;
 using std::ostream_iterator;
-//@-<< Usings >>
 
-//@+others
-//@+node:gcross.20110206185121.1783: ** Functions
-//@+node:gcross.20110207115918.1781: *3* constructExternalFieldOperator
 Operator constructExternalFieldOperator(
       unsigned int const number_of_sites
     , MatrixConstPtr const& matrix
@@ -87,7 +75,6 @@ Operator constructExternalFieldOperator(
     }
     return boost::move(operator_sites);
 }
-//@+node:gcross.20110206185121.1784: *3* constructOperatorSite
 OperatorSite constructOperatorSite(
       PhysicalDimension const physical_dimension
     , LeftDimension const left_dimension
@@ -118,7 +105,6 @@ OperatorSite constructOperatorSite(
 
     return boost::move(operator_site);
 }
-//@+node:gcross.20110208195213.1789: *3* constructTransverseIsingModelOperator
 Operator constructTransverseIsingModelOperator(
       unsigned int const number_of_sites
     , double spin_coupling_strength
@@ -171,7 +157,6 @@ Operator constructTransverseIsingModelOperator(
     ));
     return boost::move(operator_sites);
 }
-//@+node:gcross.20110217175626.1939: *3* extractPhysicalDimensions
 vector<unsigned int> extractPhysicalDimensions(Operator const& operator_sites) {
     vector<unsigned int> physical_dimensions;
     physical_dimensions.reserve(operator_sites.size()+1);
@@ -180,7 +165,5 @@ vector<unsigned int> extractPhysicalDimensions(Operator const& operator_sites) {
     }
     return boost::move(physical_dimensions);
 }
-//@-others
 
 }
-//@-leo

@@ -1,8 +1,3 @@
-//@+leo-ver=5-thin
-//@+node:gcross.20110525201928.2433: * @file io.cpp
-//@@language cplusplus
-//@+<< Includes >>
-//@+node:gcross.20110525200457.2438: ** << Includes >>
 #include <illuminate.hpp>
 
 #include <boost/assign/list_of.hpp>
@@ -15,33 +10,21 @@ using namespace Nutcracker;
 using boost::assign::list_of;
 using boost::equal;
 using boost::shared_ptr;
-//@-<< Includes >>
 
-//@+others
-//@+node:gcross.20110525200457.2439: ** Tests
 TEST_SUITE(IO) {
 
-//@+others
-//@+node:gcross.20110525200457.2440: *3* correct_formats_are_installed
 TEST_SUITE(correct_formats_are_installed) {
 
-//@+others
-//@+node:gcross.20110525200457.2441: *4* input
 TEST_CASE(Input) {
     ASSERT_TRUE(equal(InputFormat::listNames(),list_of("hdf")("protobuf")("yaml")));
 }
-//@+node:gcross.20110525200457.2443: *4* output
 TEST_CASE(Output) {
     ASSERT_TRUE(equal(InputFormat::listNames(),list_of("hdf")("protobuf")("yaml")));
 }
-//@-others
 
 }
-//@+node:gcross.20110525201928.2443: *3* correct_extensions_are_identified
 TEST_SUITE(correct_extensions_are_installed) {
 
-//@+others
-//@+node:gcross.20110525201928.2444: *4* input
 TEST_SUITE(Input) {
 
 TEST_CASE(h5) { ASSERT_EQ(InputFormat::lookupExtension("h5"),&InputFormat::lookupName("hdf")); }
@@ -53,7 +36,6 @@ TEST_CASE(prb) { ASSERT_EQ(InputFormat::lookupExtension("prb"),&InputFormat::loo
 TEST_CASE(yaml) { ASSERT_EQ(InputFormat::lookupExtension("yaml"),&InputFormat::lookupName("yaml")); }
 
 }
-//@+node:gcross.20110525201928.2445: *4* output
 TEST_SUITE(Output) {
 
 TEST_CASE(h5) { ASSERT_EQ(OutputFormat::lookupExtension("h5"),&OutputFormat::lookupName("hdf")); }
@@ -65,14 +47,10 @@ TEST_CASE(prb) { ASSERT_EQ(OutputFormat::lookupExtension("prb"),&OutputFormat::l
 TEST_CASE(yaml) { ASSERT_EQ(OutputFormat::lookupExtension("yaml"),&OutputFormat::lookupName("yaml")); }
 
 }
-//@-others
 
 }
-//@+node:gcross.20110726215559.2337: *3* error handling
 TEST_SUITE(error_handling) {
 
-//@+others
-//@+node:gcross.20110726215559.2342: *4* no such operator site number
 TEST_CASE(no_such_operator_site_number) {
     try {
         constructOperatorFrom(
@@ -84,7 +62,6 @@ TEST_CASE(no_such_operator_site_number) {
         EXPECT_EQ_VAL(e.index,1u)
     }
 }
-//@+node:gcross.20110726215559.2338: *4* left dimension must be one
 TEST_CASE(left_dimension_must_be_one) {
     try {
         constructOperatorFrom(
@@ -97,7 +74,6 @@ TEST_CASE(left_dimension_must_be_one) {
         EXPECT_EQ_VAL(e.boundary_dimension,2u)
     }
 }
-//@+node:gcross.20110726215559.2340: *4* right dimension must be one
 TEST_CASE(right_dimension_must_be_one) {
     try {
         constructOperatorFrom(
@@ -110,7 +86,6 @@ TEST_CASE(right_dimension_must_be_one) {
         EXPECT_EQ_VAL(e.boundary_dimension,2u)
     }
 }
-//@+node:gcross.20110726215559.2344: *4* mismatched site dimensions
 TEST_CASE(mismatched_site_dimensions_error) {
     try {
         vector<unsigned int> sequence = list_of(0)(1);
@@ -128,7 +103,6 @@ TEST_CASE(mismatched_site_dimensions_error) {
         EXPECT_EQ_VAL(e.right_dimension,2u)
     }
 }
-//@+node:gcross.20110726215559.2348: *4* no sites
 TEST_CASE(no_sites) {
     try {
         constructOperatorFrom(
@@ -138,11 +112,7 @@ TEST_CASE(no_sites) {
         FAIL("Exception was not thrown.")
     } catch(NoSitesError const& e) {}
 }
-//@-others
 
 }
-//@-others
 
 }
-//@-others
-//@-leo

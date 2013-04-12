@@ -1,11 +1,6 @@
-//@+leo-ver=5-thin
-//@+node:gcross.20110213161858.1810: * @file states.hpp
-//@@language cplusplus
 #ifndef NUTCRACKER_STATES_HPP
 #define NUTCRACKER_STATES_HPP
 
-//@+<< Includes >>
-//@+node:gcross.20110213161858.1811: ** << Includes >>
 #include <boost/concept_check.hpp>
 #include <boost/container/vector.hpp>
 #include <boost/iterator/zip_iterator.hpp>
@@ -17,12 +12,9 @@
 #include "nutcracker/core.hpp"
 #include "nutcracker/flat.hpp"
 #include "nutcracker/tensors.hpp"
-//@-<< Includes >>
 
 namespace Nutcracker {
 
-//@+<< Usings >>
-//@+node:gcross.20110213161858.1812: ** << Usings >>
 using boost::container::vector;
 using boost::make_tuple;
 using boost::make_zip_iterator;
@@ -30,19 +22,12 @@ using boost::SinglePassRangeConcept;
 using boost::tuple;
 
 using std::make_pair;
-//@-<< Usings >>
 
-//@+others
-//@+node:gcross.20110827234144.2561: ** Type aliases
 typedef Link<VectorConstPtr> StateSiteLink;
-//@+node:gcross.20110214155808.1966: ** Exceptions
-//@+node:gcross.20110214155808.1967: *3* NormalizationError
 struct NormalizationError : public std::runtime_error {
     int const info;
     NormalizationError(int info);
 };
-//@+node:gcross.20110213233103.2762: ** Classes
-//@+node:gcross.20110213233103.2763: *3* IncreaseDimensionBetweenResult
 template<typename side1,typename side2> class IncreaseDimensionBetweenResult {
 private:
     BOOST_MOVABLE_BUT_NOT_COPYABLE(IncreaseDimensionBetweenResult)
@@ -62,7 +47,6 @@ public:
       , state_site_2(state_site_2)
     {}
 };
-//@+node:gcross.20110213233103.2764: *3* MoveSiteCursorResult
 template<typename side> class MoveSiteCursorResult {
 private:
     BOOST_MOVABLE_BUT_NOT_COPYABLE(MoveSiteCursorResult)
@@ -83,23 +67,16 @@ public:
       , other_side_state_site(other_side_state_site)
     {}
 };
-//@+node:gcross.20110430223656.2179: *3* State
-//@+<< Description >>
-//@+node:gcross.20110430223656.2180: *4* << Description >>
 //! Matrix product state in canonical form.
 /*!
 Specifically, this class contains an immutable matrix product state such that the first site is unnormalized and all sites after it are right-normalized.
 
 \note This class is moveable but not copyable, and uses Boost.Move to implement these semantics.
 */
-//@-<< Description >>
 class State : boost::noncopyable {
-    //@+others
-    //@+node:gcross.20110430223656.2181: *4* [Move support]
     private:
 
     BOOST_MOVABLE_BUT_NOT_COPYABLE(State)
-    //@+node:gcross.20110430223656.2182: *4* Assignment
     public:
 
     //! Moves the matrix product state contained in \c other to \c this and invalidates \c other.
@@ -113,7 +90,6 @@ class State : boost::noncopyable {
         first_site.swap(other.first_site);
         rest_sites.swap(other.rest_sites);
     }
-    //@+node:gcross.20110430223656.2183: *4* Constructors
     //! @name Constructors
 
     public:
@@ -140,7 +116,6 @@ class State : boost::noncopyable {
     { }
 
     template<typename StateSiteRange> State(CopyFrom<StateSiteRange> sites);
-    //@+node:gcross.20110430223656.2184: *4* Fields
     protected:
 
     //! The left-most site in the matrix product state.
@@ -148,7 +123,6 @@ class State : boost::noncopyable {
 
     //! Vector of sites excluding the left-most site in the matrix product state.
     vector<StateSite<Right> > rest_sites;
-    //@+node:gcross.20110511112955.2212: *4* Flattening
     /*! @name Flattening
     Convenience functions for working with the flat vector representation of this state.
     */
@@ -196,7 +170,6 @@ class State : boost::noncopyable {
     }
 
     //! @}
-    //@+node:gcross.20110430223656.2185: *4* Informational
     //! @name Informational
 
     //! @{
@@ -207,7 +180,6 @@ class State : boost::noncopyable {
     unsigned int numberOfSites() const { return 1+rest_sites.size(); }
 
     //! @}
-    //@+node:gcross.20110430223656.2186: *4* Iteration support
     /*! @name Iteration support
     The State class supports iterating over the sites.  Since the sites have different normalizations, the iteration value type is the base class StateSiteAny.
     */
@@ -273,7 +245,6 @@ class State : boost::noncopyable {
     const_iterator end() const { return const_iterator(this,numberOfSites()); }
 
     //! @}
-    //@+node:gcross.20110430223656.2187: *4* Site access
     //! @name Site access
 
     //! @{
@@ -299,9 +270,7 @@ class State : boost::noncopyable {
     }
 
     //! @}
-    //@-others
 };
-//@+node:gcross.20110213161858.1813: ** Functions
 StateSite<None> constructStateSite(
       PhysicalDimension const physical_dimension
     , LeftDimension const left_dimension
@@ -342,7 +311,6 @@ StateSite<Right> randomStateSiteRight(
     , const LeftDimension left_dimension
     , const RightDimension right_dimension
 );
-//@+node:gcross.20110215235924.1909: *3* computeExpectationValue
 template<typename StateSiteRange> complex<double> computeExpectationValue(
       StateSiteRange const& state_sites
     , Operator const& operator_sites
@@ -362,7 +330,6 @@ template<typename StateSiteRange> complex<double> computeExpectationValue(
     assert(left_boundary.size() == 1);
     return left_boundary[0];
 }
-//@+node:gcross.20110217014932.1923: *3* computeStateOverlap
 OverlapSite<None> computeOverlapSiteFromStateSite(StateSiteAny const& state_site);
 
 template<
@@ -398,11 +365,8 @@ template<
     assert(left_boundary.size() == 1);
     return left_boundary[0];
 }
-//@+node:gcross.20110215235924.2015: *3* Unsafe
 namespace Unsafe {
 
-//@+others
-//@+node:gcross.20110215235924.2016: *4* increaseDimensionBetween
 template<typename side1,typename side2>
 IncreaseDimensionBetweenResult<side1,side2> increaseDimensionBetween(
       unsigned int const new_dimension
@@ -460,7 +424,6 @@ IncreaseDimensionBetweenResult<side1,side2> increaseDimensionBetween(
         ,boost::move(new_site_2)
         );
 }
-//@-others
 
 MoveSiteCursorResult<Left> moveSiteCursorLeft(
       StateSiteAny const& left_state_site
@@ -468,7 +431,6 @@ MoveSiteCursorResult<Left> moveSiteCursorLeft(
 );
 
 }
-//@+node:gcross.20110213233103.2755: ** struct moveSiteCursor
 template<typename side> struct moveSiteCursor { };
 
 template<> struct moveSiteCursor<Left> {
@@ -484,10 +446,7 @@ template<> struct moveSiteCursor<Right> {
 	   , StateSite<Right> const& old_right_state_site
     ) { return moveSiteCursorRight(old_middle_state_site,old_right_state_site); }
 };
-//@-others
 
-//@+<< State constructor implementation >>
-//@+node:gcross.20110827234144.2619: ** << State constructor implementation >>
 template<typename StateSiteRange> State::State(CopyFrom<StateSiteRange> sites) {
     BOOST_CONCEPT_ASSERT((boost::BidirectionalRangeConcept<StateSiteRange>));
     typedef typename boost::range_reverse_iterator<StateSiteRange const>::type iterator;
@@ -504,16 +463,11 @@ template<typename StateSiteRange> State::State(CopyFrom<StateSiteRange> sites) {
     }
     first_site = boost::move(current_site);
 }
-//@-<< State constructor implementation >>
 
 }
 
-//@+<< Outside namespace >>
-//@+node:gcross.20110430223656.2189: ** << Outside namespace >>
 namespace boost {
     template<> struct range_iterator<Nutcracker::State const> { typedef Nutcracker::State::const_iterator type; };
 }
-//@-<< Outside namespace >>
 
 #endif
-//@-leo

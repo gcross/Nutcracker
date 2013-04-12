@@ -1,6 +1,3 @@
-//@+leo-ver=5-thin
-//@+node:gcross.20110902105950.2685: * @file nutcracker.proto
-//@@language cplusplus
 
 package Nutcracker.Protobuf;
 
@@ -49,4 +46,3 @@ message SimulationResultsBuffer {
     optional double sweep_convergence_threshold = 4;
     optional double chain_convergence_threshold = 5;
 }
-//@-leo

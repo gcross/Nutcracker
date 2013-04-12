@@ -1,18 +1,6 @@
-//@+leo-ver=5-thin
-//@+node:gcross.20110906155043.4953: * @file terms.hpp
-//@@language cplusplus
-//@+<< Includes >>
-//@+node:gcross.20110906155043.4955: ** << Includes >>
 #include "common.hpp"
-//@-<< Includes >>
 
-//@+<< Usings >>
-//@+node:gcross.20110906155043.4956: ** << Usings >>
-//@-<< Usings >>
 
-//@+others
-//@+node:gcross.20110906155043.4970: ** Classes
-//@+node:gcross.20110906155043.4973: *3* NutcrackerSumTerm
 template<typename Superclass> struct NutcrackerSumTerm : public Superclass {
     typedef typename Superclass::BuilderType Builder;
 
@@ -36,7 +24,6 @@ template<typename Superclass> struct NutcrackerSumTerm : public Superclass {
 
     virtual Superclass* copy() const { return new NutcrackerSumTerm(term1->copy(),term2->copy()); }
 };
-//@+node:gcross.20110906155043.4971: *3* NutcrackerTermWrapper
 template<typename Superclass, typename Term> struct NutcrackerTermWrapper : public Superclass, private Term {
     typedef typename Superclass::BuilderType Builder;
 
@@ -54,5 +41,3 @@ template<typename Superclass, typename Term> struct NutcrackerTermWrapper : publ
         return new NutcrackerTermWrapper(*this);
     }
 };
-//@-others
-//@-leo

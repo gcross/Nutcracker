@@ -1,8 +1,3 @@
-//@+leo-ver=5-thin
-//@+node:gcross.20110430221653.2171: * @file yaml.cpp
-//@@language cplusplus
-//@+<< Includes >>
-//@+node:gcross.20110430221653.2175: ** << Includes >>
 #include <algorithm>
 #include <boost/range/algorithm/generate.hpp>
 #include <illuminate.hpp>
@@ -19,11 +14,7 @@ using std::auto_ptr;
 using std::endl;
 using std::istringstream;
 using std::ostringstream;
-//@-<< Includes >>
 
-//@+others
-//@+node:gcross.20110726215559.2299: ** Functions
-//@+node:gcross.20110726215559.2300: *3* parseYAMLString
 auto_ptr<YAML::Node> parseYAMLString(string const& s) {
     auto_ptr<YAML::Node> result(new YAML::Node);
     istringstream in(s);
@@ -31,19 +22,12 @@ auto_ptr<YAML::Node> parseYAMLString(string const& s) {
     parser.GetNextDocument(*result);
     return result;
 }
-//@+node:gcross.20110430221653.2176: ** Tests
 TEST_SUITE(YAML) {
 
-//@+others
-//@+node:gcross.20110430221653.2178: *3* complex
 TEST_SUITE(complex) {
 
-//@+others
-//@+node:gcross.20110220093853.1950: *4* complex double
 TEST_SUITE(complex_double) {
 
-//@+others
-//@+node:gcross.20110220093853.1953: *5* decode
 TEST_CASE(decode) {
 
     RNG random;
@@ -63,7 +47,6 @@ TEST_CASE(decode) {
     }
 
 }
-//@+node:gcross.20110220093853.1951: *5* encode then decode
 TEST_CASE(encode_then_decode) {
 
     RNG random;
@@ -85,14 +68,10 @@ TEST_CASE(encode_then_decode) {
     }
 
 }
-//@-others
 
 }
-//@+node:gcross.20110220141808.1982: *4* real complex double
 TEST_SUITE(real_complex_double) {
 
-//@+others
-//@+node:gcross.20110220141808.1983: *5* decode
 TEST_CASE(decode) {
 
     RNG random;
@@ -113,7 +92,6 @@ TEST_CASE(decode) {
     }
 
 }
-//@+node:gcross.20110220141808.1984: *5* encode then decode
 TEST_CASE(encode_then_decode) {
 
     RNG random;
@@ -136,17 +114,12 @@ TEST_CASE(encode_then_decode) {
     }
 
 }
-//@-others
 
 }
-//@-others
 
 }
-//@+node:gcross.20110220141808.1987: *3* Operator
 TEST_SUITE(Operator) {
 
-//@+others
-//@+node:gcross.20110220141808.1988: *4* encode then decode
 TEST_CASE(encode_then_decode) {
 
     RNG random;
@@ -170,11 +143,8 @@ TEST_CASE(encode_then_decode) {
     }
 
 }
-//@+node:gcross.20110220141808.1991: *4* examples
 TEST_SUITE(examples) {
 
-//@+others
-//@+node:gcross.20110220141808.1992: *5* external field
 TEST_CASE(external_field) {
 
     RNG random;
@@ -244,14 +214,10 @@ TEST_CASE(external_field) {
     }
 
 }
-//@-others
 
 }
-//@+node:gcross.20110726215559.2345: *4* error handling
 TEST_SUITE(error_handling) {
 
-//@+others
-//@+node:gcross.20110726215559.2346: *5* no such operator site number
 TEST_CASE(no_such_operator_site_number) {
     auto_ptr<YAML::Node> result = parseYAMLString(
         "---\n"
@@ -266,17 +232,12 @@ TEST_CASE(no_such_operator_site_number) {
         EXPECT_EQ_VAL(e.index,1u)
     }
 }
-//@-others
 
 }
-//@-others
 
 }
-//@+node:gcross.20110220093853.1954: *3* OperatorSiteLink
 TEST_SUITE(OperatorSiteLink) {
 
-//@+others
-//@+node:gcross.20110220093853.1956: *4* decode
 TEST_CASE(decode) {
 
     RNG random;
@@ -308,7 +269,6 @@ TEST_CASE(decode) {
     }
 
 }
-//@+node:gcross.20110220093853.1958: *4* encode then decode
 TEST_CASE(encode_then_decode) {
 
     RNG random;
@@ -339,11 +299,8 @@ TEST_CASE(encode_then_decode) {
     }
 
 }
-//@+node:gcross.20110726215559.2297: *4* error handling
 TEST_SUITE(error_handling) {
 
-//@+others
-//@+node:gcross.20110726215559.2298: *5* non-square matrix
 TEST_CASE(non_square_matrix) {
     auto_ptr<YAML::Node> result = parseYAMLString(
         "---\n"
@@ -361,17 +318,12 @@ TEST_CASE(non_square_matrix) {
         EXPECT_EQ_VAL(e.length,3u)
     }
 }
-//@-others
 
 }
-//@-others
 
 }
-//@+node:gcross.20110220093853.1982: *3* OperatorSite
 TEST_SUITE(OperatorSite) {
 
-//@+others
-//@+node:gcross.20110220093853.1995: *4* decode
 TEST_CASE(decode) {
 
     RNG random;
@@ -428,7 +380,6 @@ TEST_CASE(decode) {
     }
 
 }
-//@+node:gcross.20110220093853.1984: *4* encode then decode
 TEST_CASE(encode_then_decode) {
 
     RNG random;
@@ -457,11 +408,8 @@ TEST_CASE(encode_then_decode) {
     }
 
 }
-//@+node:gcross.20110726215559.2320: *4* error handling
 TEST_SUITE(error_handling) {
 
-//@+others
-//@+node:gcross.20110726215559.2321: *5* from index too low
 TEST_CASE(from_index_too_low) {
     auto_ptr<YAML::Node> result = parseYAMLString(
         "---\n"
@@ -484,7 +432,6 @@ TEST_CASE(from_index_too_low) {
         EXPECT_EQ_VAL(e.index,0u)
     }
 }
-//@+node:gcross.20110726215559.2323: *5* from index too high
 TEST_CASE(from_index_too_high) {
     auto_ptr<YAML::Node> result = parseYAMLString(
         "---\n"
@@ -508,7 +455,6 @@ TEST_CASE(from_index_too_high) {
         EXPECT_EQ_VAL(e.dimension,2u)
     }
 }
-//@+node:gcross.20110726215559.2325: *5* to index too low
 TEST_CASE(to_index_too_low) {
     auto_ptr<YAML::Node> result = parseYAMLString(
         "---\n"
@@ -531,7 +477,6 @@ TEST_CASE(to_index_too_low) {
         EXPECT_EQ_VAL(e.index,0u)
     }
 }
-//@+node:gcross.20110726215559.2327: *5* to index too high
 TEST_CASE(to_index_too_high) {
     auto_ptr<YAML::Node> result = parseYAMLString(
         "---\n"
@@ -555,7 +500,6 @@ TEST_CASE(to_index_too_high) {
         EXPECT_EQ_VAL(e.dimension,2u)
     }
 }
-//@+node:gcross.20110726215559.2333: *5* wrong data length
 TEST_CASE(wrong_data_length) {
     auto_ptr<YAML::Node> result = parseYAMLString(
         "---\n"
@@ -578,14 +522,9 @@ TEST_CASE(wrong_data_length) {
         EXPECT_EQ_VAL(e.correct_length,4u)
     }
 }
-//@-others
 
 }
-//@-others
 
 }
-//@-others
 
 }
-//@-others
-//@-leo

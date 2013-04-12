@@ -1,19 +1,11 @@
-//@+leo-ver=5-thin
-//@+node:gcross.20110125120748.2458: * @file core.hpp
-//@@language cplusplus
-//@+<< Documentation >>
-//@+node:gcross.20110509212455.3993: ** << Documentation >>
 /*!
 \file core.hpp
 \brief Core numeric kernels
 */
-//@-<< Documentation >>
 
 #ifndef NUTCRACKER_CORE_HPP
 #define NUTCRACKER_CORE_HPP
 
-//@+<< Includes >>
-//@+node:gcross.20110125120748.2459: ** << Includes >>
 #include <boost/container/vector.hpp>
 #include <boost/optional.hpp>
 #include <boost/tuple/tuple.hpp>
@@ -22,21 +14,15 @@
 
 #include "nutcracker/tensors.hpp"
 #include "nutcracker/utilities.hpp"
-//@-<< Includes >>
 
 namespace Nutcracker {
 
-//@+<< Usings >>
-//@+node:gcross.20110125120748.2460: ** << Usings >>
 using boost::container::vector;
 using boost::copy;
 using boost::optional;
 
 using std::min;
-//@-<< Usings >>
 
-//@+others
-//@+node:gcross.20110213233103.2753: ** Functions
 //! Core numeric kernels
 namespace Core {
 
@@ -268,9 +254,7 @@ uint32_t random_projector_matrix(
 }
 
 //! @}
-//@-others
 
 }
 
 #endif
-//@-leo

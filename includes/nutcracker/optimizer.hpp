@@ -1,49 +1,33 @@
-//@+leo-ver=5-thin
-//@+node:gcross.20110214155808.1922: * @file optimizer.hpp
-//@@language cplusplus
-//@+<< Documentation >>
-//@+node:gcross.20110429225820.2529: ** << Documentation >>
 /*!
 \file optimizer.hpp
 \brief Classes and functions relating to the optimizer
 */
-//@-<< Documentation >>
 
 #ifndef NUTCRACKER_OPTIMIZER_HPP
 #define NUTCRACKER_OPTIMIZER_HPP
 
-//@+<< Includes >>
-//@+node:gcross.20110214155808.1923: ** << Includes >>
 #include <boost/function.hpp>
 #include <map>
 
 #include "nutcracker/operators.hpp"
 #include "nutcracker/projectors.hpp"
 #include "nutcracker/states.hpp"
-//@-<< Includes >>
 
 namespace Nutcracker {
 
-//@+<< Usings >>
-//@+node:gcross.20110214155808.1924: ** << Usings >>
 using boost::function;
 
 using std::abs;
 using std::map;
-//@-<< Usings >>
 
 //! \defgroup Optimizer
 //! @{
 
-//@+others
-//@+node:gcross.20110214155808.1940: ** Exceptions
-//@+node:gcross.20110518200233.5038: *3* NoSuchOptimizerModeError
 struct NoSuchOptimizerModeError : public std::logic_error {
     string const name;
     NoSuchOptimizerModeError(string const& name);
     virtual ~NoSuchOptimizerModeError() throw() {}
 };
-//@+node:gcross.20110214155808.1943: *3* OptimizerFailure
 //! \defgroup OptimizerFailures Optimizer failures
 //! @{
 
@@ -54,14 +38,11 @@ protected:
     OptimizerFailure(string const& message);
 };
 
-//@+others
-//@+node:gcross.20110214155808.1951: *4* OptimizerGivenGuessInProjectorSpace
 //! Exception thrown when the optimizer was given an initial guess that was in the projector space.
 struct OptimizerGivenGuessInProjectorSpace : public OptimizerFailure {
     //! Constructor
     OptimizerGivenGuessInProjectorSpace();
 };
-//@+node:gcross.20110214155808.1950: *4* OptimizerGivenTooManyProjectors
 //! Exception thrown when the optimizer has been given so many projectors that all non-zero solutions are excluded.
 struct OptimizerGivenTooManyProjectors : public OptimizerFailure {
 
@@ -83,7 +64,6 @@ struct OptimizerGivenTooManyProjectors : public OptimizerFailure {
     );
 
 };
-//@+node:gcross.20110214155808.1946: *4* OptimizerObtainedComplexEigenvalue
 //! Exception thrown when the solution obtained by the optimizer had a complex eigenvalue.
 struct OptimizerObtainedComplexEigenvalue : public OptimizerFailure {
 
@@ -94,7 +74,6 @@ struct OptimizerObtainedComplexEigenvalue : public OptimizerFailure {
     OptimizerObtainedComplexEigenvalue(complex<double> eigenvalue);
 
 };
-//@+node:gcross.20110214155808.1945: *4* OptimizerObtainedEigenvalueDifferentFromExpectationValue
 //! Exception thrown when the optimizer obtained a solution whose eigenvalue was different from its expectation value.
 struct OptimizerObtainedEigenvalueDifferentFromExpectationValue : public OptimizerFailure {
 
@@ -109,7 +88,6 @@ struct OptimizerObtainedEigenvalueDifferentFromExpectationValue : public Optimiz
     );
 
 };
-//@+node:gcross.20110214155808.1949: *4* OptimizerObtainedEigenvectorInProjectorSpace
 //! Exception thrown when the optimizer has obtained a solution in the projector space.
 struct OptimizerObtainedEigenvectorInProjectorSpace : public OptimizerFailure {
 
@@ -120,7 +98,6 @@ struct OptimizerObtainedEigenvectorInProjectorSpace : public OptimizerFailure {
     OptimizerObtainedEigenvectorInProjectorSpace(double overlap);
 
 };
-//@+node:gcross.20110214155808.1947: *4* OptimizerObtainedRegressiveEigenvalue
 //! Exception thrown when the optimizer has obtained a new solution with an eigenvalue that has regressed from the old solution.
 struct OptimizerObtainedRegressiveEigenvalue : public OptimizerFailure {
 
@@ -135,7 +112,6 @@ struct OptimizerObtainedRegressiveEigenvalue : public OptimizerFailure {
     );
 
 };
-//@+node:gcross.20110214155808.1948: *4* OptimizerObtainedVanishingEigenvector
 //! Exception thrown when the optimizer has obtained a vanishing solution.
 struct OptimizerObtainedVanishingEigenvector : public OptimizerFailure {
 
@@ -146,7 +122,6 @@ struct OptimizerObtainedVanishingEigenvector : public OptimizerFailure {
     OptimizerObtainedVanishingEigenvector(double norm);
 
 };
-//@+node:gcross.20110214155808.1944: *4* OptimizerUnableToConverge
 //! Exception thrown when the optimizer was unable converge to a solution within the specified number of iterations.
 struct OptimizerUnableToConverge : public OptimizerFailure {
 
@@ -157,7 +132,6 @@ struct OptimizerUnableToConverge : public OptimizerFailure {
     OptimizerUnableToConverge(unsigned int number_of_iterations);
 
 };
-//@+node:gcross.20110214155808.1952: *4* OptimizerUnknownFailure
 //! Optimizer failed for an unknown reason.
 struct OptimizerUnknownFailure : public OptimizerFailure {
 
@@ -167,11 +141,8 @@ struct OptimizerUnknownFailure : public OptimizerFailure {
     //! Constructs this exception with the error code returned by ARPACK.
     OptimizerUnknownFailure(int error_code);
 };
-//@-others
 
 //! @}
-//@+node:gcross.20110214155808.1981: ** Classes
-//@+node:gcross.20110517202745.2516: *3* OptimizerMode
 class OptimizerMode {
 
 public:
@@ -209,19 +180,12 @@ public:
     static OptimizerMode least_value, greatest_value, largest_magnitude;
 
 };
-//@+node:gcross.20110214155808.1982: *3* OptimizerResult
-//@+<< Description >>
-//@+node:gcross.20110429225820.2521: *4* << Description >>
 //! The result of optimizing a site.
 /*! \note This class is moveable but not copyable, and uses Boost.Move to implement these semantics. */
-//@-<< Description >>
 struct OptimizerResult {
-    //@+others
-    //@+node:gcross.20110429225820.2523: *4* [Move support]
     private:
 
     BOOST_MOVABLE_BUT_NOT_COPYABLE(OptimizerResult)
-    //@+node:gcross.20110429225820.2522: *4* Constructors
     //! \name Constructors
     //! @{
 
@@ -248,7 +212,6 @@ struct OptimizerResult {
     {}
 
     //! @}
-    //@+node:gcross.20110429225820.2524: *4* Fields
     public:
 
     //! The number of iterations taken by the optimizer.
@@ -259,14 +222,10 @@ struct OptimizerResult {
 
     //! The solution obtained by the optimizer.
     StateSite<Middle> state_site;
-    //@-others
 };
-//@+node:gcross.20110214155808.1926: ** Functions
-//@+node:gcross.20110518200233.5050: *3* checkFor
 bool checkForLargestMagnitudeRegressionFromTo(double from, double to, double tolerance);
 bool checkForLeastValueRegressionFromTo(double from, double to, double tolerance);
 bool checkForGreatestValueRegressionFromTo(double from, double to, double tolerance);
-//@+node:gcross.20110518200233.5051: *3* optimizeStateSite
 //! Optimizes a site and returns the result.
 /*!
 \param left_boundary the left boundary of the site environment
@@ -289,24 +248,16 @@ Nutcracker::OptimizerResult optimizeStateSite(
     , unsigned int const maximum_number_of_iterations
     , OptimizerMode const& optimizer_mode = OptimizerMode::least_value
 );
-//@-others
 
 //! @}
 
 }
 
-//@+<< Outside namespace >>
-//@+node:gcross.20110524225044.2433: ** << Outside namespace >>
-//@+others
-//@+node:gcross.20110524225044.2436: *3* std
 namespace std {
 
 istream& operator >>(istream& in, Nutcracker::OptimizerMode& mode);
 ostream& operator <<(ostream& out, Nutcracker::OptimizerMode const& mode);
 
 }
-//@-others
-//@-<< Outside namespace >>
 
 #endif
-//@-leo

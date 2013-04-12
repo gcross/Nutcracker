@@ -1,8 +1,3 @@
-//@+leo-ver=5-thin
-//@+node:gcross.20110130170743.1679: * @file chain.cpp
-//@@language cplusplus
-//@+<< Includes >>
-//@+node:gcross.20110130170743.1680: ** << Includes >>
 #include <boost/assign.hpp>
 #include <boost/container/vector.hpp>
 #include <boost/foreach.hpp>
@@ -39,18 +34,11 @@ using std::abs;
 using std::conj;
 using std::ostringstream;
 using std::pair;
-//@-<< Includes >>
 
-//@+others
-//@+node:gcross.20110130193548.1689: ** Tests
 TEST_SUITE(Chain) {
 
-//@+others
-//@+node:gcross.20110130193548.1694: *3* computeBandwidthDimensionSequence
 TEST_SUITE(computeBandwidthDimensionSequence) {
 
-//@+others
-//@+node:gcross.20110130193548.1690: *4* correct properties
 TEST_CASE(correct_properties) {
     RNG random;
 
@@ -82,7 +70,6 @@ TEST_CASE(correct_properties) {
         }
     }
 }
-//@+node:gcross.20110130193548.1695: *4* complains if too large
 TEST_CASE(complains_if_too_large) {
     RNG random;
 
@@ -108,10 +95,8 @@ TEST_CASE(complains_if_too_large) {
         FATALLY_FAIL("Exception was not thrown!");
     }
 }
-//@-others
 
 }
-//@+node:gcross.20110207120702.1791: *3* maximumBandwidthDimension
 TEST_CASE(maximumBandwidthDimension) {
     RNG random;
 
@@ -138,7 +123,6 @@ TEST_CASE(maximumBandwidthDimension) {
         FATALLY_FAIL("The maximum bandwidth was too small!");
     }
 }
-//@+node:gcross.20110202223558.1712: *3* moveLeftAndRight
 TEST_CASE(moveLeftAndRight) {
     RNG random;
 
@@ -166,7 +150,6 @@ TEST_CASE(moveLeftAndRight) {
         #undef VALIDATE_CHAIN_PROPERTIES
     }
 }
-//@+node:gcross.20110206130502.1758: *3* optimizeSite
 TEST_CASE(optimizeSite) {
     RNG random;
 
@@ -195,7 +178,6 @@ TEST_CASE(optimizeSite) {
         #undef TEST_OPTIMIZER
     }
 }
-//@+node:gcross.20110207120702.1783: *3* performOptimizationSweep
 TEST_SUITE(performOptimizationSweep) {
 
     vector<pair<unsigned int,vector<unsigned int> > > system_parameters =
@@ -245,7 +227,6 @@ TEST_SUITE(performOptimizationSweep) {
     TEST_CASE(physical_dimension_3) { runTests(3); }
     TEST_CASE(physical_dimension_4) { runTests(4); }
 }
-//@+node:gcross.20110207215504.1785: *3* increaseBandwidthDimension
 TEST_CASE(increaseBandwidthDimension) {
     RNG random;
 
@@ -281,7 +262,6 @@ TEST_CASE(increaseBandwidthDimension) {
         #undef VALIDATE_CHAIN_PROPERTIES
     }
 }
-//@+node:gcross.20110208195213.1791: *3* sweepUntilConverged
 TEST_SUITE(sweepUntilConverged) {
 
     void runTest(
@@ -304,11 +284,8 @@ TEST_SUITE(sweepUntilConverged) {
     TEST_CASE(10_sites_1p0) { runTest(10,1.0,6,-12.38148999); }
 
 }
-//@+node:gcross.20110208230325.1792: *3* optimizeChain
 TEST_SUITE(optimizeChain) {
 
-//@+others
-//@+node:gcross.20110218150430.2594: *4* external field
 TEST_SUITE(external_field) {
 
     vector<pair<unsigned int,vector<unsigned int> > > system_parameters =
@@ -387,7 +364,6 @@ TEST_SUITE(external_field) {
         TEST_CASE(physical_dimension_4) { runTests(4,mode); }
     }
 }
-//@+node:gcross.20110218150430.2592: *4* transverse Ising model
 TEST_SUITE(transverse_Ising_model) {
 
     void runTest(
@@ -430,10 +406,8 @@ TEST_SUITE(transverse_Ising_model) {
         TEST_CASE(10_sites_1p0) { runTest(10,1.0,12.3814899997,mode); }
     }
 }
-//@-others
 
 }
-//@+node:gcross.20110215235924.2008: *3* expectation matches computeExpectationValue
 TEST_CASE(expectation_matches_computeExpectationValue) {
     RNG random;
 
@@ -445,7 +419,6 @@ TEST_CASE(expectation_matches_computeExpectationValue) {
         ASSERT_NEAR_REL(chain.getEnergy(),computeExpectationValue(state,O),1e-10);
     }
 }
-//@+node:gcross.20110218150430.2590: *3* solveForMultipleLevels
 TEST_SUITE(solveForMultipleLevels) {
 
 struct checkEnergies_checkOverlap {
@@ -469,8 +442,6 @@ struct checkEnergies_postEnergy {
     }
 };
 
-//@+others
-//@+node:gcross.20110219101843.1944: *4* function checkEnergies
 void checkEnergies(
      Chain& chain
     ,vector<double> const& correct_energies
@@ -497,7 +468,6 @@ void checkEnergies(
         }
     }
 }
-//@+node:gcross.20110218150430.2591: *4* external field
 TEST_SUITE(external_field) {
 
     void runTest(
@@ -525,10 +495,8 @@ TEST_SUITE(external_field) {
     }
 
 }
-//@-others
 
 }
-//@+node:gcross.20110824002720.2607: *3* solveForEigenvalues
 TEST_CASE(solveForEigenvalues) {
     RNG random;
     BOOST_FOREACH(unsigned int const number_of_sites, irange(3u,6u)) {
@@ -545,7 +513,6 @@ TEST_CASE(solveForEigenvalues) {
         }
     }
 }
-//@+node:gcross.20110824002720.2609: *3* solveForMultipleLevelsAndThenClearChain
 TEST_CASE(solveForMultipleLevelsAndThenClearChain) {
     RNG random;
     BOOST_FOREACH(unsigned int const number_of_sites, irange(3u,6u)) {
@@ -573,8 +540,5 @@ TEST_CASE(solveForMultipleLevelsAndThenClearChain) {
         }
     }
 }
-//@-others
 
 }
-//@-others
-//@-leo

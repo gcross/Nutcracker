@@ -1,8 +1,3 @@
-//@+leo-ver=5-thin
-//@+node:gcross.20110815001337.2493: * @file utilities.cpp
-//@@language cplusplus
-//@+<< Includes >>
-//@+node:gcross.20110815001337.2495: ** << Includes >>
 #include <boost/make_shared.hpp>
 #include <boost/range/algorithm/generate.hpp>
 #include <illuminate.hpp>
@@ -12,13 +7,8 @@
 #include "test_utils.hpp"
 
 using boost::make_shared;
-//@-<< Includes >>
 
-//@+others
-//@+node:gcross.20110815001337.2496: ** Tests
 TEST_SUITE(Utilities) {
-//@+others
-//@+node:gcross.20110817110920.2494: *3* Pauli
 TEST_SUITE(Pauli) {
 
     using namespace Pauli;
@@ -40,7 +30,4 @@ TEST_SUITE(Pauli) {
 
     #undef TEST_PAULI
 }
-//@-others
 }
-//@-others
-//@-leo

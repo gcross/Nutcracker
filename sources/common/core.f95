@@ -1,10 +1,3 @@
-!@+leo-ver=5-thin
-!@+node:gcross.20091110205054.1939: * @file core.f95
-!@@language fortran90
-!@@tabwidth -2
-!@+others
-!@+node:gcross.20100512172859.1739: ** Utility Functions
-!@+node:gcross.20091110205054.1929: *3* mysvd
 function mysvd ( &
   m, n, rank, &
   matrix, &
@@ -58,7 +51,6 @@ function mysvd ( &
   deallocate(work)
 
 end function
-!@+node:gcross.20100513214001.1746: *3* compute_orthogonal_basis
 subroutine compute_orthogonal_basis( &
   m, n, k, &
   vectors, &
@@ -163,7 +155,6 @@ subroutine compute_orthogonal_basis( &
   deallocate(work)
 
 end subroutine
-!@+node:gcross.20100517000234.1790: *3* compute_orthogonal_subspace
 subroutine compute_orthogonal_subspace(n,number_of_projectors,projectors,orthogonal_basis)
   integer, intent(in) :: n, number_of_projectors
   double complex, intent(in) :: projectors(n,number_of_projectors)
@@ -191,7 +182,6 @@ subroutine compute_orthogonal_subspace(n,number_of_projectors,projectors,orthogo
   orthogonal_basis(:,:) = full_basis(:,number_of_projectors+1:)
 
 end subroutine
-!@+node:gcross.20100513214001.1742: *3* orthogonalize_matrix_in_place
 subroutine orthogonalize_matrix_in_place( &
   m, n, &
   matrix, &
@@ -204,7 +194,6 @@ subroutine orthogonalize_matrix_in_place( &
   call compute_orthogonal_basis(m,n,n,matrix,rank,matrix)
 
 end subroutine
-!@+node:gcross.20100514235202.1743: *3* lapack_eigenvalue_real_optimizer
 subroutine lapack_eigenvalue_real_optimizer(n,matrix,which,eigenvalue,eigenvector)
   integer, intent(in) :: n
   double complex, intent(in) :: matrix(n,n)
@@ -318,7 +307,6 @@ subroutine lapack_eigenvalue_real_optimizer(n,matrix,which,eigenvalue,eigenvecto
   eigenvalue = w(1)*(1d0,0d0)
 
 end subroutine
-!@+node:gcross.20110518200233.5048: *3* lapack_eigenvalue_mag_maximizer
 subroutine lapack_eigenvalue_mag_maximizer(n,matrix,eigenvalue,eigenvector)
   integer, intent(in) :: n
   double complex, intent(in) :: matrix(n,n)
@@ -453,7 +441,6 @@ subroutine lapack_eigenvalue_mag_maximizer(n,matrix,eigenvalue,eigenvector)
   end if
 
 end subroutine
-!@+node:gcross.20100527135859.1827: *3* swap_inplace
 subroutine swap_inplace(n, swaps, vector)
   implicit none
   integer, intent(in) :: n, swaps(n)
@@ -474,7 +461,6 @@ subroutine swap_inplace(n, swaps, vector)
     end if
   end do
 end subroutine
-!@+node:gcross.20100527135859.1829: *3* unswap_inplace
 subroutine unswap_inplace(n, swaps, vector)
   implicit none
   integer, intent(in) :: n, swaps(n)
@@ -495,7 +481,6 @@ subroutine unswap_inplace(n, swaps, vector)
     end if
   end do
 end subroutine
-!@+node:gcross.20100527135859.1837: *3* swap_matrix_inplace
 subroutine swap_matrix_inplace(n, swaps, matrix, leading_dimension)
   implicit none
   integer, intent(in) :: n, swaps(n), leading_dimension
@@ -521,9 +506,6 @@ subroutine swap_matrix_inplace(n, swaps, matrix, leading_dimension)
     end if
   end do
 end subroutine
-!@+node:gcross.20091110205054.1940: ** Contractors
-!@+node:gcross.20091110205054.1910: *3* Main iteration
-!@+node:gcross.20091106154604.1512: *4* iteration_stage_1
 subroutine iteration_stage_1( &
   bl, & ! state bandwidth dimension
   cl, & ! operator left  bandwidth dimension
@@ -554,7 +536,6 @@ subroutine iteration_stage_1( &
   end do
 
 end subroutine
-!@+node:gcross.20091107163338.1529: *4* iteration_stage_2
 subroutine iteration_stage_2( &
   bl, & ! state left bandwidth dimension
   br, & ! state right bandwidth dimension
@@ -581,7 +562,6 @@ subroutine iteration_stage_2( &
   )
 
 end subroutine
-!@+node:gcross.20091110011014.1551: *4* iteration_stage_3
 subroutine iteration_stage_3( &
   bl, & ! state left bandwidth dimension
   br, & ! state right bandwidth dimension
@@ -608,8 +588,6 @@ subroutine iteration_stage_3( &
   )
 
 end subroutine
-!@+node:gcross.20091110205054.1911: *3* Environment SOS contraction
-!@+node:gcross.20091110011014.1549: *4* contract_sos_left
 subroutine contract_sos_left( &
   bl, & ! state left bandwidth dimension
   br, & ! state right bandwidth dimension
@@ -663,7 +641,6 @@ subroutine contract_sos_left( &
   new_left_environment = reshape(iteration_stage_3_tensor,shape(new_left_environment),order=(/1,3,2/))
 
 end subroutine
-!@+node:gcross.20091110135225.1556: *4* contract_sos_right_stage_1
 subroutine contract_sos_right_stage_1( &
   bl, & ! state left bandwidth dimension
   br, & ! state right bandwidth dimension
@@ -691,7 +668,6 @@ subroutine contract_sos_right_stage_1( &
       sos_right_stage_1_tensor, bl*d &
   )
 end subroutine
-!@+node:gcross.20091110135225.1564: *4* contract_sos_right_stage_2a
 subroutine contract_sos_right_stage_2a( &
   bl, & ! state left bandwidth dimension
   br, & ! state right bandwidth dimension
@@ -717,7 +693,6 @@ subroutine contract_sos_right_stage_2a( &
   end do
 
 end subroutine
-!@+node:gcross.20091110135225.1570: *4* contract_sos_right_stage_2b
 subroutine contract_sos_right_stage_2b( &
   bl, & ! state left bandwidth dimension
   br, & ! state right bandwidth dimension
@@ -745,7 +720,6 @@ subroutine contract_sos_right_stage_2b( &
   )
 
 end subroutine
-!@+node:gcross.20091110135225.1572: *4* contract_sos_right_stage_2
 subroutine contract_sos_right_stage_2( &
   bl, & ! state left bandwidth dimension
   br, & ! state right bandwidth dimension
@@ -786,7 +760,6 @@ subroutine contract_sos_right_stage_2( &
   end do
 
 end subroutine
-!@+node:gcross.20091110205054.1907: *4* contract_sos_right
 subroutine contract_sos_right( &
   bl, & ! state left bandwidth dimension
   br, & ! state right bandwidth dimension
@@ -824,8 +797,6 @@ subroutine contract_sos_right( &
   )
 
 end subroutine
-!@+node:gcross.20091115224921.1737: *3* Environment SS contraction
-!@+node:gcross.20091115224921.1738: *4* contract_vs_left
 subroutine contract_vs_left( &
   b_left_old, b_right_old, &
   b_left_new, b_right_new, &
@@ -872,7 +843,6 @@ subroutine contract_vs_left( &
   )
 
 end subroutine
-!@+node:gcross.20091116094945.1743: *4* contract_vs_right
 subroutine contract_vs_right( &
   b_left_old, b_right_old, &
   b_left_new, b_right_new, &
@@ -927,7 +897,6 @@ subroutine contract_vs_right( &
   )
 
 end subroutine
-!@+node:gcross.20091116094945.1748: *4* form_overlap_vector
 subroutine form_overlap_vector( &
   b_left_old, b_right_old, &
   b_left_new, b_right_new, &
@@ -979,7 +948,6 @@ subroutine form_overlap_vector( &
   )
 
 end subroutine
-!@+node:gcross.20100617144515.1851: *3* contract_operator_random_left
 subroutine contract_operator_random_left( &
   cl, cr, d, &
   left_boundary_1, left_boundary_2, &
@@ -1015,7 +983,6 @@ subroutine contract_operator_random_left( &
       + dot_product(vector_2,sparse_operator_matrices(:,matrix_number)*left_boundary_2(left_index))
   end do
 end subroutine
-!@+node:gcross.20091110205054.1916: *3* compute_expectation
 subroutine compute_expectation( &
   bl, & ! state left bandwidth dimension
   br, & ! state right bandwidth dimension
@@ -1059,7 +1026,6 @@ subroutine compute_expectation( &
   end do
 
 end subroutine
-!@+node:gcross.20100513131210.1744: *3* compute_optimization_matrix
 subroutine compute_optimization_matrix( &
   bl, br, & ! state bandwidth dimension
   cl, & ! operator left  bandwidth dimension
@@ -1109,7 +1075,6 @@ subroutine compute_optimization_matrix( &
   end do
 
 end subroutine
-!@+node:gcross.20110128003411.1642: *3* contract_expectation_boundaries
 subroutine contract_expectation_boundaries( &
   b, & ! state bandwidth dimension
   c, & ! operator bandwidth dimension
@@ -1128,7 +1093,6 @@ subroutine contract_expectation_boundaries( &
   expectation = sum(transposed_left_environment(:,:,:)*right_environment(:,:,:))
 
 end subroutine
-!@+node:gcross.20110213125549.2327: *3* extend_state_vector_fragment
 subroutine extend_state_vector_fragment( &
   bm,br, &
   dl,dr, &
@@ -1158,7 +1122,6 @@ subroutine extend_state_vector_fragment( &
   )
 
 end subroutine
-!@+node:gcross.20110214183844.2998: *3* contract_matrix_left
 subroutine contract_matrix_left( &
   bl,br, &
   left_environment, &
@@ -1197,7 +1160,6 @@ subroutine contract_matrix_left( &
   )
 
 end subroutine
-!@+node:gcross.20091211120042.1683: ** apply_single_site_operator
 subroutine apply_single_site_operator( &
   bl, & ! state left bandwidth dimension
   br, & ! state right bandwidth dimension
@@ -1225,8 +1187,6 @@ subroutine apply_single_site_operator( &
   )
 
 end subroutine
-!@+node:gcross.20100520145029.1766: ** Projectors
-!@+node:gcross.20100520145029.1765: *3* compute_overlap_with_projectors
 subroutine compute_overlap_with_projectors( &
   number_of_projectors, number_of_reflectors, reflectors, coefficients, swaps, &
   vector_size, vector, &
@@ -1300,7 +1260,6 @@ subroutine compute_overlap_with_projectors( &
   overlap = dznrm2(number_of_projectors,weight_vector,1)
 
 end subroutine
-!@+node:gcross.20100525104555.1804: *3* convert_vectors_to_reflectors
 subroutine convert_vectors_to_reflectors( &
   m, n, &
   vectors, &
@@ -1395,7 +1354,6 @@ subroutine convert_vectors_to_reflectors( &
   rank = i-1
 
 end subroutine
-!@+node:gcross.20100525120117.1807: *3* compute_q_from_reflectors
 subroutine compute_q_from_reflectors( &
   full_space_dimension, &
   number_of_projectors, number_of_reflectors, reflectors, coefficients, swaps, &
@@ -1470,7 +1428,6 @@ subroutine compute_q_from_reflectors( &
     end if
   end do
 end subroutine
-!@+node:gcross.20100525104555.1805: *3* project_into_orthogonal_space
 subroutine project_into_orthogonal_space( &
   full_space_dimension, &
   number_of_projectors, number_of_reflectors, orthogonal_subspace_dimension, reflectors, coefficients, swaps, &
@@ -1547,7 +1504,6 @@ subroutine project_into_orthogonal_space( &
     intermediate_vector(start_of_orthogonal_subspace:full_space_dimension)
 
 end subroutine
-!@+node:gcross.20100525104555.1809: *3* unproject_from_orthogonal_space
 subroutine unproject_from_orthogonal_space( &
   full_space_dimension, &
   number_of_projectors, number_of_reflectors, orthogonal_subspace_dimension, reflectors, coefficients, swaps, &
@@ -1621,7 +1577,6 @@ subroutine unproject_from_orthogonal_space( &
   end if
 
 end subroutine
-!@+node:gcross.20100525120117.1842: *3* project_matrix_into_orthog_space
 subroutine project_matrix_into_orthog_space( &
   full_space_dimension, &
   number_of_projectors, number_of_reflectors, orthogonal_subspace_dimension, reflectors, coefficients, swaps, &
@@ -1718,7 +1673,6 @@ subroutine project_matrix_into_orthog_space( &
     conjg(intermediate_matrix(start_of_orthogonal_subspace:full_space_dimension,start_of_orthogonal_subspace:full_space_dimension))
 
 end subroutine
-!@+node:gcross.20100525120117.1843: *3* compute_opt_mat_in_orthog_space
 subroutine compute_opt_mat_in_orthog_space( &
   bl, br, & ! state bandwidth dimension
   cl, & ! operator left  bandwidth dimension
@@ -1763,7 +1717,6 @@ subroutine compute_opt_mat_in_orthog_space( &
   )
 
 end subroutine
-!@+node:gcross.20100525120117.1845: *3* compute_opt_matrix_all_cases
 subroutine compute_opt_matrix_all_cases( &
   bl, br, & ! state bandwidth dimension
   cl, & ! operator left  bandwidth dimension
@@ -1818,7 +1771,6 @@ subroutine compute_opt_matrix_all_cases( &
     )
   end if
 end subroutine
-!@+node:gcross.20100525190742.1822: *3* filter_components_outside_orthog
 subroutine filter_components_outside_orthog( &
   full_space_dimension, &
   number_of_projectors, number_of_reflectors, orthogonal_subspace_dimension, reflectors, coefficients, swaps, &
@@ -1862,7 +1814,6 @@ subroutine filter_components_outside_orthog( &
   )
 
 end subroutine
-!@+node:gcross.20100517000234.1775: ** optimize
 function optimize( &
   bl, br, & ! state bandwidth dimension
   cl, & ! operator left  bandwidth dimension
@@ -1999,7 +1950,6 @@ function optimize( &
   end if
 
 end function
-!@+node:gcross.20100517000234.1786: ** optimize_strategy_1
 subroutine optimize_strategy_1( &
   bl, br, & ! state bandwidth dimension
   cl, & ! operator left  bandwidth dimension
@@ -2080,7 +2030,6 @@ subroutine optimize_strategy_1( &
   number_of_iterations = 0
 
 end subroutine
-!@+node:gcross.20091109182634.1537: ** optimize_strategy_2
 subroutine optimize_strategy_2( &
   bl, br, & ! state bandwidth dimension
   cl, & ! operator left  bandwidth dimension
@@ -2101,10 +2050,6 @@ subroutine optimize_strategy_2( &
 
   implicit none
 
-  !@+<< Declarations >>
-  !@+node:gcross.20091115201814.1731: *3* << Declarations >>
-  !@+others
-  !@+node:gcross.20091115201814.1729: *4* Arguments
   integer, intent(in) :: &
     bl, br, cl, cr, d, &
     number_of_matrices, sparse_operator_indices(2,number_of_matrices), &
@@ -2123,10 +2068,7 @@ subroutine optimize_strategy_2( &
     eigenvalue
   character, intent(in) :: which*2
   double precision, intent(in) :: tol
-  !@+node:gcross.20091109182634.1538: *4* Interface
   interface
-    !@+others
-    !@+node:gcross.20091109182634.1540: *5* znaupd
     subroutine znaupd &
         ( ido, bmat, n, which, nev, tol, resid, ncv, v, ldv, iparam, &
           ipntr, workd, workl, lworkl, rwork, info )
@@ -2137,7 +2079,6 @@ subroutine optimize_strategy_2( &
         double complex :: resid(n), v(ldv,ncv), workd(3*n), workl(lworkl)
         double precision :: rwork(ncv)
     end subroutine
-    !@+node:gcross.20091109182634.1539: *5* zneupd
     subroutine zneupd (rvec, howmny, select, d, z, ldz, sigma, &
                        workev, bmat, n, which, nev, tol, &
                        resid, ncv, v, ldv, iparam, ipntr, workd,  &
@@ -2155,16 +2096,13 @@ subroutine optimize_strategy_2( &
                     workd(3*n), workl(lworkl), workev(2*ncv)
 
     end subroutine
-    !@+node:gcross.20100513000837.1740: *5* dznrm2
     function dznrm2 (n,x,incx)
       integer, intent(in) :: n, incx
       double complex, intent(in) :: x
 
       double precision :: dznrm2
     end function
-    !@-others
   end interface
-  !@+node:gcross.20091115201814.1730: *4* Work arrays
   integer, parameter :: nev = 1
   integer :: full_space_dimension
 
@@ -2172,8 +2110,6 @@ subroutine optimize_strategy_2( &
     optimization_matrix(orthogonal_subspace_dimension,orthogonal_subspace_dimension), &
     projected_guess(orthogonal_subspace_dimension), &
     projected_result(orthogonal_subspace_dimension)
-  !@-others
-  !@-<< Declarations >>
 
   full_space_dimension = d*bl*br
 
@@ -2197,8 +2133,6 @@ subroutine optimize_strategy_2( &
 
 contains
 
-  !@+others
-  !@+node:gcross.20100516220142.1754: *3* run_arpack
   subroutine run_arpack(n,nev,ncv,tolerance,guess,eigenvalue,eigenvector)
 
     integer, intent(in) :: n, nev, ncv
@@ -2262,7 +2196,6 @@ contains
     eigenvector = v(:,index_of_solution(1))
 
   end subroutine
-  !@+node:gcross.20100513000837.1743: *3* operate_on
   subroutine operate_on(input,output)
     double complex :: input(orthogonal_subspace_dimension), output(orthogonal_subspace_dimension)
 
@@ -2275,7 +2208,6 @@ contains
     )
 
   end subroutine
-  !@+node:gcross.20100601131107.1844: *3* postprocess
   subroutine postprocess
     call unproject_from_orthogonal_space( &
       full_space_dimension, &
@@ -2284,7 +2216,6 @@ contains
       result(1,1,1) &
     )
   end subroutine
-  !@+node:gcross.20100603220533.1852: *3* doit
   subroutine doit
     integer :: ncv
     ncv = nev*2+1
@@ -2294,8 +2225,6 @@ contains
     if (info == -14) then
       if (full_space_dimension < number_of_iterations) then
         ! print *, "Retrying with strategy 1"
-        !@+<< Branch to optimization strategy 1 >>
-        !@+node:gcross.20100603220533.1853: *4* << Branch to optimization strategy 1 >>
         call optimize_strategy_1( &
           bl, br, &
           cl, &
@@ -2313,7 +2242,6 @@ contains
           result, &
           eigenvalue &
         )
-        !@-<< Branch to optimization strategy 1 >>
       else
         do while (ncv <= number_of_iterations)
           ncv = ncv * 3 / 2
@@ -2331,10 +2259,8 @@ contains
     end if
 
   end subroutine
-  !@-others
 
 end subroutine
-!@+node:gcross.20100517000234.1753: ** optimize_strategy_3
 subroutine optimize_strategy_3( &
   bl, br, & ! state bandwidth dimension
   cl, & ! operator left  bandwidth dimension
@@ -2355,10 +2281,6 @@ subroutine optimize_strategy_3( &
 
   implicit none
 
-  !@+<< Declarations >>
-  !@+node:gcross.20100517000234.1754: *3* << Declarations >>
-  !@+others
-  !@+node:gcross.20100517000234.1755: *4* Arguments
   integer, intent(in) :: &
     bl, br, cl, cr, d, &
     number_of_matrices, sparse_operator_indices(2,number_of_matrices), &
@@ -2377,10 +2299,7 @@ subroutine optimize_strategy_3( &
     eigenvalue
   character, intent(in) :: which*2
   double precision, intent(in) :: tol
-  !@+node:gcross.20100517000234.1756: *4* Interface
   interface
-    !@+others
-    !@+node:gcross.20100517000234.1757: *5* znaupd
     subroutine znaupd &
         ( ido, bmat, n, which, nev, tol, resid, ncv, v, ldv, iparam, &
           ipntr, workd, workl, lworkl, rwork, info )
@@ -2391,7 +2310,6 @@ subroutine optimize_strategy_3( &
         double complex :: resid(n), v(ldv,ncv), workd(3*n), workl(lworkl)
         double precision :: rwork(ncv)
     end subroutine
-    !@+node:gcross.20100517000234.1758: *5* zneupd
     subroutine zneupd (rvec, howmny, select, d, z, ldz, sigma, &
                        workev, bmat, n, which, nev, tol, &
                        resid, ncv, v, ldv, iparam, ipntr, workd,  &
@@ -2409,16 +2327,13 @@ subroutine optimize_strategy_3( &
                     workd(3*n), workl(lworkl), workev(2*ncv)
 
     end subroutine
-    !@+node:gcross.20100517000234.1759: *5* dznrm2
     function dznrm2 (n,x,incx)
       integer, intent(in) :: n, incx
       double complex, intent(in) :: x
 
       double precision :: dznrm2
     end function
-    !@-others
   end interface
-  !@+node:gcross.20100517000234.1760: *4* Work arrays
   integer, parameter :: nev = 1
   integer :: full_space_dimension
 
@@ -2429,8 +2344,6 @@ subroutine optimize_strategy_3( &
   double complex :: &
     projected_guess(orthogonal_subspace_dimension), &
     projected_result(orthogonal_subspace_dimension)
-  !@-others
-  !@-<< Declarations >>
 
   full_space_dimension = br*bl*d
 
@@ -2452,8 +2365,6 @@ subroutine optimize_strategy_3( &
 
 contains
 
-  !@+others
-  !@+node:gcross.20100517000234.1761: *3* run_arpack
   subroutine run_arpack(n,nev,ncv,tolerance,guess,eigenvalue,eigenvector)
 
     integer, intent(in) :: n, nev, ncv
@@ -2518,7 +2429,6 @@ contains
 
   end subroutine
 
-  !@+node:gcross.20100517000234.1762: *3* operate_on
   subroutine operate_on(input,output)
     double complex :: input(orthogonal_subspace_dimension), projected(br,bl,d), output(orthogonal_subspace_dimension)
     call unproject_from_orthogonal_space( &
@@ -2547,7 +2457,6 @@ contains
     )
 
   end subroutine
-  !@+node:gcross.20100601131107.1842: *3* postprocess
   subroutine postprocess
     call unproject_from_orthogonal_space( &
       full_space_dimension, &
@@ -2556,7 +2465,6 @@ contains
       result(1,1,1) &
     )
   end subroutine
-  !@+node:gcross.20100603220533.1856: *3* doit
   subroutine doit
     integer :: ncv
     ncv = nev*2+1
@@ -2566,8 +2474,6 @@ contains
     if (info == -14) then
       if (full_space_dimension < number_of_iterations) then
         ! print *, "Retrying with strategy 1"
-        !@+<< Branch to optimization strategy 1 >>
-        !@+node:gcross.20100603220533.1857: *4* << Branch to optimization strategy 1 >>
         call optimize_strategy_1( &
           bl, br, &
           cl, &
@@ -2585,7 +2491,6 @@ contains
           result, &
           eigenvalue &
         )
-        !@-<< Branch to optimization strategy 1 >>
       else
         do while (ncv <= number_of_iterations)
           ncv = ncv * 3 / 2
@@ -2603,16 +2508,12 @@ contains
     end if
 
   end subroutine
-  !@-others
 
 end subroutine
-!@+node:gcross.20091110205054.1942: ** Randomization
-!@+node:gcross.20091110205054.1921: *3* seed_randomizer
 subroutine seed_randomizer(seed)
   integer, intent(in) :: seed
   call srand(seed)
 end subroutine
-!@+node:gcross.20091110205054.1920: *3* randomize_state_site_tensor
 subroutine randomize_state_site_tensor(br, bl, d, state_site_tensor)
   integer, intent(in) :: br, bl, d
   double complex, intent(out) :: state_site_tensor(br,bl,d)
@@ -2627,7 +2528,6 @@ subroutine randomize_state_site_tensor(br, bl, d, state_site_tensor)
   end do
   end do
 end subroutine
-!@+node:gcross.20091110205054.1922: *3* rand_norm_state_site_tensor
 subroutine rand_norm_state_site_tensor(br, bl, d, state_site_tensor)
   integer, intent(in) :: br, bl, d
   double complex, intent(out) :: state_site_tensor(br,bl,d)
@@ -2652,7 +2552,6 @@ subroutine rand_norm_state_site_tensor(br, bl, d, state_site_tensor)
   state_site_tensor = reshape(workspace,shape(state_site_tensor),order=(/1,3,2/))
 
 end subroutine
-!@+node:gcross.20091120134444.1600: *3* rand_unnorm_state_site_tensor
 subroutine rand_unnorm_state_site_tensor(br, bl, d, state_site_tensor)
   integer, intent(in) :: br, bl, d
   double complex, intent(out) :: state_site_tensor(br,bl,d)
@@ -2662,7 +2561,6 @@ subroutine rand_unnorm_state_site_tensor(br, bl, d, state_site_tensor)
   state_site_tensor = state_site_tensor / sqrt(dble(real(sum(conjg(state_site_tensor(:,:,:))*state_site_tensor(:,:,:)))))
 
 end subroutine
-!@+node:gcross.20100521141104.1771: *3* random_projector_matrix
 subroutine random_projector_matrix( &
   projector_length, number_of_projectors, &
   rank, &
@@ -2694,8 +2592,6 @@ subroutine random_projector_matrix( &
     coefficients, swaps &
   )
 end subroutine
-!@+node:gcross.20091110205054.1943: ** Normalization
-!@+node:gcross.20091110205054.1926: *3* norm_denorm_going_left
 function norm_denorm_going_left( &
   bl,bm,br, &
   dl,dr, &
@@ -2775,7 +2671,6 @@ function norm_denorm_going_left( &
   )
 
 end function
-!@+node:gcross.20091110205054.1935: *3* norm_denorm_going_right
 function norm_denorm_going_right( &
   bl,bm,br, &
   dl,dr, &
@@ -2863,8 +2758,6 @@ function norm_denorm_going_right( &
   )
 
 end function
-!@+node:gcross.20091115094257.1711: ** Bandwidth increasing
-!@+node:gcross.20091115094257.1712: *3* create_bandwidth_increase_matrix
 subroutine create_bandwidth_increase_matrix(old_bandwidth,new_bandwidth,matrix)
   integer, intent(in) :: old_bandwidth, new_bandwidth
   double complex, intent(out) :: matrix(new_bandwidth,old_bandwidth)
@@ -2885,7 +2778,6 @@ subroutine create_bandwidth_increase_matrix(old_bandwidth,new_bandwidth,matrix)
   end if
 
 end subroutine
-!@+node:gcross.20091115094257.1721: *3* absorb_bi_matrix_from_left
 subroutine absorb_bi_matrix_from_left( &
   br,bl,d, &
   new_bl, &
@@ -2920,7 +2812,6 @@ subroutine absorb_bi_matrix_from_left( &
   new_state_site_tensor = reshape(intermediate_tensor_2,shape(new_state_site_tensor),order=(/1,3,2/))
 
 end subroutine
-!@+node:gcross.20091115094257.1717: *3* absorb_bi_matrix_from_right
 subroutine absorb_bi_matrix_from_right( &
   br,bl,d, &
   new_br, &
@@ -2947,7 +2838,6 @@ subroutine absorb_bi_matrix_from_right( &
   )
 
 end subroutine
-!@+node:gcross.20091115105949.1728: *3* increase_bandwidth_between
 function increase_bandwidth_between( &
   bl,bm,br, &
   dl,dr, &
@@ -3000,8 +2890,6 @@ function increase_bandwidth_between( &
     )
 
 end function
-!@+node:gcross.20091117140132.1799: ** Overlap tensor formation
-!@+node:gcross.20091117140132.1800: *3* form_overlap_site_tensor
 subroutine form_overlap_site_tensor(br, bl, d, state_site_tensor, overlap_site_tensor)
   integer, intent(in) :: br, bl, d
   double complex, intent(in) :: state_site_tensor(br,bl,d)
@@ -3015,7 +2903,6 @@ subroutine form_overlap_site_tensor(br, bl, d, state_site_tensor, overlap_site_t
     ))
 
 end subroutine
-!@+node:gcross.20091117140132.1802: *3* form_norm_overlap_tensors
 subroutine form_norm_overlap_tensors( &
   bl, bm, br, &
   dl, dr, &
@@ -3073,5 +2960,3 @@ subroutine form_norm_overlap_tensors( &
   )
 
 end subroutine
-!@-others
-!@-leo

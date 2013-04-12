@@ -1,8 +1,3 @@
-//@+leo-ver=5-thin
-//@+node:gcross.20110805222031.4665: * @file compiler.cpp
-//@@language cplusplus
-//@+<< Includes >>
-//@+node:gcross.20110805222031.4667: ** << Includes >>
 #include "nutcracker/compiler.hpp"
 #include "nutcracker/utilities.hpp"
 
@@ -26,10 +21,7 @@ using boost::numeric::ublas::zero_matrix;
 using std::make_pair;
 
 using namespace Pauli;
-//@-<< Includes >>
 
-//@+others
-//@+node:gcross.20110817224742.2489: ** Classes
 class TestingOperatorSpecification : public OperatorSpecification {
 private:
     BOOST_MOVABLE_BUT_NOT_COPYABLE(TestingOperatorSpecification)
@@ -38,35 +30,22 @@ public:
     TestingOperatorSpecification(BOOST_RV_REF(OperatorSpecification) other) : OperatorSpecification(other) {}
     vector<SiteConnections> const& getConnections() { return connections; }
 };
-//@+node:gcross.20110805222031.4668: ** Tests
 TEST_SUITE(Compiler) {
 
-//@+others
-//@+node:gcross.20110827215622.2603: *3* DataTable specializations
 TEST_SUITE(DataTable_specializations) {
 
-//@+others
-//@+node:gcross.20110805222031.4670: *4* MatrixTable
 TEST_SUITE(MatrixTable) {
 
-//@+others
-//@+node:gcross.20110805222031.4671: *5* initial matrices
 TEST_SUITE(initial_matrices) {
 
-//@+others
-//@+node:gcross.20110805222031.4672: *6* Null
 TEST_CASE(Null) {
     EXPECT_EQ_VAL(MatrixTable().lookupIdOf(make_shared<Matrix>(2,2,c(0,0))),0);
 }
-//@+node:gcross.20110805222031.4674: *6* I
 TEST_SUITE(I) {
-//@+others
-//@+node:gcross.20110815001337.2461: *7* correct add
 TEST_CASE(correct_add) {
     MatrixTable matrix_table;
     EXPECT_EQ_VAL(matrix_table.lookupIdOf(I),matrix_table.getIMatrixId());
 }
-//@+node:gcross.20110815001337.2454: *7* correct lookup
 TEST_CASE(correct_lookup) {
     MatrixTable matrix_table;
     Matrix const& matrix = *matrix_table.get(matrix_table.getIMatrixId());
@@ -74,17 +53,12 @@ TEST_CASE(correct_lookup) {
     EXPECT_EQ_VAL(matrix.size1(),2)
     EXPECT_TRUE(boost::equal(matrix.data(),I->data()))
 }
-//@-others
 }
-//@+node:gcross.20110805222031.4676: *6* X
 TEST_SUITE(X) {
-//@+others
-//@+node:gcross.20110815001337.2463: *7* correct add
 TEST_CASE(correct_add) {
     MatrixTable matrix_table;
     EXPECT_EQ_VAL(matrix_table.lookupIdOf(X),matrix_table.getXMatrixId());
 }
-//@+node:gcross.20110815001337.2456: *7* correct lookup
 TEST_CASE(correct_lookup) {
     MatrixTable matrix_table;
     Matrix const& matrix = *matrix_table.get(matrix_table.getXMatrixId());
@@ -92,17 +66,12 @@ TEST_CASE(correct_lookup) {
     EXPECT_EQ_VAL(matrix.size1(),2)
     EXPECT_TRUE(boost::equal(matrix.data(),X->data()))
 }
-//@-others
 }
-//@+node:gcross.20110805222031.4680: *6* Y
 TEST_SUITE(Y) {
-//@+others
-//@+node:gcross.20110815001337.2465: *7* correct add
 TEST_CASE(correct_add) {
     MatrixTable matrix_table;
     EXPECT_EQ_VAL(matrix_table.lookupIdOf(Y),matrix_table.getYMatrixId());
 }
-//@+node:gcross.20110815001337.2458: *7* correct lookup
 TEST_CASE(correct_lookup) {
     MatrixTable matrix_table;
     Matrix const& matrix = *matrix_table.get(matrix_table.getYMatrixId());
@@ -110,17 +79,12 @@ TEST_CASE(correct_lookup) {
     EXPECT_EQ_VAL(matrix.size1(),2)
     EXPECT_TRUE(boost::equal(matrix.data(),Y->data()))
 }
-//@-others
 }
-//@+node:gcross.20110805222031.4678: *6* Z
 TEST_SUITE(Z) {
-//@+others
-//@+node:gcross.20110815001337.2467: *7* correct add
 TEST_CASE(correct_add) {
     MatrixTable matrix_table;
     EXPECT_EQ_VAL(matrix_table.lookupIdOf(Z),matrix_table.getZMatrixId());
 }
-//@+node:gcross.20110815001337.2460: *7* correct lookup
 TEST_CASE(correct_lookup) {
     MatrixTable matrix_table;
     Matrix const& matrix = *matrix_table.get(matrix_table.getZMatrixId());
@@ -128,16 +92,11 @@ TEST_CASE(correct_lookup) {
     EXPECT_EQ_VAL(matrix.size1(),2)
     EXPECT_TRUE(boost::equal(matrix.data(),Z->data()))
 }
-//@-others
 }
-//@-others
 
 }
-//@+node:gcross.20110805222031.4681: *5* lookupIdOf
 TEST_SUITE(lookupIdOf) {
 
-//@+others
-//@+node:gcross.20110805222031.4682: *6* correct for new matrix
 TEST_CASE(correct_for_new_matrix) {
     MatrixTable matrix_table;
     RNG random;
@@ -159,7 +118,6 @@ TEST_CASE(correct_for_new_matrix) {
         previous_matrices.emplace_back(matrix_id,matrix);
     }
 }
-//@+node:gcross.20110805222031.4684: *6* correct for repeated matrix
 TEST_CASE(correct_for_repeated_matrix) {
     MatrixTable matrix_table;
     RNG random;
@@ -180,33 +138,22 @@ TEST_CASE(correct_for_repeated_matrix) {
         previous_matrices.emplace_back(matrix_id,matrix);
     }
 }
-//@-others
 
 }
-//@+node:gcross.20110805222031.4702: *5* lookupIdOfIdentityWithDimension
 TEST_SUITE(lookupIdOfIdentityWithDimension) {
 
-//@+others
-//@+node:gcross.20110805222031.4703: *6* returns_I_for_dimension_2
 TEST_CASE(returns_I_for_dimension_2) {
     MatrixTable matrix_table;
     EXPECT_EQ(matrix_table.lookupIdOfIdentityWithDimension(2),matrix_table.getIMatrixId())
 }
-//@-others
 
 }
-//@-others
 
 }
-//@+node:gcross.20110827215622.2583: *4* VectorTable
 TEST_SUITE(VectorTable) {
 
-//@+others
-//@+node:gcross.20110827215622.2611: *5* lookupIdOf
 TEST_SUITE(lookupIdOf) {
 
-//@+others
-//@+node:gcross.20110827215622.2612: *6* correct for new vector
 TEST_CASE(correct_for_new_vector) {
     VectorTable table;
     RNG random;
@@ -227,7 +174,6 @@ TEST_CASE(correct_for_new_vector) {
         previous_vectors.emplace_back(id,vector);
     }
 }
-//@+node:gcross.20110827215622.2613: *6* correct for repeated vector
 TEST_CASE(correct_for_repeated_vector) {
     VectorTable table;
     RNG random;
@@ -247,10 +193,8 @@ TEST_CASE(correct_for_repeated_vector) {
         previous_vectors.emplace_back(id,vector);
     }
 }
-//@-others
 
 }
-//@+node:gcross.20110827215622.2606: *5* lookupIdOfObservation
 TEST_CASE(lookupIdOfObservation) {
     RNG random;
     REPEAT(100) {
@@ -268,24 +212,16 @@ TEST_CASE(lookupIdOfObservation) {
         ASSERT_EQ_VAL(table.lookupIdOf(make_shared<Vector>(correct_data)),id);
     }
 }
-//@+node:gcross.20110827215622.2585: *5* null
 TEST_CASE(null) {
     EXPECT_EQ_VAL(VectorTable().lookupIdOfRange(vector<complex<double> >()),0);
 }
-//@-others
 
 }
-//@-others
 
 }
-//@+node:gcross.20110821165641.2510: *3* OperatorBuilder
 TEST_SUITE(OperatorBuilder) {
 
-//@+others
-//@+node:gcross.20110905174854.2854: *4* addProductTerm
 TEST_SUITE(addProductTerm) {
-//@+others
-//@+node:gcross.20110905174854.2856: *5* increasing diagonals
 TEST_CASE(increasing_diagonals) {
     BOOST_FOREACH(unsigned int const number_of_sites, irange(2u,6u)) {
         OperatorBuilder builder(number_of_sites,PhysicalDimension(2u));
@@ -309,7 +245,6 @@ TEST_CASE(increasing_diagonals) {
         }
     }
 }
-//@+node:gcross.20110826085250.2532: *5* magnetic field
 TEST_CASE(magnetic_field) {
     RNG random;
     BOOST_FOREACH(unsigned int const number_of_sites, irange(2u,6u)) {
@@ -334,13 +269,9 @@ TEST_CASE(magnetic_field) {
         );
     }
 }
-//@-others
 }
-//@+node:gcross.20110821165641.2511: *4* generateSpecification
 TEST_SUITE(generateSpecification) {
 
-//@+others
-//@+node:gcross.20110821165641.2513: *5* single connections
 TEST_CASE(single_connections) {
     OperatorBuilder builder(1,PhysicalDimension(2));
     builder.connect(0u,0u,0u,Pauli::I);
@@ -356,7 +287,6 @@ TEST_CASE(single_connections) {
     EXPECT_EQ_VAL(spec.getConnections()[0].size(),4u);
     EXPECT_TRUE(spec.getConnections()[0] == correct_connections);
 }
-//@+node:gcross.20110821165641.2515: *5* multi-connections
 TEST_CASE(multiconnections) {
     OperatorBuilder builder(1,PhysicalDimension(2));
     builder.connect(0u,0u,0u,Pauli::I);
@@ -370,7 +300,6 @@ TEST_CASE(multiconnections) {
     EXPECT_EQ_VAL(spec.getConnections()[0].size(),1u);
     EXPECT_TRUE(spec.getConnections()[0] == correct_connections);
 }
-//@+node:gcross.20110821165641.2512: *5* standard loops
 TEST_CASE(standard_loops) {
     OperatorBuilder builder(5,PhysicalDimension(2));
     TestingOperatorSpecification spec(builder.generateSpecification());
@@ -381,17 +310,12 @@ TEST_CASE(standard_loops) {
         ASSERT_TRUE(connections == correct_connections);
     }
 }
-//@-others
 
 }
-//@-others
 
 }
-//@+node:gcross.20110903210625.2708: *3* Operator terms
 TEST_SUITE(Operator_terms) {
 
-//@+others
-//@+node:gcross.20110822214054.2517: *4* GlobalExternalField
 TEST_CASE(GlobalExternalField) {
     BOOST_FOREACH(unsigned int const number_of_sites, irange(1u,5u)) {
         GlobalExternalField field_1(Pauli::Z), field_2 = field_1 * 0.5;
@@ -411,7 +335,6 @@ TEST_CASE(GlobalExternalField) {
         );
     }
 }
-//@+node:gcross.20110822214054.2521: *4* GlobalNeighborCouplingField
 TEST_CASE(GlobalNeighborCouplingField) {
     RNG random;
     BOOST_FOREACH(unsigned int const number_of_sites, irange(2u,6u)) {
@@ -432,7 +355,6 @@ TEST_CASE(GlobalNeighborCouplingField) {
         );
     }
 }
-//@+node:gcross.20110822214054.2519: *4* LocalExternalField
 TEST_CASE(LocalExternalField) {
     RNG random;
     BOOST_FOREACH(unsigned int const number_of_sites, irange(1u,5u)) {
@@ -447,7 +369,6 @@ TEST_CASE(LocalExternalField) {
         );
     }
 }
-//@+node:gcross.20110822214054.2523: *4* LocalNeighborCouplingField
 TEST_CASE(LocalNeighborCouplingField) {
     RNG random;
     BOOST_FOREACH(unsigned int const number_of_sites, irange(2u,6u)) {
@@ -471,7 +392,6 @@ TEST_CASE(LocalNeighborCouplingField) {
         );
     }
 }
-//@+node:gcross.20110903210625.2711: *4* TransverseIsingField
 TEST_CASE(TransverseIsingField) {
     RNG random;
     BOOST_FOREACH(unsigned int const number_of_sites, irange(2u,6u)) {
@@ -491,20 +411,12 @@ TEST_CASE(TransverseIsingField) {
         );
     }
 }
-//@-others
 
 }
-//@+node:gcross.20110817224742.2470: *3* OperatorSpecification
 TEST_SUITE(OperatorSpecification) {
 
-//@+others
-//@+node:gcross.20110817224742.2485: *4* compile
 TEST_SUITE(compile) {
-//@+others
-//@+node:gcross.20110817224742.2472: *5* 1 site
 TEST_SUITE(_1_site) {
-//@+others
-//@+node:gcross.20110817224742.2475: *6* bad left signal
 TEST_CASE(bad_left_signal) {
     OperatorSpecification spec;
     spec.connect(0,10,spec.getEndSignal(),0);
@@ -516,7 +428,6 @@ TEST_CASE(bad_left_signal) {
         EXPECT_TRUE(boost::equal(e.right_site_left_signals,list_of(10u)))
     }
 }
-//@+node:gcross.20110817224742.2477: *6* bad right signal
 TEST_CASE(bad_right_signal) {
     OperatorSpecification spec;
     spec.connect(0,spec.getStartSignal(),10,spec.getIMatrixId());
@@ -528,7 +439,6 @@ TEST_CASE(bad_right_signal) {
         EXPECT_TRUE(boost::equal(e.right_site_left_signals,list_of(2u)))
     }
 }
-//@+node:gcross.20110817224742.2474: *6* non-trivial link
 TEST_CASE(nontrivial_link) {
     RNG random;
 
@@ -548,7 +458,6 @@ TEST_CASE(nontrivial_link) {
         );
     }
 }
-//@+node:gcross.20110817224742.2471: *6* trivial link
 TEST_CASE(trivial_link) {
     OperatorSpecification spec;
     spec.connect(0,spec.getStartSignal(),spec.getEndSignal(),spec.lookupIdOfIdentityWithDimension(2));
@@ -562,12 +471,8 @@ TEST_CASE(trivial_link) {
         )
     );
 }
-//@-others
 }
-//@+node:gcross.20110817224742.2478: *5* 2 sites
 TEST_SUITE(_2_sites) {
-//@+others
-//@+node:gcross.20110817224742.2483: *6* bad middle signal
 TEST_CASE(bad_middle_signal) {
     RNG random;
 
@@ -585,7 +490,6 @@ TEST_CASE(bad_middle_signal) {
         }
     }
 }
-//@+node:gcross.20110817224742.2482: *6* non trivial signal links
 TEST_CASE(non_trivial_single_links) {
     RNG random;
 
@@ -619,7 +523,6 @@ TEST_CASE(non_trivial_single_links) {
         );
     }
 }
-//@+node:gcross.20110817224742.2484: *6* random links
 TEST_CASE(random_links) {
     RNG random;
 
@@ -662,7 +565,6 @@ TEST_CASE(random_links) {
         );
     }
 }
-//@+node:gcross.20110817224742.2480: *6* trivial links
 TEST_CASE(trivial_links) {
     OperatorSpecification spec;
     spec.connect(0,spec.getStartSignal(),10,spec.lookupIdOfIdentityWithDimension(2));
@@ -689,14 +591,9 @@ TEST_CASE(trivial_links) {
     );
     EXPECT_EQ(op[0],op[1]);
 }
-//@-others
 }
-//@-others
 }
-//@+node:gcross.20110817224742.2490: *4* eliminateDeadLeftSignals
 TEST_SUITE(eliminateDeadLeftSignals) {
-//@+others
-//@+node:gcross.20110817224742.2491: *5* 1 site
 TEST_CASE(_1_site) {
     RNG random;
 
@@ -715,7 +612,6 @@ TEST_CASE(_1_site) {
         ASSERT_EQ(spec.getConnections()[0].begin()->first.second,2)
     }
 }
-//@+node:gcross.20110817224742.2497: *5* 2 sites
 TEST_CASE(_2_sites) {
     RNG random;
 
@@ -739,12 +635,8 @@ TEST_CASE(_2_sites) {
         ASSERT_TRUE(boost::equal(spec.getConnections()[1] | map_keys | map_keys,left_signals))
     }
 }
-//@-others
 }
-//@+node:gcross.20110817224742.2494: *4* eliminateDeadRightSignals
 TEST_SUITE(eliminateDeadRightSignals) {
-//@+others
-//@+node:gcross.20110817224742.2495: *5* 1 site
 TEST_CASE(_1_site) {
     RNG random;
 
@@ -763,7 +655,6 @@ TEST_CASE(_1_site) {
         ASSERT_EQ(spec.getConnections()[0].begin()->first.second,2)
     }
 }
-//@+node:gcross.20110817224742.2499: *5* 2 sites
 TEST_CASE(_2_sites) {
     RNG random;
 
@@ -787,12 +678,8 @@ TEST_CASE(_2_sites) {
         ASSERT_TRUE(boost::equal(spec.getConnections()[1] | map_keys | map_keys,right_signals))
     }
 }
-//@-others
 }
-//@+node:gcross.20110817224742.2486: *4* eliminateNullMatrices
 TEST_SUITE(eliminateNullMatrices) {
-//@+others
-//@+node:gcross.20110817224742.2487: *5* 1 site
 TEST_CASE(_1_site) {
     TestingOperatorSpecification spec;
     spec.connect(0,spec.getStartSignal(),spec.getEndSignal(),0);
@@ -804,7 +691,6 @@ TEST_CASE(_1_site) {
     spec.eliminateNullMatrices();
     EXPECT_EQ_VAL(spec.getConnections()[0].size(),1u);
 }
-//@+node:gcross.20110817224742.2488: *5* 2 sites
 TEST_CASE(_2_sites) {
     RNG random;
 
@@ -829,12 +715,8 @@ TEST_CASE(_2_sites) {
         ASSERT_TRUE(boost::equal(spec.getConnections()[0] | map_keys | map_values,remaining_signals))
     }
 }
-//@-others
 }
-//@+node:gcross.20110817224742.2500: *4* mergeLeftSignals
 TEST_SUITE(mergeLeftSignals) {
-//@+others
-//@+node:gcross.20110818221240.2508: *5* mergable signal sets
 TEST_CASE(mergable_signal_sets) {
     RNG random;
 
@@ -881,7 +763,6 @@ TEST_CASE(mergable_signal_sets) {
         EXPECT_EQ(spec.getConnections()[1].begin()->second,spec.lookupIdOf(merged_matrix))
     }
 }
-//@+node:gcross.20110818221240.2500: *5* mergable signals
 TEST_CASE(mergable_signals) {
     RNG random;
 
@@ -920,7 +801,6 @@ TEST_CASE(mergable_signals) {
         checkOperatorsEquivalent(old_spec.compile(),spec.compile(),random);
     }
 }
-//@+node:gcross.20110818221240.2512: *5* unmergable signal sets
 TEST_CASE(unmergable_signal_sets) {
     RNG random;
 
@@ -948,7 +828,6 @@ TEST_CASE(unmergable_signal_sets) {
         ASSERT_TRUE(spec.getConnections() == old_connections);
     }
 }
-//@+node:gcross.20110817224742.2502: *5* unmergable signals
 TEST_CASE(unmergable_signals) {
     RNG random;
 
@@ -974,12 +853,8 @@ TEST_CASE(unmergable_signals) {
         ASSERT_TRUE(spec.getConnections() == old_connections);
     }
 }
-//@-others
 }
-//@+node:gcross.20110817224742.2513: *4* mergeRightSignals
 TEST_SUITE(mergeRightSignals) {
-//@+others
-//@+node:gcross.20110818221240.2510: *5* mergable signal sets
 TEST_CASE(mergable_signal_sets) {
     RNG random;
 
@@ -1026,7 +901,6 @@ TEST_CASE(mergable_signal_sets) {
         EXPECT_EQ(spec.getConnections()[0].begin()->second,spec.lookupIdOf(merged_matrix))
     }
 }
-//@+node:gcross.20110817224742.2515: *5* mergable signals
 TEST_CASE(mergable_signals) {
     RNG random;
 
@@ -1065,7 +939,6 @@ TEST_CASE(mergable_signals) {
         checkOperatorsEquivalent(old_spec.compile(),spec.compile(),random);
     }
 }
-//@+node:gcross.20110818221240.2516: *5* unmergable signal sets
 TEST_CASE(unmergable_signal_sets) {
     RNG random;
 
@@ -1093,7 +966,6 @@ TEST_CASE(unmergable_signal_sets) {
         ASSERT_TRUE(spec.getConnections() == old_connections);
     }
 }
-//@+node:gcross.20110817224742.2514: *5* unmergable signals
 TEST_CASE(unmergable_signals) {
     RNG random;
 
@@ -1119,12 +991,8 @@ TEST_CASE(unmergable_signals) {
         ASSERT_TRUE(spec.getConnections() == old_connections);
     }
 }
-//@-others
 }
-//@+node:gcross.20110818221240.2502: *4* optimize
 TEST_SUITE(optimize) {
-//@+others
-//@+node:gcross.20110818221240.2503: *5* external field
 TEST_CASE(external_field) {
     RNG random;
     BOOST_FOREACH(unsigned int const number_of_sites,irange(2u,5u+1u)) {
@@ -1153,7 +1021,6 @@ TEST_CASE(external_field) {
         ASSERT_EQ(spec.getConnections()[number_of_sites-1].size(),2u);
     }
 }
-//@+node:gcross.20110818221240.2519: *5* transverse ising
 TEST_CASE(transverse_ising) {
     RNG random;
     BOOST_FOREACH(unsigned int const number_of_sites,irange(2u,5u+1u)) {
@@ -1194,22 +1061,13 @@ TEST_CASE(transverse_ising) {
         ASSERT_EQ(spec.getConnections()[number_of_sites-1].size(),3u);
     }
 }
-//@-others
 }
-//@-others
 
 }
-//@+node:gcross.20110828143807.2598: *3* StateSpecification
 TEST_SUITE(StateSpecification) {
 
-//@+others
-//@+node:gcross.20110828143807.2610: *4* compile
 TEST_SUITE(compile) {
-//@+others
-//@+node:gcross.20110828143807.2611: *5* 1 site
 TEST_SUITE(_1_site) {
-//@+others
-//@+node:gcross.20110828143807.2614: *6* non-trivial link
 TEST_CASE(nontrivial_link) {
     RNG random;
 
@@ -1231,7 +1089,6 @@ TEST_CASE(nontrivial_link) {
         }
     }
 }
-//@+node:gcross.20110828143807.2615: *6* trivial link
 TEST_CASE(trivial_link) {
     StateSpecification spec;
     spec.connect(0,spec.getStartSignal(),spec.getEndSignal(),spec.lookupIdOfObservation(0,1));
@@ -1244,13 +1101,9 @@ TEST_CASE(trivial_link) {
     EXPECT_EQ_VAL(state_site.rightDimension(),1u);
     EXPECT_TRUE(boost::equal(state_site,list_of(c(1,0))));
 }
-//@-others
 }
-//@+node:gcross.20110828143807.2631: *5* W state
 TEST_SUITE(W_state) {
 
-//@+others
-//@+node:gcross.20110828143807.2632: *6* two sites
 TEST_CASE(two_sites) {
     StateSpecification spec;
     spec.connect(0,1,1,spec.lookupIdOf(vectorFromRange(list_of(1)(0))));
@@ -1266,7 +1119,6 @@ TEST_CASE(two_sites) {
         EXPECT_NEAR_ABS(actual_state_vector[index],correct_state_vector[index],1e-13);
     }
 }
-//@+node:gcross.20110828143807.2633: *6* three sites
 TEST_CASE(three_sites) {
     StateSpecification spec;
     spec.connect(0,1,1,spec.lookupIdOf(vectorFromRange(list_of(1)(0))));
@@ -1301,37 +1153,25 @@ TEST_CASE(three_sites) {
         EXPECT_NEAR_ABS(actual_state_vector[index],correct_state_vector[index],1e-13);
     }
 }
-//@-others
 
 }
-//@-others
 }
-//@-others
 
 }
-//@+node:gcross.20110814140556.2422: *3* SignalTable
 TEST_SUITE(SignalTable) {
 
-//@+others
-//@+node:gcross.20110814140556.2423: *4* getStartSignal
 TEST_CASE(getStartSignal) {
     EXPECT_EQ_VAL(SignalTable().getStartSignal(),1u);
 }
-//@+node:gcross.20110814140556.2425: *4* getEndSignal
 TEST_CASE(getEndSignal) {
     EXPECT_EQ_VAL(SignalTable().getEndSignal(),2u);
 }
-//@+node:gcross.20110814140556.2426: *4* allocateSignal
 TEST_CASE(allocateSignal) {
     SignalTable signal_table;
     EXPECT_EQ_VAL(signal_table.allocateSignal(),3u);
     EXPECT_EQ_VAL(signal_table.allocateSignal(),4u);
 }
-//@-others
 
 }
-//@-others
 
 }
-//@-others
-//@-leo

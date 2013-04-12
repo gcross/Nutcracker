@@ -1,8 +1,3 @@
-//@+leo-ver=5-thin
-//@+node:gcross.20110511190907.3785: * @file configuration.cpp
-//@@language cplusplus
-//@+<< Includes >>
-//@+node:gcross.20110511190907.3788: ** << Includes >>
 #include <boost/lexical_cast.hpp>
 #include <boost/optional.hpp>
 #include <boost/program_options.hpp>
@@ -23,14 +18,9 @@ using boost::program_options::store;
 using boost::program_options::variables_map;
 
 using std::string;
-//@-<< Includes >>
 
-//@+others
-//@+node:gcross.20110511190907.3789: ** Tests
 TEST_SUITE(Configuration) {
 
-//@+others
-//@+node:gcross.20110511190907.3790: *3* InputOptions
 TEST_CASE(InputOptions) {
     RNG random;
 
@@ -80,7 +70,6 @@ TEST_CASE(InputOptions) {
     }
 
 }
-//@+node:gcross.20110511190907.3796: *3* OutputOptions
 TEST_CASE(OutputOptions) {
     RNG random;
 
@@ -146,7 +135,6 @@ TEST_CASE(OutputOptions) {
     }
 
 }
-//@+node:gcross.20110511190907.3798: *3* ToleranceOptions
 TEST_CASE(ToleranceOptions) {
     RNG random;
 
@@ -207,8 +195,5 @@ TEST_CASE(ToleranceOptions) {
     }
 
 }
-//@-others
 
 }
-//@-others
-//@-leo

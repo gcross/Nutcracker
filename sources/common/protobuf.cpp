@@ -1,8 +1,3 @@
-//@+leo-ver=5-thin
-//@+node:gcross.20110901221152.2671: * @file protobuf.cpp
-//@@language cplusplus
-//@+<< Includes >>
-//@+node:gcross.20110901221152.2673: ** << Includes >>
 #include <boost/make_shared.hpp>
 #include <boost/range/adaptor/indirected.hpp>
 #include <boost/shared_ptr.hpp>
@@ -12,10 +7,7 @@
 #include "nutcracker/io.hpp"
 #include "nutcracker/protobuf.hpp"
 #include "nutcracker/states.hpp"
-//@-<< Includes >>
 
-//@+<< Usings >>
-//@+node:gcross.20110901221152.2674: ** << Usings >>
 using boost::adaptors::indirected;
 using boost::container::vector;
 using boost::optional;
@@ -27,14 +19,9 @@ using std::cin;
 using std::cout;
 using std::ifstream;
 using std::ofstream;
-//@-<< Usings >>
 
 namespace Nutcracker { namespace Protobuf {
 
-//@+others
-//@+node:gcross.20110901221152.2675: ** I/O Operators
-//@+others
-//@+node:gcross.20110902105950.2704: *3* Operator
 void operator<<(OperatorBuffer& buffer, Operator const& op) {
     vector<shared_ptr<OperatorSite const> > unique_operator_sites;
     vector<unsigned int> sequence;
@@ -64,7 +51,6 @@ void operator>>(OperatorBuffer const& buffer, Operator& op) {
     boost::copy(buffer.sequence(),std::back_inserter(sequence));
     op = constructOperatorFrom(unique_operator_sites,sequence);
 }
-//@+node:gcross.20110902105950.2696: *3* OperatorSite
 void operator<<(OperatorSiteBuffer& buffer, OperatorSite const& tensor) {
     using namespace Nutcracker;
     buffer.set_number_of_matrices(tensor.numberOfMatrices());
@@ -104,7 +90,6 @@ void operator>>(OperatorSiteBuffer const& buffer, OperatorSite& tensor) {
     boost::copy(buffer.index_data(),static_cast<uint32_t*>(operator_site_tensor));
     tensor = boost::move(operator_site_tensor);
 }
-//@+node:gcross.20110902105950.2689: *3* State
 struct Protobuf_State_Chain_Callback {
     StateBuffer& buffer;
     Protobuf_State_Chain_Callback(StateBuffer& buffer) : buffer(buffer) {}
@@ -131,10 +116,6 @@ void operator>>(StateBuffer const& buffer, State& tensor) {
     }
     tensor = State(boost::move(first_site),boost::move(rest_sites));
 }
-//@-others
-//@+node:gcross.20110903120540.2684: ** Formats
-//@+others
-//@+node:gcross.20110903120540.2685: *3* Input
 static Operator readOperator(optional<string> const& maybe_filename, optional<string> const& maybe_location) {
     assert(!maybe_location);
     OperatorBuffer buffer;
@@ -149,7 +130,6 @@ static Operator readOperator(optional<string> const& maybe_filename, optional<st
     buffer >> op;
     return boost::move(op);
 }
-//@+node:gcross.20110903120540.2686: *3* Output
 struct Outputter : public Destructable, public trackable {
     Chain const& chain;
     optional<string> const maybe_filename;
@@ -200,13 +180,10 @@ auto_ptr<Destructable const> connectToChain(
     assert(!maybe_location);
     return auto_ptr<Destructable const>(new Outputter(maybe_filename,output_states,overwrite,chain));
 }
-//@-others
 
 void installFormat() {
     static InputFormat protobuf_input_format("protobuf","Google Protocol Buffers format",true,false,list_of("prb"),readOperator);
     static OutputFormat protobuf_output_format("protobuf","Google Protocol Buffers format",true,false,list_of("prb"),true,connectToChain);
 }
-//@-others
 
 } }
-//@-leo

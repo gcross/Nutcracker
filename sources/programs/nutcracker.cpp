@@ -1,8 +1,3 @@
-//@+leo-ver=5-thin
-//@+node:gcross.20110220141808.2717: * @file nutcracker.cpp
-//@@language cplusplus
-//@+<< Includes >>
-//@+node:gcross.20110220141808.2718: ** << Includes >>
 #include <boost/bind.hpp>
 #include <boost/format.hpp>
 #include <boost/none.hpp>
@@ -49,14 +44,8 @@ using Nutcracker::OutputFormatDoesNotSupportStatesError;
 using Nutcracker::OutputOptions;
 using Nutcracker::ToleranceOptions;
 using Nutcracker::vector;
-//@-<< Includes >>
 
-//@+others
-//@+node:gcross.20110511190907.3754: ** Classes
-//@+node:gcross.20110511190907.3766: *3* HelpOptions
 class HelpOptions : public Options {
-    //@+others
-    //@+node:gcross.20110511190907.3767: *4* Constructors
     public:
 
     HelpOptions(opts::options_description const& all_options)
@@ -72,7 +61,6 @@ class HelpOptions : public Options {
                 "print the supported optimizer modes\n")
         ;
     }
-    //@+node:gcross.20110511190907.3768: *4* Messages
     protected:
 
     opts::options_description const& all_options;
@@ -121,12 +109,8 @@ class HelpOptions : public Options {
         cerr << endl;
         exit(1);
     }
-    //@-others
 };
-//@+node:gcross.20110511190907.3760: *3* SimulationOptions
 class SimulationOptions : public Options {
-    //@+others
-    //@+node:gcross.20110511190907.3762: *4* Constructors
     public:
 
     SimulationOptions()
@@ -154,7 +138,6 @@ class SimulationOptions : public Options {
             )
         ;
     }
-    //@+node:gcross.20110511190907.3761: *4* Fields
     protected:
 
     unsigned int number_of_levels;
@@ -164,9 +147,7 @@ class SimulationOptions : public Options {
 
     unsigned int getSimulationNumberOfLevels() const { return number_of_levels; }
     OptimizerMode const& getOptimizerMode() const { return optimizer_mode; }
-    //@-others
 };
-//@+node:gcross.20110511190907.3776: *3* ProgramOptions
 class ProgramOptions
   : public HelpOptions
   , public InputOptions
@@ -192,7 +173,6 @@ class ProgramOptions
 
     operator opts::options_description&() { return options; }
 };
-//@+node:gcross.20110220141808.2719: ** main
 int main(int argc, char** argv) {
     ProgramOptions options;
 
@@ -270,5 +250,3 @@ int main(int argc, char** argv) {
 
     return 0;
 }
-//@-others
-//@-leo

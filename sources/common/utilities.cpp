@@ -1,16 +1,8 @@
-//@+leo-ver=5-thin
-//@+node:gcross.20110125202132.2160: * @file utilities.cpp
-//@@language cplusplus
-//@+<< Documentation >>
-//@+node:gcross.20110429225820.2527: ** << Documentation >>
 /*!
 \file utilities.cpp
 \brief Utility classes and functions
 */
-//@-<< Documentation >>
 
-//@+<< Includes >>
-//@+node:gcross.20110125202132.2161: ** << Includes >>
 #include <boost/range/numeric.hpp>
 #include <boost/range/irange.hpp>
 #include <numeric>
@@ -18,28 +10,20 @@
 
 #include "nutcracker/operators.hpp"
 #include "nutcracker/utilities.hpp"
-//@-<< Includes >>
 
 namespace Nutcracker {
 
-//@+<< Usings >>
-//@+node:gcross.20110125202132.2162: ** << Usings >>
 using boost::accumulate;
 using boost::irange;
 
 using std::ceil;
 using std::make_pair;
 using std::multiplies;
-//@-<< Usings >>
 
-//@+others
-//@+node:gcross.20110217175626.1937: ** Functions
-//@+node:gcross.20110219101843.1939: *3* choose
 unsigned long long choose(unsigned int const n, unsigned int const k) {
     assert(k <= n);
     return accumulate(irange((n-k)+1,n+1),1,multiplies<unsigned long long>()) / accumulate(irange(1u,k+1),1,multiplies<unsigned long long>());
 }
-//@+node:gcross.20110217175626.1936: *3* computeBandwidthDimensionSequence
 vector<unsigned int> computeBandwidthDimensionSequence(
     unsigned int const requested_bandwidth_dimension
    ,vector<unsigned int> const& physical_dimensions
@@ -96,12 +80,10 @@ vector<unsigned int> computeBandwidthDimensionSequence(
 
     return boost::move(forward_bandwidth_dimensions);
 }
-//@+node:gcross.20110511190907.3644: *3* computeDigitsOfPrecision
 unsigned int computeDigitsOfPrecision(double const tolerance) {
     double const estimated_precision = ceil(-log10(tolerance));
     return estimated_precision > 0 ? (unsigned int)estimated_precision : 1;
 }
-//@+node:gcross.20110817110920.2488: *3* identityMatrix
 MatrixPtr identityMatrix(unsigned int const n) {
     Matrix* I = new Matrix(n,n,c(0,0));
     BOOST_FOREACH(unsigned int const i, irange(0u,n)) {
@@ -109,7 +91,6 @@ MatrixPtr identityMatrix(unsigned int const n) {
     }
     return MatrixPtr(I);
 }
-//@+node:gcross.20110815001337.2453: ** Values
 namespace Pauli {
     MatrixConstPtr const
          I = identityMatrix(2)
@@ -131,7 +112,5 @@ namespace Qubit {
         ,Down = basisVector(2,1)
         ;
 }
-//@-others
 
 }
-//@-leo

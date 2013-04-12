@@ -1,8 +1,3 @@
-//@+leo-ver=5-thin
-//@+node:gcross.20110204201608.1725: * @file tensors.cpp
-//@@language cplusplus
-//@+<< Includes >>
-//@+node:gcross.20110204201608.1726: ** << Includes >>
 #include <algorithm>
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/archive/text_oarchive.hpp>
@@ -28,18 +23,11 @@ using std::equal;
 using std::istringstream;
 using std::ostringstream;
 using std::stringstream;
-//@-<< Includes >>
 
-//@+others
-//@+node:gcross.20110204201608.1727: ** Tests
 TEST_SUITE(Tensors) {
 
-//@+others
-//@+node:gcross.20110204201608.1751: *3* ExpectationBoundary
 TEST_SUITE(ExpectationBoundary) {
 
-//@+others
-//@+node:gcross.20110204201608.1752: *4* move assignable
 TEST_CASE(move_assignable) {
     RNG random;
 
@@ -74,7 +62,6 @@ TEST_CASE(move_assignable) {
         ASSERT_EQ(state_dimension,new_boundary.stateDimension(as_dimension));
     }
 }
-//@+node:gcross.20110204201608.1755: *4* move constructable
 TEST_CASE(move_constructable) {
     RNG random;
 
@@ -103,14 +90,10 @@ TEST_CASE(move_constructable) {
         ASSERT_EQ(state_dimension,new_boundary.stateDimension(as_dimension));
     }
 }
-//@-others
 
 }
-//@+node:gcross.20110204201608.1742: *3* StateSite
 TEST_SUITE(StateSite) {
 
-//@+others
-//@+node:gcross.20110204201608.1743: *4* move assignable
 TEST_CASE(move_assignable) {
     RNG random;
 
@@ -151,7 +134,6 @@ TEST_CASE(move_assignable) {
         ASSERT_EQ(right_dimension,new_site.rightDimension(as_dimension));
     }
 }
-//@+node:gcross.20110204201608.1747: *4* move constructable
 TEST_CASE(move_constructable) {
     RNG random;
 
@@ -185,7 +167,6 @@ TEST_CASE(move_constructable) {
         ASSERT_EQ(right_dimension,new_site.rightDimension(as_dimension));
     }
 }
-//@+node:gcross.20110827234144.2626: *4* normalizable
 TEST_CASE(normalizable) {
     RNG random;
 
@@ -204,11 +185,8 @@ TEST_CASE(normalizable) {
         }
     }
 }
-//@+node:gcross.20110829224358.2649: *4* serialization
 TEST_SUITE(serialization) {
 
-//@+others
-//@+node:gcross.20110829224358.2653: *5* data
 TEST_CASE(data) {
     RNG random;
 
@@ -238,7 +216,6 @@ TEST_CASE(data) {
         checkSiteTensorsEqual(state_site_tensor_1,state_site_tensor_2);
     }
 }
-//@+node:gcross.20110829224358.2664: *5* normalization
 struct NormalizationBuffer {
     string data;
     template<typename Side> NormalizationBuffer(Side* _) {
@@ -318,17 +295,12 @@ TEST_CASE(normalization) {
         FAIL("A right-normalized state site accepted an unnormalized tensor!");
     } catch (WrongTensorNormalizationException const& _) {}
 }
-//@-others
 
 }
-//@-others
 
 }
-//@+node:gcross.20110204201608.1733: *3* OperatorSite
 TEST_SUITE(OperatorSite) {
 
-//@+others
-//@+node:gcross.20110204201608.1736: *4* move assignable
 TEST_CASE(move_assignable) {
     RNG random;
 
@@ -376,7 +348,6 @@ TEST_CASE(move_assignable) {
         ASSERT_EQ(right_dimension,new_site.rightDimension(as_dimension));
     }
 }
-//@+node:gcross.20110204201608.1734: *4* move constructable
 TEST_CASE(move_constructable) {
     RNG random;
 
@@ -416,7 +387,6 @@ TEST_CASE(move_constructable) {
         ASSERT_EQ(right_dimension,new_site.rightDimension(as_dimension));
     }
 }
-//@+node:gcross.20110204201608.1737: *4* random generator
 TEST_CASE(random_generator) {
     RNG random;
 
@@ -432,7 +402,6 @@ TEST_CASE(random_generator) {
         ASSERT_TRUE(operator_site_2.valid());
     }
 }
-//@+node:gcross.20110829224358.2670: *4* serialization
 TEST_CASE(encode_then_decode) {
     RNG random;
 
@@ -448,14 +417,10 @@ TEST_CASE(encode_then_decode) {
         checkOperatorSitesEqual(operator_site_tensor_1,operator_site_tensor_2);
     }
 }
-//@-others
 
 }
-//@+node:gcross.20110204201608.1759: *3* OverlapBoundary
 TEST_SUITE(OverlapBoundary) {
 
-//@+others
-//@+node:gcross.20110204201608.1760: *4* move assignable
 TEST_CASE(move_assignable) {
     RNG random;
 
@@ -490,7 +455,6 @@ TEST_CASE(move_assignable) {
         ASSERT_EQ(state_dimension,new_boundary.stateDimension(as_dimension));
     }
 }
-//@+node:gcross.20110204201608.1761: *4* move constructable
 TEST_CASE(move_constructable) {
     RNG random;
 
@@ -519,14 +483,10 @@ TEST_CASE(move_constructable) {
         ASSERT_EQ(state_dimension,new_boundary.stateDimension(as_dimension));
     }
 }
-//@-others
 
 }
-//@+node:gcross.20110204201608.2062: *3* OverlapSite
 TEST_SUITE(OverlapSite) {
 
-//@+others
-//@+node:gcross.20110204201608.2063: *4* move assignable
 TEST_CASE(move_assignable) {
     RNG random;
 
@@ -567,7 +527,6 @@ TEST_CASE(move_assignable) {
         ASSERT_EQ(right_dimension,new_site.rightDimension(as_dimension));
     }
 }
-//@+node:gcross.20110204201608.2064: *4* move constructable
 TEST_CASE(move_constructable) {
     RNG random;
 
@@ -601,12 +560,8 @@ TEST_CASE(move_constructable) {
         ASSERT_EQ(right_dimension,new_site.rightDimension(as_dimension));
     }
 }
-//@-others
-
-}
-//@-others
 
 }
 
-//@-others
-//@-leo
+}
+

@@ -1,11 +1,6 @@
-//@+leo-ver=5-thin
-//@+node:gcross.20110124161335.2009: * @file tensors.hpp
-//@@language cplusplus
 #ifndef NUTCRACKER_TENSORS_HPP
 #define NUTCRACKER_TENSORS_HPP
 
-//@+<< Includes >>
-//@+node:gcross.20110124161335.2010: ** << Includes >>
 #include <boost/concept_check.hpp>
 #include <boost/container/vector.hpp>
 #include <boost/foreach.hpp>
@@ -26,12 +21,9 @@
 #include <stdint.h>
 
 #include "nutcracker/utilities.hpp"
-//@-<< Includes >>
 
 namespace Nutcracker {
 
-//@+<< Usings >>
-//@+node:gcross.20110124161335.2011: ** << Usings >>
 using boost::container::vector;
 using boost::copy;
 using boost::Generator;
@@ -46,11 +38,7 @@ using boost::shared_ptr;
 using std::copy;
 using std::fill_n;
 using std::ostream;
-//@-<< Usings >>
 
-//@+others
-//@+node:gcross.20110214164734.1918: ** Exceptions
-//@+node:gcross.20110215235924.1979: *3* DimensionMismatch
 struct DimensionMismatch : public std::logic_error {
     DimensionMismatch(
           const char* n1
@@ -60,11 +48,9 @@ struct DimensionMismatch : public std::logic_error {
     ) : std::logic_error((format("%1% dimension (%2%) does not match %3% dimension (%4%)") % n1 % d1 % n2 % d2).str())
     { }
 };
-//@+node:gcross.20110202172517.1694: *3* InvalidTensorException
 struct InvalidTensorException : public std::logic_error {
     InvalidTensorException() : std::logic_error("Attempt to dereference an invalid tensor") {}
 };
-//@+node:gcross.20110726215559.2351: *3* NotEnoughDegreesOfFreedomToNormalizeError
 struct NotEnoughDegreesOfFreedomToNormalizeError : public std::logic_error {
     string n1, n2, n3;
     unsigned int d1, d2, d3;
@@ -93,7 +79,6 @@ struct NotEnoughDegreesOfFreedomToNormalizeError : public std::logic_error {
     { }
     virtual ~NotEnoughDegreesOfFreedomToNormalizeError() throw() {}
 };
-//@+node:gcross.20110829224358.2640: *3* WrongTensorNormalizationException
 struct WrongTensorNormalizationException : public std::runtime_error {
     WrongTensorNormalizationException(optional<string> const& expected_normalization, optional<string> const& actual_normalization)
         : std::runtime_error(
@@ -103,17 +88,14 @@ struct WrongTensorNormalizationException : public std::runtime_error {
             ).str())
     {}
 };
-//@+node:gcross.20110215231246.1878: ** Type aliases
 class OperatorSite;
 typedef vector<shared_ptr<OperatorSite const> > Operator;
-//@+node:gcross.20110215231246.1877: ** Dummy/Forward classes
 class Left;
 class Middle;
 class Overlap;
 class Physical;
 class Right;
 class State;
-//@+node:gcross.20110511190907.2252: ** Normalization traits
 template<typename Side> struct normalizationOf {};
 
 template<> struct normalizationOf<Left> {
@@ -131,7 +113,6 @@ template<> struct normalizationOf<Right> {
 template<> struct normalizationOf<None> {
     static optional<string> const value;
 };
-//@+node:gcross.20110127123226.2852: ** Constructor parameters wrappers
 /*! \defgroup ConstructorParameters Constructor parameter wrappers
 
 C++ constructors can only take the name of the class itself, so it is impossible
@@ -156,8 +137,6 @@ data in \c A.
 */
 
 // @{
-//@+<< Base class >>
-//@+node:gcross.20110427160525.2450: *3* << Base class >>
 /*! \brief The base class of the constructor parameter wrappers.
 
 See the \ref ConstructorParameter "Constructor parameter wrappers" section for a list of these and explanation of their purpose.
@@ -176,10 +155,7 @@ public:
     //! Access a field of the wrapped data.
     T* operator->() const { return &data; }
 };
-//@-<< Base class >>
 
-//@+<< DEFINE_TEMPLATIZED_PARAMETER >>
-//@+node:gcross.20110427160525.2451: *3* << DEFINE_TEMPLATIZED_PARAMETER >>
 /*! \brief A convenience macro for constructing constructor parameter wrappers.
 
 For example, the CopyFrom class is defined using the following line of code:
@@ -202,10 +178,7 @@ DEFINE_TEMPLATIZED_PARAMETER(CopyFrom,copyFrom)
     }; \
     template<typename T> ParameterName<T> parameterName(T& data) { return ParameterName<T>(data); } \
     template<typename T> ParameterName<T const> parameterName(T const& data) { return ParameterName<T const>(data); }
-//@-<< DEFINE_TEMPLATIZED_PARAMETER >>
 
-//@+others
-//@+node:gcross.20110427160525.2452: *3* CopyFrom
 /*! \brief A parameter wrapper class that indicates a tensor should be constructed by making a copy of the data in the wrapped tensor.
 
 It is easiest to wrap a tensor in this class by using the convenience functions \p copyFrom.
@@ -230,7 +203,6 @@ DEFINE_TEMPLATIZED_PARAMETER(CopyFrom,copyFrom)
 \fn template<typename T> CopyFrom<T const> copyFrom (T const &data)
 \brief A convenience function for wrapping constant values in CopyFrom.
 */
-//@+node:gcross.20110427160525.2453: *3* DimensionsOf
 /*! \brief A parameter wrapper class that indicates a tensor should be constructed with the same dimensions as the wrapped tensor.
 
 It is easiest to wrap a tensor in this class by using the convenience functions \p dimensionsOf.
@@ -255,7 +227,6 @@ DEFINE_TEMPLATIZED_PARAMETER(DimensionsOf,dimensionsOf)
 \fn template<typename T> DimensionsOf<T const> dimensionsOf (T const &data)
 \brief A convenience function for wrapping constant values in DimensionsOf.
 */
-//@+node:gcross.20110427160525.2457: *3* FillWithGenerator
 /*! \brief A parameter wrapper class that indicates a tensor should be constructed using data from a generator.
 
 It is easiest to wrap a tensor in this class by using the convenience functions \p fillWithGenerator.
@@ -280,7 +251,6 @@ DEFINE_TEMPLATIZED_PARAMETER(FillWithGenerator,fillWithGenerator)
 \fn template<typename T> FillWithGenerator<T const> fillWithGenerator (T const &data)
 \brief A convenience function for wrapping constant values in FillWithGenerator.
 */
-//@+node:gcross.20110427160525.2459: *3* FillWithRange
 /*! \brief A parameter wrapper class that indicates a tensor should be constructed using data from a range.
 
 It is easiest to wrap a tensor in this class by using the convenience functions \p fillWithRange.
@@ -305,10 +275,8 @@ DEFINE_TEMPLATIZED_PARAMETER(FillWithRange,fillWithRange)
 \fn template<typename T> FillWithRange<T const> fillWithRange (T const &data)
 \brief A convenience function for wrapping constant values in FillWithRange.
 */
-//@-others
 
 // @}
-//@+node:gcross.20110127123226.2856: ** Dimension wrappers
 template<typename label> class Dimension {
 private:
     BOOST_COPYABLE_AND_MOVABLE(Dimension)
@@ -335,22 +303,14 @@ DEFINE_DIMENSION(Overlap);
 DEFINE_DIMENSION(Physical);
 DEFINE_DIMENSION(Right);
 DEFINE_DIMENSION(State);
-//@+node:gcross.20110129220506.1661: ** Dummy arguments
-//@+<< Description >>
-//@+node:gcross.20110428160636.2465: *3* << Description >>
 /*! \defgroup DummyArguments Dummy arguments
 
 The classes in these groups are trivial (i.e., empty) structs that exist solely for the purpose of creating a singleton with a unique type in order to distinguish between overloaded methods using argument-dependent lookup.
 
 */
-//@-<< Description >>
 
 //! @{
 
-//@+<< Macros >>
-//@+node:gcross.20110428160636.2466: *3* << Macros >>
-//@+others
-//@+node:gcross.20110428160636.2467: *4* DECLARE_DUMMY_PARAMETER
 //! A convenience macro for defining a dummy parameter class and the singleton object associated with it.
 /*!
 \note The singleton is declared with external linkage, so it needs to actually be defined in one of the source files using the DEFINE_DUMMY_PARAMETER macro.
@@ -361,7 +321,6 @@ The classes in these groups are trivial (i.e., empty) structs that exist solely 
 \see DEFINE_DUMMY_PARAMETER
 */
 #define DECLARE_DUMMY_PARAMETER(Parameter,parameter) struct Parameter {}; extern Parameter const parameter;
-//@+node:gcross.20110428160636.2468: *4* DEFINE_DUMMY_PARAMETER
 //! A convenience macro for defining the singleton associated with a dummy parameter class.
 /*!
 \param Parameter the name of the dummy class
@@ -370,16 +329,11 @@ The classes in these groups are trivial (i.e., empty) structs that exist solely 
 \see DECLARE_DUMMY_PARAMETER
 */
 #define DEFINE_DUMMY_PARAMETER(Parameter,parameter) Parameter const parameter = {};
-//@-others
-//@-<< Macros >>
 
-//@+others
-//@+node:gcross.20110624000550.2626: *3* AsDimension
 //! Dummy class used to specify that the return value should be wrapped inside the appropriate dimension wrapper class.
 /*! Its associated singleton is as_dimension.*/
 DECLARE_DUMMY_PARAMETER(AsDimension,as_dimension)
 //!< The singleton instance of AsDimension.
-//@+node:gcross.20110428160636.2469: *3* MakeTrivial
 //! Dummy class used to specify that a tensor should be constructed as the "trivial" tensor.
 /*!
 Specifically, it indicates that a tensor should be constructed to have an array with all dimensions 1 and initialized to contain the value 1.
@@ -388,21 +342,16 @@ Its associated singleton is make_trivial.
 */
 DECLARE_DUMMY_PARAMETER(MakeTrivial,make_trivial)
 //!< The singleton instance of MakeTrivial.
-//@-others
 
 //! @}
-//@+node:gcross.20110124175241.1520: ** type function Other
 template<typename other_side> struct Other { };
 template<> struct Other<Left> { typedef Right value; };
 template<> struct Other<Right> { typedef Left value; };
-//@+node:gcross.20110215235924.1980: ** Functions
-//@+node:gcross.20110901221152.2655: *3* assertNormalizationIs
 template<typename side> void assertNormalizationIs(boost::optional<std::string> const& observed_normalization) {
     if(normalizationOf<side>::value && normalizationOf<side>::value != observed_normalization) {
         throw WrongTensorNormalizationException(normalizationOf<side>::value,observed_normalization);
     }
 }
-//@+node:gcross.20110215235924.1982: *3* connectDimensions
 inline unsigned int connectDimensions(
       const char* n1
     , unsigned int const d1
@@ -412,7 +361,6 @@ inline unsigned int connectDimensions(
     if(d1 != d2) throw DimensionMismatch(n1,d1,n2,d2);
     return d1;
 }
-//@+node:gcross.20110829224358.2659: *3* serializeNormalization
 template<typename side, typename Archive>
 typename boost::enable_if<typename Archive::is_saving>::type
 serializeNormalization(Archive& ar) {
@@ -426,15 +374,9 @@ serializeNormalization(Archive& ar) {
     ar >> observed_normalization;
     assertNormalizationIs<side>(observed_normalization);
 }
-//@+node:gcross.20110124161335.2012: ** Tensors
 //! \defgroup Tensors Tensors
 //! @{
 
-//@+others
-//@+node:gcross.20110215235924.2007: *3* Base
-//@+node:gcross.20110126150230.1601: *4* BaseTensor
-//@+<< Description >>
-//@+node:gcross.20110428160636.2462: *5* << Description >>
 /*! The base class of all tensors.
 
 All tensors in Nutcracker share in common the trait that they are either invalid or they contain a pointer to a chunk of contiguous \c complex<double> data of known size.  This base class implements some natural functionality that follows from this trait (such as the ability to query the size of the data, or to get a pointer to it) that is shared amongst all of the tensors classes.
@@ -453,14 +395,10 @@ to indicate that the result of \c f should be \a moved into \c a.
 
 Note that the interface of \c BaseTensor has been designed so that copies will never be made unless you explicitly ask for them, so if you fail to use the correct syntax to move the data between objects then you will get a compiler error rather than having a copy be silently made.
 */
-//@-<< Description >>
 class BaseTensor : boost::noncopyable {
-    //@+others
-    //@+node:gcross.20110428160636.2509: *5* [Move support]
     private:
 
     BOOST_MOVABLE_BUT_NOT_COPYABLE(BaseTensor)
-    //@+node:gcross.20110428124342.2459: *5* Assignment
     //! \name Assignment
     //! @{
 
@@ -479,7 +417,6 @@ class BaseTensor : boost::noncopyable {
     }
 
     //! @}
-    //@+node:gcross.20110428124342.2457: *5* Constructors
     //! \name Constructors
     //! @{
 
@@ -553,7 +490,6 @@ class BaseTensor : boost::noncopyable {
         data[0] = c(1,0);
     }
     //! @}
-    //@+node:gcross.20110428124342.2461: *5* Data access
     //! \name Data access
     /*!
     \note
@@ -575,7 +511,6 @@ class BaseTensor : boost::noncopyable {
     complex<double> operator[](unsigned int const index) const { return *(begin()+index); }
 
     //! @}
-    //@+node:gcross.20110428160636.2461: *5* Fields
     private:
 
     //! The size of the stored data array.
@@ -583,7 +518,6 @@ class BaseTensor : boost::noncopyable {
 
     //! The pointer to the stored data array.
     complex<double>* data;
-    //@+node:gcross.20110428124342.2460: *5* Informational
     //! \name Informational
     //! @{
 
@@ -598,7 +532,6 @@ class BaseTensor : boost::noncopyable {
     bool invalid() const { return !valid(); }
 
     //! @}
-    //@+node:gcross.20110428124342.2458: *5* Iteration support
     /*! \name Iteration support
     The following public methods and associated types are provided in order to make
     it easier to apply STL-style generic algorithms to the contained data.
@@ -624,7 +557,6 @@ class BaseTensor : boost::noncopyable {
     complex<double> const* end() const { return begin()+size(); }
 
     //! @}
-    //@+node:gcross.20110428160636.2464: *5* Miscellaneous
     public:
 
     //! If this tensor is valid, the data is destroyed;  otherwise nothing is done.
@@ -634,7 +566,6 @@ class BaseTensor : boost::noncopyable {
 
     //! Returns the Frobenius 2-norm of this tensor --- i.e., the sum of the absolute value squared of all components.
     double norm() const { return dznrm2(data_size,data); }
-    //@+node:gcross.20110829224358.2632: *5* Serialization
     protected:
 
     template<class Archive>
@@ -647,11 +578,7 @@ class BaseTensor : boost::noncopyable {
         }
         ar & boost::serialization::make_array(data,data_size);
     }
-    //@-others
 };
-//@+node:gcross.20110214164734.1934: *4* SiteBaseTensor
-//@+<< Description >>
-//@+node:gcross.20110428160636.2471: *5* << Description >>
 /*! The base class of all tensors.
 
 All tensors in Nutcracker that are associated with sites share in common the trait that they have tensor connected to their left and therefore a \a left dimension, a tensor connected to their right and therfore a \a right dimension, and a tensor connected above and/or below them and therefore one or two indices with the \a physical dimension (that is, the dimension of the qudit) associated with the site.  This base class implements the common functionality following from this shared trait by maintaining fields for these three dimesions.
@@ -661,15 +588,11 @@ See the documentation in BaseTensor for a description of the policy of how data 
 
 \see BaseTensor
 */
-//@-<< Description >>
 
 class SiteBaseTensor : public BaseTensor {
-    //@+others
-    //@+node:gcross.20110428160636.2510: *5* [Move support]
     private:
 
     BOOST_MOVABLE_BUT_NOT_COPYABLE(SiteBaseTensor)
-    //@+node:gcross.20110428160636.2474: *5* Assignment
     //! \name Assignment
     //! @{
 
@@ -692,7 +615,6 @@ class SiteBaseTensor : public BaseTensor {
     }
 
     //! @}
-    //@+node:gcross.20110428160636.2473: *5* Constructors
     //! \name Constructors
     //! @{
 
@@ -778,7 +700,6 @@ class SiteBaseTensor : public BaseTensor {
     { }
 
     //! @}
-    //@+node:gcross.20110428160636.2475: *5* Dimension information
     //! \name Dimension information
     //! @{
 
@@ -800,7 +721,6 @@ class SiteBaseTensor : public BaseTensor {
     RightDimension rightDimension(AsDimension const _) const { return RightDimension(right_dimension); }
 
     //! @}
-    //@+node:gcross.20110428160636.2472: *5* Fields
     private:
 
     //! The physical dimension of the site.
@@ -809,7 +729,6 @@ class SiteBaseTensor : public BaseTensor {
     unsigned int left_dimension;
     //! The right dimension of the site.
     unsigned int right_dimension;
-    //@+node:gcross.20110829224358.2634: *5* Serialization
     protected:
 
     template<class Archive>
@@ -820,12 +739,7 @@ class SiteBaseTensor : public BaseTensor {
         ar & left_dimension;
         ar & right_dimension;
     }
-    //@-others
 };
-//@+node:gcross.20110215235924.2004: *3* Boundary
-//@+node:gcross.20110215235924.2005: *4* ExpectationBoundary
-//@+<< Description >>
-//@+node:gcross.20110428160636.2519: *5* << Description >>
 /*! Boundaries for expectation tensor network chains.
 
 \image html expectation_boundary_tensors.png
@@ -840,14 +754,10 @@ See the documentation in BaseTensor for a description of the policy of how data 
 
 \see StateSiteAny BaseTensor
 */
-//@-<< Description >>
 template<typename side> class ExpectationBoundary : public BaseTensor {
-    //@+others
-    //@+node:gcross.20110428160636.2521: *5* [Move support]
     private:
 
     BOOST_MOVABLE_BUT_NOT_COPYABLE(ExpectationBoundary)
-    //@+node:gcross.20110428160636.2524: *5* Assignment
     //! \name Assignment
     //! @{
 
@@ -871,7 +781,6 @@ template<typename side> class ExpectationBoundary : public BaseTensor {
     }
 
     //! @}
-    //@+node:gcross.20110428160636.2523: *5* Constructors
     //! \name Constructors
     //! @{
 
@@ -941,7 +850,6 @@ template<typename side> class ExpectationBoundary : public BaseTensor {
     { }
 
     //! @}
-    //@+node:gcross.20110428160636.2526: *5* Dimension information
     //! \name Dimension information
     //! @{
 
@@ -958,25 +866,19 @@ template<typename side> class ExpectationBoundary : public BaseTensor {
     StateDimension stateDimension(AsDimension const _) const { return StateDimension(state_dimension); }
 
     //! @}
-    //@+node:gcross.20110428160636.2522: *5* Fields
     private:
 
     //! The operator dimension.
     unsigned int operator_dimension;
     //! The state dimension.
     unsigned int state_dimension;
-    //@+node:gcross.20110428160636.2525: *5* Miscellaneous
     public:
 
     //! The trivial state site tensor with all dimensions one and containing the single value 1.
     static ExpectationBoundary const trivial;
-    //@-others
 };
 
 template<typename side> ExpectationBoundary<side> const ExpectationBoundary<side>::trivial(make_trivial);
-//@+node:gcross.20110215235924.2006: *4* OverlapBoundary
-//@+<< Description >>
-//@+node:gcross.20110428160636.2528: *5* << Description >>
 /*! Boundaries for overlap tensor network chains.
 
 \image html overlap_boundary_tensors.png
@@ -991,14 +893,10 @@ See the documentation in BaseTensor for a description of the policy of how data 
 
 \see StateSiteAny BaseTensor
 */
-//@-<< Description >>
 template<typename side> class OverlapBoundary : public BaseTensor {
-    //@+others
-    //@+node:gcross.20110428160636.2529: *5* [Move support]
     private:
 
     BOOST_MOVABLE_BUT_NOT_COPYABLE(OverlapBoundary)
-    //@+node:gcross.20110428160636.2532: *5* Assignment
     //! \name Assignment
     //! @{
 
@@ -1022,7 +920,6 @@ template<typename side> class OverlapBoundary : public BaseTensor {
     }
 
     //! @}
-    //@+node:gcross.20110428160636.2531: *5* Constructors
     //! \name Constructors
     //! @{
 
@@ -1092,7 +989,6 @@ template<typename side> class OverlapBoundary : public BaseTensor {
     { }
 
     //! @}
-    //@+node:gcross.20110428160636.2533: *5* Dimension information
     //! \name Dimension information
     //! @{
 
@@ -1109,26 +1005,19 @@ template<typename side> class OverlapBoundary : public BaseTensor {
     StateDimension stateDimension(AsDimension const _) const { return StateDimension(state_dimension); }
 
     //! @}
-    //@+node:gcross.20110428160636.2530: *5* Fields
     private:
 
     //! The overlap dimension.
     unsigned int overlap_dimension;
     //! The state dimension.
     unsigned int state_dimension;
-    //@+node:gcross.20110428160636.2534: *5* Miscellaneous
     public:
 
     //! The trivial state site tensor with all dimensions one and containing the single value 1.
     static OverlapBoundary const trivial;
-    //@-others
 };
 
 template<typename side> OverlapBoundary<side> const OverlapBoundary<side>::trivial(make_trivial);
-//@+node:gcross.20110215235924.1926: *3* State
-//@+node:gcross.20110215235924.1927: *4* StateSiteAny
-//@+<< Description >>
-//@+node:gcross.20110428160636.2478: *5* << Description >>
 /*! Base class for state site tensors.
 
 \image html state_site_tensor.png
@@ -1143,18 +1032,11 @@ See the documentation in BaseTensor for a description of the policy of how data 
 
 \see BaseTensor
 */
-//@-<< Description >>
-//@+<< Forward declarations >>
-//@+node:gcross.20110827234144.2624: *5* << Forward declarations >>
 template<typename side> class StateSite;
-//@-<< Forward declarations >>
 class StateSiteAny : public SiteBaseTensor {
-    //@+others
-    //@+node:gcross.20110428160636.2479: *5* [Move support]
     private:
 
     BOOST_MOVABLE_BUT_NOT_COPYABLE(StateSiteAny)
-    //@+node:gcross.20110428160636.2483: *5* Assignment
     //! \name Assignment
     //! @{
 
@@ -1171,7 +1053,6 @@ class StateSiteAny : public SiteBaseTensor {
     }
 
     //! @}
-    //@+node:gcross.20110428160636.2482: *5* Constructors
     //! \name Constructors
     //! @{
 
@@ -1248,7 +1129,6 @@ class StateSiteAny : public SiteBaseTensor {
     StateSiteAny(MakeTrivial const make_trivial) : SiteBaseTensor(make_trivial) {}
 
     //! @}
-    //@+node:gcross.20110726215559.2349: *5* Dimension assertions
     public:
 
     void assertCanBeRightNormalized() const {
@@ -1275,7 +1155,6 @@ class StateSiteAny : public SiteBaseTensor {
         assertCanBeLeftNormalized();
         assertCanBeRightNormalized();
     }
-    //@+node:gcross.20110510004855.3255: *5* Dimension information
     //! \name Dimension information
     //! @{
 
@@ -1292,9 +1171,7 @@ class StateSiteAny : public SiteBaseTensor {
     }
 
     //! @}
-    //@+node:gcross.20110827234144.2620: *5* Normalization
     StateSite<Middle> normalize() const;
-    //@+node:gcross.20110428160636.2484: *5* Observation transition matrices
     //! \name Observation transition matrices
     //! @{
 
@@ -1317,11 +1194,7 @@ class StateSiteAny : public SiteBaseTensor {
     }
 
     //! @}
-    //@-others
 };
-//@+node:gcross.20110215235924.1928: *4* StateSite
-//@+<< Description >>
-//@+node:gcross.20110428160636.2485: *5* << Description >>
 /*! State site tensors.
 
 \image html state_site_tensor.png
@@ -1338,14 +1211,10 @@ See the documentation in BaseTensor for a description of the policy of how data 
 
 \see BaseTensor
 */
-//@-<< Description >>
 template<typename side> class StateSite : public StateSiteAny {
-    //@+others
-    //@+node:gcross.20110428160636.2486: *5* [Move support]
     private:
 
     BOOST_MOVABLE_BUT_NOT_COPYABLE(StateSite)
-    //@+node:gcross.20110428160636.2489: *5* Assignment
     //! \name Assignment
     //! @{
 
@@ -1365,7 +1234,6 @@ template<typename side> class StateSite : public StateSiteAny {
     }
 
     //! @}
-    //@+node:gcross.20110428160636.2487: *5* Constructors
     //! \name Constructors
     //! @{
 
@@ -1439,7 +1307,6 @@ template<typename side> class StateSite : public StateSiteAny {
     StateSite(MakeTrivial const make_trivial) : StateSiteAny(make_trivial) {}
 
     //! @}
-    //@+node:gcross.20110428160636.2488: *5* Miscellaneous
     public:
 
     //! Returns the Frobenius 2-norm of this tensor --- i.e., the sum of the absolute value squared of all components.
@@ -1447,7 +1314,6 @@ template<typename side> class StateSite : public StateSiteAny {
 
     //! The trivial state site tensor with all dimensions one and containing the single value 1.
     static StateSite const trivial;
-    //@+node:gcross.20110829224358.2638: *5* Serialization
     private:
 
     friend class boost::serialization::access;
@@ -1458,14 +1324,9 @@ template<typename side> class StateSite : public StateSiteAny {
         SiteBaseTensor::serialize(ar,version);
         serializeNormalization<side>(ar);
     }
-    //@-others
 };
 
 template<typename side> StateSite<side> const StateSite<side>::trivial(make_trivial);
-//@+node:gcross.20110216193817.1919: *3* Overlap
-//@+node:gcross.20110216193817.1921: *4* OverlapSiteAny
-//@+<< Description >>
-//@+node:gcross.20110428160636.2491: *5* << Description >>
 /*! Base class for overlap site tensors.
 
 \image html overlap_site_tensor.png
@@ -1480,14 +1341,10 @@ See the documentation in BaseTensor for a description of the policy of how data 
 
 \see StateSiteAny BaseTensor
 */
-//@-<< Description >>
 class OverlapSiteAny : public SiteBaseTensor {
-    //@+others
-    //@+node:gcross.20110428160636.2494: *5* [Move support]
     private:
 
     BOOST_MOVABLE_BUT_NOT_COPYABLE(OverlapSiteAny)
-    //@+node:gcross.20110428160636.2498: *5* Assignment
     //! \name Assignment
     //! @{
 
@@ -1504,7 +1361,6 @@ class OverlapSiteAny : public SiteBaseTensor {
     }
 
     //! @}
-    //@+node:gcross.20110428160636.2497: *5* Constructors
     //! \name Constructors
     //! @{
 
@@ -1581,11 +1437,7 @@ class OverlapSiteAny : public SiteBaseTensor {
     OverlapSiteAny(MakeTrivial const make_trivial) : SiteBaseTensor(make_trivial) {}
 
     //! @}
-    //@-others
 };
-//@+node:gcross.20110215235924.1929: *4* OverlapSite
-//@+<< Description >>
-//@+node:gcross.20110428160636.2493: *5* << Description >>
 /*! Overlap site tensors.
 
 \image html overlap_site_tensor.png
@@ -1602,14 +1454,10 @@ See the documentation in BaseTensor for a description of the policy of how data 
 
 \see StateSite BaseTensor
 */
-//@-<< Description >>
 template<typename side> class OverlapSite : public OverlapSiteAny {
-    //@+others
-    //@+node:gcross.20110428160636.2496: *5* [Move support]
     private:
 
     BOOST_MOVABLE_BUT_NOT_COPYABLE(OverlapSite)
-    //@+node:gcross.20110428160636.2501: *5* Assignment
     //! \name Assignment
     //! @{
 
@@ -1629,7 +1477,6 @@ template<typename side> class OverlapSite : public OverlapSiteAny {
     }
 
     //! @}
-    //@+node:gcross.20110428160636.2500: *5* Constructors
     //! \name Constructors
     //! @{
 
@@ -1703,18 +1550,13 @@ template<typename side> class OverlapSite : public OverlapSiteAny {
     OverlapSite(MakeTrivial const make_trivial) : OverlapSiteAny(make_trivial) {}
 
     //! @}
-    //@+node:gcross.20110428160636.2502: *5* Miscellaneous
     public:
 
     //! The trivial overlap site tensor with all dimensions one and containing the single value 1.
     static OverlapSite const trivial;
-    //@-others
 };
 
 template<typename side> OverlapSite<side> const OverlapSite<side>::trivial(make_trivial);
-//@+node:gcross.20110215235924.1933: *3* OperatorSite
-//@+<< Description >>
-//@+node:gcross.20110428160636.2507: *4* << Description >>
 /*! Operator site tensor.
 
 \image html operator_site_tensor.png
@@ -1729,14 +1571,10 @@ See the documentation in BaseTensor for a description of the policy of how data 
 
 \see BaseTensor
 */
-//@-<< Description >>
 class OperatorSite : public SiteBaseTensor {
-    //@+others
-    //@+node:gcross.20110428160636.2508: *4* [Move support]
     private:
 
     BOOST_MOVABLE_BUT_NOT_COPYABLE(OperatorSite)
-    //@+node:gcross.20110428160636.2514: *4* Assignment
     //! \name Assignment
     //! @{
 
@@ -1760,7 +1598,6 @@ class OperatorSite : public SiteBaseTensor {
     }
 
     //! @}
-    //@+node:gcross.20110428160636.2513: *4* Constructors
     //! \name Constructors
     //! @{
 
@@ -1869,7 +1706,6 @@ class OperatorSite : public SiteBaseTensor {
     }
 
     //! @}
-    //@+node:gcross.20110428160636.2516: *4* Data access
     //! \name Data access
     /*!
     \note
@@ -1886,7 +1722,6 @@ class OperatorSite : public SiteBaseTensor {
 
 
     //! @}
-    //@+node:gcross.20110510004855.3261: *4* Dimension information
     //! \name Dimension information
     //! @{
 
@@ -1912,14 +1747,12 @@ class OperatorSite : public SiteBaseTensor {
     }
 
     //! @}
-    //@+node:gcross.20110428160636.2511: *4* Fields
     private:
 
     //! The number of transition matrices in this tensor.
     unsigned int number_of_matrices;
     //! The pointer to the transition data for this operator.
     uint32_t* index_data;
-    //@+node:gcross.20110428160636.2515: *4* Informational
     //! \name Informational
     //! @{
 
@@ -1929,7 +1762,6 @@ class OperatorSite : public SiteBaseTensor {
     unsigned int numberOfMatrices() const { return number_of_matrices; }
 
     //! @}
-    //@+node:gcross.20110428160636.2517: *4* Miscellaneous
     public:
 
     //! If this tensor is valid, the data is destroyed;  otherwise nothing is done.
@@ -1937,7 +1769,6 @@ class OperatorSite : public SiteBaseTensor {
 
     //! The trivial operator site tensor with all dimensions and the number of matrices to 1, and the only transition matrix equal to the identity.
     static OperatorSite const trivial;
-    //@+node:gcross.20110829224358.2636: *4* Serialization
     private:
 
     friend class boost::serialization::access;
@@ -1953,12 +1784,8 @@ class OperatorSite : public SiteBaseTensor {
         }
         ar & boost::serialization::make_array(index_data,2*number_of_matrices);
     }
-    //@-others
 };
-//@-others
 
-//@+<< Connectors >>
-//@+node:gcross.20110430163445.2577: *3* << Connectors >>
 /*!
 \defgroup TensorConnectors Tensor connectors
 
@@ -1967,8 +1794,6 @@ The tensor connectors provide a set of operator functions that allow one to dete
 
 //! @{
 
-//@+others
-//@+node:gcross.20110430163445.2578: *4* ExpectationBoundary<Left> | OperatorSite
 //! Connects the operator dimension of a left expectation boundary to the left dimension of an operator site.
 inline unsigned int operator|(
       Nutcracker::ExpectationBoundary<Left> const& expectation_boundary
@@ -1981,7 +1806,6 @@ inline unsigned int operator|(
         ,operator_site.leftDimension()
     );
 }
-//@+node:gcross.20110430163445.2579: *4* ExpectationBoundary<Left> | StateSiteAny
 //! Connects the operator dimension of a left expectation boundary to the left dimension of an state site.
 inline unsigned int operator|(
       Nutcracker::ExpectationBoundary<Left> const& expectation_boundary
@@ -1994,7 +1818,6 @@ inline unsigned int operator|(
         ,state_site.leftDimension()
     );
 }
-//@+node:gcross.20110430163445.2580: *4* OperatorSite | ExpectationBoundary<Right>
 //! Connects the right dimension of an operator site to the operator dimension of a right expectation boundary.
 inline unsigned int operator|(
       Nutcracker::OperatorSite const& operator_site
@@ -2007,7 +1830,6 @@ inline unsigned int operator|(
         ,expectation_boundary.operatorDimension()
     );
 }
-//@+node:gcross.20110430163445.2581: *4* OperatorSite | StateSiteAny
 //! Connects the physical dimension of an operator site to the physical dimension of a state site.
 inline unsigned int operator|(
       Nutcracker::OperatorSite const& operator_site
@@ -2020,7 +1842,6 @@ inline unsigned int operator|(
         ,state_site.physicalDimension()
     );
 }
-//@+node:gcross.20110430163445.2582: *4* OverlapBoundary<Left> | OverlapSiteAny
 //! Connects the operator dimension of a left overlap boundary to the left dimension of an overlap site.
 inline unsigned int operator|(
       Nutcracker::OverlapBoundary<Left> const& overlap_boundary
@@ -2033,7 +1854,6 @@ inline unsigned int operator|(
         ,overlap_site.leftDimension()
     );
 }
-//@+node:gcross.20110430163445.2583: *4* OverlapBoundary<Left> | StateSiteAny
 //! Connects the operator dimension of a left overlap boundary to the left dimension of a state site.
 inline unsigned int operator|(
       Nutcracker::OverlapBoundary<Left> const& overlap_boundary
@@ -2046,7 +1866,6 @@ inline unsigned int operator|(
         ,state_site.leftDimension()
     );
 }
-//@+node:gcross.20110430163445.2584: *4* OverlapSite<Middle> | OverlapBoundary<Right>
 //! Connects the right dimension of a middle overlap site to the overlap dimension of a right overlap boundary.
 inline unsigned int operator|(
       Nutcracker::OverlapSite<Middle> const& overlap_site
@@ -2059,7 +1878,6 @@ inline unsigned int operator|(
         ,overlap_boundary.overlapDimension()
     );
 }
-//@+node:gcross.20110430163445.2585: *4* OverlapSite<Right> | OverlapBoundary<Right>
 //! Connects the right dimension of a right overlap site to the overlap dimension of a right overlap boundary.
 inline unsigned int operator|(
       Nutcracker::OverlapSite<Right> const& overlap_site
@@ -2072,7 +1890,6 @@ inline unsigned int operator|(
         ,overlap_boundary.overlapDimension()
     );
 }
-//@+node:gcross.20110430163445.2586: *4* OverlapSiteAny | StateSiteAny
 //! Connects the physical dimension of an overlap site to the physical dimension of a state site.
 inline unsigned int operator|(
       Nutcracker::OverlapSiteAny const& overlap_site
@@ -2085,7 +1902,6 @@ inline unsigned int operator|(
         ,state_site.physicalDimension()
     );
 }
-//@+node:gcross.20110430163445.2587: *4* StateSite<Left> | StateSite<Middle>
 //! Connects the right dimension of a left state site to the left dimension of a middle state site.
 inline unsigned int operator|(
       Nutcracker::StateSite<Left> const& state_site_1
@@ -2098,7 +1914,6 @@ inline unsigned int operator|(
         ,state_site_2.leftDimension()
     );
 }
-//@+node:gcross.20110430163445.2588: *4* StateSite<Middle> | ExpectationBoundary<Right>
 //! Connects the right dimension of a middle state site to the operator dimension of a right expectation boundary.
 inline unsigned int operator|(
       Nutcracker::StateSite<Middle> const& state_site
@@ -2111,7 +1926,6 @@ inline unsigned int operator|(
         ,expectation_boundary.stateDimension()
     );
 }
-//@+node:gcross.20110430163445.2589: *4* StateSite<Middle> | OverlapBoundary<Right>
 //! Connects the right dimension of a middle state site to the operator dimension of a right overlap boundary.
 inline unsigned int operator|(
       Nutcracker::StateSite<Middle> const& state_site
@@ -2124,7 +1938,6 @@ inline unsigned int operator|(
         ,overlap_boundary.stateDimension()
     );
 }
-//@+node:gcross.20110430163445.2590: *4* StateSite<Middle> | StateSite<Right>
 //! Connects the right dimension of a middle state site to the left dimension of a right state site.
 inline unsigned int operator|(
       Nutcracker::StateSite<Middle> const& state_site_1
@@ -2137,7 +1950,6 @@ inline unsigned int operator|(
         ,state_site_2.leftDimension()
     );
 }
-//@+node:gcross.20110430163445.2591: *4* StateSite<Right> | ExpectationBoundary<Right>
 //! Connects the right dimension of a right state site to the operator dimension of a right expectation boundary.
 inline unsigned int operator|(
       Nutcracker::StateSite<Right> const& state_site
@@ -2150,7 +1962,6 @@ inline unsigned int operator|(
         ,expectation_boundary.stateDimension()
     );
 }
-//@+node:gcross.20110430163445.2592: *4* StateSite<Right> | OverlapBoundary<Right>
 //! Connects the right dimension of a right state site to the operator dimension of a right overlap boundary.
 inline unsigned int operator|(
       Nutcracker::StateSite<Right> const& state_site
@@ -2163,13 +1974,10 @@ inline unsigned int operator|(
         ,overlap_boundary.stateDimension()
     );
 }
-//@-others
 
 //! @}
-//@-<< Connectors >>
 
 //! @}
-//@-others
 
 }
  
@@ -2180,4 +1988,3 @@ template<typename T> struct is_noncopyable<boost::container::vector<Nutcracker::
 } }
 
 #endif
-//@-leo

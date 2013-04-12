@@ -1,8 +1,3 @@
-//@+leo-ver=5-thin
-//@+node:gcross.20110827234144.2562: * @file states.cpp
-//@@language cplusplus
-//@+<< Includes >>
-//@+node:gcross.20110826235932.2541: ** << Includes >>
 #include <boost/range/adaptor/indirected.hpp>
 #include <complex>
 #include <illuminate.hpp>
@@ -14,18 +9,11 @@
 using boost::adaptors::indirected;
 
 using std::abs;
-//@-<< Includes >>
 
-//@+others
-//@+node:gcross.20110826235932.2542: ** Tests
 TEST_SUITE(States) {
 
-//@+others
-//@+node:gcross.20110217014932.1935: *3* computeStateOverlap
 TEST_SUITE(computeStateOverlap) {
 
-//@+others
-//@+node:gcross.20110217014932.1937: *4* self-overlap is 1
 TEST_CASE(self_overlap_is_1) {
 
     RNG random;
@@ -40,7 +28,6 @@ TEST_CASE(self_overlap_is_1) {
     }
 
 }
-//@+node:gcross.20110218150430.2598: *4* function is hermitian
 TEST_CASE(function_is_hermitian) {
 
     RNG random;
@@ -58,7 +45,6 @@ TEST_CASE(function_is_hermitian) {
     }
 
 }
-//@+node:gcross.20110218150430.2596: *4* single site orthogonal overlap is zero
 TEST_SUITE(single_site_orthogonal_overlap_is_zero) {
 
     void runTest(unsigned int const physical_dimension) {
@@ -93,17 +79,11 @@ TEST_SUITE(single_site_orthogonal_overlap_is_zero) {
     TEST_CASE(physical_dimension_4) { runTest(4); }
 
 }
-//@-others
 
 }
-//@+node:gcross.20110827234144.2577: *3* constructStateSite
 TEST_SUITE(constructStateSite) {
 
-//@+others
-//@+node:gcross.20110828143807.2637: *4* single site
 TEST_SUITE(single_site) {
-//@+others
-//@+node:gcross.20110827234144.2578: *5* bandwidth dimension 1
 TEST_CASE(bandwidth_dimension_1) {
     RNG random;
 
@@ -122,7 +102,6 @@ TEST_CASE(bandwidth_dimension_1) {
         ASSERT_TRUE(boost::equal(state_site,*vector));
     }
 }
-//@+node:gcross.20110828143807.2639: *5* random left dimension
 TEST_CASE(random_left_dimension) {
     RNG random;
 
@@ -144,7 +123,6 @@ TEST_CASE(random_left_dimension) {
         ASSERT_TRUE(boost::equal(state_site,correct_data));
     }
 }
-//@+node:gcross.20110828143807.2641: *5* random right dimension
 TEST_CASE(random_right_dimension) {
     RNG random;
 
@@ -166,7 +144,6 @@ TEST_CASE(random_right_dimension) {
         ASSERT_TRUE(boost::equal(state_site,correct_data));
     }
 }
-//@+node:gcross.20110828143807.2643: *5* random bandwidth dimensions
 TEST_CASE(random_bandwidth_dimensions) {
     RNG random;
 
@@ -191,7 +168,6 @@ TEST_CASE(random_bandwidth_dimensions) {
         ASSERT_TRUE(boost::equal(state_site,correct_data));
     }
 }
-//@+node:gcross.20110828143807.2645: *5* random all dimensions
 TEST_CASE(random_all_dimensions) {
     RNG random;
 
@@ -219,9 +195,7 @@ TEST_CASE(random_all_dimensions) {
         ASSERT_TRUE(boost::equal(state_site,correct_data));
     }
 }
-//@-others
 }
-//@+node:gcross.20110827234144.2585: *4* two trivial sites
 TEST_CASE(two_trivial_sites) {
     RNG random;
 
@@ -259,11 +233,8 @@ TEST_CASE(two_trivial_sites) {
         ASSERT_NEAR_REL(inner_product,state_vector[0],1e-15);
     }
 }
-//@+node:gcross.20110827234144.2589: *4* W state
 TEST_SUITE(W_state) {
 
-//@+others
-//@+node:gcross.20110827234144.2590: *5* two sites
 TEST_CASE(two_sites) {
     StateSite<None>
          state_site_1 = constructStateSite
@@ -286,7 +257,6 @@ TEST_CASE(two_sites) {
     complex<double> correct_state_vector[] = {0,1,-1,0};
     ASSERT_TRUE(boost::equal(correct_state_vector,actual_state_vector));
 }
-//@+node:gcross.20110827234144.2591: *5* three sites
 TEST_CASE(three_sites) {
     StateSite<None>
          state_site_1 = constructStateSite
@@ -327,10 +297,8 @@ TEST_CASE(three_sites) {
     ;
     ASSERT_TRUE(boost::equal(correct_state_vector,actual_state_vector));
 }
-//@-others
 
 }
-//@+node:gcross.20110828143807.2636: *4* random site
 TEST_CASE(random_site) {
     RNG random;
 
@@ -373,10 +341,8 @@ TEST_CASE(random_site) {
         ASSERT_TRUE(boost::equal(state_site_1,state_site_2));
     }
 }
-//@-others
 
 }
-//@+node:gcross.20110828142008.2597: *3* normalization
 TEST_CASE(normalization) {
     RNG random;
 
@@ -385,10 +351,7 @@ TEST_CASE(normalization) {
         ASSERT_NEAR_ABS_VAL(computeStateOverlap(state,state),c(1,0),1e-13);
     }
 }
-//@+node:gcross.20110828205143.2612: *3* range constructor
 TEST_SUITE(range_constructor) {
-//@+others
-//@+node:gcross.20110828142008.2596: *4* correct on self
 TEST_CASE(correct_on_self) {
     RNG random;
 
@@ -409,7 +372,6 @@ TEST_CASE(correct_on_self) {
         }
     }
 }
-//@+node:gcross.20110828205143.2613: *4* correct on random
 TEST_CASE(correct_on_random) {
     RNG random;
 
@@ -431,10 +393,6 @@ TEST_CASE(correct_on_random) {
         ASSERT_NEAR_ABS_VAL(computeStateOverlap(state,sites)/sqrt(computeStateOverlap(sites,sites)),c(1,0),1e-13);
     }
 }
-//@-others
 }
-//@-others
 
 }
-//@-others
-//@-leo

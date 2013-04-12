@@ -1,26 +1,13 @@
-//@+leo-ver=5-thin
-//@+node:gcross.20110511190907.3708: * @file configuration.cpp
-//@@language cplusplus
-//@+<< Includes >>
-//@+node:gcross.20110511190907.3711: ** << Includes >>
 #include <boost/bind.hpp>
 
 #include "nutcracker/configuration.hpp"
-//@-<< Includes >>
 
 namespace Nutcracker {
 
-//@+<< Usings >>
-//@+node:gcross.20110511190907.3712: ** << Usings >>
 using boost::bind;
 using boost::program_options::bool_switch;
 using boost::program_options::value;
-//@-<< Usings >>
 
-//@+others
-//@+node:gcross.20110511190907.3713: ** Classes
-//@+node:gcross.20110511190907.3714: *3* InputOptions
-//@+node:gcross.20110511190907.3715: *4* Constructors
 InputOptions::InputOptions()
   : Options("Input options")
 {
@@ -50,7 +37,6 @@ InputOptions::InputOptions()
 )
     ;
 }
-//@+node:gcross.20110511190907.3723: *4* Fields
 void InputOptions::setInputFilepath(string const& input_filepath) { maybe_input_filepath = input_filepath; }
 void InputOptions::setInputFormat(string const& input_format) { maybe_input_format = input_format; }
 void InputOptions::setInputLocation(string const& input_location) { maybe_input_location = input_location; }
@@ -58,7 +44,6 @@ void InputOptions::setInputLocation(string const& input_location) { maybe_input_
 optional<string> const& InputOptions::getInputMaybeFilepath() const { return maybe_input_filepath; }
 optional<string> const& InputOptions::getInputMaybeFormat() const { return maybe_input_format; }
 optional<string> const& InputOptions::getInputMaybeLocation() const { return maybe_input_location; }
-//@+node:gcross.20110511190907.3817: *4* Format
 InputFormat const& InputOptions::resolveInputFormat() const {
     return
         resolveAndCheckFormat<InputFormat>(
@@ -71,8 +56,6 @@ InputFormat const& InputOptions::resolveInputFormat() const {
 Operator InputOptions::readOperatorUsingInputFormat(InputFormat const& input_format) const {
     return input_format(getInputMaybeFilepath(),getInputMaybeLocation());
 }
-//@+node:gcross.20110511190907.3733: *3* OutputOptions
-//@+node:gcross.20110511190907.3734: *4* Constructors
 OutputOptions::OutputOptions()
   : Options("Output options")
 {
@@ -114,7 +97,6 @@ OutputOptions::OutputOptions()
         )
     ;
 }
-//@+node:gcross.20110511190907.3735: *4* Fields
 void OutputOptions::setOutputFilepath(string const& output_filepath) { maybe_output_filepath = output_filepath; }
 void OutputOptions::setOutputFormat(string const& output_format) { maybe_output_format = output_format; }
 void OutputOptions::setOutputLocation(string const& output_location) { maybe_output_location = output_location; }
@@ -124,7 +106,6 @@ optional<string> const& OutputOptions::getOutputMaybeFormat() const { return may
 optional<string> const& OutputOptions::getOutputMaybeLocation() const { return maybe_output_location; }
 bool OutputOptions::getOutputStates() const { return output_states; }
 bool OutputOptions::getOutputOverwrite() const { return output_overwrite; }
-//@+node:gcross.20110511190907.3813: *4* Format
 OutputFormat const& OutputOptions::resolveOutputFormat() const {
     OutputFormat const& output_format =
         resolveAndCheckFormat<OutputFormat>(
@@ -149,8 +130,6 @@ auto_ptr<Destructable const> OutputOptions::connectToChainUsingOutputFormat(Outp
             chain
         );
 }
-//@+node:gcross.20110511190907.3751: *3* ToleranceOptions
-//@+node:gcross.20110511190907.3752: *4* Constructors
 ToleranceOptions::ToleranceOptions()
   : Options("Input options")
   , chain_options(Chain::defaults)
@@ -190,7 +169,6 @@ ToleranceOptions::ToleranceOptions()
         )
     ;
 }
-//@+node:gcross.20110511190907.3753: *4* Fields
 double ToleranceOptions::getToleranceSite() const { return chain_options.site_convergence_threshold; }
 double ToleranceOptions::getToleranceSweep() const { return chain_options.sweep_convergence_threshold; }
 double ToleranceOptions::getToleranceChain() const { return chain_options.chain_convergence_threshold;}
@@ -198,7 +176,5 @@ double ToleranceOptions::getToleranceSanity() const { return chain_options.sanit
 unsigned int ToleranceOptions::getToleranceIterations() const { return chain_options.maximum_number_of_iterations; }
 
 ChainOptions ToleranceOptions::getToleranceChainOptions() const { return chain_options; }
-//@-others
 
 }
-//@-leo

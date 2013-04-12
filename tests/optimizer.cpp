@@ -1,8 +1,3 @@
-//@+leo-ver=5-thin
-//@+node:gcross.20110214155808.2016: * @file optimizer.cpp
-//@@language cplusplus
-//@+<< Includes >>
-//@+node:gcross.20110214155808.2017: ** << Includes >>
 #include <boost/assign/list_of.hpp>
 #include <complex>
 #include <illuminate.hpp>
@@ -19,18 +14,11 @@ using boost::assign::list_of;
 using boost::none;
 
 using std::abs;
-//@-<< Includes >>
 
-//@+others
-//@+node:gcross.20110214155808.2018: ** Tests
 TEST_SUITE(Optimizer) {
 
-//@+others
-//@+node:gcross.20110214155808.2045: *3* optimizeStateSite
 TEST_SUITE(optimizeStateSite) {
 
-//@+others
-//@+node:gcross.20110214155808.2046: *4* one site under external field
 TEST_SUITE(one_site_under_external_field) {
 
     void runTests(unsigned int const physical_dimension) {
@@ -87,7 +75,6 @@ TEST_SUITE(one_site_under_external_field) {
     TEST_CASE(physical_dimension_3) { runTests(3); }
     TEST_CASE(physical_dimension_4) { runTests(4); }
 }
-//@+node:gcross.20110518200233.5044: *4* optimizer modes
 TEST_SUITE(optimizer_modes) {
 
     void runTests(
@@ -149,11 +136,7 @@ TEST_SUITE(optimizer_modes) {
         TEST_CASE(positive) { runTests(">m",4,-2,0,-1,4); }
     }
 }
-//@-others
 
 }
-//@-others
 
 }
-//@-others
-//@-leo

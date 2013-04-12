@@ -1,19 +1,11 @@
-//@+leo-ver=5-thin
-//@+node:gcross.20110510004855.2218: * @file flat.hpp
-//@@language cplusplus
-//@+<< Documentation >>
-//@+node:gcross.20110510004855.2220: ** << Documentation >>
 /*!
 \file flat.hpp
 \brief Classes and functions relating to flat representations of states
 */
-//@-<< Documentation >>
 
 #ifndef NUTCRACKER_FLATTENING_HPP
 #define NUTCRACKER_FLATTENING_HPP
 
-//@+<< Includes >>
-//@+node:gcross.20110510004855.2254: ** << Includes >>
 #include <boost/bind.hpp>
 #include <boost/concept_check.hpp>
 #include <boost/numeric/ublas/vector.hpp>
@@ -23,25 +15,16 @@
 
 #include "nutcracker/core.hpp"
 #include "nutcracker/tensors.hpp"
-//@-<< Includes >>
 
 namespace Nutcracker {
 
-//@+<< Usings >>
-//@+node:gcross.20110510004855.2253: ** << Usings >>
 using boost::adaptors::transformed;
 using boost::scoped_array;
 using boost::SinglePassRangeConcept;
-//@-<< Usings >>
 
 //! \defgroup Flat Flat representations
 //! @{
 
-//@+others
-//@+node:gcross.20110510004855.2249: ** Tensors
-//@+node:gcross.20110510004855.2286: *3* class Fragment
-//@+<< Description >>
-//@+node:gcross.20110510004855.2287: *4* << Description >>
 //! An intermediate result produced when constructing a flattened representation of a state.
 /*!
 
@@ -52,14 +35,10 @@ See the documentation in BaseTensor for a description of the policy of how data 
 
 \see BaseTensor
 */
-//@-<< Description >>
 class Fragment : public BaseTensor {
-    //@+others
-    //@+node:gcross.20110510004855.2288: *4* [Move support]
     private:
 
     BOOST_MOVABLE_BUT_NOT_COPYABLE(Fragment)
-    //@+node:gcross.20110510004855.2289: *4* Assignment
     //! \name Assignment
     //! @{
 
@@ -73,7 +52,6 @@ class Fragment : public BaseTensor {
     }
 
     //! @}
-    //@+node:gcross.20110510004855.2290: *4* Constructors
     //! \name Constructors
     //! @{
 
@@ -137,7 +115,6 @@ class Fragment : public BaseTensor {
     { }
 
     //! @}
-    //@+node:gcross.20110510004855.2292: *4* Dimension information
     //! \name Dimension information
     //! @{
 
@@ -155,7 +132,6 @@ class Fragment : public BaseTensor {
 
 
     //! @}
-    //@+node:gcross.20110510004855.2293: *4* Fields
     private:
 
     //! The physical dimension of the site (which corresponds to the state space of the qubits that have been flattened).
@@ -163,7 +139,6 @@ class Fragment : public BaseTensor {
 
     //! The right dimension of this site.
     unsigned int right_dimension;
-    //@+node:gcross.20110510004855.2294: *4* Miscellaneous
     public:
 
     //! Connects this tensor's right dimension of to the left dimension of \c state_site.
@@ -176,11 +151,7 @@ class Fragment : public BaseTensor {
             ,state_site.leftDimension()
         );
     }
-    //@-others
 };
-//@+node:gcross.20110510004855.2236: *3* class StateVectorFragment
-//@+<< Description >>
-//@+node:gcross.20110510004855.2237: *4* << Description >>
 //! An intermediate result of constructing a flat state vector from a matrix product state.
 /*!
 \image html state_vector_fragment_tensor.png
@@ -193,14 +164,10 @@ See the documentation in BaseTensor for a description of the policy of how data 
 
 \see BaseTensor
 */
-//@-<< Description >>
 class StateVectorFragment : public Fragment {
-    //@+others
-    //@+node:gcross.20110510004855.2238: *4* [Move support]
     private:
 
     BOOST_MOVABLE_BUT_NOT_COPYABLE(StateVectorFragment)
-    //@+node:gcross.20110510004855.2239: *4* Assignment
     //! \name Assignment
     //! @{
 
@@ -214,7 +181,6 @@ class StateVectorFragment : public Fragment {
     }
 
     //! @}
-    //@+node:gcross.20110510004855.2240: *4* Constructors
     //! \name Constructors
     //! @{
 
@@ -262,7 +228,6 @@ class StateVectorFragment : public Fragment {
     { }
 
     //! @}
-    //@+node:gcross.20110510004855.2241: *4* Casts
     //! \name Casts
 
     //! @{
@@ -278,23 +243,15 @@ class StateVectorFragment : public Fragment {
     }
 
     //! @}
-    //@+node:gcross.20110510004855.2244: *4* Miscellaneous
     public:
 
     //! The trivial state vector fragment tensor with all dimensions one and containing the single value 1.
     static StateVectorFragment const trivial;
-    //@-others
 };
-//@+node:gcross.20110510004855.2235: ** Functions
-//@+others
-//@+node:gcross.20110510004855.2246: *3* computeStateVector
-//@+<< Forward declaration of extendStateVectorFragment >>
-//@+node:gcross.20110510004855.2268: *4* << Forward declaration of extendStateVectorFragment >>
 StateVectorFragment extendStateVectorFragment(
       StateVectorFragment const& old_fragment
     , StateSiteAny const& state_site
 );
-//@-<< Forward declaration of extendStateVectorFragment >>
 
 //! Computes a flat state vector from a matrx product state represented by a list of state site tensors.
 /*!
@@ -318,7 +275,6 @@ template<typename StateSiteRange> Vector computeStateVector(StateSiteRange const
     }
     return current_fragment;
 }
-//@+node:gcross.20110510004855.2267: *3* computeStateVectorComponent
 //! Computes the value of a single component of a quantum state given the list of observed qudit values
 /*!
 \note If you need the entire state vector then it is more efficient to call computeStateVector().
@@ -370,7 +326,6 @@ template<typename StateSiteRange> complex<double> computeStateVectorComponent(St
 template<typename StateSiteRange> complex<double> computeStateVectorComponent(StateSiteRange const& state_sites, unsigned long long const component) {
     return computeStateVectorComponent(state_sites,flatIndexToTensorIndex(state_sites | transformed(bind(&StateSiteAny::physicalDimension,_1)),component));
 }
-//@+node:gcross.20110510004855.2247: *3* computeStateVectorLength
 //! Computes the number of components in the flat vector representation of the state.
 /*!
 \tparam StateSiteRange the type of the list, which must satisfy the Boost single pass range concept with the value type \c StateSiteAny \c const.
@@ -385,7 +340,6 @@ template<typename StateSiteRange> unsigned long long computeStateVectorLength(St
     }
     return length;
 }
-//@+node:gcross.20110510004855.2255: *3* extendStateVectorFragment
 //! Extends a state vector fragement to include another state site tensor.
 /*!
 \image html extendStateVectorFragment.png
@@ -399,7 +353,6 @@ StateVectorFragment extendStateVectorFragment(
       StateVectorFragment const& old_fragment
     , StateSiteAny const& state_site
 );
-//@+node:gcross.20110510004855.2274: *3* flatIndexToTensorIndex
 //! Converts an integral index of the flat representation of a tensor into the corresponding multi-index of the multi-dimensional representation of a tensor.
 /*!
 \note The conversion assumes that the tensor is stored in row-major order --- that is, an increment in the first entry of the multi index causes the greatest increase in the flat index and an increment in the last entry of the multi-index causes the least increase in the flast index.
@@ -420,7 +373,6 @@ template<typename DimensionRange> vector<unsigned int> flatIndexToTensorIndex(Di
     reverse(tensor_index);
     return boost::move(tensor_index);
 }
-//@+node:gcross.20110510004855.2275: *3* tensorIndexToFlatIndex
 //! Converts a multi-index of the multi-dimensional representation of a tensor into the corresponding integral index of the flat representation of a tensor.
 /*!
 \note The conversion assumes that the tensor is stored in row-major order --- that is, an increment in the first entry of the multi index causes the greatest increase in the flat index and an increment in the last entry of the multi-index causes the least increase in the flast index.
@@ -440,12 +392,9 @@ template<typename DimensionRange> unsigned long long tensorIndexToFlatIndex(Dime
     }
     return flat_index;
 }
-//@-others
-//@-others
 
 //! @}
 
 }
 
 #endif
-//@-leo

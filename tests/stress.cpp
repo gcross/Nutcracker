@@ -1,8 +1,3 @@
-//@+leo-ver=5-thin
-//@+node:gcross.20110902221314.2682: * @file stress.cpp
-//@@language cplusplus
-//@+<< Includes >>
-//@+node:gcross.20110902221314.2684: ** << Includes >>
 #include <boost/local/function.hpp>
 #include <illuminate.hpp>
 
@@ -11,10 +6,7 @@
 #include "test_utils.hpp"
 
 using std::ostringstream;
-//@-<< Includes >>
 
-//@+others
-//@+node:gcross.20110902221314.2691: ** function checkEnergies
 void checkEnergies(
      Chain& chain
     ,vector<double> const& correct_energies
@@ -56,11 +48,8 @@ void checkEnergies(
         }
     }
 }
-//@+node:gcross.20110902221314.2690: ** Stress
 TEST_SUITE(Stress) {
 
-//@+others
-//@+node:gcross.20110902221314.2692: *3* external field
 TEST_SUITE(external_field) {
 
     void runTest(
@@ -88,7 +77,6 @@ TEST_SUITE(external_field) {
     }
 
 }
-//@+node:gcross.20110902221314.2693: *3* transverse Ising model
 TEST_SUITE(transverse_Ising_model) {
 
     void runTest(
@@ -197,8 +185,5 @@ TEST_SUITE(transverse_Ising_model) {
         ); }
     }
 }
-//@-others
 
 }
-//@-others
-//@-leo

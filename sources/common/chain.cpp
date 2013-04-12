@@ -1,8 +1,3 @@
-//@+leo-ver=5-thin
-//@+node:gcross.20110130170743.1674: * @file chain.cpp
-//@@language cplusplus
-//@+<< Includes >>
-//@+node:gcross.20110130170743.1675: ** << Includes >>
 #include <boost/assign.hpp>
 #include <boost/bind.hpp>
 #include <boost/foreach.hpp>
@@ -22,12 +17,9 @@
 #include "nutcracker/core.hpp"
 #include "nutcracker/optimizer.hpp"
 #include "nutcracker/utilities.hpp"
-//@-<< Includes >>
 
 namespace Nutcracker {
 
-//@+<< Usings >>
-//@+node:gcross.20110130170743.1676: ** << Usings >>
 using boost::accumulate;
 using boost::adaptors::transformed;
 using boost::adaptors::reversed;
@@ -37,13 +29,8 @@ using std::abs;
 using std::max;
 using std::min;
 using std::numeric_limits;
-//@-<< Usings >>
 
-//@+others
-//@+node:gcross.20110823190118.2596: ** Values
 ChainOptions const ChainOptions::defaults;
-//@+node:gcross.20110202175920.1714: ** class Chain
-//@+node:gcross.20110202175920.1715: *3* (constructors)
 Chain::Chain(Operator const& operator_sites)
   : ChainOptions()
   , number_of_sites(operator_sites.size())
@@ -69,16 +56,13 @@ Chain::Chain(Operator const& operator_sites, ChainOptions const& options)
 
     reset();
 }
-//@+node:gcross.20110822214054.2525: *3* checkAtFirstSite
 void Chain::checkAtFirstSite() const {
     if(current_site_number != 0u) throw ChainNotAtFirstSiteError(current_site_number);
 }
-//@+node:gcross.20110824002720.2598: *3* clear
 void Chain::clear() {
     projectors.clear();
     reset();
 }
-//@+node:gcross.20110202175920.1720: *3* computeExpectationValueAtSite
 complex<double> Chain::computeExpectationValueAtCurrentSite() const {
     return 
         Nutcracker::computeExpectationValueAtSite(
@@ -88,15 +72,12 @@ complex<double> Chain::computeExpectationValueAtCurrentSite() const {
             ,right_expectation_boundary
         );
 }
-//@+node:gcross.20110219083229.1937: *3* computeProjectorOverlapAtSite
 double Chain::computeProjectorOverlapAtCurrentSite() const {
     return computeOverlapWithProjectors(projector_matrix,state_site);
 }
-//@+node:gcross.20110202175920.1721: *3* computeStateNorm
 double Chain::computeStateNorm() const {
     return state_site.norm();
 }
-//@+node:gcross.20110218083552.1930: *3* constructAndAddProjectorFromState
 void Chain::constructAndAddProjectorFromState() {
     using namespace boost;
     checkAtFirstSite();
@@ -107,7 +88,6 @@ void Chain::constructAndAddProjectorFromState() {
         )
     );
 }
-//@+node:gcross.20110207120702.1784: *3* increaseBandwidthDimension
 void Chain::increaseBandwidthDimension(unsigned int const new_bandwidth_dimension) {
     if(bandwidth_dimension == new_bandwidth_dimension) return;
     assert(bandwidth_dimension < new_bandwidth_dimension);
@@ -154,7 +134,6 @@ void Chain::increaseBandwidthDimension(unsigned int const new_bandwidth_dimensio
 
     resetProjectorMatrix();
 }
-//@+node:gcross.20110215235924.1878: *3* makeCopyOfState
 State Chain::makeCopyOfState() const {
     checkAtFirstSite();
     StateSite<Middle> first_state_site(copyFrom<StateSite<Middle> const>(state_site));
@@ -167,7 +146,6 @@ State Chain::makeCopyOfState() const {
         ,boost::move(rest_state_sites)
     );
 }
-//@+node:gcross.20110218083552.2522: *3* moveTo
 void Chain::moveTo(unsigned int new_site_number) {
     assert(new_site_number < number_of_sites);
     while(current_site_number > new_site_number) {
@@ -177,7 +155,6 @@ void Chain::moveTo(unsigned int new_site_number) {
         move<Right>();
     }
 }
-//@+node:gcross.20110208230325.1790: *3* optimizeChain
 void Chain::optimizeChain() {
     double previous_energy = energy;
     sweepUntilConverged();
@@ -190,7 +167,6 @@ void Chain::optimizeChain() {
     }
     signalChainOptimized();
 }
-//@+node:gcross.20110206130502.1754: *3* optimizeSite
 void Chain::optimizeSite() {
     try {
         OptimizerResult result(
@@ -218,7 +194,6 @@ void Chain::optimizeSite() {
         signalOptimizeSiteFailure(failure);
     }
 }
-//@+node:gcross.20110206130502.1759: *3* performOptimizationSweep
 void Chain::performOptimizationSweep() {
     unsigned int const starting_site = current_site_number;
     optimizeSite();
@@ -236,7 +211,6 @@ void Chain::performOptimizationSweep() {
     }
     signalSweepPerformed();
 }
-//@+node:gcross.20110822214054.2524: *3* removeState
 State Chain::removeState() {
     checkAtFirstSite();
     vector<StateSite<Right> > rest_state_sites;
@@ -246,7 +220,6 @@ State Chain::removeState() {
     right_neighbors.clear();
     return State(boost::move(state_site),boost::move(rest_state_sites));
 }
-//@+node:gcross.20110208233325.1798: *3* reset
 void Chain::reset() {
     bandwidth_dimension =
         min(maximum_bandwidth_dimension
@@ -308,7 +281,6 @@ void Chain::reset() {
 
     signalChainReset();
 }
-//@+node:gcross.20110218114759.1932: *3* resetBoundaries
 void Chain::resetBoundaries() {
     left_expectation_boundary = ExpectationBoundary<Left>(make_trivial);
 
@@ -324,7 +296,6 @@ void Chain::resetBoundaries() {
         right_overlap_boundaries.emplace_back(make_trivial);
     }
 }
-//@+node:gcross.20110218083552.1931: *3* resetProjectorMatrix
 namespace resetProjectorMatrix_IMPLEMENTATION {
     struct FetchOverlapSite {
         typedef OverlapSite<Middle> const& result_type;
@@ -344,7 +315,6 @@ void Chain::resetProjectorMatrix() {
             ,projectors | transformed(FetchOverlapSite(current_site_number))
         );
 }
-//@+node:gcross.20110824002720.2600: *3* solveForEigenvalues
 struct solveForEigenvalues_postSolution {
     Chain& chain;
     vector<double>& solutions;
@@ -366,7 +336,6 @@ vector<double> Chain::solveForEigenvalues(unsigned int number_of_levels) {
     signalChainOptimized.disconnect(solveForEigenvalues_postSolution::group_id);
     return boost::move(eigenvalues);
 }
-//@+node:gcross.20110218083552.3113: *3* solveForMultipleLevels
 void Chain::solveForMultipleLevels(unsigned int number_of_levels) {
     assert(number_of_levels+projectors.size() <= maximum_number_of_levels);
     REPEAT(number_of_levels-1) {
@@ -377,7 +346,6 @@ void Chain::solveForMultipleLevels(unsigned int number_of_levels) {
     }
     optimizeChain();
 }
-//@+node:gcross.20110824002720.2602: *3* solveForMultipleLevelsAndThenClearChain
 struct solveForMultipleLevelsAndThenClearChain_postSolution {
     Chain& chain;
     vector<Solution>& solutions;
@@ -400,7 +368,6 @@ vector<Solution> Chain::solveForMultipleLevelsAndThenClearChain(unsigned int num
     storeState.clear();
     return boost::move(solutions);
 }
-//@+node:gcross.20110208151104.1791: *3* sweepUntilConverged
 void Chain::sweepUntilConverged() {
     double previous_energy = energy;
     performOptimizationSweep();
@@ -410,7 +377,5 @@ void Chain::sweepUntilConverged() {
     }
     signalSweepsConverged();
 }
-//@-others
 
 }
-//@-leo

@@ -1,11 +1,6 @@
-//@+leo-ver=5-thin
-//@+node:gcross.20110130170743.1665: * @file chain.hpp
-//@@language cplusplus
 #ifndef NUTCRACKER_CHAIN_HPP
 #define NUTCRACKER_CHAIN_HPP
 
-//@+<< Includes >>
-//@+node:gcross.20110130170743.1666: ** << Includes >>
 #include <boost/container/vector.hpp>
 #include <boost/iterator/iterator_facade.hpp>
 #include <boost/lambda/lambda.hpp>
@@ -21,12 +16,9 @@
 #include "nutcracker/projectors.hpp"
 #include "nutcracker/states.hpp"
 #include "nutcracker/tensors.hpp"
-//@-<< Includes >>
 
 namespace Nutcracker {
 
-//@+<< Usings >>
-//@+node:gcross.20110130170743.1667: ** << Usings >>
 using boost::adaptors::transformed;
 using boost::function;
 using boost::irange;
@@ -36,11 +28,7 @@ using boost::random_access_traversal_tag;
 using boost::signal;
 
 namespace lambda = boost::lambda;
-//@-<< Usings >>
 
-//@+others
-//@+node:gcross.20110130193548.1684: ** Exceptions
-//@+node:gcross.20110822214054.2527: *3* ChainNotAtFirstSiteError
 struct ChainNotAtFirstSiteError : public std::logic_error {
     unsigned int current_site_number;
     ChainNotAtFirstSiteError(unsigned int current_site_number)
@@ -51,7 +39,6 @@ struct ChainNotAtFirstSiteError : public std::logic_error {
       , current_site_number(current_site_number)
     {}
 };
-//@+node:gcross.20110202200838.1712: *3* InitialChainEnergyNotRealError
 struct InitialChainEnergyNotRealError : public std::runtime_error {
     complex<double> const energy;
     InitialChainEnergyNotRealError(complex<double> const energy)
@@ -62,8 +49,6 @@ struct InitialChainEnergyNotRealError : public std::runtime_error {
       , energy(energy)
     {}
 };
-//@+node:gcross.20110202175920.1701: ** Classes
-//@+node:gcross.20110824002720.2604: *3* Solution
 class Solution {
 private:
     BOOST_MOVABLE_BUT_NOT_COPYABLE(Solution)
@@ -89,7 +74,6 @@ public:
         return *this;
     }
 };
-//@+node:gcross.20110202175920.1703: *3* Neighbor
 template<typename side> struct Neighbor {
 private:
     BOOST_MOVABLE_BUT_NOT_COPYABLE(Neighbor)
@@ -119,7 +103,6 @@ public:
         overlap_boundaries = boost::move(other.overlap_boundaries);
     }
 };
-//@+node:gcross.20110823190118.2578: *3* ChainOptions
 struct ChainOptions {
     unsigned int maximum_number_of_iterations;
     double sanity_check_threshold;
@@ -163,7 +146,6 @@ struct ChainOptions {
 #undef GENERATE_ChainOptions_SETTER
 
 };
-//@+node:gcross.20110202175920.1704: *3* Chain
 class Chain: boost::noncopyable, public ChainOptions {
 public:
     unsigned int const number_of_sites;
@@ -306,8 +288,6 @@ template<> inline vector<Neighbor<Right> >& Chain::neighbors<Right>() { return r
 template<> inline void Chain::moveSiteNumber<Left>() { assert(current_site_number > 0); --current_site_number; }
 template<> inline void Chain::moveSiteNumber<Right>() { assert(current_site_number < number_of_sites-1); ++current_site_number; }
 
-//@+others
-//@+node:gcross.20110207120702.1786: *4* absorb
 template<typename side> void Chain::absorb(
       BOOST_RV_REF(StateSite<side>) state_site
     , unsigned int const site_number
@@ -343,12 +323,10 @@ template<typename side> void Chain::absorb(
     expectationBoundary<side>() = boost::move(new_expectation_boundary);
     overlapBoundaries<side>() = boost::move(new_overlap_boundaries);
 }
-//@+node:gcross.20110903120540.2690: *4* callWithStateSites
 template<typename Callback> void Chain::callWithStateSites(Callback& callback) const {
     assert(current_site_number == 0);
     callback(state_site,right_neighbors | reversed | transformed(boost::bind(&Neighbor<Right>::state_site,_1)));
 }
-//@+node:gcross.20110202175920.1705: *4* move
 template<typename side> void Chain::move() {
     unsigned int const operator_number = current_site_number;
 
@@ -376,7 +354,6 @@ template<typename side> void Chain::move() {
 
     resetProjectorMatrix();
 }
-//@+node:gcross.20110511190907.3683: *4* writeStateTo
 template<typename Outputter> void Chain::writeStateTo(Outputter& out) const {
     assert(current_site_number == 0);
     out << state_site;
@@ -384,10 +361,7 @@ template<typename Outputter> void Chain::writeStateTo(Outputter& out) const {
         out << neighbor.state_site;
     }
 }
-//@-others
-//@-others
 
 }
 
 #endif
-//@-leo

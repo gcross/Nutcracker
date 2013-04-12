@@ -1,8 +1,3 @@
-//@+leo-ver=5-thin
-//@+node:gcross.20110905151655.2845: * @file c-interface.cpp
-//@@language cplusplus
-//@+<< Includes >>
-//@+node:gcross.20110905151655.2847: ** << Includes >>
 #include <boost/container/vector.hpp>
 #include <boost/foreach.hpp>
 #include <boost/range/algorithm/for_each.hpp>
@@ -19,17 +14,10 @@ using boost::irange;
 using std::abs;
 using std::complex;
 using std::vector;
-//@-<< Includes >>
 
-//@+others
-//@+node:gcross.20110905174854.2837: ** Macros
-//@+node:gcross.20110905174854.2838: *3* REPEAT
 #define REPEAT(n) for(unsigned int _counter##__LINE__ = 0; _counter##__LINE__ < n; ++_counter##__LINE__)
-//@+node:gcross.20110905174854.2839: ** Functions
-//@+node:gcross.20110905174854.2841: *3* c
 //! Convenience function that constructs the complex number x + iy.
 inline complex<double> c(double x, double y) { return complex<double>(x,y); }
-//@+node:gcross.20110906155043.4873: *3* simpleComponents
 template<typename T> boost::container::vector<T const*> simpleComponents(
       unsigned int number_of_sites
     , unsigned int site_number
@@ -40,13 +28,8 @@ template<typename T> boost::container::vector<T const*> simpleComponents(
     components[site_number] = special;
     return boost::move(components);
 }
-//@+node:gcross.20110905151655.2848: ** Tests
 TEST_SUITE(C_Interface) {
-//@+others
-//@+node:gcross.20110905174854.2846: *3* OperatorBuilder
 TEST_SUITE(OperatorBuilder) {
-//@+others
-//@+node:gcross.20110905174854.2847: *4* product
 TEST_CASE(product) {
     Nutcracker_clearError();
     BOOST_FOREACH(unsigned int const number_of_sites, irange(2u,6u)) {
@@ -84,12 +67,8 @@ TEST_CASE(product) {
         }
     }
 }
-//@-others
 }
-//@+node:gcross.20110905174854.2830: *3* StateBuilder
 TEST_SUITE(StateBuilder) {
-//@+others
-//@+node:gcross.20110905174854.2831: *4* orthogonal basis
 TEST_CASE(orthogonal_basis) {
     BOOST_FOREACH(unsigned int const number_of_sites, irange(2u,6u)) {
         vector<NutcrackerState*> states;
@@ -117,9 +96,7 @@ TEST_CASE(orthogonal_basis) {
         }
     }
 }
-//@-others
 }
-//@+node:gcross.20110910181738.4782: *3* Version
 TEST_CASE(Version) {
     unsigned int version_size = Nutcracker_Version_getSize();
     vector<uint32_t> version(version_size);
@@ -128,7 +105,4 @@ TEST_CASE(Version) {
         EXPECT_EQ(version[i],Nutcracker_Version_getComponent(i));
     }
 }
-//@-others
 }
-//@-others
-//@-leo

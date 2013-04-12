@@ -1,16 +1,8 @@
-//@+leo-ver=5-thin
-//@+node:gcross.20110214155808.1884: * @file optimizer.cpp
-//@@language cplusplus
-//@+<< Documentation >>
-//@+node:gcross.20110429225820.2531: ** << Documentation >>
 /*!
 \file optimizer.cpp
 \brief Classes and functions relating to the optimizer
 */
-//@-<< Documentation >>
 
-//@+<< Includes >>
-//@+node:gcross.20110214155808.1885: ** << Includes >>
 #include <boost/algorithm/string/case_conv.hpp>
 #include <boost/lambda/bind.hpp>
 #include <boost/lambda/lambda.hpp>
@@ -22,10 +14,7 @@
 #include "nutcracker/core.hpp"
 #include "nutcracker/optimizer.hpp"
 #include "nutcracker/projectors.hpp"
-//@-<< Includes >>
 
-//@+<< Usings >>
-//@+node:gcross.20110214155808.1886: ** << Usings >>
 namespace lam = boost::lambda;
 
 using boost::adaptors::map_keys;
@@ -35,23 +24,17 @@ using boost::to_lower;
 using std::istream;
 using std::ostream;
 using std::string;
-//@-<< Usings >>
 
 namespace Nutcracker {
 
-//@+others
-//@+node:gcross.20110214155808.1903: ** Exceptions
-//@+node:gcross.20110214155808.1905: *3* OptimizerFailure
 OptimizerFailure::OptimizerFailure(string const& message)
     : std::runtime_error(message)
 { }
-//@+node:gcross.20110214155808.1906: *4* OptimizerGivenGuessInProjectorSpace
 OptimizerGivenGuessInProjectorSpace::OptimizerGivenGuessInProjectorSpace()
     : OptimizerFailure(
         "Optimizer was given a guess within the forbidden orthogonal space"
       )
 { }
-//@+node:gcross.20110214155808.1907: *4* OptimizerGivenTooManyProjectors
 OptimizerGivenTooManyProjectors::OptimizerGivenTooManyProjectors(
       unsigned int const number_of_projectors
     , unsigned int const physical_dimension
@@ -71,7 +54,6 @@ OptimizerGivenTooManyProjectors::OptimizerGivenTooManyProjectors(
   , left_dimension(left_dimension)
   , right_dimension(right_dimension)
 { }
-//@+node:gcross.20110214155808.1908: *4* OptimizerObtainedComplexEigenvalue
 OptimizerObtainedComplexEigenvalue::OptimizerObtainedComplexEigenvalue(
        complex<double> const eigenvalue
 ) : OptimizerFailure(
@@ -81,7 +63,6 @@ OptimizerObtainedComplexEigenvalue::OptimizerObtainedComplexEigenvalue(
     )
   , eigenvalue(eigenvalue)
 { }
-//@+node:gcross.20110214155808.1909: *4* OptimizerObtainedEigenvalueDifferentFromExpectationValue
 OptimizerObtainedEigenvalueDifferentFromExpectationValue::OptimizerObtainedEigenvalueDifferentFromExpectationValue(
       complex<double> const eigenvalue
     , complex<double> const expected_value
@@ -94,7 +75,6 @@ OptimizerObtainedEigenvalueDifferentFromExpectationValue::OptimizerObtainedEigen
   , eigenvalue(eigenvalue)
   , expected_value(expected_value)
 { }
-//@+node:gcross.20110214155808.1910: *4* OptimizerObtainedEigenvectorInProjectorSpace
 OptimizerObtainedEigenvectorInProjectorSpace::OptimizerObtainedEigenvectorInProjectorSpace(
        double const overlap
 ) : OptimizerFailure(
@@ -104,7 +84,6 @@ OptimizerObtainedEigenvectorInProjectorSpace::OptimizerObtainedEigenvectorInProj
     )
   , overlap(overlap)
 { }
-//@+node:gcross.20110214155808.1911: *4* OptimizerObtainedRegressiveEigenvalue
 OptimizerObtainedRegressiveEigenvalue::OptimizerObtainedRegressiveEigenvalue(
       double const old_eigenvalue
     , double const new_eigenvalue
@@ -117,7 +96,6 @@ OptimizerObtainedRegressiveEigenvalue::OptimizerObtainedRegressiveEigenvalue(
   , old_eigenvalue(old_eigenvalue)
   , new_eigenvalue(new_eigenvalue)
 { }
-//@+node:gcross.20110214155808.1912: *4* OptimizerObtainedVanishingEigenvector
 OptimizerObtainedVanishingEigenvector::OptimizerObtainedVanishingEigenvector(
        double const norm
 ) : OptimizerFailure(
@@ -127,7 +105,6 @@ OptimizerObtainedVanishingEigenvector::OptimizerObtainedVanishingEigenvector(
     )
   , norm(norm)
 { }
-//@+node:gcross.20110214155808.1913: *4* OptimizerUnableToConverge
 OptimizerUnableToConverge::OptimizerUnableToConverge(
        unsigned int const number_of_iterations
 ) : OptimizerFailure(
@@ -137,7 +114,6 @@ OptimizerUnableToConverge::OptimizerUnableToConverge(
     )
   , number_of_iterations(number_of_iterations)
 { }
-//@+node:gcross.20110214155808.1914: *4* OptimizerUnknownFailure
 OptimizerUnknownFailure::OptimizerUnknownFailure(
        int const error_code
 ) : OptimizerFailure(
@@ -147,14 +123,10 @@ OptimizerUnknownFailure::OptimizerUnknownFailure(
     )
   , error_code(error_code)
 { }
-//@+node:gcross.20110518200233.5040: *3* NoSuchOptimizerModeError
 NoSuchOptimizerModeError::NoSuchOptimizerModeError(string const& name)
   : std::logic_error((format("There is no such optimizer mode '%1%'.") % name).str())
   , name(name)
 {}
-//@+node:gcross.20110518200233.5028: ** Classes
-//@+node:gcross.20110518200233.5030: *3* OptimizerMode
-//@+node:gcross.20110518200233.5033: *4* Constructors
 OptimizerMode::OptimizerMode(
     char const* name
   , char const* which
@@ -166,11 +138,9 @@ OptimizerMode::OptimizerMode(
   , description(description)
   , regression_checker(regression_checker)
 {}
-//@+node:gcross.20110518200233.5034: *4* Getters
 char const* OptimizerMode::getDescription() const { return description; }
 char const* OptimizerMode::getName() const { return name; }
 char const* OptimizerMode::getWhich() const { return which; }
-//@+node:gcross.20110518200233.5041: *4* Miscellaneous
 bool OptimizerMode::checkForRegressionFromTo(double old_value, double new_value, double tolerance) const {
     return regression_checker(old_value,new_value,tolerance);
 }
@@ -178,7 +148,6 @@ bool OptimizerMode::checkForRegressionFromTo(double old_value, double new_value,
 bool OptimizerMode::operator ==(OptimizerMode const& other) const {
     return strcmp(name,other.getName()) == 0;
 }
-//@+node:gcross.20110518200233.5037: *4* Registry
 OptimizerMode::OptimizerModeRegistry const& OptimizerMode::getRegistry() {
     static OptimizerModeRegistry modes;
     if(modes.empty()) {
@@ -201,7 +170,6 @@ OptimizerMode const& OptimizerMode::lookupName(string const& name) {
     if(iter == registry.end()) throw NoSuchOptimizerModeError(name);
     else return iter->second;
 }
-//@+node:gcross.20110518200233.5042: *4* Values
 OptimizerMode
     OptimizerMode::least_value(
         "<v","SR",
@@ -219,8 +187,6 @@ OptimizerMode
         checkForLargestMagnitudeRegressionFromTo
     )
   ;
-//@+node:gcross.20110214155808.1889: ** Functions
-//@+node:gcross.20110518200233.5049: *3* checkFor
 bool checkForLargestMagnitudeRegressionFromTo(double from, double to, double tolerance) {
     return abs(to) < abs(from) && outsideTolerance(abs(from),abs(to),tolerance);
 }
@@ -232,7 +198,6 @@ bool checkForLeastValueRegressionFromTo(double from, double to, double tolerance
 bool checkForGreatestValueRegressionFromTo(double from, double to, double tolerance) {
     return to < from && outsideTolerance(from,to,tolerance);
 }
-//@+node:gcross.20110214155808.1890: *3* optimizeStateSite
 OptimizerResult optimizeStateSite(
       ExpectationBoundary<Left> const& left_boundary
     , StateSite<Middle> const& current_state_site
@@ -348,14 +313,9 @@ OptimizerResult optimizeStateSite(
         ,boost::move(new_state_site)
     );
 }
-//@-others
 
 }
 
-//@+<< Outside namespace >>
-//@+node:gcross.20110518200233.5036: ** << Outside namespace >>
-//@+others
-//@+node:gcross.20110524225044.2437: *3* std
 namespace std {
 
 istream& operator >>(istream& in, Nutcracker::OptimizerMode& mode) {
@@ -371,6 +331,3 @@ ostream& operator <<(ostream& out, Nutcracker::OptimizerMode const& mode) {
 }
 
 }
-//@-others
-//@-<< Outside namespace >>
-//@-leo

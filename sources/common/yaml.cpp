@@ -1,16 +1,8 @@
-//@+leo-ver=5-thin
-//@+node:gcross.20110430163445.2609: * @file yaml.cpp
-//@@language cplusplus
-//@+<< Documentation >>
-//@+node:gcross.20110430163445.2611: ** << Documentation >>
 /*!
 \file yaml.cpp
 \brief YAML serialization functions
 */
-//@-<< Documentation >>
 
-//@+<< Includes >>
-//@+node:gcross.20110430163445.2612: ** << Includes >>
 #include <boost/assign/list_of.hpp>
 #include <boost/bind.hpp>
 #include <boost/filesystem.hpp>
@@ -22,10 +14,7 @@
 #include "nutcracker/chain.hpp"
 #include "nutcracker/io.hpp"
 #include "nutcracker/yaml.hpp"
-//@-<< Includes >>
 
-//@+<< Usings >>
-//@+node:gcross.20110430163445.2613: ** << Usings >>
 using boost::assign::list_of;
 using boost::filesystem::exists;
 using boost::filesystem::path;
@@ -48,23 +37,17 @@ using YAML::Key;
 using YAML::Node;
 using YAML::Parser;
 using YAML::Value;
-//@-<< Usings >>
 
 namespace Nutcracker {
 
-//@+others
-//@+node:gcross.20110726215559.2301: ** Exceptions
-//@+node:gcross.20110726215559.2303: *3* YAMLInputError
 YAMLInputError::YAMLInputError(YAML::Mark const& mark, string const& message)
   : std::runtime_error((format("Error in input line %1% column %2%:\n%3%") % mark.line % mark.column % message).str())
   , mark(mark)
 {}
-//@+node:gcross.20110726215559.2305: *3* NonSquareMatrixYAMLInputError
 NonSquareMatrixYAMLInputError::NonSquareMatrixYAMLInputError(YAML::Mark const& mark, unsigned int const length)
   : YAMLInputError(mark,(format("Matrix data length %1% is not a square.") % length).str())
   , length(length)
 {}
-//@+node:gcross.20110726215559.2311: *3* IndexTooLowYAMLInputError
 IndexTooLowYAMLInputError::IndexTooLowYAMLInputError(YAML::Mark const& mark, string const& name, int const index)
   : YAMLInputError(mark,(format("The '%1%' index is too low. (%2% < 1)") % name % index).str())
   , name(name)
@@ -72,7 +55,6 @@ IndexTooLowYAMLInputError::IndexTooLowYAMLInputError(YAML::Mark const& mark, str
 {}
 
 IndexTooLowYAMLInputError::~IndexTooLowYAMLInputError() throw () {}
-//@+node:gcross.20110726215559.2315: *3* IndexTooHighYAMLInputError
 IndexTooHighYAMLInputError::IndexTooHighYAMLInputError(YAML::Mark const& mark, string const& name, unsigned int const index, unsigned int const dimension)
   : YAMLInputError(mark,(format("The '%1%' index is too high. (%2% > %3%)") % name % index % dimension).str())
   , name(name)
@@ -81,15 +63,11 @@ IndexTooHighYAMLInputError::IndexTooHighYAMLInputError(YAML::Mark const& mark, s
 {}
 
 IndexTooHighYAMLInputError::~IndexTooHighYAMLInputError() throw () {}
-//@+node:gcross.20110726215559.2331: *3* WrongDataLengthYAMLInputError
 WrongDataLengthYAMLInputError::WrongDataLengthYAMLInputError(YAML::Mark const& mark, unsigned int const length, unsigned int const correct_length)
   : YAMLInputError(mark,(format("The length of the data (%1%) does not match the correct length (%2%).") % length % correct_length).str())
   , length(length)
   , correct_length(correct_length)
 {}
-//@+node:gcross.20110511190907.3617: ** Formats
-//@+others
-//@+node:gcross.20110511190907.3637: *3* Input
 static Operator readOperator(optional<string> const& maybe_filename, optional<string> const& maybe_location) {
     Node root;
     if(maybe_filename) {
@@ -116,7 +94,6 @@ static Operator readOperator(optional<string> const& maybe_filename, optional<st
     (*node) >> hamiltonian;
     return boost::move(hamiltonian);
 }
-//@+node:gcross.20110511190907.3638: *3* Output
 struct YAMLOutputter : public Destructable, public trackable {
     Chain const& chain;
     ofstream file;
@@ -177,27 +154,19 @@ auto_ptr<Destructable const> connectToChain(
 ) {
     return auto_ptr<Destructable const>(new YAMLOutputter(maybe_filename,maybe_location,output_states,overwrite,chain));
 }
-//@-others
 
 void installYAMLFormat() {
     static InputFormat yaml_input_format("yaml","YAML format",true,true,list_of("yaml"),readOperator);
     static OutputFormat yaml_output_format("yaml","YAML format",true,false,list_of("yaml"),false,connectToChain);
 }
-//@-others
 
 }
 
-//@+<< Outside namespace >>
-//@+node:gcross.20110524225044.2435: ** << Outside namespace >>
 using namespace Nutcracker;
 using namespace std;
 
 namespace YAML {
 
-//@+others
-//@+node:gcross.20110430163445.2632: *3* I/O Operators
-//@+node:gcross.20110430163445.2647: *4* Operator
-//@+node:gcross.20110430163445.2648: *5* >>
 void operator >> (Node const& node, Operator& operator_sites) {
     Nutcracker::vector<shared_ptr<OperatorSite const> > unique_operator_sites(readUniqueOperatorSites(node["sites"]));
 
@@ -215,7 +184,6 @@ void operator >> (Node const& node, Operator& operator_sites) {
         throw e;
     }
 }
-//@+node:gcross.20110430163445.2649: *5* <<
 Emitter& operator << (Emitter& out, Operator const& operator_sites) {
     Nutcracker::vector<shared_ptr<OperatorSite const> > unique_operator_sites;
     Nutcracker::vector<unsigned int> sequence;
@@ -238,8 +206,6 @@ Emitter& operator << (Emitter& out, Operator const& operator_sites) {
     out << EndMap;
     return out;
 }
-//@+node:gcross.20110430163445.2636: *4* OperatorSiteLink
-//@+node:gcross.20110430163445.2637: *5* >>
 void operator >> (Node const& node, OperatorSiteLink& link) {
     node["from"] >> link.from;
     node["to"] >> link.to;
@@ -256,7 +222,6 @@ void operator >> (Node const& node, OperatorSiteLink& link) {
     }
     link.label = MatrixConstPtr(matrix);
 }
-//@+node:gcross.20110430163445.2638: *5* <<
 Emitter& operator << (Emitter& out, OperatorSiteLink const& link) {
     out << BeginMap;
     out << Key << "from" << Value << link.from;
@@ -270,8 +235,6 @@ Emitter& operator << (Emitter& out, OperatorSiteLink const& link) {
     out << EndMap;
     return out;
 }
-//@+node:gcross.20110430163445.2650: *4* OperatorSite
-//@+node:gcross.20110430163445.2651: *5* >>
 void operator >> (Node const& node, OperatorSite& output_operator_site) {
     unsigned int physical_dimension, left_dimension, right_dimension;
     node["physical dimension"] >> physical_dimension;
@@ -310,7 +273,6 @@ void operator >> (Node const& node, OperatorSite& output_operator_site) {
 
     output_operator_site = boost::move(operator_site);
 }
-//@+node:gcross.20110430163445.2652: *5* <<
 Emitter& operator << (Emitter& out, OperatorSite const& operator_site) {
     out << BeginMap;
     out << Key << "physical dimension" << Value << operator_site.physicalDimension();
@@ -341,9 +303,6 @@ Emitter& operator << (Emitter& out, OperatorSite const& operator_site) {
     out << EndMap;
     return out;
 }
-//@-others
 
 }
 
-//@-<< Outside namespace >>
-//@-leo

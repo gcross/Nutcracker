@@ -1,11 +1,6 @@
-//@+leo-ver=5-thin
-//@+node:gcross.20110213233103.2782: * @file projectors.hpp
-//@@language cplusplus
 #ifndef NUTCRACKER_PROJECTORS_HPP
 #define NUTCRACKER_PROJECTORS_HPP
 
-//@+<< Includes >>
-//@+node:gcross.20110213233103.2783: ** << Includes >>
 #include <boost/concept_check.hpp>
 #include <boost/range/concepts.hpp>
 #include <boost/tuple/tuple.hpp>
@@ -15,23 +10,16 @@
 #include "nutcracker/core.hpp"
 #include "nutcracker/states.hpp"
 #include "nutcracker/tensors.hpp"
-//@-<< Includes >>
 
 namespace Nutcracker {
 
-//@+<< Usings >>
-//@+node:gcross.20110213233103.2784: ** << Usings >>
 using boost::make_tuple;
 using boost::RandomAccessRangeConcept;
 using boost::SinglePassRangeConcept;
 using boost::tuple;
 
 using std::make_pair;
-//@-<< Usings >>
 
-//@+others
-//@+node:gcross.20110214164734.1919: ** Classes
-//@+node:gcross.20110216193817.1917: *3* OverlapSitesFromStateSitesAndNormalizeResult
 class OverlapSitesFromStateSitesAndNormalizeResult {
 private:
     BOOST_MOVABLE_BUT_NOT_COPYABLE(OverlapSitesFromStateSitesAndNormalizeResult)
@@ -60,26 +48,18 @@ public:
       , right_overlap_site_from_right_state_site(right_overlap_site_from_right_state_site)
     {}
 };
-//@+node:gcross.20110220182654.2074: *3* Projector
-//@+<< Description >>
-//@+node:gcross.20110429225820.3839: *4* << Description >>
 //! Vector of projector sites
 /*!
 This class subclasses boost::container::vector, so it implements move semantics but not copy semantics.
 */
-//@-<< Description >>
 class ProjectorSite;
 struct Projector : vector<ProjectorSite> {
-    //@+others
-    //@+node:gcross.20110429225820.3841: *4* [Internal typedefs]
     private:
 
     typedef vector<ProjectorSite> Base;
-    //@+node:gcross.20110429225820.3840: *4* [Move support]
     private:
 
     BOOST_MOVABLE_BUT_NOT_COPYABLE(Projector)
-    //@+node:gcross.20110429225820.3842: *4* Assignment
     public:
 
     //! Moves the contents of \c other into \c this.  (\c other will be empty after this.)
@@ -93,7 +73,6 @@ struct Projector : vector<ProjectorSite> {
     void swap(Projector& other) {
         Base::swap(other);
     }
-    //@+node:gcross.20110429225820.3838: *4* Constructors
     public:
 
     //! Construct an empty projector.
@@ -103,9 +82,7 @@ struct Projector : vector<ProjectorSite> {
     Projector(BOOST_RV_REF(Projector) other)
       : Base(boost::move(static_cast<Base&>(other)))
     {}
-    //@-others
 };
-//@+node:gcross.20110214164734.1921: *3* ProjectorMatrix
 class ProjectorMatrix {
 private:
     BOOST_MOVABLE_BUT_NOT_COPYABLE(ProjectorMatrix)
@@ -215,23 +192,16 @@ public:
         );
     }
 };
-//@+node:gcross.20110220182654.2072: *3* ProjectorSite
-//@+<< Description >>
-//@+node:gcross.20110429225820.2559: *4* << Description >>
 //! A projector site contains a left-, middle-, and right- normalized version of the same overlap site.
 /*!
 This class is meant to be used when one is sweeping left and right through a chain, so that it makes sense to compute all normalizations of the overlap sites at once rather than to recompute tham at each sweep.
 
 \note This class is moveable but not copyable, and uses Boost.Move to implement these semantics.
 */
-//@-<< Description >>
 class ProjectorSite {
-    //@+others
-    //@+node:gcross.20110429225820.2560: *4* [Move support]
     private:
 
     BOOST_MOVABLE_BUT_NOT_COPYABLE(ProjectorSite)
-    //@+node:gcross.20110429225820.2561: *4* Assignment
     //! @name Assignment
     //! @{
 
@@ -252,7 +222,6 @@ class ProjectorSite {
     }
 
     //! @}
-    //@+node:gcross.20110429225820.2562: *4* Constructors
     //! @name Constructors
 
     //! @{
@@ -280,13 +249,11 @@ class ProjectorSite {
     { }
 
     //! @}
-    //@+node:gcross.20110429225820.2563: *4* Fields
     private:
 
     OverlapSite<Left> left;
     OverlapSite<Middle> middle;
     OverlapSite<Right> right;
-    //@+node:gcross.20110429225820.2564: *4* Miscellaneous
     //! @name Overlap site retrieval
 
     //! @{
@@ -301,14 +268,12 @@ class ProjectorSite {
     template<typename side> OverlapSite<side> const& get() const {
         throw BadLabelException("OverlapSite::get",typeid(side));
     }
-    //@-others
 };
 //! \cond
 template<> inline OverlapSite<Left> const& ProjectorSite::get<Left>() const { return left; }
 template<> inline OverlapSite<Middle> const& ProjectorSite::get<Middle>() const { return middle; }
 template<> inline OverlapSite<Right> const& ProjectorSite::get<Right>() const { return right; }
 //! \endcond
-//@+node:gcross.20110213233103.2786: ** Functions
 StateSite<Middle> applyProjectorMatrix(
       ProjectorMatrix const& projector_matrix
     , StateSite<Middle> const& old_state_site
@@ -340,7 +305,6 @@ ProjectorMatrix randomProjectorMatrix(
 );
 
 
-//@+node:gcross.20110216193817.1915: *3* computeProjectorFromStateSites
 template<typename StateSiteRightRange>
 Projector computeProjectorFromStateSites(
       StateSite<Middle> const& first_state_site
@@ -377,7 +341,6 @@ Projector computeProjectorFromStateSites(
     );
     return boost::move(projector);
 }
-//@+node:gcross.20110216193817.1918: *3* computeProjectorOverlap
 template<typename StateSiteRange>
 complex<double> computeProjectorOverlap(
       Projector const& projector
@@ -418,7 +381,6 @@ complex<double> computeProjectorOverlap(
     assert(left_boundary.size() == 1);
     return left_boundary[0];
 }
-//@+node:gcross.20110218083552.1928: *3* formProjectorMatrix
 template<
      typename OverlapBoundaryLeftRange
     ,typename OverlapBoundaryRightRange
@@ -503,9 +465,7 @@ template<
             ,swaps
     );
 }
-//@-others
 
 }
 
 #endif
-//@-leo

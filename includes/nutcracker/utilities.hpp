@@ -1,19 +1,11 @@
-//@+leo-ver=5-thin
-//@+node:gcross.20110125202132.2156: * @file utilities.hpp
-//@@language cplusplus
-//@+<< Documentation >>
-//@+node:gcross.20110429225820.2525: ** << Documentation >>
 /*!
 \file utilities.hpp
 \brief Utility classes and functions
 */
-//@-<< Documentation >>
 
 #ifndef NUTCRACKER_UTILITIES_HPP
 #define NUTCRACKER_UTILITIES_HPP
 
-//@+<< Includes >>
-//@+node:gcross.20110125202132.2157: ** << Includes >>
 #include <boost/concept_check.hpp>
 #include <boost/container/vector.hpp>
 #include <boost/foreach.hpp>
@@ -45,12 +37,9 @@
 #include <stdint.h>
 #include <string>
 #include <typeinfo>
-//@-<< Includes >>
 
 namespace Nutcracker {
 
-//@+<< Usings >>
-//@+node:gcross.20110125202132.2158: ** << Usings >>
 using boost::adaptors::reversed;
 using boost::container::vector;
 using boost::copy;
@@ -73,13 +62,10 @@ using std::multiplies;
 using std::numeric_limits;
 using std::string;
 using std::type_info;
-//@-<< Usings >>
 
 //! \defgroup Utilities Utilities
 //! @{
 
-//@+others
-//@+node:gcross.20110215135633.1864: ** Type aliases
 //! None type tag
 typedef boost::none_t None;
 
@@ -90,17 +76,13 @@ typedef boost::shared_ptr<Matrix const> MatrixConstPtr;
 typedef boost::numeric::ublas::vector<complex<double> > Vector;
 typedef boost::shared_ptr<Vector> VectorPtr;
 typedef boost::shared_ptr<Vector const> VectorConstPtr;
-//@+node:gcross.20110129220506.1652: ** Macros
 //! Repeats a statement or block \c n times.
 #define REPEAT(n) for(unsigned int _counter##__LINE__ = 0; _counter##__LINE__ < n; ++_counter##__LINE__)
-//@+node:gcross.20110202200838.1710: ** Exceptions
-//@+node:gcross.20110202200838.1709: *3* BadProgrammerException
 //! Exception indicating a programmer error.
 struct BadProgrammerException : public std::logic_error {
     //! Constructs this exception with the given message.
     BadProgrammerException(string const& message) : std::logic_error("BAD PROGRAMMER!!! --- " + message) {}
 };
-//@+node:gcross.20110206185121.1786: *3* BadLabelException
 //! Exception thrown when an generic symbol is accessed with an invalid type tag.
 struct BadLabelException : public BadProgrammerException {
     //! Constructs this exception with the given symbol name and type tag.
@@ -112,7 +94,6 @@ struct BadLabelException : public BadProgrammerException {
         ).str())
     {}
 };
-//@+node:gcross.20110217175626.1943: *3* RequestedBandwidthDimensionTooLargeError
 //! This exception is thrown when the user requests a bandwidth dimension that is larger than the maximum possible given the physical dimension sequence.
 struct RequestedBandwidthDimensionTooLargeError : public std::logic_error {
     unsigned int const
@@ -133,10 +114,7 @@ struct RequestedBandwidthDimensionTooLargeError : public std::logic_error {
       , greatest_possible_bandwidth_dimension(greatest_possible_bandwidth_dimension)
     {}
 };
-//@+node:gcross.20110211120708.1791: ** Classes
-//@+node:gcross.20110511190907.3636: *3* Destructable
 struct Destructable { virtual ~Destructable() {} };
-//@+node:gcross.20110827215622.2635: *3* Link
 template<typename Label> struct Link {
     unsigned int from, to;
     Label label;
@@ -163,19 +141,13 @@ template<typename Label> struct Link {
     }
 
 };
-//@+node:gcross.20110211120708.1793: *3* ProductIterator
-//@+<< Description >>
-//@+node:gcross.20110429225820.2541: *4* << Description >>
 //! Iterator class which accumulates the product of the values of a nested iterator.
 /*!
 This class acts like a STL iterator and specifically implements the Boost ForwardTraversal iterator concept, but most of the iterator methods might not be visible in the documentation because they are inherited from \c iterator_facade (which generates the requisite boilerplate code from the methods listed in "Iterator implementation").
 */
-//@-<< Description >>
 template<typename T> class ProductIterator
  : public iterator_facade<ProductIterator<T>,typename iterator_traits<T>::value_type const,forward_traversal_tag>
 {
-    //@+others
-    //@+node:gcross.20110429225820.2542: *4* Constructors
     //! @name Constructor
 
     //! @{
@@ -192,7 +164,6 @@ template<typename T> class ProductIterator
     {}
 
     //! @}
-    //@+node:gcross.20110429225820.2543: *4* Fields
     protected:
 
     //! The nested iterator
@@ -204,7 +175,6 @@ template<typename T> class ProductIterator
     //! If current, the value of the accumulator.
     /*! This field is present so that we can return a reference rather than a value. */
     mutable typename iterator_traits<T>::value_type cached_product;
-    //@+node:gcross.20110429225820.2544: *4* Iterator implementation
     //! @name Iterator implementation
     /*!
     These methods are not meant to be called by users directly, but rather are supplied to provide the implementation details of the iterator so that the \c iterator_facade superclass can construct an iterator facade that makes this class act like a STL iterator.
@@ -232,11 +202,7 @@ template<typename T> class ProductIterator
     }
 
     //! @}
-    //@-others
 };
-//@+node:gcross.20110127123226.2857: ** Functions
-//@+others
-//@+node:gcross.20110429225820.2535: *3* Bandwidth dimensions
 /*!
 \defgroup BandwidthDimensionFunctions Bandwidth dimensions
 
@@ -245,14 +211,11 @@ These functions provide useful functionality for computing bandwidth dimensions.
 
 //! @{
 
-//@+others
-//@+node:gcross.20110429225820.2537: *4* computeBandwidthDimensions
 //! Computes the bandwidth dimension sequence given the requested bandwidth dimension and the sequence of physical dimensions.
 vector<unsigned int> computeBandwidthDimensionSequence(
     unsigned int const requested_bandwidth_dimension
    ,vector<unsigned int> const& physical_dimensions
 );
-//@+node:gcross.20110429225820.2539: *4* maximumBandwidthDimension
 //! Computes the maximum bandwidth dimension attainable given the sequence of physical dimensions.
 template<typename PhysicalDimensionRange> unsigned int maximumBandwidthDimension(
     PhysicalDimensionRange const& physical_dimensions
@@ -276,10 +239,8 @@ template<typename PhysicalDimensionRange> unsigned int maximumBandwidthDimension
         )
     );
 }
-//@-others
 
 //! @}
-//@+node:gcross.20110429225820.2534: *3* BLAS wrappers
 /*!
 \defgroup BLASWrappers BLAS wrappers
 
@@ -288,8 +249,6 @@ These functions provide wrappers around some of the FORTRAN BLAS routines.
 
 //! @{
 
-//@+others
-//@+node:gcross.20110211120708.1789: *4* dznrm2
 //! \cond
 extern "C" double dznrm2_(uint32_t const* n, complex<double>* const x, uint32_t const* incx);
 //! \endcond
@@ -303,7 +262,6 @@ This function is just a convenience wrapper around the BLAS dznrm2 function.
 \return the 2-norm of the vector --- that is, the sum of the absolute-square of the entries
 */
 inline double dznrm2(uint32_t const n, complex<double>* const x, uint32_t const incx=1) { return dznrm2_(&n,x,&incx); }
-//@+node:gcross.20110215135633.1901: *4* zgemm
 //! \cond
 extern "C" void zgemm_(
     char const* transa, char const* transb,
@@ -336,7 +294,6 @@ inline void zgemm(
         c,&ldc
     );        
 }
-//@+node:gcross.20110215135633.1903: *4* zgemv
 //! \cond
 extern "C" void zgemv_(
     char const* trans,
@@ -369,27 +326,19 @@ inline void zgemv(
         y,&incy
     );        
 }
-//@-others
 
 //! @}
-//@+node:gcross.20110805222031.4650: *3* Loop utilities
-//@+node:gcross.20110805222031.4651: *4* getFirstLoopIterator
 template<typename Range> inline typename Range::iterator getFirstLoopIterator(bool forward,Range& range) {
     return forward ? range.begin() : range.end();
 }
-//@+node:gcross.20110805222031.4649: *4* updateLoopIterator
 template<typename Iterator> inline typename std::iterator_traits<Iterator>::reference updateLoopIterator(bool forward,Iterator& iter) {
     return forward ? *(iter++) : *(--iter);
 }
-//@+node:gcross.20110818221240.2517: *4* dereferenceLoopIterator
 template<typename Iterator> inline typename std::iterator_traits<Iterator>::reference dereferenceLoopIterator(bool forward,Iterator iter) {
     return forward ? *iter : *(--iter);
 }
-//@+node:gcross.20110429225820.2540: *3* Miscellaneous
-//@+node:gcross.20110211120708.1786: *4* c
 //! Convenience function that constructs the complex number x + iy.
 inline complex<double> c(double x, double y) { return complex<double>(x,y); }
-//@+node:gcross.20110429225820.2536: *4* choose
 //! Implements the statistical combinatorics function n choose k.
 /*!
 Returns the number of ways to choose \c k elements from \c n elements.
@@ -398,17 +347,13 @@ Returns the number of ways to choose \c k elements from \c n elements.
 \return the number of ways to choose \c k elements from \c n elements.
 */
 unsigned long long choose(unsigned int n, unsigned int k);
-//@+node:gcross.20110511190907.3645: *4* computeDigitsOfPrecision
 unsigned int computeDigitsOfPrecision(double const tolerance);
-//@+node:gcross.20110211120708.1798: *4* makeProductIterator
 //! Convenience function for constructing instance of ProductIterator.
 template<typename T> ProductIterator<T> makeProductIterator(T const x) { return ProductIterator<T>(x); }
-//@+node:gcross.20110219083229.2603: *4* outsideTolerance
 //! Returns whether \c a and \c b do not match within the specified relative \c tolerance.
 template<typename A, typename B, typename C> bool outsideTolerance(A a, B b, C tolerance) {
     return ((abs(a)+abs(b))/2 > tolerance) && (abs(a-b)/(abs(a)+abs(b)+tolerance) > tolerance);
 }
-//@+node:gcross.20110815001337.2441: *4* rangeToString
 template<typename RangeType> std::string rangeToString(RangeType const& range) {
     typedef typename iterator_traits<typename boost::range_iterator<RangeType const>::type>::reference ElementReference;
     std::ostringstream s;
@@ -425,11 +370,8 @@ template<typename RangeType> std::string rangeToString(RangeType const& range) {
     s << ']';
     return s.str();
 }
-//@+node:gcross.20110213233103.3637: *4* rethrow
 //! Throws the argument passed to it; useful as part of a signal handler.
 template<typename Exception> void rethrow(Exception& e) { throw e; }
-//@+node:gcross.20110817110920.2485: *3* Matrices
-//@+node:gcross.20110817110920.2490: *4* diagonalMatrix
 template<typename T> MatrixPtr diagonalMatrix(T const& data) {
     unsigned int const n = data.size();
     Matrix* matrix = new Matrix(n,n,c(0,0));
@@ -441,9 +383,7 @@ template<typename T> MatrixPtr diagonalMatrix(T const& data) {
     }
     return MatrixPtr(matrix);
 }
-//@+node:gcross.20110817110920.2486: *4* identityMatrix
 MatrixPtr identityMatrix(unsigned int const n);
-//@+node:gcross.20110817110920.2492: *4* squareMatrix
 template<typename T> MatrixPtr squareMatrix(T const& data) {
     unsigned int const n = (unsigned int)sqrt(data.size());
     assert(n*n == data.size());
@@ -451,7 +391,6 @@ template<typename T> MatrixPtr squareMatrix(T const& data) {
     copy(data,matrix->data().begin());
     return MatrixPtr(matrix);
 }
-//@+node:gcross.20110429225820.2533: *3* Move assistants
 /*!
 \defgroup MoveAssistantFunctions Move assistants
 
@@ -460,33 +399,25 @@ The functions in this module assist in implementing move semantics.
 
 //! @{
 
-//@+others
-//@+node:gcross.20110211120708.1787: *4* copyAndReset
 //! Returns the value in \c x, and sets \c x to zero.
 template<typename T> inline T copyAndReset(T& x) {
     T const old_x = x;
     x = 0;
     return old_x;
 }
-//@+node:gcross.20110211120708.1788: *4* moveArrayToFrom
 //! Deallocates the array at \c to (if \c to is non-null), copies the pointer from \c from to \c to, and then sets \c from to null.
 template<typename T> inline void moveArrayToFrom(T*& to, T*& from) {
     if(to) delete[] to;
     to = copyAndReset(from);
 }
-//@-others
 
 //! @}
-//@+node:gcross.20110904235122.2872: *3* Vectors
-//@+node:gcross.20110904235122.2873: *4* basisVector
 inline VectorConstPtr basisVector(unsigned int physical_dimension, unsigned int observation) {
     VectorPtr vector = boost::make_shared<Vector>(physical_dimension);
     boost::fill(vector->data(),c(0,0));
     (*vector)[observation] = 1;
     return vector;
 }
-//@-others
-//@+node:gcross.20110815001337.2452: ** Values
 namespace Pauli {
     extern MatrixConstPtr const I, X, Y, Z;
 }
@@ -494,7 +425,6 @@ namespace Pauli {
 namespace Qubit {
     extern VectorConstPtr const Up, Down;
 }
-//@+node:gcross.20110903210625.2704: ** Arithmetic Operators
 inline MatrixConstPtr operator+(MatrixConstPtr const& a, MatrixConstPtr const& b) {
     return boost::make_shared<Matrix>(*a + *b);
 }
@@ -518,17 +448,12 @@ inline VectorConstPtr operator*(complex<double> c, VectorConstPtr const& x) {
 inline VectorConstPtr operator*(VectorConstPtr const& x, complex<double> c) {
     return boost::make_shared<Vector>(c*(*x));
 }
-//@-others
 
 //! @}
 
 }
 
-//@+<< Outside namespace >>
-//@+node:gcross.20110511190907.3784: ** << Outside namespace >>
 template<typename T> inline T& operator>> (T& in, boost::none_t& _) { return in; }
 template<typename T> inline T& operator<< (T& out, const boost::none_t& _) { return out; }
-//@-<< Outside namespace >>
 
 #endif
-//@-leo

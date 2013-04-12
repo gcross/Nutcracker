@@ -1,8 +1,3 @@
-//@+leo-ver=5-thin
-//@+node:gcross.20110213161858.1822: * @file flat.cpp
-//@@language cplusplus
-//@+<< Includes >>
-//@+node:gcross.20110213161858.1823: ** << Includes >>
 #include <boost/assign/list_of.hpp>
 #include <boost/container/vector.hpp>
 #include <boost/numeric/ublas/vector_expression.hpp>
@@ -30,18 +25,11 @@ using boost::irange;
 using boost::numeric::ublas::norm_1;
 
 using std::abs;
-//@-<< Includes >>
 
-//@+others
-//@+node:gcross.20110213161858.1824: ** Tests
 TEST_SUITE(Flat) {
 
-//@+others
-//@+node:gcross.20110213161858.1825: *3* computeStateVector
 TEST_SUITE(computeStateVector) {
 
-//@+others
-//@+node:gcross.20110213161858.1828: *4* single site
 TEST_CASE(single_site) {
     RNG random;
 
@@ -58,7 +46,6 @@ TEST_CASE(single_site) {
         ASSERT_TRUE(equal(state_site,state_vector));
     }
 }
-//@+node:gcross.20110213161858.1830: *4* single site squared
 TEST_CASE(single_site_squared) {
     RNG random;
 
@@ -81,7 +68,6 @@ TEST_CASE(single_site_squared) {
         ASSERT_TRUE(equal(correct_state_vector,actual_state_vector));
     }
 }
-//@+node:gcross.20110213161858.1832: *4* two trivial sites
 TEST_CASE(two_trivial_sites) {
     RNG random;
 
@@ -106,11 +92,8 @@ TEST_CASE(two_trivial_sites) {
         ASSERT_NEAR_REL(inner_product(state_site_1,state_site_2,c(0,0)),state_vector[0],1e-15);
     }
 }
-//@+node:gcross.20110213161858.1835: *4* W state
 TEST_SUITE(W_state) {
 
-//@+others
-//@+node:gcross.20110213161858.1834: *5* two sites
 TEST_CASE(two_sites) {
     StateSite<None>
          state_site_1
@@ -141,7 +124,6 @@ TEST_CASE(two_sites) {
     complex<double> correct_state_vector[] = {0,1,-1,0};
     ASSERT_TRUE(equal(correct_state_vector,actual_state_vector));
 }
-//@+node:gcross.20110213161858.1837: *5* three sites
 TEST_CASE(three_sites) {
     StateSite<None>
          state_site_1
@@ -193,17 +175,12 @@ TEST_CASE(three_sites) {
     ;
     ASSERT_TRUE(equal(correct_state_vector,actual_state_vector));
 }
-//@-others
 
 }
-//@-others
 
 }
-//@+node:gcross.20110215135633.1890: *3* computeStateVectorComponent
 TEST_SUITE(computeStateVectorComponent) {
 
-//@+others
-//@+node:gcross.20110215135633.1891: *4* single site
 TEST_CASE(single_site) {
     RNG random;
 
@@ -219,7 +196,6 @@ TEST_CASE(single_site) {
         }
     }
 }
-//@+node:gcross.20110215135633.1892: *4* single site squared
 TEST_CASE(single_site_squared) {
     RNG random;
 
@@ -238,7 +214,6 @@ TEST_CASE(single_site_squared) {
         }
     }
 }
-//@+node:gcross.20110215135633.1893: *4* two trivial sites
 TEST_CASE(two_trivial_sites) {
     RNG random;
 
@@ -270,11 +245,8 @@ TEST_CASE(two_trivial_sites) {
         }
     }
 }
-//@+node:gcross.20110215135633.1894: *4* W state
 TEST_SUITE(W_state) {
 
-//@+others
-//@+node:gcross.20110215135633.1895: *5* two sites
 TEST_CASE(two_sites) {
     StateSite<None>
          state_site_1
@@ -306,7 +278,6 @@ TEST_CASE(two_sites) {
     ASSERT_EQ(c(-1,0),computeStateVectorComponent(state | indirected,2));
     ASSERT_EQ(c( 0,0),computeStateVectorComponent(state | indirected,3));
 }
-//@+node:gcross.20110215135633.1896: *5* three sites
 TEST_CASE(three_sites) {
     StateSite<None>
          state_site_1
@@ -353,17 +324,12 @@ TEST_CASE(three_sites) {
     ASSERT_EQ(c( 0,0),computeStateVectorComponent(state | indirected,6));
     ASSERT_EQ(c( 0,0),computeStateVectorComponent(state | indirected,7));
 }
-//@-others
 
 }
-//@-others
 
 }
-//@+node:gcross.20110215135633.1871: *3* computeStateVectorLength
 TEST_SUITE(computeStateVectorLength) {
 
-//@+others
-//@+node:gcross.20110215135633.1873: *4* single site
 TEST_CASE(single_site) {
     RNG random;
 
@@ -379,7 +345,6 @@ TEST_CASE(single_site) {
         );
     }
 }
-//@+node:gcross.20110215135633.1877: *4* single site squared
 TEST_CASE(single_site_squared) {
     RNG random;
 
@@ -395,7 +360,6 @@ TEST_CASE(single_site_squared) {
         );
     }
 }
-//@+node:gcross.20110215135633.1879: *4* two trivial sites
 TEST_CASE(two_trivial_sites) {
     RNG random;
 
@@ -421,10 +385,8 @@ TEST_CASE(two_trivial_sites) {
         );
     }
 }
-//@-others
 
 }
-//@+node:gcross.20110215135633.1905: *3* consistent with computeStateVectorComponent
 TEST_CASE(computeStateVector_consistent_with_computeStateVectorComponent) {
     using namespace boost;
 
@@ -441,8 +403,5 @@ TEST_CASE(computeStateVector_consistent_with_computeStateVectorComponent) {
         }
     }
 }
-//@-others
 
 }
-//@-others
-//@-leo

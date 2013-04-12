@@ -1,16 +1,8 @@
-//@+leo-ver=5-thin
-//@+node:gcross.20110511141322.2209: * @file hdf.cpp
-//@@language cplusplus
-//@+<< Documentation >>
-//@+node:gcross.20110511141322.2211: ** << Documentation >>
 /*!
 \file hdf5.hpp
 \brief HDF serialization functions
 */
-//@-<< Documentation >>
 
-//@+<< Includes >>
-//@+node:gcross.20110511141322.2214: ** << Includes >>
 #include <boost/algorithm/string/trim.hpp>
 #include <boost/assign/list_of.hpp>
 #include <boost/bind.hpp>
@@ -29,10 +21,7 @@
 #include "nutcracker/chain.hpp"
 #include "nutcracker/hdf.hpp"
 #include "nutcracker/io.hpp"
-//@-<< Includes >>
 
-//@+<< Usings >>
-//@+node:gcross.20110511141322.2215: ** << Usings >>
 using boost::adaptors::indirected;
 using boost::algorithm::trim_if;
 using boost::assign::list_of;
@@ -61,14 +50,9 @@ using HDF::LocationIterator;
 using HDF::OpenReadOnly;
 using HDF::OpenReadWrite;
 using HDF::rangeOf;
-//@-<< Usings >>
 
 namespace Nutcracker { namespace HDF {
 
-//@+others
-//@+node:gcross.20110511190907.3646: ** Formats
-//@+others
-//@+node:gcross.20110511190907.3650: *3* Input
 static Operator readOperator(optional<string> const& maybe_filename, optional<string> const& maybe_location) {
     assert(maybe_filename);
     File file(maybe_filename->c_str(),OpenReadOnly);
@@ -85,7 +69,6 @@ static Operator readOperator(optional<string> const& maybe_filename, optional<st
     location >> hamiltonian;
     return boost::move(hamiltonian);
 }
-//@+node:gcross.20110511190907.3673: *3* Output
 struct Outputter : public Destructable, public trackable {
     Chain const& chain;
     File file;
@@ -225,33 +208,24 @@ auto_ptr<Destructable const> connectToChain(
 ) {
     return auto_ptr<Destructable const>(new Outputter(maybe_filename,maybe_location,output_states,overwrite,chain));
 }
-//@-others
 
 void installFormat() {
     static InputFormat input_format("hdf","HDF format",false,true,list_of("hdf")("hdf5")("h5"),readOperator);
     static OutputFormat output_format("hdf","HDF format",false,true,list_of("hdf")("hdf5")("h5"),true,connectToChain);
 }
-//@-others
 
 } }
 
-//@+<< Outside namespace >>
-//@+node:gcross.20110524225044.2432: ** << Outside namespace >>
 using namespace HDF;
 using namespace Nutcracker;
 
 namespace HDF {
-//@+others
-//@+node:gcross.20110511190907.2301: *3* I/O Operators
-//@+node:gcross.20110511190907.3531: *4* Operator
-//@+node:gcross.20110511190907.3532: *5* >>
 void operator >> (Location const& location, Operator& operator_sites) {
     operator_sites = constructOperatorFrom(
         readUniqueOperatorSites(GroupArray(location / "sites")),
         Dataset(location / "sequence").readVector<unsigned int>()
     );
 }
-//@+node:gcross.20110511190907.3533: *5* <<
 Container operator << (Location const& location, Operator const& operator_sites) {
     Container group(createAt(location));
 
@@ -270,8 +244,6 @@ Container operator << (Location const& location, Operator const& operator_sites)
 
     return group;
 }
-//@+node:gcross.20110511190907.2302: *4* OperatorSite
-//@+node:gcross.20110511190907.2304: *5* <<
 Group operator<<(Location const& location, OperatorSite const& operator_site_tensor) {
     Group object(createAt(location));
     object["left dimension"] = operator_site_tensor.leftDimension();
@@ -288,7 +260,6 @@ Group operator<<(Location const& location, OperatorSite const& operator_site_ten
     );
     return object;
 }
-//@+node:gcross.20110511190907.2311: *5* >>
 Group operator>>(Location const& location, OperatorSite& operator_site_tensor) {
     Group object(location);
     Dataset const
@@ -318,8 +289,6 @@ Group operator>>(Location const& location, OperatorSite& operator_site_tensor) {
 
     return object;
 }
-//@+node:gcross.20110511190907.3512: *4* State
-//@+node:gcross.20110511190907.3513: *5* <<
 GroupArray operator<<(Location const& location, State const& state) {
     GroupArray group(createAt(location));
     group["size"] = state.numberOfSites();
@@ -327,7 +296,6 @@ GroupArray operator<<(Location const& location, State const& state) {
     iter << state.getFirstSite() << rangeOf(state.getRestSites());
     return group;
 }
-//@+node:gcross.20110511190907.3516: *5* >>
 GroupArray operator>>(Location const& location, State& state) {
     GroupArray group(location);
     unsigned int size = group["size"];
@@ -343,7 +311,4 @@ GroupArray operator>>(Location const& location, State& state) {
 
     return group;
 }
-//@-others
 }
-//@-<< Outside namespace >>
-//@-leo

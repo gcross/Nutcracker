@@ -1,8 +1,3 @@
-//@+leo-ver=5-thin
-//@+node:gcross.20110213161858.1816: * @file states.cpp
-//@@language cplusplus
-//@+<< Includes >>
-//@+node:gcross.20110213161858.1817: ** << Includes >>
 #include <boost/lambda/lambda.hpp>
 #include <boost/range/adaptor/sliced.hpp>
 #include <boost/range/adaptor/strided.hpp>
@@ -12,21 +7,14 @@
 
 #include "nutcracker/core.hpp"
 #include "nutcracker/states.hpp"
-//@-<< Includes >>
 
 namespace Nutcracker {
 
-//@+<< Usings >>
-//@+node:gcross.20110213161858.1818: ** << Usings >>
 using boost::adaptors::sliced;
 using boost::adaptors::strided;
 
 namespace lambda = boost::lambda;
-//@-<< Usings >>
 
-//@+others
-//@+node:gcross.20110214155808.1917: ** Exceptions
-//@+node:gcross.20110214155808.1918: *3* NormalizationError
 NormalizationError::NormalizationError(int info)
     : std::runtime_error(
         (format("Numerical error encountered when normalizing a state site (info = %1%)")
@@ -35,8 +23,6 @@ NormalizationError::NormalizationError(int info)
       )
     , info(info)
 { }
-//@+node:gcross.20110213161858.1820: ** Functions
-//@+node:gcross.20110827234144.2560: *3* constructStateSite
 StateSite<None> constructStateSite(
       PhysicalDimension const physical_dimension
     , LeftDimension const left_dimension
@@ -70,7 +56,6 @@ StateSite<None> constructStateSite(
 
     return boost::move(state_site);
 }
-//@+node:gcross.20110124175241.1649: *3* increaseDimensionBetweenXY
 IncreaseDimensionBetweenResult<Right,Right> increaseDimensionBetweenRightRight(
       unsigned int new_dimension
     , StateSite<Right> const& old_site_1
@@ -82,7 +67,6 @@ IncreaseDimensionBetweenResult<Middle,Right>increaseDimensionBetweenMiddleRight(
     , StateSite<Middle> const& old_site_1
     , StateSite<Right> const& old_site_2
 ) { return Unsafe::increaseDimensionBetween<Middle,Right>(new_dimension,old_site_1,old_site_2); }
-//@+node:gcross.20110124175241.1654: *3* moveSiteCursorLeft
 MoveSiteCursorResult<Left> moveSiteCursorLeft(
       StateSite<Middle> const& old_state_site_2
     , StateSite<Left> const& old_state_site_1
@@ -129,7 +113,6 @@ MoveSiteCursorResult<Left> moveSiteCursorLeft(
 }
 
 }
-//@+node:gcross.20110125120748.1518: *3* moveSiteCursorRight
 MoveSiteCursorResult<Right> moveSiteCursorRight(
       StateSite<Middle> const& old_state_site_1
     , StateSite<Right> const& old_state_site_2
@@ -160,7 +143,6 @@ MoveSiteCursorResult<Right> moveSiteCursorRight(
             ,boost::move(new_state_site_1)
             );
 }
-//@+node:gcross.20110124175241.1645: *3* randomStateSiteMiddle
 StateSite<Middle> randomStateSiteMiddle(
       const PhysicalDimension physical_dimension
     , const LeftDimension left_dimension
@@ -180,7 +162,6 @@ StateSite<Middle> randomStateSiteMiddle(
     );  
     return boost::move(state_site);
 }
-//@+node:gcross.20110124175241.1647: *3* randomStateSiteRight
 StateSite<Right> randomStateSiteRight(
       const PhysicalDimension physical_dimension
     , const LeftDimension left_dimension
@@ -200,7 +181,5 @@ StateSite<Right> randomStateSiteRight(
     );
     return boost::move(state_site);
 }
-//@-others
 
 }
-//@-leo

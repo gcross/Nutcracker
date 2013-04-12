@@ -1,8 +1,3 @@
-//@+leo-ver=5-thin
-//@+node:gcross.20110202223558.1713: * @file test_utils.hpp
-//@@language cplusplus
-//@+<< Includes >>
-//@+node:gcross.20110202223558.1715: ** << Includes >>
 #include <boost/filesystem.hpp>
 #include <boost/function.hpp>
 #include <boost/make_shared.hpp>
@@ -23,11 +18,7 @@ using boost::optional;
 using boost::taus88;
 
 using std::abs;
-//@-<< Includes >>
 
-//@+others
-//@+node:gcross.20110511190907.3823: ** Classes
-//@+node:gcross.20110511190907.3824: *3* TemporaryFilepath
 class TemporaryFilepath {
 private:
     BOOST_MOVABLE_BUT_NOT_COPYABLE(TemporaryFilepath)
@@ -48,7 +39,6 @@ public:
     path const& operator*() const;
     path const* operator->() const;
 };
-//@+node:gcross.20110202223558.1714: *3* RNG
 class RNG {
     friend class ComplexDoubleGenerator;
     friend class IndexGenerator;
@@ -99,17 +89,13 @@ public:
     operator unsigned int() { return randomInteger(); }
     operator complex<double>() { return randomComplexDouble(); }
 };
-//@+node:gcross.20110511190907.2324: ** Functions
 void checkOperatorsEqual(Operator const& operator_1,Operator const& operator_2);
 void checkOperatorsEquivalent(Operator const& operator_1,Operator const& operator_2,RNG& random,unsigned int number_of_samples=20);
 void checkOperatorSitesEqual(OperatorSite const& operator_site_1,OperatorSite const& operator_site_2);
 void checkSiteTensorsEqual(SiteBaseTensor const& site_1,SiteBaseTensor const& site_2);
 void checkStatesEqual(State const& state_1,State const& state_2);
-//@+node:gcross.20110828143807.2635: *3* vectorFromRange
 template<typename Range> VectorPtr vectorFromRange(Range const& range) {
     VectorPtr vector = make_shared<Vector>(range.size());
     copy(range,vector->begin());
     return vector;
 }
-//@-others
-//@-leo

@@ -1,8 +1,3 @@
-//@+leo-ver=5-thin
-//@+node:gcross.20110206092738.1736: * @file test_utils.cpp
-//@@language cplusplus
-//@+<< Includes >>
-//@+node:gcross.20110206092738.1737: ** << Includes >>
 #include <algorithm>
 #include <boost/random/bernoulli_distribution.hpp>
 #include <boost/random/normal_distribution.hpp>
@@ -33,19 +28,13 @@ using boost::variate_generator;
 
 using std::equal;
 using std::max;
-//@-<< Includes >>
 
-//@+others
-//@+node:gcross.20110206185121.1769: ** Typedefs
 typedef boost::numeric::ublas::hermitian_matrix<std::complex<double> > HermitianMatrix;
-//@+node:gcross.20110206092738.1740: ** Generators
-//@+node:gcross.20110206092738.1741: *3* ComplexDoubleGenerator
 struct ComplexDoubleGenerator {
     RNG& rng;
     ComplexDoubleGenerator(RNG& rng) : rng(rng) {}
     complex<double> operator()() { return c(rng.randomDouble(),rng.randomDouble()); }
 };
-//@+node:gcross.20110206092738.1749: *3* HermitianMatrixGenerator
 struct HermitianMatrixGenerator {
     RNG& rng;
     HermitianMatrix m;
@@ -76,7 +65,6 @@ struct HermitianMatrixGenerator {
         return m(i,j++);
     }
 };
-//@+node:gcross.20110206092738.1742: *3* IntegerGenerator
 struct IntegerGenerator {
     uniform_smallint<unsigned int> smallint;
     variate_generator<taus88,uniform_smallint<unsigned int> > randomInteger;
@@ -89,7 +77,6 @@ struct IntegerGenerator {
     {}
     uint32_t operator()() { return (uint32_t)randomInteger(); }
 };
-//@+node:gcross.20110206092738.1744: *3* IndexGeneraor
 struct IndexGenerator {
     bool left;
     IntegerGenerator left_index_generator, right_index_generator;
@@ -106,8 +93,6 @@ struct IndexGenerator {
         return left ? left_index_generator() : right_index_generator();
     }
 };
-//@+node:gcross.20110511190907.3793: ** Functions
-//@+node:gcross.20110511190907.3794: *3* makeVariateGenerator
 template<typename Engine, typename Distribution>
 variate_generator<Engine,Distribution>
 makeVariateGenerator(
@@ -115,9 +100,6 @@ makeVariateGenerator(
   , Distribution const& distribution
 )
 { return variate_generator<Engine,Distribution>(engine,distribution); }
-//@+node:gcross.20110511190907.3825: ** Classes
-//@+node:gcross.20110206092738.1738: *3* RNG
-//@+node:gcross.20110206092738.1739: *4* (constructors)
 RNG::RNG()
   : randomBoolean(makeVariateGenerator(generator,bernoulli_distribution<double>()))
   , randomDouble(makeVariateGenerator(generator,normal_distribution<double>(0,1)))
@@ -125,32 +107,26 @@ RNG::RNG()
   , randomComplexDouble(ComplexDoubleGenerator(*this))
   , randomLowercaseLetter(makeVariateGenerator(generator,uniform_smallint<unsigned int>('a','z')))
 {}
-//@+node:gcross.20110206092738.1751: *4* generateRandomHermitianMatrices
 function<complex<double>()> RNG::generateRandomHermitianMatrices(unsigned int const size) {
     return HermitianMatrixGenerator(*this,size);
 }
-//@+node:gcross.20110206092738.1745: *4* generateRandomIndices
 function<uint32_t()> RNG::generateRandomIndices(
       LeftDimension const left_index_bound
     , RightDimension const right_index_bound
 ) {
     return IndexGenerator(*this,left_index_bound,right_index_bound);
 }
-//@+node:gcross.20110206092738.1743: *4* generateRandomIntegers
 function<unsigned int()> RNG::generateRandomIntegers(unsigned int lo, unsigned int hi) {
     return IntegerGenerator(*this,lo,hi);
 }
-//@+node:gcross.20110206092738.1747: *4* operator()
 unsigned int RNG::operator()(unsigned int lo, unsigned int hi) {
     return generateRandomIntegers(lo,hi)();
 }
-//@+node:gcross.20110818221240.2504: *4* randomMatrix
 MatrixPtr RNG::randomMatrix(unsigned int rows, unsigned int cols) {
     MatrixPtr const matrix(new Matrix(rows,cols));
     boost::generate(matrix->data(),randomComplexDouble);
     return matrix;
 }
-//@+node:gcross.20110215135633.1866: *4* randomOperator
 Operator RNG::randomOperator(
       optional<unsigned int> maybe_number_of_sites
     , unsigned int const maximum_physical_dimension
@@ -177,7 +153,6 @@ Operator RNG::randomOperator(
     }
     return boost::move(operator_sites);
 }
-//@+node:gcross.20110206092738.1746: *4* randomOperatorSite
 OperatorSite RNG::randomOperatorSite(
       PhysicalDimension const physical_dimension
     , LeftDimension const left_dimension
@@ -199,11 +174,9 @@ OperatorSite RNG::randomOperatorSite() {
         RightDimension((*this)(1,5))
     );
 }
-//@+node:gcross.20110818221240.2514: *4* randomSquareMatrix
 MatrixPtr RNG::randomSquareMatrix(unsigned int dimension) {
     return randomMatrix(dimension,dimension);
 }
-//@+node:gcross.20110215135633.1863: *4* randomState
 State RNG::randomState() {
     return randomState((*this)(1,5));
 }
@@ -235,19 +208,16 @@ State RNG::randomState(vector<unsigned int> const& physical_dimensions) {
     }
     return State(boost::move(first_state_site),boost::move(rest_state_sites));
 }
-//@+node:gcross.20110511190907.3830: *4* randomTemporaryFilepath
 TemporaryFilepath RNG::randomTemporaryFilepath(string suffix) const {
     string random_data(5,0);
     generate(random_data,randomLowercaseLetter);
     return TemporaryFilepath(random_data + suffix);
 }
-//@+node:gcross.20110217014932.1933: *4* randomUnsignedIntegerVector
 vector<unsigned int> RNG::randomUnsignedIntegerVector(unsigned int n, unsigned int lo,unsigned int hi) {
     vector<unsigned int> physical_dimensions(n);
     generate(physical_dimensions,generateRandomIntegers(lo,hi));
     return boost::move(physical_dimensions);
 }
-//@+node:gcross.20110827215622.2614: *4* randomVector
 VectorPtr RNG::randomVector() {
     return randomVector(*this);
 }
@@ -257,27 +227,20 @@ VectorPtr RNG::randomVector(unsigned int size) {
     generate(*data,randomComplexDouble);
     return data;
 }
-//@+node:gcross.20110511190907.3826: *3* TemporaryFilepath
-//@+node:gcross.20110511190907.3827: *4* (constructors)
 TemporaryFilepath::TemporaryFilepath() {}
 
 TemporaryFilepath::TemporaryFilepath(path const& filepath)
   : filepath(filepath)
 { if(exists(filepath)) remove(filepath); }
-//@+node:gcross.20110511190907.3828: *4* (destructors)
 TemporaryFilepath::~TemporaryFilepath() { if(exists(filepath)) remove(filepath); }
-//@+node:gcross.20110511190907.3829: *4* operator*/->
 path const& TemporaryFilepath::operator*() const { return filepath; }
 path const* TemporaryFilepath::operator->() const { return &filepath; }
-//@+node:gcross.20110430221653.2182: ** Functions
-//@+node:gcross.20110430221653.2184: *3* checkOperatorsEqual
 void checkOperatorsEqual(Operator const& operator_1,Operator const& operator_2) {
     ASSERT_EQ(operator_1.size(),operator_2.size());
     BOOST_FOREACH(unsigned int const i, irange(0u,(unsigned int)operator_1.size())) {
         checkOperatorSitesEqual(*operator_1[i],*operator_2[i]);
     }
 }
-//@+node:gcross.20110818221240.2501: *3* checkOperatorsEquivalent
 void checkOperatorsEquivalent(
     Operator const& operator_1,
     Operator const& operator_2,
@@ -292,7 +255,6 @@ void checkOperatorsEquivalent(
         ASSERT_NEAR_REL(computeExpectationValue(state,operator_1),computeExpectationValue(state,operator_2),1e-10)
     }
 }
-//@+node:gcross.20110430221653.2183: *3* checkOperatorSitesEqual
 void checkOperatorSitesEqual(OperatorSite const& operator_site_1,OperatorSite const& operator_site_2) {
     ASSERT_EQ(operator_site_1.physicalDimension(),operator_site_2.physicalDimension());
     ASSERT_EQ(operator_site_1.leftDimension(),operator_site_2.leftDimension());
@@ -301,14 +263,12 @@ void checkOperatorSitesEqual(OperatorSite const& operator_site_1,OperatorSite co
     ASSERT_TRUE(equal(operator_site_1,operator_site_2));
     ASSERT_TRUE(equal((uint32_t const*)operator_site_1,((uint32_t const*)operator_site_1)+2*operator_site_1.numberOfMatrices(),(uint32_t const*)operator_site_2));
 }
-//@+node:gcross.20110511190907.2330: *3* checkSiteTensorsEqual
 void checkSiteTensorsEqual(SiteBaseTensor const& site_1,SiteBaseTensor const& site_2) {
     ASSERT_EQ(site_1.physicalDimension(),site_2.physicalDimension());
     ASSERT_EQ(site_1.leftDimension(),site_2.leftDimension());
     ASSERT_EQ(site_1.rightDimension(),site_2.rightDimension());
     ASSERT_TRUE(equal(site_1,site_2));
 }
-//@+node:gcross.20110511190907.3527: *3* checkStatesEqual
 void checkStatesEqual(State const& state_1,State const& state_2) {
     ASSERT_EQ(state_1.numberOfSites(),state_2.numberOfSites());
     for(State::iterator
@@ -318,5 +278,3 @@ void checkStatesEqual(State const& state_1,State const& state_2) {
         ++state_iter_1, ++state_iter_2
     ) checkSiteTensorsEqual(*state_iter_1,*state_iter_2);
 }
-//@-others
-//@-leo

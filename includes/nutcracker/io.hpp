@@ -1,11 +1,6 @@
-//@+leo-ver=5-thin
-//@+node:gcross.20110511190907.3535: * @file io.hpp
-//@@language cplusplus
 #ifndef NUTCRACKER_IO_HPP
 #define NUTCRACKER_IO_HPP
 
-//@+<< Includes >>
-//@+node:gcross.20110511190907.3538: ** << Includes >>
 #include <boost/filesystem.hpp>
 #include <boost/format.hpp>
 #include <boost/function.hpp>
@@ -24,12 +19,9 @@
 
 #include "nutcracker/tensors.hpp"
 #include "nutcracker/utilities.hpp"
-//@-<< Includes >>
 
 namespace Nutcracker {
 
-//@+<< Usings >>
-//@+node:gcross.20110511190907.3539: ** << Usings >>
 using boost::adaptors::map_keys;
 using boost::copy;
 using boost::filesystem::path;
@@ -43,11 +35,7 @@ using std::back_inserter;
 using std::map;
 using std::make_pair;
 using std::set;
-//@-<< Usings >>
 
-//@+others
-//@+node:gcross.20110511190907.3565: ** Exceptions
-//@+node:gcross.20110511190907.3803: *3* FormatTypeException
 struct FormatTypeException : public std::runtime_error {
     string const format_type_name;
     FormatTypeException(string const& message, string const& format_type_name)
@@ -57,7 +45,6 @@ struct FormatTypeException : public std::runtime_error {
     virtual ~FormatTypeException() throw() {}
     vector<string> getAcceptedFormatNames() const;
 };
-//@+node:gcross.20110511190907.3806: *3* FormatException
 struct FormatException : public FormatTypeException {
     string const format_name;
     FormatException(string const& message, string const& format_type_name, string const& format_name)
@@ -66,7 +53,6 @@ struct FormatException : public FormatTypeException {
     {}
     virtual ~FormatException() throw() {}
 };
-//@+node:gcross.20110511190907.3805: *3* FormatDoesNotSupportLocationsError
 struct FormatDoesNotSupportLocationsError : public FormatException {
     FormatDoesNotSupportLocationsError(string const& format_type_name, string const& format_name)
       : FormatException(
@@ -76,7 +62,6 @@ struct FormatDoesNotSupportLocationsError : public FormatException {
         )
     {}
 };
-//@+node:gcross.20110511190907.3809: *3* FormatDoesNotSupportPipeError
 struct FormatDoesNotSupportPipeError : public FormatException {
     FormatDoesNotSupportPipeError(string const& format_type_name, string const& format_name)
       : FormatException(
@@ -86,7 +71,6 @@ struct FormatDoesNotSupportPipeError : public FormatException {
         )
     {}
 };
-//@+node:gcross.20110511190907.3815: *3* OutputFormatDoesNotSupportStatesError
 struct OutputFormatDoesNotSupportStatesError : public FormatException {
     OutputFormatDoesNotSupportStatesError(string const& format_name)
       : FormatException(
@@ -96,7 +80,6 @@ struct OutputFormatDoesNotSupportStatesError : public FormatException {
         )
     {}
 };
-//@+node:gcross.20110511190907.3802: *3* NoFormatTypeSpecifiedError
 struct NoFormatTypeSpecifiedError : public FormatTypeException {
     NoFormatTypeSpecifiedError(string const& format_type_name)
       : FormatTypeException(
@@ -105,7 +88,6 @@ struct NoFormatTypeSpecifiedError : public FormatTypeException {
         )
     {}
 };
-//@+node:gcross.20110511190907.3625: *3* NoSuchFormatError
 struct NoSuchFormatError : public FormatException {
     NoSuchFormatError(string const& format_type_name, string const& format_name)
       : FormatException(
@@ -115,7 +97,6 @@ struct NoSuchFormatError : public FormatException {
         )
     {}
 };
-//@+node:gcross.20110511190907.3619: *3* NoSuchLocationError
 struct NoSuchLocationError : public std::runtime_error {
     string const location;
     NoSuchLocationError(string const& location)
@@ -124,7 +105,6 @@ struct NoSuchLocationError : public std::runtime_error {
     {}
     virtual ~NoSuchLocationError() throw() {}
 };
-//@+node:gcross.20110511190907.3566: *3* NoSuchOperatorSiteNumberError
 struct NoSuchOperatorSiteNumberError : public std::runtime_error {
     unsigned int index;
     NoSuchOperatorSiteNumberError(unsigned int index)
@@ -132,7 +112,6 @@ struct NoSuchOperatorSiteNumberError : public std::runtime_error {
       , index(index)
     {}
 };
-//@+node:gcross.20110511190907.3676: *3* OutputFileAlreadyExistsError
 struct OutputFileAlreadyExists : public std::runtime_error {
     string const filename;
     OutputFileAlreadyExists(string const& filename)
@@ -141,7 +120,6 @@ struct OutputFileAlreadyExists : public std::runtime_error {
     {}
     virtual ~OutputFileAlreadyExists() throw() {}
 };
-//@+node:gcross.20110511190907.3678: *3* OutputLocationAlreadyExistsError
 struct OutputLocationAlreadyExists : public std::runtime_error {
     string const filename;
     string const location;
@@ -152,7 +130,6 @@ struct OutputLocationAlreadyExists : public std::runtime_error {
     {}
     virtual ~OutputLocationAlreadyExists() throw() {}
 };
-//@+node:gcross.20110726215559.2334: *3* BoundaryDimensionNotOneError
 struct BoundaryDimensionNotOneError: public std::runtime_error {
     string boundary_name;
     unsigned int boundary_dimension;
@@ -163,7 +140,6 @@ struct BoundaryDimensionNotOneError: public std::runtime_error {
     {}
     virtual ~BoundaryDimensionNotOneError() throw () {}
 };
-//@+node:gcross.20110726215559.2336: *3* MismatchedSiteDimensionsError
 struct MismatchedSiteDimensionsError: public std::runtime_error {
     unsigned int site_number, left_dimension, right_dimension;
     MismatchedSiteDimensionsError(unsigned int const site_number, unsigned int const left_dimension, unsigned int const right_dimension)
@@ -174,20 +150,14 @@ struct MismatchedSiteDimensionsError: public std::runtime_error {
     {}
     virtual ~MismatchedSiteDimensionsError() throw () {}
 };
-//@+node:gcross.20110726215559.2347: *3* NoSitesError
 struct NoSitesError: public std::runtime_error {
     NoSitesError()
       : std::runtime_error("No operator sites were specified.")
     {}
 };
-//@+node:gcross.20110511190907.3591: ** Classes
-//@+node:gcross.20110511190907.3607: *3* Format
 template<typename FormatType, char const*& format_type_name> struct Format {
-    //@+others
-    //@+node:gcross.20110511190907.3608: *4* Associated types
     typedef map<string const,FormatType const*> ExtensionRegistry;
     typedef map<string const,FormatType const*> NameRegistry;
-    //@+node:gcross.20110511190907.3609: *4* Constructors
     protected:
 
     Format(
@@ -205,13 +175,11 @@ template<typename FormatType, char const*& format_type_name> struct Format {
     {
         registerFormat(static_cast<FormatType const*>(this));
     }
-    //@+node:gcross.20110511190907.3612: *4* Destructor
     public:
 
     ~Format() {
         unregisterFormat(name);
     }
-    //@+node:gcross.20110511190907.3613: *4* Exceptions
     struct FormatAlreadyRegisteredException : public std::logic_error {
         FormatType const& format;
         FormatAlreadyRegisteredException(FormatType const& format)
@@ -219,7 +187,6 @@ template<typename FormatType, char const*& format_type_name> struct Format {
           , format(format)
         {}
     };
-    //@+node:gcross.20110511190907.3610: *4* Fields
     public:
 
     string name, description;
@@ -228,7 +195,6 @@ template<typename FormatType, char const*& format_type_name> struct Format {
     bool supports_location;
 
     set<string> recognized_extensions;
-    //@+node:gcross.20110511190907.3611: *4* Registry
     protected:
 
     static ExtensionRegistry& getExtensionRegistry() {
@@ -287,34 +253,27 @@ template<typename FormatType, char const*& format_type_name> struct Format {
         else
             return existing_iter->second;
     }
-    //@+node:gcross.20110511190907.3623: *4* Miscellaneous
     public:
 
     static char const* type_name;
     static FormatType const* default_format;
-    //@-others
 };
 template<typename FormatType, char const*& format_type_name> char const* Format<FormatType,format_type_name>::type_name = format_type_name;
 template<typename FormatType, char const*& format_type_name> FormatType const* Format<FormatType,format_type_name>::default_format = NULL;
-//@+node:gcross.20110525201928.2447: *3* FormatInstaller
 class FormatInstaller {
     FormatInstaller();
     static FormatInstaller const _;
 };
-//@+node:gcross.20110511190907.3592: *3* InputFormat
 extern const char* input_format_type_name;
 struct InputFormat;
 typedef Format<InputFormat,input_format_type_name> InputFormatBase;
 struct InputFormat : public InputFormatBase {
-    //@+others
-    //@+node:gcross.20110511190907.3595: *4* Associated types
     typedef function<
         Operator (
             optional<string> const& maybe_filename
           , optional<string> const& maybe_location
         )
     > OperatorReader;
-    //@+node:gcross.20110511190907.3594: *4* Constructors
     InputFormat(
         string const& name
       , string const& description
@@ -326,26 +285,20 @@ struct InputFormat : public InputFormatBase {
       : InputFormatBase(name,description,supports_stdin,supports_location,supported_extensions)
       , readOperator(readOperator)
     {}
-    //@+node:gcross.20110511190907.3593: *4* Fields
     protected:
 
     OperatorReader readOperator;
-    //@+node:gcross.20110511190907.3620: *4* Operators
     public:
 
     Operator operator()(optional<string> const& maybe_filename, optional<string> const& maybe_location) const {
         return readOperator(maybe_filename,maybe_location);
     }
-    //@-others
 };
-//@+node:gcross.20110511190907.3631: *3* OutputFormat
 extern const char* output_format_type_name;
 struct OutputFormat;
 class Chain;
 typedef Format<OutputFormat,output_format_type_name> OutputFormatBase;
 struct OutputFormat : public OutputFormatBase {
-    //@+others
-    //@+node:gcross.20110511190907.3632: *4* Associated types
     typedef function<
         auto_ptr<Destructable const> (
             optional<string> const& maybe_filename
@@ -355,7 +308,6 @@ struct OutputFormat : public OutputFormatBase {
           , Chain& chain
         )
     > ChainConnector;
-    //@+node:gcross.20110511190907.3633: *4* Constructors
     OutputFormat(
         string const& name
       , string const& description
@@ -369,7 +321,6 @@ struct OutputFormat : public OutputFormatBase {
       , supports_states(supports_states)
       , connectToChain(connectToChain)
     {}
-    //@+node:gcross.20110511190907.3634: *4* Fields
     public:
 
     bool supports_states;
@@ -377,7 +328,6 @@ struct OutputFormat : public OutputFormatBase {
     protected:
 
     ChainConnector connectToChain;
-    //@+node:gcross.20110511190907.3635: *4* Operators
     public:
 
     auto_ptr<Destructable const> operator()(
@@ -389,16 +339,12 @@ struct OutputFormat : public OutputFormatBase {
     ) const {
         return connectToChain(maybe_filename,maybe_location,output_states,overwrite,chain);
     }
-    //@-others
 };
-//@+node:gcross.20110511190907.3618: *3* SlashTokenizer
 struct LocationSlashTokenizer : public boost::tokenizer<boost::char_separator<char> > {
 
     LocationSlashTokenizer(string const& location) : boost::tokenizer<boost::char_separator<char> >(location,boost::char_separator<char>("/")) {}
 
 };
-//@+node:gcross.20110511190907.3540: ** Functions
-//@+node:gcross.20110511190907.3558: *3* constructOperatorFrom
 template<typename SequenceType> Operator constructOperatorFrom(
     vector<shared_ptr<OperatorSite const> > unique_operator_sites
   , SequenceType const& sequence
@@ -422,13 +368,11 @@ template<typename SequenceType> Operator constructOperatorFrom(
 
     return boost::move(operator_sites);
 }
-//@+node:gcross.20110511190907.3546: *3* deconstructOperatorTo
 void deconstructOperatorTo(
     Operator const& operator_sites
   , vector<shared_ptr<OperatorSite const> >& unique_operator_sites
   , vector<unsigned int>& sequence
 );
-//@+node:gcross.20110511190907.3541: *3* readUniqueOperatorSites
 template<typename SitesType> vector<shared_ptr<OperatorSite const> > readUniqueOperatorSites(SitesType const& sites) {
     vector<shared_ptr<OperatorSite const> > unique_operator_sites;
     unique_operator_sites.reserve(sites.size());
@@ -443,7 +387,6 @@ template<typename SitesType> vector<shared_ptr<OperatorSite const> > readUniqueO
 
     return boost::move(unique_operator_sites);
 }
-//@+node:gcross.20110511190907.3800: *3* resolveAndCheckFormat
 template<typename FormatType> FormatType const& resolveAndCheckFormat(
     optional<string> const& maybe_format_name
   , optional<string> const& maybe_filename
@@ -473,9 +416,7 @@ template<typename FormatType> FormatType const& resolveAndCheckFormat(
 
     return (*format);
 }
-//@-others
 
 }
 
 #endif
-//@-leo
