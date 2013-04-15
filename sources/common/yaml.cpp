@@ -32,66 +32,65 @@ using YAML::Emitter;
 using YAML::EndMap;
 using YAML::EndSeq;
 using YAML::Flow;
-using YAML::Iterator;
 using YAML::Key;
+using YAML::Load;
+using YAML::LoadFile;
 using YAML::Node;
 using YAML::Parser;
 using YAML::Value;
 
 namespace Nutcracker {
 
-YAMLInputError::YAMLInputError(YAML::Mark const& mark, string const& message)
-  : std::runtime_error((format("Error in input line %1% column %2%:\n%3%") % mark.line % mark.column % message).str())
-  , mark(mark)
+YAMLInputError::YAMLInputError(string const& message)
+  : std::runtime_error(message)
 {}
-NonSquareMatrixYAMLInputError::NonSquareMatrixYAMLInputError(YAML::Mark const& mark, unsigned int const length)
-  : YAMLInputError(mark,(format("Matrix data length %1% is not a square.") % length).str())
+
+NonSquareMatrixYAMLInputError::NonSquareMatrixYAMLInputError(unsigned int const length)
+  : YAMLInputError((format("Matrix data length %1% is not a square.") % length).str())
   , length(length)
 {}
-IndexTooLowYAMLInputError::IndexTooLowYAMLInputError(YAML::Mark const& mark, string const& name, int const index)
-  : YAMLInputError(mark,(format("The '%1%' index is too low. (%2% < 1)") % name % index).str())
+
+IndexTooLowYAMLInputError::IndexTooLowYAMLInputError(string const& name, int const index)
+  : YAMLInputError((format("The '%1%' index is too low. (%2% < 1)") % name % index).str())
   , name(name)
   , index(index)
 {}
-
 IndexTooLowYAMLInputError::~IndexTooLowYAMLInputError() throw () {}
-IndexTooHighYAMLInputError::IndexTooHighYAMLInputError(YAML::Mark const& mark, string const& name, unsigned int const index, unsigned int const dimension)
-  : YAMLInputError(mark,(format("The '%1%' index is too high. (%2% > %3%)") % name % index % dimension).str())
+
+IndexTooHighYAMLInputError::IndexTooHighYAMLInputError(string const& name, unsigned int const index, unsigned int const dimension)
+  : YAMLInputError((format("The '%1%' index is too high. (%2% > %3%)") % name % index % dimension).str())
   , name(name)
   , index(index)
   , dimension(dimension)
 {}
-
 IndexTooHighYAMLInputError::~IndexTooHighYAMLInputError() throw () {}
-WrongDataLengthYAMLInputError::WrongDataLengthYAMLInputError(YAML::Mark const& mark, unsigned int const length, unsigned int const correct_length)
-  : YAMLInputError(mark,(format("The length of the data (%1%) does not match the correct length (%2%).") % length % correct_length).str())
+
+WrongDataLengthYAMLInputError::WrongDataLengthYAMLInputError(unsigned int const length, unsigned int const correct_length)
+  : YAMLInputError((format("The length of the data (%1%) does not match the correct length (%2%).") % length % correct_length).str())
   , length(length)
   , correct_length(correct_length)
 {}
+WrongDataLengthYAMLInputError::~WrongDataLengthYAMLInputError() throw () {}
+
 static Operator readOperator(optional<string> const& maybe_filename, optional<string> const& maybe_location) {
     Node root;
     if(maybe_filename) {
-        ifstream in(maybe_filename->c_str());
-        Parser parser(in);
-        parser.GetNextDocument(root);
+        root = LoadFile(*maybe_filename);
     } else {
-        Parser parser(std::cin);
-        parser.GetNextDocument(root);
+        root = Load(std::cin);
     }
 
-    Node const* node = &root;
+    Node node = root;
 
     if(maybe_location) {
-        string const& location = maybe_location.get();
-        BOOST_FOREACH(string const& name, LocationSlashTokenizer(location)) {
-            Node const* nested_node = node->FindValue(name.c_str());
-            if(nested_node == NULL) throw NoSuchLocationError(location);
-            node = nested_node;
+        BOOST_FOREACH(string const& name, LocationSlashTokenizer(*maybe_location)) {
+            node = node[name];
+            if(!node) throw NoSuchLocationError(*maybe_location);
         }
     }
 
     Operator hamiltonian;
-    (*node) >> hamiltonian;
+    node >> hamiltonian;
     return boost::move(hamiltonian);
 }
 struct YAMLOutputter : public Destructable, public trackable {
@@ -172,9 +171,7 @@ void operator >> (Node const& node, Operator& operator_sites) {
 
     Nutcracker::vector<unsigned int> sequence;
     BOOST_FOREACH(Node const& node, node["sequence"]) {
-        unsigned int index;
-        node >> index;
-        sequence.push_back(index-1);
+        sequence.push_back(node.as<unsigned int>()-1);
     }
 
     try {
@@ -207,13 +204,13 @@ Emitter& operator << (Emitter& out, Operator const& operator_sites) {
     return out;
 }
 void operator >> (Node const& node, OperatorSiteLink& link) {
-    node["from"] >> link.from;
-    node["to"] >> link.to;
+    link.from = node["from"].as<unsigned int>();
+    link.to = node["to"].as<unsigned int>();
     Node const& data = node["data"];
     unsigned int const nsq = data.size(), n = (unsigned int)sqrt(nsq);
-    if(n*n != nsq) throw NonSquareMatrixYAMLInputError(data.GetMark(),nsq);
+    if(n*n != nsq) throw NonSquareMatrixYAMLInputError(nsq);
     Matrix* matrix = new Matrix(n,n);
-    Iterator node_iter = data.begin();
+    Node::const_iterator node_iter = data.begin();
     Matrix::array_type::iterator matrix_iter = matrix->data().begin();
     REPEAT(n*n) {
         using namespace std;
@@ -236,10 +233,10 @@ Emitter& operator << (Emitter& out, OperatorSiteLink const& link) {
     return out;
 }
 void operator >> (Node const& node, OperatorSite& output_operator_site) {
-    unsigned int physical_dimension, left_dimension, right_dimension;
-    node["physical dimension"] >> physical_dimension;
-    node["left dimension"] >> left_dimension;
-    node["right dimension"] >> right_dimension;
+    unsigned int
+        physical_dimension = node["physical dimension"].as<unsigned int>(),
+        left_dimension = node["left dimension"].as<unsigned int>(),
+        right_dimension = node["right dimension"].as<unsigned int>();
     Node const& matrices = node["matrices"];
     unsigned int const number_of_matrices = matrices.size();
 
@@ -253,21 +250,23 @@ void operator >> (Node const& node, OperatorSite& output_operator_site) {
     unsigned int const matrix_length = physical_dimension*physical_dimension;
     complex<double>* matrix_data = operator_site;
     uint32_t* index_data = operator_site;
-    Iterator matrix_iterator = matrices.begin();
+    Node::const_iterator matrix_iterator = matrices.begin();
     REPEAT(number_of_matrices) {
         Node const& matrix = *matrix_iterator++;
-        unsigned int from, to;
-        matrix["from"] >> from;
-        if(from < 1) throw IndexTooLowYAMLInputError(matrix["from"].GetMark(),"from",from);
-        if(from > left_dimension) throw IndexTooHighYAMLInputError(matrix["from"].GetMark(),"from",from,left_dimension);
-        matrix["to"] >> to;
-        if(to < 1) throw IndexTooLowYAMLInputError(matrix["to"].GetMark(),"to",to);
-        if(to > right_dimension) throw IndexTooHighYAMLInputError(matrix["to"].GetMark(),"to",to,right_dimension);
+
+        unsigned int from = matrix["from"].as<unsigned int>();
+        if(from < 1) throw IndexTooLowYAMLInputError("from",from);
+        if(from > left_dimension) throw IndexTooHighYAMLInputError("from",from,left_dimension);
+
+        unsigned int to = matrix["to"].as<unsigned int>();
+        if(to < 1) throw IndexTooLowYAMLInputError("to",to);
+        if(to > right_dimension) throw IndexTooHighYAMLInputError("to",to,right_dimension);
+
         *index_data++ = from;
         *index_data++ = to;
         Node const& data = matrix["data"];
-        if(data.size() != matrix_length) throw WrongDataLengthYAMLInputError(data.GetMark(),data.size(),matrix_length);
-        Iterator data_iterator = data.begin();
+        if(data.size() != matrix_length) throw WrongDataLengthYAMLInputError(data.size(),matrix_length);
+        Node::const_iterator data_iterator = data.begin();
         REPEAT(matrix_length) { *data_iterator++ >> *matrix_data++; }
     }
 

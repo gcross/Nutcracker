@@ -15,12 +15,9 @@ using std::endl;
 using std::istringstream;
 using std::ostringstream;
 
-auto_ptr<YAML::Node> parseYAMLString(string const& s) {
-    auto_ptr<YAML::Node> result(new YAML::Node);
+YAML::Node parseYAMLString(string const& s) {
     istringstream in(s);
-    YAML::Parser parser(in);
-    parser.GetNextDocument(*result);
-    return result;
+    return YAML::Load(in);
 }
 TEST_SUITE(YAML) {
 
@@ -38,9 +35,7 @@ TEST_CASE(decode) {
         ostringstream out;
         out << format("[%|.20|,%|.20|]") % x.real() % x.imag();
         istringstream in(out.str());
-        YAML::Parser parser(in);
-        YAML::Node doc;
-        parser.GetNextDocument(doc);
+        YAML::Node doc = YAML::Load(in);
         doc >> y;
 
         ASSERT_EQ(x,y);
@@ -59,9 +54,7 @@ TEST_CASE(encode_then_decode) {
         string out_string(out.c_str());
 
         istringstream in(out_string);
-        YAML::Parser parser(in);
-        YAML::Node doc;
-        parser.GetNextDocument(doc);
+        YAML::Node doc = YAML::Load(in);
         doc >> y;
 
         ASSERT_EQ(x,y);
@@ -82,9 +75,7 @@ TEST_CASE(decode) {
         ostringstream out;
         out << format("%|.20|") % x;
         istringstream in(out.str());
-        YAML::Parser parser(in);
-        YAML::Node doc;
-        parser.GetNextDocument(doc);
+        YAML::Node doc = YAML::Load(in);
         complex<double> y;
         doc >> y;
 
@@ -104,9 +95,7 @@ TEST_CASE(encode_then_decode) {
         string out_string(out.c_str());
 
         istringstream in(out_string);
-        YAML::Parser parser(in);
-        YAML::Node doc;
-        parser.GetNextDocument(doc);
+        YAML::Node doc = YAML::Load(in);
         ASSERT_EQ(YAML::NodeType::Scalar,doc.Type());
         doc >> y;
 
@@ -132,9 +121,7 @@ TEST_CASE(encode_then_decode) {
         string out_string(out.c_str());
 
         istringstream in(out_string);
-        YAML::Parser parser(in);
-        YAML::Node doc;
-        parser.GetNextDocument(doc);
+        YAML::Node doc = YAML::Load(in);
 
         Operator operator_2;
         doc >> operator_2;
@@ -203,9 +190,7 @@ TEST_CASE(external_field) {
         ) << endl;
 
         istringstream in(out.str());
-        YAML::Parser parser(in);
-        YAML::Node doc;
-        parser.GetNextDocument(doc);
+        YAML::Node doc = YAML::Load(in);
 
         Operator operator_2;
         doc >> operator_2;
@@ -219,14 +204,14 @@ TEST_CASE(external_field) {
 TEST_SUITE(error_handling) {
 
 TEST_CASE(no_such_operator_site_number) {
-    auto_ptr<YAML::Node> result = parseYAMLString(
+    YAML::Node result = parseYAMLString(
         "---\n"
         "sites:\n"
         "sequence: [1]\n"
     );
     Operator o;
     try {
-        *result >> o;
+        result >> o;
         FAIL("No exception was thrown.")
     } catch(NoSuchOperatorSiteNumberError const& e) {
         EXPECT_EQ_VAL(e.index,1u)
@@ -254,9 +239,7 @@ TEST_CASE(decode) {
         }
         out << format("[%|.20|,%|.20|]]") % data[n*n-1].real() % data[n*n-1].imag();
         istringstream in(out.str());
-        YAML::Parser parser(in);
-        YAML::Node doc;
-        parser.GetNextDocument(doc);
+        YAML::Node doc = YAML::Load(in);
 
         OperatorSiteLink link;
         doc >> link;
@@ -284,9 +267,7 @@ TEST_CASE(encode_then_decode) {
         string out_string(out.c_str());
 
         istringstream in(out_string);
-        YAML::Parser parser(in);
-        YAML::Node doc;
-        parser.GetNextDocument(doc);
+        YAML::Node doc = YAML::Load(in);
 
         OperatorSiteLink link2;
         doc >> link2;
@@ -302,7 +283,7 @@ TEST_CASE(encode_then_decode) {
 TEST_SUITE(error_handling) {
 
 TEST_CASE(non_square_matrix) {
-    auto_ptr<YAML::Node> result = parseYAMLString(
+    YAML::Node result = parseYAMLString(
         "---\n"
         "from: 1\n"
         "to: 1\n"
@@ -310,11 +291,9 @@ TEST_CASE(non_square_matrix) {
     );
     OperatorSiteLink link;
     try {
-        *result >> link;
+        result >> link;
         FAIL("No exception was thrown.")
     } catch(NonSquareMatrixYAMLInputError const& e) {
-        EXPECT_EQ_VAL(e.mark.line,3)
-        EXPECT_EQ_VAL(e.mark.column,6)
         EXPECT_EQ_VAL(e.length,3u)
     }
 }
@@ -356,9 +335,7 @@ TEST_CASE(decode) {
         string out_string(out.c_str());
 
         istringstream in(out_string);
-        YAML::Parser parser(in);
-        YAML::Node doc;
-        parser.GetNextDocument(doc);
+        YAML::Node doc = YAML::Load(in);
 
         OperatorSite operator_site;
         doc >> operator_site;
@@ -397,9 +374,7 @@ TEST_CASE(encode_then_decode) {
         string out_string(out.c_str());
 
         istringstream in(out_string);
-        YAML::Parser parser(in);
-        YAML::Node doc;
-        parser.GetNextDocument(doc);
+        YAML::Node doc = YAML::Load(in);
 
         OperatorSite operator_site_2;
         doc >> operator_site_2;
@@ -411,8 +386,7 @@ TEST_CASE(encode_then_decode) {
 TEST_SUITE(error_handling) {
 
 TEST_CASE(from_index_too_low) {
-    auto_ptr<YAML::Node> result = parseYAMLString(
-        "---\n"
+    YAML::Node result = parseYAMLString(
         "physical dimension: 2\n"
         "left dimension: 2\n"
         "right dimension: 2\n"
@@ -423,18 +397,15 @@ TEST_CASE(from_index_too_low) {
     );
     OperatorSite site;
     try {
-        *result >> site;
+        result >> site;
         FAIL("No exception was thrown.")
     } catch(IndexTooLowYAMLInputError const& e) {
-        EXPECT_EQ_VAL(e.mark.line,5)
-        EXPECT_EQ_VAL(e.mark.column,10)
         EXPECT_EQ_VAL(e.name,"from")
         EXPECT_EQ_VAL(e.index,0u)
     }
 }
 TEST_CASE(from_index_too_high) {
-    auto_ptr<YAML::Node> result = parseYAMLString(
-        "---\n"
+    YAML::Node result = parseYAMLString(
         "physical dimension: 2\n"
         "left dimension: 2\n"
         "right dimension: 2\n"
@@ -445,19 +416,16 @@ TEST_CASE(from_index_too_high) {
     );
     OperatorSite site;
     try {
-        *result >> site;
+        result >> site;
         FAIL("No exception was thrown.")
     } catch(IndexTooHighYAMLInputError const& e) {
-        EXPECT_EQ_VAL(e.mark.line,5)
-        EXPECT_EQ_VAL(e.mark.column,10)
         EXPECT_EQ_VAL(e.name,"from")
         EXPECT_EQ_VAL(e.index,3u)
         EXPECT_EQ_VAL(e.dimension,2u)
     }
 }
 TEST_CASE(to_index_too_low) {
-    auto_ptr<YAML::Node> result = parseYAMLString(
-        "---\n"
+    YAML::Node result = parseYAMLString(
         "physical dimension: 2\n"
         "left dimension: 2\n"
         "right dimension: 2\n"
@@ -468,18 +436,15 @@ TEST_CASE(to_index_too_low) {
     );
     OperatorSite site;
     try {
-        *result >> site;
+        result >> site;
         FAIL("No exception was thrown.")
     } catch(IndexTooLowYAMLInputError const& e) {
-        EXPECT_EQ_VAL(e.mark.line,6)
-        EXPECT_EQ_VAL(e.mark.column,8)
         EXPECT_EQ_VAL(e.name,"to")
         EXPECT_EQ_VAL(e.index,0u)
     }
 }
 TEST_CASE(to_index_too_high) {
-    auto_ptr<YAML::Node> result = parseYAMLString(
-        "---\n"
+    YAML::Node result = parseYAMLString(
         "physical dimension: 2\n"
         "left dimension: 2\n"
         "right dimension: 2\n"
@@ -490,19 +455,16 @@ TEST_CASE(to_index_too_high) {
     );
     OperatorSite site;
     try {
-        *result >> site;
+        result >> site;
         FAIL("No exception was thrown.")
     } catch(IndexTooHighYAMLInputError const& e) {
-        EXPECT_EQ_VAL(e.mark.line,6)
-        EXPECT_EQ_VAL(e.mark.column,8)
         EXPECT_EQ_VAL(e.name,"to")
         EXPECT_EQ_VAL(e.index,3u)
         EXPECT_EQ_VAL(e.dimension,2u)
     }
 }
 TEST_CASE(wrong_data_length) {
-    auto_ptr<YAML::Node> result = parseYAMLString(
-        "---\n"
+    YAML::Node result = parseYAMLString(
         "physical dimension: 2\n"
         "left dimension: 2\n"
         "right dimension: 2\n"
@@ -513,11 +475,9 @@ TEST_CASE(wrong_data_length) {
     );
     OperatorSite site;
     try {
-        *result >> site;
+        result >> site;
         FAIL("No exception was thrown.")
     } catch(WrongDataLengthYAMLInputError const& e) {
-        EXPECT_EQ_VAL(e.mark.line,7)
-        EXPECT_EQ_VAL(e.mark.column,10)
         EXPECT_EQ_VAL(e.length,3u)
         EXPECT_EQ_VAL(e.correct_length,4u)
     }
