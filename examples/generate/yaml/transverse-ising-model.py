@@ -1,22 +1,24 @@
+from __future__ import print_function
+
 import sys
 
 if len(sys.argv) != 3:
-    print "USAGE:",sys.argv[0]," <coupling strength> <number of sites>"
-    print
-    print "where the coupling strength is the relative weight of the neighbor-interaction"
-    print "terms compared to the external field terms (which have weight 1)"
+    print("USAGE:",sys.argv[0]," <coupling strength> <number of sites>")
+    print()
+    print("where the coupling strength is the relative weight of the neighbor-interaction")
+    print("terms compared to the external field terms (which have weight 1)")
     sys.exit(1)
 
 coupling_strength = sys.argv[1]
 try:
     float(sys.argv[1])
 except:
-    print sys.argv[1],"is not a real number"
+    print(sys.argv[1],"is not a real number")
     sys.exit(1)
 number_of_sites = int(sys.argv[2])
 
 if number_of_sites == 1:
-    print """--- # External field Hamiltonian for 1 site
+    print("""--- # External field Hamiltonian for 1 site
 sites:
   - physical dimension: 2
     left dimension:     1
@@ -25,9 +27,9 @@ sites:
        - from: 1
          to:   1
          data: [1,0,0,-1]
-"""
+""")
 elif number_of_sites > 1:
-    print """--- # Transverse-Ising model with coupling strength %s for %i sites
+    print("""--- # Transverse-Ising model with coupling strength %s for %i sites
 paulis:
   - &I [1,0,0,1]
   - &Z [1,0,0,-1]
@@ -80,4 +82,4 @@ sites:
          to:   1
          data: *I
 sequence: %s
-""" % (coupling_strength,number_of_sites,coupling_strength,coupling_strength,[1] + [2]*(number_of_sites-2) + [3])
+""" % (coupling_strength,number_of_sites,coupling_strength,coupling_strength,[1] + [2]*(number_of_sites-2) + [3]))

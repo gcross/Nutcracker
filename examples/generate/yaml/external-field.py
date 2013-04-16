@@ -1,13 +1,15 @@
+from __future__ import print_function
+
 import sys
 
 if len(sys.argv) != 2:
-    print "USAGE:",sys.argv[0]," <number of sites>"
+    print("USAGE:",sys.argv[0]," <number of sites>")
     sys.exit(1)
 
 number_of_sites = int(sys.argv[1])
 
 if number_of_sites == 1:
-    print """--- # External field Hamiltonian for 1 site
+    print("""--- # External field Hamiltonian for 1 site
 sites:
   - physical dimension: 2
     left dimension:     1
@@ -16,9 +18,9 @@ sites:
        - from: 1
          to:   1
          data: [1,0,0,-1]
-"""
+""")
 elif number_of_sites > 1:
-    print """--- # External field Hamiltonian for %i sites
+    print("""--- # External field Hamiltonian for %i sites
 sites:
   - physical dimension: 2
     left dimension:     1
@@ -54,4 +56,4 @@ sites:
          to:   1
          data: [1,0,0,1]
 sequence: %s
-""" % (number_of_sites,[1] + [2]*(number_of_sites-2) + [3])
+""" % (number_of_sites,[1] + [2]*(number_of_sites-2) + [3]))

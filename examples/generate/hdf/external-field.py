@@ -1,15 +1,17 @@
+from __future__ import print_function
+
 import h5py, sys
 from numpy import array, complex128
 
 if len(sys.argv) != 4:
-    print "USAGE:",sys.argv[0]," <coupling strength> <number of sites> <output file>"
+    print("USAGE:",sys.argv[0]," <coupling strength> <number of sites> <output file>")
     sys.exit(1)
 
 
 try:
     coupling_strength = float(sys.argv[1])
 except:
-    print sys.argv[1],"is not a real number"
+    print(sys.argv[1],"is not a real number")
     sys.exit(1)
 number_of_sites = int(sys.argv[2])
 output_file = sys.argv[3]
