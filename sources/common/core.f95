@@ -2569,9 +2569,10 @@ subroutine random_projector_matrix( &
   integer, intent(in) :: projector_length, number_of_projectors
   double complex, intent(out) :: &
     reflectors(projector_length,number_of_projectors), &
-    coefficients(number_of_projectors), &
+    coefficients(number_of_projectors)
+  integer, intent(out) :: &
+    rank, &
     swaps(min(number_of_projectors,projector_length))
-  integer, intent(out) :: rank
 
   integer :: i, j
 
