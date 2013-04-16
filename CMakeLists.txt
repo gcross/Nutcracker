@@ -86,7 +86,7 @@ find_package(Protobuf REQUIRED)
 include_directories(${PROTOBUF_INCLUDE_DIRS})
 # }}}
 # YamlCXX {{{
-find_package( YamlCXX 0.2.6 REQUIRED )
+find_package( YamlCXX 0.5.0 REQUIRED )
 link_directories ( ${YAMLCXX_LIBRARY_DIRS} )
 include_directories ( ${YAMLCXX_INCLUDE_DIRS} )
 # }}}
