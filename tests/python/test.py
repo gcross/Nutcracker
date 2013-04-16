@@ -7,7 +7,7 @@ from numpy.random import rand
 from scipy.linalg import qr, eigh
 from random import randint, choice
 import random
-import __builtin__
+import builtins
 import vmps
 # }}}
 
@@ -19,7 +19,7 @@ import vmps
 
 # n2l {{{
 # Utility function converting numbers to letters.
-n2l = map(chr,range(ord('A'),ord('Z')+1))
+n2l = list(map(chr,range(ord('A'),ord('Z')+1)))
 # }}}
 # make_contractor {{{
 def make_contractor(tensor_index_labels,index_join_pairs,result_index_labels,name="f"):    # pre-process parameters
@@ -41,7 +41,7 @@ def make_contractor(tensor_index_labels,index_join_pairs,result_index_labels,nam
             else:
                 final_index_labels = tensor_index_labels[0]
                 result_indices = [[final_index_labels.index(index) for index in index_group] for index_group in result_index_labels]
-                transposed_indices = __builtin__.sum(result_indices,[])
+                transposed_indices = builtins.sum(result_indices,[])
                 assert type(transposed_indices) == list
                 assert len(final_index_labels) == len(transposed_indices)
                 new_shape = ",".join(["(%s)" % "*".join(["shape[%i]"%index for index in index_group]) for index_group in result_indices])     
@@ -99,15 +99,15 @@ def make_contractor(tensor_index_labels,index_join_pairs,result_index_labels,nam
 
             indices = [[],[]]
 
-            for j in xrange(2):
+            for j in range(2):
                 indices[j].append(reordered_join[j])
 
             # Search for other joins between these tensors
-            for i in xrange(1,len(index_join_pairs)):
+            for i in range(1,len(index_join_pairs)):
                 tensor_ids_,reordered_join = find_tensor_ids(index_join_pairs[i])
                 if tensor_ids == tensor_ids_:
                     join_indices.append(i)
-                    for j in xrange(2):
+                    for j in range(2):
                         indices[j].append(reordered_join[j])
 
             # }}}
@@ -153,7 +153,7 @@ def make_contractor(tensor_index_labels,index_join_pairs,result_index_labels,nam
     f_globals = {"tensordot":tensordot,"multiply":multiply}
     f_locals = {}
 
-    exec function_definition in f_globals, f_locals
+    exec(function_definition,f_globals,f_locals)
 
     f = f_locals[name]
     f.source = function_definition
@@ -164,7 +164,7 @@ def make_contractor_from_implicit_joins(tensor_index_labels,result_index_labels,
     tensor_index_labels = list(map(list,tensor_index_labels))
     found_indices = {}
     index_join_pairs = []
-    for i in xrange(len(tensor_index_labels)):
+    for i in range(len(tensor_index_labels)):
         for index_position, index in enumerate(tensor_index_labels[i]):
             if index in found_indices:
                 other_tensor = found_indices[index]
@@ -188,7 +188,7 @@ def crand(*shape):
 # }}}
 # generate_random_sparse_matrices {{{
 def generate_random_sparse_matrices(cl,cr,d,symmetric=False):
-    sparse_operator_indices = array([(randint(1,cl),randint(1,cr)) for _ in xrange(randint(2,cl+cr))]).transpose()
+    sparse_operator_indices = array([(randint(1,cl),randint(1,cr)) for _ in range(randint(2,cl+cr))]).transpose()
     sparse_operator_matrices = crand(d,d,sparse_operator_indices.shape[-1])
     if symmetric:
         sparse_operator_matrices += sparse_operator_matrices.transpose(1,0,2).conj()
@@ -211,8 +211,8 @@ def form_contractor(edges,input_tensors,output_tensor):
 
     output_name, output_size = output_tensor
     return make_contractor_from_implicit_joins(
-        [[e[input_name+str(index)] for index in xrange(1,input_size+1)] for (input_name,input_size) in input_tensors],
-        [e[output_name+str(index)] for index in xrange(1,output_size+1)],
+        [[e[input_name+str(index)] for index in range(1,input_size+1)] for (input_name,input_size) in input_tensors],
+        [e[output_name+str(index)] for index in range(1,output_size+1)],
     )
 # }}}
 # }}}
@@ -1266,7 +1266,7 @@ class lapack_eigenvalue_minimizer(TestCase): # {{{
 class swap_inplace(TestCase): # {{{
     @with_checker
     def test_correctness(self,n=irange(1,10)):
-        swaps = [randint(1,n) for _ in xrange(n)]
+        swaps = [randint(1,n) for _ in range(n)]
         vector = crand(n)
         correct_vector = vector.copy()
         for (i,swap) in enumerate(swap-1 for swap in swaps):
@@ -1279,7 +1279,7 @@ class swap_inplace(TestCase): # {{{
 
     @with_checker
     def test_swap_followed_by_unswap(self,n=irange(1,10)):
-        swaps = [randint(1,n) for _ in xrange(n)]
+        swaps = [randint(1,n) for _ in range(n)]
         vector = crand(n)
         correct_vector = vector.copy()
         vmps.swap_inplace(swaps,vector)
@@ -1289,7 +1289,7 @@ class swap_inplace(TestCase): # {{{
 class unswap_inplace(TestCase): # {{{
     @with_checker
     def test_correctness(self,n=irange(1,10)):
-        swaps = [randint(1,n) for _ in xrange(n)]
+        swaps = [randint(1,n) for _ in range(n)]
         vector = crand(n)
         correct_vector = vector.copy()
         for (i,swap) in reversed(list(enumerate(swap-1 for swap in swaps))):
@@ -1302,7 +1302,7 @@ class unswap_inplace(TestCase): # {{{
 
     @with_checker
     def test_unswap_followed_by_swap(self,n=irange(1,10)):
-        swaps = [randint(1,n) for _ in xrange(n)]
+        swaps = [randint(1,n) for _ in range(n)]
         vector = crand(n)
         correct_vector = vector.copy()
         vmps.unswap_inplace(swaps,vector)
@@ -1312,7 +1312,7 @@ class unswap_inplace(TestCase): # {{{
 class swap_matrix_inplace(TestCase): # {{{
     @with_checker
     def test_correctness(self,n=irange(2,10)):
-        swaps = [randint(1,n) for _ in xrange(n)]
+        swaps = [randint(1,n) for _ in range(n)]
         matrix = array(crand(n,n),order='F')
         correct_matrix = matrix.copy()
         for (i,swap) in enumerate(swap-1 for swap in swaps):
@@ -1330,7 +1330,7 @@ class swap_matrix_inplace(TestCase): # {{{
 
     @with_checker
     def test_subspace(self,n=irange(2,10)):
-        swaps = [randint(1,n) for _ in xrange(n)]
+        swaps = [randint(1,n) for _ in range(n)]
         original_matrix = array(crand(n,n),order='F')
         original_vector_1 = crand(n)
         original_vector_2 = crand(n)
@@ -1354,7 +1354,7 @@ class swap_matrix_inplace(TestCase): # {{{
 def generate_reflectors(full_space_dimension,number_of_projectors=None,overproject=False): # {{{
     if number_of_projectors is None:
         if overproject:
-            number_of_projectors = randint(1,full_space_dimension*3/2)
+            number_of_projectors = randint(1,full_space_dimension*3//2)
         else:
             number_of_projectors = randint(1,full_space_dimension-1)
     projectors = crand(full_space_dimension,number_of_projectors)
@@ -1683,7 +1683,7 @@ class non_hermitian_matrix_detection(TestCase): # {{{
         left_boundary_1 = ones((1,),complex128)
         left_boundary_2 = ones((1,),complex128)
         old_c = 1
-        for i in xrange(number_of_sites):
+        for i in range(number_of_sites):
             if i == number_of_sites-1:
                 new_c = 1
             else:
@@ -1698,15 +1698,14 @@ class non_hermitian_matrix_detection(TestCase): # {{{
             old_c = new_c
         self.assertEqual(left_boundary_1.shape,(1,))
         self.assertEqual(left_boundary_2.shape,(1,))
-        self.assertAlmostEqual(left_boundary_1.ravel(),left_boundary_2.conj().ravel())
-
+        self.assertTrue(allclose(left_boundary_1.ravel(),left_boundary_2.conj().ravel()))
 
     @with_checker
     def test_non_hermitian_operators(self,number_of_sites=irange(2,10)):
         left_boundary_1 = ones((1,),complex128)
         left_boundary_2 = ones((1,),complex128)
         old_c = 1
-        for i in xrange(number_of_sites):
+        for i in range(number_of_sites):
             if i == number_of_sites-1:
                 new_c = 1
             else:
@@ -1722,7 +1721,7 @@ class non_hermitian_matrix_detection(TestCase): # {{{
         self.assertEqual(left_boundary_1.shape,(1,))
         self.assertEqual(left_boundary_2.shape,(1,))
         if norm(left_boundary_1) > 1e-7:
-            self.assertNotAlmostEqual(left_boundary_1.ravel(),left_boundary_2.conj().ravel())
+            self.assertFalse(allclose(left_boundary_1.ravel(),left_boundary_2.conj().ravel()))
 # }}}
 # }}}
 
