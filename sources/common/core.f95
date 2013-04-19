@@ -82,6 +82,8 @@ subroutine compute_orthogonal_basis( &
     stop
   end if
 
+  jpvt = 0
+
   basis(:,:n) = vectors(:,:)
 
   lwork1 = -1
