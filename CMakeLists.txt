@@ -1,5 +1,6 @@
 cmake_minimum_required (VERSION 2.8.8)
 project (Nutcracker C CXX Fortran)
+enable_language (Fortran)
 
 set(VERSION 1)
 
