@@ -276,7 +276,7 @@ void Chain::reset() {
     }
 
     complex<double> const expectation_value = computeExpectationValueAtCurrentSite();
-    if(abs(expectation_value.imag()) > 1e-10) throw InitialChainEnergyNotRealError(expectation_value);
+    if(abs(expectation_value.imag())/abs(expectation_value) > 1e-10) throw InitialChainEnergyNotRealError(expectation_value);
     energy = expectation_value.real();
 
     signalChainReset();
