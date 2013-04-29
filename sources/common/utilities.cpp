@@ -19,6 +19,7 @@ using boost::irange;
 using std::ceil;
 using std::make_pair;
 using std::multiplies;
+using std::runtime_error;
 
 unsigned long long choose(unsigned int const n, unsigned int const k) {
     assert(k <= n);
@@ -28,6 +29,10 @@ vector<unsigned int> computeBandwidthDimensionSequence(
     unsigned int const requested_bandwidth_dimension
    ,vector<unsigned int> const& physical_dimensions
 ) {
+    if(requested_bandwidth_dimension == 0) {
+        throw runtime_error("requested bandwidth for the sequence must be greater than zero");
+    }
+
     unsigned int const middle_index = (physical_dimensions.size()+1)/2;
 
     vector<unsigned int> forward_bandwidth_dimensions(1,1);
