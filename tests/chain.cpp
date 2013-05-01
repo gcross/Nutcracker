@@ -113,14 +113,24 @@ TEST_CASE(maximumBandwidthDimension) {
         try {
             computeBandwidthDimensionSequence(maximum_bandwidth_dimension,physical_dimensions);
         } catch(RequestedBandwidthDimensionTooLargeError const& e) {
-            FATALLY_FAIL("The maximum bandwidth was too large!");
+            ostringstream message;
+            message << "The maximum bandwidth (" << maximum_bandwidth_dimension << ") was too large for the sequence:";
+            BOOST_FOREACH(unsigned int const physical_dimension, physical_dimensions) {
+                message << ' ' << physical_dimension;
+            }
+            FATALLY_FAIL(message.str())
         }
         try {
             computeBandwidthDimensionSequence(maximum_bandwidth_dimension+1,physical_dimensions);
         } catch(RequestedBandwidthDimensionTooLargeError const& e) {
             continue;
         }
-        FATALLY_FAIL("The maximum bandwidth was too small!");
+        ostringstream message;
+        message << "The maximum bandwidth (" << maximum_bandwidth_dimension << ") was too small for the sequence:";
+        BOOST_FOREACH(unsigned int const physical_dimension, physical_dimensions) {
+            message << ' ' << physical_dimension;
+        }
+        FATALLY_FAIL(message.str())
     }
 }
 TEST_CASE(moveLeftAndRight) {
