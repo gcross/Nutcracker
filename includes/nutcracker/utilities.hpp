@@ -54,7 +54,6 @@ using boost::reverse;
 using boost::reverse_copy;
 
 using std::abs;
-using std::accumulate;
 using std::complex;
 using std::iterator_traits;
 using std::min;
@@ -224,20 +223,33 @@ template<typename PhysicalDimensionRange> unsigned int maximumBandwidthDimension
     if(physical_dimensions.size() == 1) return 1;
     size_t middle_index = (physical_dimensions.size()+1)/2;
 
-    return min(
-        accumulate(
-             physical_dimensions.begin()
-            ,physical_dimensions.begin()+middle_index
-            ,1
-            ,multiplies<unsigned int>()
-        )
-       ,accumulate(
-             physical_dimensions.rbegin()
-            ,physical_dimensions.rbegin()+middle_index
-            ,1
-            ,multiplies<unsigned int>()
-        )
-    );
+    unsigned int forward_bandwidth_dimension = 1;
+    BOOST_FOREACH(
+        unsigned int const physical_dimension,
+        make_iterator_range(physical_dimensions.begin(),physical_dimensions.begin()+middle_index)
+    ) {
+        if(UINT_MAX/physical_dimension > forward_bandwidth_dimension) {
+            forward_bandwidth_dimension *= physical_dimension;
+        } else {
+            forward_bandwidth_dimension = UINT_MAX;
+            break;
+        }
+    }
+
+    unsigned int backward_bandwidth_dimension = 1;
+    BOOST_FOREACH(
+        unsigned int const physical_dimension,
+        make_iterator_range(physical_dimensions.rbegin(),physical_dimensions.rbegin()+middle_index)
+    ) {
+        if(UINT_MAX/physical_dimension > backward_bandwidth_dimension) {
+            backward_bandwidth_dimension *= physical_dimension;
+        } else {
+            backward_bandwidth_dimension = UINT_MAX;
+            break;
+        }
+    }
+
+    return min(forward_bandwidth_dimension,backward_bandwidth_dimension);
 }
 
 //! @}
