@@ -215,6 +215,22 @@ vector<unsigned int> computeBandwidthDimensionSequence(
     unsigned int const requested_bandwidth_dimension
    ,vector<unsigned int> const& physical_dimensions
 );
+
+template<typename Iterator> unsigned int computeOverflowingProduct(Iterator const begin, Iterator const end) {
+    unsigned int result = 1;
+    BOOST_FOREACH(
+        unsigned int const element,
+        make_iterator_range(begin,end)
+    ) {
+        if(UINT_MAX/element > result) {
+            result *= element;
+        } else {
+            return UINT_MAX;
+        }
+    }
+    return result;
+}
+
 //! Computes the maximum bandwidth dimension attainable given the sequence of physical dimensions.
 template<typename PhysicalDimensionRange> unsigned int maximumBandwidthDimension(
     PhysicalDimensionRange const& physical_dimensions
@@ -223,33 +239,16 @@ template<typename PhysicalDimensionRange> unsigned int maximumBandwidthDimension
     if(physical_dimensions.size() == 1) return 1;
     size_t middle_index = (physical_dimensions.size()+1)/2;
 
-    unsigned int forward_bandwidth_dimension = 1;
-    BOOST_FOREACH(
-        unsigned int const physical_dimension,
-        make_iterator_range(physical_dimensions.begin(),physical_dimensions.begin()+middle_index)
-    ) {
-        if(UINT_MAX/physical_dimension > forward_bandwidth_dimension) {
-            forward_bandwidth_dimension *= physical_dimension;
-        } else {
-            forward_bandwidth_dimension = UINT_MAX;
-            break;
-        }
-    }
-
-    unsigned int backward_bandwidth_dimension = 1;
-    BOOST_FOREACH(
-        unsigned int const physical_dimension,
-        make_iterator_range(physical_dimensions.rbegin(),physical_dimensions.rbegin()+middle_index)
-    ) {
-        if(UINT_MAX/physical_dimension > backward_bandwidth_dimension) {
-            backward_bandwidth_dimension *= physical_dimension;
-        } else {
-            backward_bandwidth_dimension = UINT_MAX;
-            break;
-        }
-    }
-
-    return min(forward_bandwidth_dimension,backward_bandwidth_dimension);
+    return min(
+        computeOverflowingProduct(
+            physical_dimensions.begin(),
+            physical_dimensions.begin()+middle_index
+        ),
+        computeOverflowingProduct(
+            physical_dimensions.rbegin(),
+            physical_dimensions.rbegin()+middle_index
+        )
+    );
 }
 
 //! @}

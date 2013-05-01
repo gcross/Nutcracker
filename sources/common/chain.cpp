@@ -20,7 +20,6 @@
 
 namespace Nutcracker {
 
-using boost::accumulate;
 using boost::adaptors::transformed;
 using boost::adaptors::reversed;
 using boost::function;
@@ -36,7 +35,7 @@ Chain::Chain(Operator const& operator_sites)
   , number_of_sites(operator_sites.size())
   , operator_sites(operator_sites)
   , physical_dimensions(extractPhysicalDimensions(operator_sites))
-  , maximum_number_of_levels(accumulate(physical_dimensions,1,multiplies<unsigned int>()))
+  , maximum_number_of_levels(computeOverflowingProduct(physical_dimensions.begin(),physical_dimensions.end()))
   , maximum_bandwidth_dimension(maximumBandwidthDimension(physical_dimensions))
 {
     assert(number_of_sites > 0);
@@ -49,7 +48,7 @@ Chain::Chain(Operator const& operator_sites, ChainOptions const& options)
   , number_of_sites(operator_sites.size())
   , operator_sites(operator_sites)
   , physical_dimensions(extractPhysicalDimensions(operator_sites))
-  , maximum_number_of_levels(accumulate(physical_dimensions,1,multiplies<unsigned int>()))
+  , maximum_number_of_levels(computeOverflowingProduct(physical_dimensions.begin(),physical_dimensions.end()))
   , maximum_bandwidth_dimension(maximumBandwidthDimension(physical_dimensions))
 {
     assert(number_of_sites > 0);
