@@ -1,6 +1,7 @@
 #ifndef NUTCRACKER_CHAIN_HPP
 #define NUTCRACKER_CHAIN_HPP
 
+// Includes {{{
 #include <boost/container/vector.hpp>
 #include <boost/iterator/iterator_facade.hpp>
 #include <boost/lambda/lambda.hpp>
@@ -16,9 +17,11 @@
 #include "nutcracker/projectors.hpp"
 #include "nutcracker/states.hpp"
 #include "nutcracker/tensors.hpp"
+// }}}
 
 namespace Nutcracker {
 
+// Usings {{{
 using boost::adaptors::transformed;
 using boost::function;
 using boost::irange;
@@ -28,8 +31,10 @@ using boost::random_access_traversal_tag;
 using boost::signal;
 
 namespace lambda = boost::lambda;
+// }}}
 
-struct ChainNotAtFirstSiteError : public std::logic_error {
+// Exceptions {{{
+struct ChainNotAtFirstSiteError : public std::logic_error { // {{{
     unsigned int current_site_number;
     ChainNotAtFirstSiteError(unsigned int current_site_number)
       : std::logic_error((
@@ -38,8 +43,8 @@ struct ChainNotAtFirstSiteError : public std::logic_error {
         ).str())
       , current_site_number(current_site_number)
     {}
-};
-struct InitialChainEnergyNotRealError : public std::runtime_error {
+}; // }}}
+struct InitialChainEnergyNotRealError : public std::runtime_error { // {{{
     complex<double> const energy;
     InitialChainEnergyNotRealError(complex<double> const energy)
       : std::runtime_error((
@@ -48,8 +53,11 @@ struct InitialChainEnergyNotRealError : public std::runtime_error {
         ).str())
       , energy(energy)
     {}
-};
-class Solution {
+}; // }}}
+// }}}
+
+// Classes {{{
+class Solution { // {{{
 private:
     BOOST_MOVABLE_BUT_NOT_COPYABLE(Solution)
 public:
@@ -73,8 +81,8 @@ public:
         eigenvector = boost::move(other.eigenvector);
         return *this;
     }
-};
-template<typename side> struct Neighbor {
+}; // }}}
+template<typename side> struct Neighbor { // {{{
 private:
     BOOST_MOVABLE_BUT_NOT_COPYABLE(Neighbor)
 public:
@@ -82,28 +90,29 @@ public:
     StateSite<side> state_site;
     vector<OverlapBoundary<side> > overlap_boundaries;
 
-    Neighbor(BOOST_RV_REF(Neighbor) other)
+    Neighbor(BOOST_RV_REF(Neighbor) other) // {{{
       : expectation_boundary(boost::move(other.expectation_boundary))
       , state_site(boost::move(other.state_site))
       , overlap_boundaries(boost::move(other.overlap_boundaries))
-    { }
+    { } // }}}
 
     Neighbor(
           BOOST_RV_REF(ExpectationBoundary<side>) expectation_boundary
         , BOOST_RV_REF(StateSite<side>) state_site
         , BOOST_RV_REF(vector<OverlapBoundary<side> >) overlap_boundaries
+    // {{{
     ) : expectation_boundary(expectation_boundary)
       , state_site(state_site)
       , overlap_boundaries(overlap_boundaries)
-    { }
+    { } // }}}
 
-    void operator=(BOOST_RV_REF(Neighbor) other) {
+    void operator=(BOOST_RV_REF(Neighbor) other) { // {{{
         expectation_boundary = boost::move(other.expectation_boundary);
         state_site = boost::move(other.state_site);
         overlap_boundaries = boost::move(other.overlap_boundaries);
-    }
-};
-struct ChainOptions {
+    } // }}}
+}; // }}}
+struct ChainOptions { // {{{
     unsigned int maximum_number_of_iterations;
     double sanity_check_threshold;
     double site_convergence_threshold;
@@ -145,8 +154,8 @@ struct ChainOptions {
 
 #undef GENERATE_ChainOptions_SETTER
 
-};
-class Chain: boost::noncopyable, public ChainOptions {
+}; // }}}
+class Chain: boost::noncopyable, public ChainOptions { // {{{
 public:
     unsigned int const number_of_sites;
 protected:
@@ -276,6 +285,8 @@ public:
     template<typename Callback> void callWithStateSites(Callback& callback) const;
 };
 
+// External methods {{{
+
 template<> inline ExpectationBoundary<Left>& Chain::expectationBoundary<Left>() { return left_expectation_boundary; }
 template<> inline ExpectationBoundary<Right>& Chain::expectationBoundary<Right>() { return right_expectation_boundary; }
 
@@ -361,6 +372,10 @@ template<typename Outputter> void Chain::writeStateTo(Outputter& out) const {
         out << neighbor.state_site;
     }
 }
+// }}}
+
+// }}}
+// }}}
 
 }
 
