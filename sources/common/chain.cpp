@@ -1,3 +1,4 @@
+// Includes {{{
 #include <boost/assign.hpp>
 #include <boost/bind.hpp>
 #include <boost/foreach.hpp>
@@ -17,9 +18,11 @@
 #include "nutcracker/core.hpp"
 #include "nutcracker/optimizer.hpp"
 #include "nutcracker/utilities.hpp"
+// }}}
 
 namespace Nutcracker {
 
+// Usings {{{
 using boost::adaptors::transformed;
 using boost::adaptors::reversed;
 using boost::function;
@@ -29,8 +32,9 @@ using std::abs;
 using std::max;
 using std::min;
 using std::numeric_limits;
+// }}}
 
-Chain::Chain(Operator const& operator_sites, optional<ChainOptions const&> maybe_options)
+Chain::Chain(Operator const& operator_sites, optional<ChainOptions const&> maybe_options) // {{{
   : BaseChain(maybe_options)
   , number_of_sites(operator_sites.size())
   , operator_sites(operator_sites)
@@ -41,15 +45,18 @@ Chain::Chain(Operator const& operator_sites, optional<ChainOptions const&> maybe
     assert(number_of_sites > 0);
 
     reset();
-}
-void Chain::checkAtFirstSite() const {
+} // }}}
+
+void Chain::checkAtFirstSite() const {{{
     if(current_site_number != 0u) throw ChainNotAtFirstSiteError(current_site_number);
-}
-void Chain::clear() {
+}}}
+
+void Chain::clear() {{{
     projectors.clear();
     reset();
-}
-complex<double> Chain::computeExpectationValueAtCurrentSite() const {
+}}}
+
+complex<double> Chain::computeExpectationValueAtCurrentSite() const {{{
     return 
         Nutcracker::computeExpectationValueAtSite(
              left_expectation_boundary
@@ -57,14 +64,17 @@ complex<double> Chain::computeExpectationValueAtCurrentSite() const {
             ,*operator_sites[current_site_number]
             ,right_expectation_boundary
         );
-}
-double Chain::computeProjectorOverlapAtCurrentSite() const {
+}}}
+
+double Chain::computeProjectorOverlapAtCurrentSite() const {{{
     return computeOverlapWithProjectors(projector_matrix,state_site);
-}
-double Chain::computeStateNorm() const {
+}}}
+
+double Chain::computeStateNorm() const {{{
     return state_site.norm();
-}
-void Chain::constructAndAddProjectorFromState() {
+}}}
+
+void Chain::constructAndAddProjectorFromState() {{{
     using namespace boost;
     checkAtFirstSite();
     projectors.push_back(
@@ -73,8 +83,9 @@ void Chain::constructAndAddProjectorFromState() {
             ,right_neighbors | reversed | transformed(bind(&Neighbor<Right>::state_site,_1))
         )
     );
-}
-void Chain::increaseBandwidthDimension(unsigned int const new_bandwidth_dimension) {
+}}}
+
+void Chain::increaseBandwidthDimension(unsigned int const new_bandwidth_dimension) {{{
     if(bandwidth_dimension == new_bandwidth_dimension) return;
     assert(bandwidth_dimension < new_bandwidth_dimension);
     assert(new_bandwidth_dimension <= maximum_bandwidth_dimension);
@@ -119,8 +130,9 @@ void Chain::increaseBandwidthDimension(unsigned int const new_bandwidth_dimensio
     bandwidth_dimension = new_bandwidth_dimension;
 
     resetProjectorMatrix();
-}
-State Chain::makeCopyOfState() const {
+}}}
+
+State Chain::makeCopyOfState() const {{{
     checkAtFirstSite();
     StateSite<Middle> first_state_site(copyFrom<StateSite<Middle> const>(state_site));
     vector<StateSite<Right> > rest_state_sites; rest_state_sites.reserve(number_of_sites-1);
@@ -131,8 +143,9 @@ State Chain::makeCopyOfState() const {
          boost::move(first_state_site)
         ,boost::move(rest_state_sites)
     );
-}
-void Chain::moveTo(unsigned int new_site_number) {
+}}}
+
+void Chain::moveTo(unsigned int new_site_number) {{{
     assert(new_site_number < number_of_sites);
     while(current_site_number > new_site_number) {
         move<Left>();
@@ -140,8 +153,9 @@ void Chain::moveTo(unsigned int new_site_number) {
     while(current_site_number < new_site_number) {
         move<Right>();
     }
-}
-void Chain::optimizeChain() {
+}}}
+
+void Chain::optimizeChain() {{{
     double previous_energy = energy;
     sweepUntilConverged();
     while(outsideTolerance(previous_energy,energy,chain_convergence_threshold)
@@ -152,8 +166,9 @@ void Chain::optimizeChain() {
         sweepUntilConverged();
     }
     signalChainOptimized();
-}
-void Chain::optimizeSite() {
+}}}
+
+void Chain::optimizeSite() {{{
     try {
         OptimizerResult result(
             optimizeStateSite(
@@ -179,8 +194,9 @@ void Chain::optimizeSite() {
     } catch(OptimizerFailure& failure) {
         signalOptimizeSiteFailure(failure);
     }
-}
-void Chain::performOptimizationSweep() {
+}}}
+
+void Chain::performOptimizationSweep() {{{
     unsigned int const starting_site = current_site_number;
     optimizeSite();
     while(current_site_number+1 < number_of_sites) {
@@ -196,8 +212,9 @@ void Chain::performOptimizationSweep() {
         optimizeSite();
     }
     signalSweepPerformed();
-}
-State Chain::removeState() {
+}}}
+
+State Chain::removeState() {{{
     checkAtFirstSite();
     vector<StateSite<Right> > rest_state_sites;
     BOOST_FOREACH(Neighbor<Right>& neighbor, right_neighbors | reversed) {
@@ -205,8 +222,9 @@ State Chain::removeState() {
     }
     right_neighbors.clear();
     return State(boost::move(state_site),boost::move(rest_state_sites));
-}
-void Chain::reset() {
+}}}
+
+void Chain::reset() {{{
     bandwidth_dimension =
         min(maximum_bandwidth_dimension
            ,max(initial_bandwidth_dimension
@@ -266,8 +284,9 @@ void Chain::reset() {
     energy = expectation_value.real();
 
     signalChainReset();
-}
-void Chain::resetBoundaries() {
+}}}
+
+void Chain::resetBoundaries() {{{
     left_expectation_boundary = ExpectationBoundary<Left>(make_trivial);
 
     left_overlap_boundaries.clear();
@@ -281,7 +300,9 @@ void Chain::resetBoundaries() {
     REPEAT(projectors.size()) {
         right_overlap_boundaries.emplace_back(make_trivial);
     }
-}
+}}}
+
+// resetProjectorMatrix {{{
 namespace resetProjectorMatrix_IMPLEMENTATION {
     struct FetchOverlapSite {
         typedef OverlapSite<Middle> const& result_type;
@@ -301,6 +322,9 @@ void Chain::resetProjectorMatrix() {
             ,projectors | transformed(FetchOverlapSite(current_site_number))
         );
 }
+// }}}
+
+// solveForEigenvalues {{{
 struct solveForEigenvalues_postSolution {
     Chain& chain;
     vector<double>& solutions;
@@ -322,7 +346,9 @@ vector<double> Chain::solveForEigenvalues(unsigned int number_of_levels) {
     signalChainOptimized.disconnect(solveForEigenvalues_postSolution::group_id);
     return boost::move(eigenvalues);
 }
-void Chain::solveForMultipleLevels(unsigned int number_of_levels) {
+// }}}
+
+void Chain::solveForMultipleLevels(unsigned int number_of_levels) {{{
     assert(number_of_levels+projectors.size() <= maximum_number_of_levels);
     REPEAT(number_of_levels-1) {
         optimizeChain();
@@ -331,7 +357,9 @@ void Chain::solveForMultipleLevels(unsigned int number_of_levels) {
         reset();
     }
     optimizeChain();
-}
+}}}
+
+// solveForMultipleLevelsAndThenClearChain {{{
 struct solveForMultipleLevelsAndThenClearChain_postSolution {
     Chain& chain;
     vector<Solution>& solutions;
@@ -343,7 +371,6 @@ struct solveForMultipleLevelsAndThenClearChain_postSolution {
         solutions.push_back(Solution(chain.getEnergy(),state));
     }
 };
-
 vector<Solution> Chain::solveForMultipleLevelsAndThenClearChain(unsigned int number_of_levels) {
     assert(!storeState);
     vector<Solution> solutions;
@@ -354,7 +381,9 @@ vector<Solution> Chain::solveForMultipleLevelsAndThenClearChain(unsigned int num
     storeState.clear();
     return boost::move(solutions);
 }
-void Chain::sweepUntilConverged() {
+// }}}
+
+void Chain::sweepUntilConverged() {{{
     double previous_energy = energy;
     performOptimizationSweep();
     while(outsideTolerance(previous_energy,energy,sweep_convergence_threshold)) {
@@ -362,6 +391,6 @@ void Chain::sweepUntilConverged() {
         performOptimizationSweep();
     }
     signalSweepsConverged();
-}
+}}}
 
 }
