@@ -30,7 +30,7 @@ using std::min;
 using std::numeric_limits;
 
 Chain::Chain(Operator const& operator_sites)
-  : ChainOptions()
+  : BaseChain()
   , number_of_sites(operator_sites.size())
   , operator_sites(operator_sites)
   , physical_dimensions(extractPhysicalDimensions(operator_sites))
@@ -43,7 +43,7 @@ Chain::Chain(Operator const& operator_sites)
 }
 
 Chain::Chain(Operator const& operator_sites, ChainOptions const& options)
-  : ChainOptions(options)
+  : BaseChain(options)
   , number_of_sites(operator_sites.size())
   , operator_sites(operator_sites)
   , physical_dimensions(extractPhysicalDimensions(operator_sites))

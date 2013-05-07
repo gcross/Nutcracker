@@ -7,9 +7,9 @@
 #include <boost/lambda/lambda.hpp>
 #include <boost/move/move.hpp>
 #include <boost/range/adaptor/transformed.hpp>
-#include <boost/signal.hpp>
 #include <boost/utility/result_of.hpp>
 
+#include "nutcracker/base_chain.hpp"
 #include "nutcracker/boundaries.hpp"
 #include "nutcracker/chain_options.hpp"
 #include "nutcracker/core.hpp"
@@ -29,7 +29,6 @@ using boost::irange;
 using boost::iterator_facade;
 using boost::none;
 using boost::random_access_traversal_tag;
-using boost::signal;
 
 namespace lambda = boost::lambda;
 // }}}
@@ -113,22 +112,18 @@ public:
         overlap_boundaries = boost::move(other.overlap_boundaries);
     } // }}}
 }; // }}}
-class Chain: boost::noncopyable, public ChainOptions { // {{{
+class Chain: public BaseChain { // {{{
 public:
     unsigned int const number_of_sites;
 protected:
     Operator const operator_sites;
     vector<Projector> projectors;
     unsigned int current_site_number;
-    ExpectationBoundary<Left> left_expectation_boundary;
     vector<OverlapBoundary<Left> > left_overlap_boundaries;
-    ExpectationBoundary<Right> right_expectation_boundary;
     vector<OverlapBoundary<Right> > right_overlap_boundaries;
-    StateSite<Middle> state_site;
     vector<Neighbor<Left> > left_neighbors;
     vector<Neighbor<Right> > right_neighbors;
     ProjectorMatrix projector_matrix;
-    double energy;
     vector<unsigned int> physical_dimensions;
 public:
     unsigned int const maximum_number_of_levels;
@@ -136,9 +131,6 @@ public:
 protected:
     unsigned int bandwidth_dimension;
 
-    template<typename side> ExpectationBoundary<side>& expectationBoundary() {
-        throw BadLabelException("Chain::expectationBoundary()",typeid(side));
-    }
     template<typename side> vector<OverlapBoundary<side> >& overlapBoundaries() {
         throw BadLabelException("Chain::overlapBoundaries()",typeid(side));
     }
@@ -157,18 +149,11 @@ public:
     Chain(Operator const& operator_sites);
     Chain(Operator const& operator_sites, ChainOptions const& options);
 
-    signal<void (unsigned int)> signalOptimizeSiteSuccess;
-    signal<void (OptimizerFailure&)> signalOptimizeSiteFailure;
-    signal<void ()> signalSweepPerformed;
-    signal<void ()> signalSweepsConverged;
-    signal<void ()> signalChainOptimized;
-    signal<void ()> signalChainReset;
     function<void (BOOST_RV_REF(State) state)> storeState;
 
     void clear();
     void reset();
 
-    double getEnergy() const { return energy; }
     unsigned int bandwidthDimension() const { return bandwidth_dimension; }
 
     complex<double> computeExpectationValueAtCurrentSite() const;
@@ -246,9 +231,6 @@ public:
 };
 
 // External methods {{{
-
-template<> inline ExpectationBoundary<Left>& Chain::expectationBoundary<Left>() { return left_expectation_boundary; }
-template<> inline ExpectationBoundary<Right>& Chain::expectationBoundary<Right>() { return right_expectation_boundary; }
 
 template<> inline vector<OverlapBoundary<Left> >& Chain::overlapBoundaries<Left>() { return left_overlap_boundaries; }
 template<> inline vector<OverlapBoundary<Right> >& Chain::overlapBoundaries<Right>() { return right_overlap_boundaries; }
