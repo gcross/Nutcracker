@@ -23,27 +23,15 @@ namespace Nutcracker {
 using boost::adaptors::transformed;
 using boost::adaptors::reversed;
 using boost::function;
+using boost::optional;
 
 using std::abs;
 using std::max;
 using std::min;
 using std::numeric_limits;
 
-Chain::Chain(Operator const& operator_sites)
-  : BaseChain()
-  , number_of_sites(operator_sites.size())
-  , operator_sites(operator_sites)
-  , physical_dimensions(extractPhysicalDimensions(operator_sites))
-  , maximum_number_of_levels(computeOverflowingProduct(physical_dimensions.begin(),physical_dimensions.end()))
-  , maximum_bandwidth_dimension(maximumBandwidthDimension(physical_dimensions))
-{
-    assert(number_of_sites > 0);
-
-    reset();
-}
-
-Chain::Chain(Operator const& operator_sites, ChainOptions const& options)
-  : BaseChain(options)
+Chain::Chain(Operator const& operator_sites, optional<ChainOptions const&> maybe_options)
+  : BaseChain(maybe_options)
   , number_of_sites(operator_sites.size())
   , operator_sites(operator_sites)
   , physical_dimensions(extractPhysicalDimensions(operator_sites))

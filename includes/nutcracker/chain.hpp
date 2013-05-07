@@ -6,6 +6,7 @@
 #include <boost/iterator/iterator_facade.hpp>
 #include <boost/lambda/lambda.hpp>
 #include <boost/move/move.hpp>
+#include <boost/optional.hpp>
 #include <boost/range/adaptor/transformed.hpp>
 #include <boost/utility/result_of.hpp>
 
@@ -146,8 +147,7 @@ protected:
     void checkAtFirstSite() const;
 
 public:
-    Chain(Operator const& operator_sites);
-    Chain(Operator const& operator_sites, ChainOptions const& options);
+    Chain(Operator const& operator_sites, boost::optional<ChainOptions const&> maybe_options = boost::none);
 
     boost::signal<void ()> signalChainReset;
     function<void (BOOST_RV_REF(State) state)> storeState;

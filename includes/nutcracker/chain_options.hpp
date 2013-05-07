@@ -2,12 +2,16 @@
 #define NUTCRACKER_CHAIN_OPTIONS_HPP
 
 #include <boost/function.hpp>
+#include <boost/optional.hpp>
 
 #include "nutcracker/optimizer.hpp"
 
 namespace Nutcracker {
 
 struct ChainOptions { // {{{
+protected:
+    void initializeDefaults();
+public:
     unsigned int maximum_number_of_iterations;
     double sanity_check_threshold;
     double site_convergence_threshold;
@@ -20,6 +24,7 @@ struct ChainOptions { // {{{
     OptimizerMode optimizer_mode;
 
     ChainOptions();
+    explicit ChainOptions(boost::optional<ChainOptions const&> maybe_options);
 
     static ChainOptions const defaults;
 

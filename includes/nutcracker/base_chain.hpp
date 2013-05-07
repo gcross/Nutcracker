@@ -17,7 +17,7 @@ protected:
     double energy;
 
     BaseChain() : ChainOptions() {}
-    BaseChain(ChainOptions const& options) : ChainOptions(options) {}
+    explicit BaseChain(boost::optional<ChainOptions const&> maybe_options) : ChainOptions(maybe_options) {}
 
 public:
     boost::signal<void (unsigned int)> signalOptimizeSiteSuccess;
