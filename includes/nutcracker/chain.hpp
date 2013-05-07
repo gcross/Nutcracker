@@ -156,21 +156,23 @@ public:
     void reset();
 
     unsigned int bandwidthDimension() const { return bandwidth_dimension; }
+    virtual OperatorSite const& getCurrentOperatorSite() const { return *operator_sites[current_site_number]; }
+    virtual ProjectorMatrix const& getCurrentProjectorMatrix() const { return projector_matrix; }
+    virtual unsigned int getCurrentBandwidthDimension() const { return bandwidth_dimension; }
+    virtual unsigned int getMaximumBandwidthDimension() const { return maximum_bandwidth_dimension; }
 
-    complex<double> computeExpectationValueAtCurrentSite() const;
+    using BaseChain::computeExpectationValue;
     double computeProjectorOverlapAtCurrentSite() const;
-    double computeStateNorm() const;
+    using BaseChain::computeStateNorm;
 
     template<typename side> void absorb(BOOST_RV_REF(StateSite<side>) state_site, unsigned int operator_number);
     template<typename side> void move();
     void moveTo(unsigned int new_site_number);
-    void increaseBandwidthDimension(unsigned int const new_bandwidth_dimension);
+    virtual void increaseBandwidthDimension(unsigned int const new_bandwidth_dimension);
     void constructAndAddProjectorFromState();
 
-    void optimizeSite();
-    void performOptimizationSweep();
-    void sweepUntilConverged();
-    void optimizeChain();
+    using BaseChain::optimizeSite;
+    virtual void performOptimizationSweep();
     void solveForMultipleLevels(unsigned int number_of_levels);
     vector<Solution> solveForMultipleLevelsAndThenClearChain(unsigned int number_of_levels);
     vector<double> solveForEigenvalues(unsigned int number_of_levels);

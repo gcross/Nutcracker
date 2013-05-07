@@ -46,6 +46,20 @@ public:
     template<typename side> ExpectationBoundary<side>& expectationBoundary() {
         throw BadLabelException("Chain::expectationBoundary()",typeid(side));
     }
+
+    std::complex<double> computeExpectationValue() const;
+    double computeStateNorm() const;
+
+    virtual OperatorSite const& getCurrentOperatorSite() const = 0;
+    virtual ProjectorMatrix const& getCurrentProjectorMatrix() const = 0;
+    virtual unsigned int getCurrentBandwidthDimension() const = 0;
+    virtual unsigned int getMaximumBandwidthDimension() const = 0;
+
+    void optimizeSite();
+    virtual void performOptimizationSweep() = 0;
+    virtual void increaseBandwidthDimension(unsigned int const new_bandwidth_dimension) = 0;
+    void sweepUntilConverged();
+    void optimizeChain();
 };
 
 template<> inline ExpectationBoundary<Left>& BaseChain::expectationBoundary<Left>() { return left_expectation_boundary; }

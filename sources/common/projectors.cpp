@@ -109,6 +109,11 @@ Projector computeProjectorFromState(State const& state) {{{
     return computeProjectorFromStateSites(state.getFirstSite(),state.getRestSites());
 }}}
 
+ProjectorMatrix const& ProjectorMatrix::getNull() {{{
+    static ProjectorMatrix const null_projector_matrix;
+    return null_projector_matrix;
+}}}
+
 unsigned int minimumBandwidthDimensionForProjectorCount( // {{{
       vector<unsigned int> const& physical_dimensions
     , unsigned int const number_of_projectors

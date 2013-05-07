@@ -62,22 +62,7 @@ ExpectationBoundary<Right> contractSOSRight( // {{{
     , StateSite<Right> const& state_site
     , OperatorSite const& operator_site
 ) {
-    ExpectationBoundary<Right> new_boundary
-        (OperatorDimension(operator_site.leftDimension())
-        ,StateDimension(state_site.leftDimension())
-        );
-    Core::contract_sos_right(
-         state_site.leftDimension()
-        ,state_site | old_boundary
-        ,operator_site.leftDimension()
-        ,operator_site | old_boundary
-        ,operator_site | state_site
-        ,old_boundary
-        ,operator_site.numberOfMatrices(),operator_site,operator_site
-        ,state_site
-        ,new_boundary
-    );
-    return boost::move(new_boundary);
+    return Unsafe::contractSOSRight(old_boundary,state_site,operator_site);
 } // }}}
 
 OverlapBoundary<Left> contractVSLeft( // {{{
@@ -150,6 +135,29 @@ ExpectationBoundary<Left> contractSOSLeft( // {{{
         ,state_site.rightDimension()
         ,old_boundary | operator_site
         ,operator_site.rightDimension()
+        ,operator_site | state_site
+        ,old_boundary
+        ,operator_site.numberOfMatrices(),operator_site,operator_site
+        ,state_site
+        ,new_boundary
+    );
+    return boost::move(new_boundary);
+} // }}}
+
+ExpectationBoundary<Right> contractSOSRight( // {{{
+      ExpectationBoundary<Right> const& old_boundary
+    , StateSiteAny const& state_site
+    , OperatorSite const& operator_site
+) {
+    ExpectationBoundary<Right> new_boundary
+        (OperatorDimension(operator_site.leftDimension())
+        ,StateDimension(state_site.leftDimension())
+        );
+    Core::contract_sos_right(
+         state_site.leftDimension()
+        ,state_site | old_boundary
+        ,operator_site.leftDimension()
+        ,operator_site | old_boundary
         ,operator_site | state_site
         ,old_boundary
         ,operator_site.numberOfMatrices(),operator_site,operator_site

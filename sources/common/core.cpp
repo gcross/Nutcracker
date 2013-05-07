@@ -7,7 +7,7 @@
 
 namespace Nutcracker { namespace Core {
 
-
+// apply_single_site_operator {{{
 // extern "C" void apply_single_site_operator_(
 //     uint32_t const* br,
 //     uint32_t const* bl,
@@ -27,6 +27,7 @@ namespace Nutcracker { namespace Core {
 // ) {
 //     return apply_single_site_operator_(&br,&bl,&d,state_site_tensor,local_operator,new_state_site_tensor);
 // }
+// }}}
 
 // compute_expectation {{{
 extern "C" void compute_expectation_(
@@ -226,7 +227,7 @@ void contract_sos_right(
 }
 // }}}
 
-// contract_vs_left
+// contract_vs_left {{{
 extern "C" void contract_vs_left_(
     uint32_t const* b_left_old, uint32_t const* b_right_old,
     uint32_t const* b_left_new, uint32_t const* b_right_new,
@@ -288,6 +289,7 @@ void contract_vs_right(
 }
 // }}}
 
+// convert_vectors_to_reflectors {{{
 extern "C" uint32_t convert_vectors_to_reflectors_(
     uint32_t const* n,
     uint32_t const* m,
@@ -296,7 +298,6 @@ extern "C" uint32_t convert_vectors_to_reflectors_(
     complex<double>* coefficients,
     uint32_t* swaps
 );
-
 uint32_t convert_vectors_to_reflectors(
     uint32_t const n,
     uint32_t const m,
@@ -315,6 +316,9 @@ uint32_t convert_vectors_to_reflectors(
     );
     return rank;
 }
+// }}}
+
+// extend_state_vector_fragment {{{
 extern "C" void extend_state_vector_fragment_(
     uint32_t const* bm
   , uint32_t const* br
@@ -324,7 +328,6 @@ extern "C" void extend_state_vector_fragment_(
   , complex<double> const* site_tensor
   , complex<double>* new_state_vector_fragment
 );
-
 void extend_state_vector_fragment(
     uint32_t const bm
   , uint32_t const br
@@ -344,6 +347,9 @@ void extend_state_vector_fragment(
         ,new_state_vector_fragment
     );
 }
+// }}}
+
+// filter_components_outside_orthog {{{
 extern "C" void filter_components_outside_orthog_(
     uint32_t const* full_space_dimension
   , uint32_t const* number_of_projectors
@@ -355,7 +361,6 @@ extern "C" void filter_components_outside_orthog_(
   , complex<double> const* input
   , complex<double> const* output
 );
-
 void filter_components_outside_orthog(
     uint32_t const full_space_dimension
   , uint32_t const number_of_projectors
@@ -374,6 +379,9 @@ void filter_components_outside_orthog(
         output
     );
 }
+// }}}
+
+// form_norm_overlap_tensors {{{
 extern "C" void form_norm_overlap_tensors_(
     uint32_t const* bl, uint32_t const* bm, uint32_t const* br,
     uint32_t const* dl, uint32_t const* dr,
@@ -384,7 +392,6 @@ extern "C" void form_norm_overlap_tensors_(
     complex<double> const* unnormalized_state_tensor_2,
     complex<double> const* right_norm_overlap_tensor_2
 );
-
 void form_norm_overlap_tensors(
     uint32_t const bl, uint32_t const bm, uint32_t const br,
     uint32_t const dl, uint32_t const dr,
@@ -407,6 +414,9 @@ void form_norm_overlap_tensors(
         right_norm_overlap_tensor_2
     );
 }
+// }}}
+
+//form_overlap_site_tensor {{{
 extern "C" void form_overlap_site_tensor_(
     uint32_t const* br,
     uint32_t const* bl,
@@ -414,7 +424,6 @@ extern "C" void form_overlap_site_tensor_(
     complex<double> const* state_site_tensor,
     complex<double>* overlap_site_tensor
 );
-
 void form_overlap_site_tensor(
     uint32_t const br,
     uint32_t const bl,
@@ -424,6 +433,9 @@ void form_overlap_site_tensor(
 ) {
     return form_overlap_site_tensor_(&br,&bl,&d,state_site_tensor,overlap_site_tensor);
 }
+// }}}
+
+// form_overlap_vector {{{
 extern "C" void form_overlap_vector_(
     uint32_t const* b_left_old, uint32_t const* b_right_old,
     uint32_t const* b_left_new, uint32_t const* b_right_new,
@@ -433,7 +445,6 @@ extern "C" void form_overlap_vector_(
     complex<double> const* unnormalized_projector_site_tensor,
     complex<double>* overlap_vector
 );
-
 void form_overlap_vector(
     uint32_t const b_left_old, uint32_t const b_right_old,
     uint32_t const b_left_new, uint32_t const b_right_new,
@@ -453,6 +464,9 @@ void form_overlap_vector(
         overlap_vector
     );
 }
+// }}}
+
+// increase_bandwidth_between {{{
 extern "C" int increase_bandwidth_between_(
     uint32_t const* bl, uint32_t const* bm, uint32_t const* br,
     uint32_t const* dl, uint32_t const* dr,
@@ -462,7 +476,6 @@ extern "C" int increase_bandwidth_between_(
     complex<double>* normalized_site_tensor,
     complex<double>* denormalized_site_tensor
 );
-
 int increase_bandwidth_between(
     uint32_t const bl, uint32_t const bm, uint32_t const br,
     uint32_t const dl, uint32_t const dr,
@@ -483,6 +496,9 @@ int increase_bandwidth_between(
         denormalized_site_tensor
     );
 }
+// }}}
+
+// norm_denorm_going_left {{{
 extern "C" int norm_denorm_going_left_(
     uint32_t const* bll, uint32_t const* bl, uint32_t const* br,
     uint32_t const* dl, uint32_t const* d,
@@ -491,7 +507,6 @@ extern "C" int norm_denorm_going_left_(
     complex<double>* denormalized_site_tensor,
     complex<double>* normalized_site_tensor
 );
-
 int norm_denorm_going_left(
     uint32_t const bll, uint32_t const bl, uint32_t const br,
     uint32_t const dl, uint32_t const d,
@@ -510,6 +525,9 @@ int norm_denorm_going_left(
         normalized_site_tensor
     );
 }
+// }}}
+
+// norm_denorm_going_right {{{
 extern "C" int norm_denorm_going_right_(
     uint32_t const* bl, uint32_t const* br, uint32_t const* brr,
     uint32_t const* d, uint32_t const* dr,
@@ -518,7 +536,6 @@ extern "C" int norm_denorm_going_right_(
     complex<double>* normalized_site_tensor,
     complex<double>* denormalized_site_tensor
 );
-
 int norm_denorm_going_right(
     uint32_t const bl, uint32_t const br, uint32_t const brr,
     uint32_t const d, uint32_t const dr,
@@ -537,6 +554,9 @@ int norm_denorm_going_right(
         denormalized_site_tensor
     );
 }
+// }}}
+
+// optimize {{{
 extern "C" uint32_t optimize_(
     uint32_t const* bl,
     uint32_t const* br,
@@ -555,7 +575,6 @@ extern "C" uint32_t optimize_(
     complex<double>* eigenvalue,
     double* normal
 );
-
 uint32_t optimize(
     uint32_t const bl,
     uint32_t const br,
@@ -594,13 +613,15 @@ uint32_t optimize(
         &normal
     );
 }
+// }}}
+
+// rand_norm_state_site_tensor {{{
 extern "C" void rand_norm_state_site_tensor_(
     uint32_t const* br,
     uint32_t const* bl,
     uint32_t const* d,
     complex<double>* state_site_tensor
 );
-
 void rand_norm_state_site_tensor(
     uint32_t const br,
     uint32_t const bl,
@@ -609,13 +630,15 @@ void rand_norm_state_site_tensor(
 ) {
     rand_norm_state_site_tensor_(&br,&bl,&d,state_site_tensor);
 }
+// }}}
+
+// rand_unnorm_state_site_tensor {{{
 extern "C" void rand_unnorm_state_site_tensor_(
     uint32_t const* br,
     uint32_t const* bl,
     uint32_t const* d,
     complex<double>* state_site_tensor
 );
-
 void rand_unnorm_state_site_tensor(
     uint32_t const br,
     uint32_t const bl,
@@ -624,12 +647,14 @@ void rand_unnorm_state_site_tensor(
 ) {
     rand_unnorm_state_site_tensor_(&br,&bl,&d,state_site_tensor);
 }
+// }}}
+
+// random_projector_matrix {{{
 extern "C" void random_projector_matrix_(
     uint32_t const* projector_length, uint32_t const* number_of_projectors,
     uint32_t const* rank,
     complex<double>* reflectors, complex<double>* coefficients, uint32_t* swaps
 );
-
 uint32_t random_projector_matrix(
     uint32_t const projector_length, uint32_t const number_of_projectors,
     complex<double>* reflectors, complex<double>* coefficients, uint32_t* swaps
@@ -638,5 +663,43 @@ uint32_t random_projector_matrix(
     random_projector_matrix_(&projector_length,&number_of_projectors,&rank,reflectors,coefficients,swaps);
     return rank;
 }
+// }}}
+
+// increase_bandwidth_with_environment {{{
+extern "C" void increase_bandwidth_with_environment_(
+    uint32_t const* b,
+    uint32_t const* c,
+    uint32_t const* d,
+    uint32_t const* new_b,
+    complex<double> const* old_state_site_tensor,
+    complex<double> const* old_left_exp_environment,
+    complex<double> const* old_right_exp_environment,
+    complex<double>* new_state_site_tensor,
+    complex<double>* new_left_exp_environment,
+    complex<double>* new_right_exp_environment
+);
+void increase_bandwidth_with_environment(
+    uint32_t const b,
+    uint32_t const c,
+    uint32_t const d,
+    uint32_t const new_b,
+    complex<double> const* old_state_site_tensor,
+    complex<double> const* old_left_exp_environment,
+    complex<double> const* old_right_exp_environment,
+    complex<double>* new_state_site_tensor,
+    complex<double>* new_left_exp_environment,
+    complex<double>* new_right_exp_environment
+) {
+    increase_bandwidth_with_environment_(
+        &b,&c,&d,&new_b,
+        old_state_site_tensor,
+        old_left_exp_environment,
+        old_right_exp_environment,
+        new_state_site_tensor,
+        new_left_exp_environment,
+        new_right_exp_environment
+    );
+}
+// }}}
 
 }}

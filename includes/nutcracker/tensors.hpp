@@ -2001,7 +2001,7 @@ inline unsigned int operator|(
 } // }}}
 //! Connects the right dimension of a right state site to the operator dimension of a right expectation boundary.
 inline unsigned int operator|(
-      Nutcracker::StateSite<Right> const& state_site
+      Nutcracker::StateSiteAny const& state_site
     , Nutcracker::ExpectationBoundary<Right> const& expectation_boundary
 ) { // {{{
     return connectDimensions(

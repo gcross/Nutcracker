@@ -56,22 +56,8 @@ void Chain::clear() {{{
     reset();
 }}}
 
-complex<double> Chain::computeExpectationValueAtCurrentSite() const {{{
-    return 
-        Nutcracker::computeExpectationValueAtSite(
-             left_expectation_boundary
-            ,state_site
-            ,*operator_sites[current_site_number]
-            ,right_expectation_boundary
-        );
-}}}
-
 double Chain::computeProjectorOverlapAtCurrentSite() const {{{
     return computeOverlapWithProjectors(projector_matrix,state_site);
-}}}
-
-double Chain::computeStateNorm() const {{{
-    return state_site.norm();
 }}}
 
 void Chain::constructAndAddProjectorFromState() {{{
@@ -158,46 +144,6 @@ void Chain::moveTo(unsigned int new_site_number) {{{
     }
 }}}
 
-void Chain::optimizeChain() {{{
-    double previous_energy = energy;
-    sweepUntilConverged();
-    while(outsideTolerance(previous_energy,energy,chain_convergence_threshold)
-       && bandwidth_dimension < maximum_bandwidth_dimension
-    ) {
-        previous_energy = energy;
-        increaseBandwidthDimension(min(computeNewBandwidthDimension(bandwidth_dimension),maximum_bandwidth_dimension));
-        sweepUntilConverged();
-    }
-    signalChainOptimized();
-}}}
-
-void Chain::optimizeSite() {{{
-    try {
-        OptimizerResult result(
-            optimizeStateSite(
-                 left_expectation_boundary
-                ,state_site
-                ,*operator_sites[current_site_number]
-                ,right_expectation_boundary
-                ,projector_matrix
-                ,site_convergence_threshold
-                ,sanity_check_threshold
-                ,maximum_number_of_iterations
-                ,optimizer_mode
-            )
-        );
-        if(optimizer_mode.checkForRegressionFromTo(energy,result.eigenvalue,sanity_check_threshold)) {
-            throw OptimizerObtainedRegressiveEigenvalue(energy,result.eigenvalue);
-        }
-        if((energy >= 0 && result.eigenvalue >= 0) || (energy <= 0 && result.eigenvalue <= 0) || outsideTolerance(abs(energy),abs(result.eigenvalue),sanity_check_threshold)) {
-            energy = result.eigenvalue;
-            state_site = boost::move(result.state_site);
-        }
-        signalOptimizeSiteSuccess(result.number_of_iterations);
-    } catch(OptimizerFailure& failure) {
-        signalOptimizeSiteFailure(failure);
-    }
-}}}
 
 void Chain::performOptimizationSweep() {{{
     unsigned int const starting_site = current_site_number;
@@ -284,7 +230,7 @@ void Chain::reset() {{{
         moveTo(0);
     }
 
-    complex<double> const expectation_value = computeExpectationValueAtCurrentSite();
+    complex<double> const expectation_value = computeExpectationValue();
     if(abs(expectation_value.imag())/abs(expectation_value) > 1e-10) throw InitialChainEnergyNotRealError(expectation_value);
     energy = expectation_value.real();
 
@@ -387,15 +333,5 @@ vector<Solution> Chain::solveForMultipleLevelsAndThenClearChain(unsigned int num
     return boost::move(solutions);
 }
 // }}}
-
-void Chain::sweepUntilConverged() {{{
-    double previous_energy = energy;
-    performOptimizationSweep();
-    while(outsideTolerance(previous_energy,energy,sweep_convergence_threshold)) {
-        previous_energy = energy;
-        performOptimizationSweep();
-    }
-    signalSweepsConverged();
-}}}
 
 }

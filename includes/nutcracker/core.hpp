@@ -251,6 +251,19 @@ uint32_t random_projector_matrix(
     complex<double>* reflectors, complex<double>* coefficients, uint32_t* swaps
 );
 
+void increase_bandwidth_with_environment(
+    uint32_t const b,
+    uint32_t const c,
+    uint32_t const d,
+    uint32_t const new_b,
+    complex<double> const* old_state_site_tensor,
+    complex<double> const* old_left_exp_environment,
+    complex<double> const* old_right_exp_environment,
+    complex<double>* new_state_site_tensor,
+    complex<double>* new_left_exp_environment,
+    complex<double>* new_right_exp_environment
+);
+
 }
 
 //! @}

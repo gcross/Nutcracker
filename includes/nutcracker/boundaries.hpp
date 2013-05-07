@@ -115,6 +115,13 @@ ExpectationBoundary<Left> contractSOSLeft(
     , OperatorSite const& operator_site
 );
 
+//! Unsafe version of Nutcracker::contractSOSRight that ignores the site tensor normalization.
+ExpectationBoundary<Right> contractSOSRight(
+      ExpectationBoundary<Right> const& old_boundary
+    , StateSiteAny const& state_site
+    , OperatorSite const& operator_site
+);
+
 //! Unsafe version of Nutcracker::contractVSLeft that ignores the site tensor normalization.
 OverlapBoundary<Left> contractVSLeft(
       OverlapBoundary<Left> const& old_boundary
@@ -123,14 +130,6 @@ OverlapBoundary<Left> contractVSLeft(
 );
 
 }
-
-
-
-
-
-
-
-
 
 //! Type function that retrieves the boundary contractors associated with \c side.
 /*!
@@ -147,6 +146,12 @@ template<> struct contract<Left> {
         , Nutcracker::StateSite<Left> const& state_site
         , Nutcracker::OperatorSite const& operator_site
     ) { return contractSOSLeft(old_boundary,state_site,operator_site); }
+
+    static Nutcracker::ExpectationBoundary<Left> SOS_absorb(
+          Nutcracker::ExpectationBoundary<Left> const& old_boundary
+        , Nutcracker::StateSite<Middle> const& state_site
+        , Nutcracker::OperatorSite const& operator_site
+    ) { return Unsafe::contractSOSLeft(old_boundary,state_site,operator_site); }
 
     //! Alias for contractVSLeft().
     static Nutcracker::OverlapBoundary<Left> VS(
@@ -165,6 +170,12 @@ template<> struct contract<Right> {
         , Nutcracker::StateSite<Right> const& state_site
         , Nutcracker::OperatorSite const& operator_site
     ) { return contractSOSRight(old_boundary,state_site,operator_site); }
+
+    static Nutcracker::ExpectationBoundary<Right> SOS_absorb(
+          Nutcracker::ExpectationBoundary<Right> const& old_boundary
+        , Nutcracker::StateSite<Middle> const& state_site
+        , Nutcracker::OperatorSite const& operator_site
+    ) { return Unsafe::contractSOSRight(old_boundary,state_site,operator_site); }
 
     //! Alias for contractVSRight().
     static Nutcracker::OverlapBoundary<Right> VS(
