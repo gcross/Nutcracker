@@ -11,6 +11,7 @@
 #include <boost/utility/result_of.hpp>
 
 #include "nutcracker/boundaries.hpp"
+#include "nutcracker/chain_options.hpp"
 #include "nutcracker/core.hpp"
 #include "nutcracker/operators.hpp"
 #include "nutcracker/optimizer.hpp"
@@ -111,49 +112,6 @@ public:
         state_site = boost::move(other.state_site);
         overlap_boundaries = boost::move(other.overlap_boundaries);
     } // }}}
-}; // }}}
-struct ChainOptions { // {{{
-    unsigned int maximum_number_of_iterations;
-    double sanity_check_threshold;
-    double site_convergence_threshold;
-    double sweep_convergence_threshold;
-    double chain_convergence_threshold;
-
-    unsigned int initial_bandwidth_dimension;
-    function<unsigned int (unsigned int)> computeNewBandwidthDimension;
-
-    OptimizerMode optimizer_mode;
-
-    ChainOptions()
-      : maximum_number_of_iterations(10000)
-      , sanity_check_threshold(1e-12)
-      , site_convergence_threshold(1e-12)
-      , sweep_convergence_threshold(1e-12)
-      , chain_convergence_threshold(1e-12)
-      , initial_bandwidth_dimension(1)
-      , computeNewBandwidthDimension(lambda::_1+1)
-      , optimizer_mode(OptimizerMode::least_value)
-    {}
-
-    static ChainOptions const defaults;
-
-#define GENERATE_ChainOptions_SETTER(type,underscore_name,CapsName) \
-    ChainOptions& set##CapsName(type underscore_name) { \
-        this->underscore_name = underscore_name; \
-        return *this; \
-    }
-
-    GENERATE_ChainOptions_SETTER(unsigned int,maximum_number_of_iterations,MaximumNumberOfIterations)
-    GENERATE_ChainOptions_SETTER(double,sanity_check_threshold,SanityCheckThreshold)
-    GENERATE_ChainOptions_SETTER(double,site_convergence_threshold,SiteConvergenceThreshold)
-    GENERATE_ChainOptions_SETTER(double,sweep_convergence_threshold,SweepConvergenceThreshold)
-    GENERATE_ChainOptions_SETTER(double,chain_convergence_threshold,ChainConvergenceThreshold)
-    GENERATE_ChainOptions_SETTER(unsigned int,initial_bandwidth_dimension,InitialBandwidthDimension)
-    GENERATE_ChainOptions_SETTER(function<unsigned int (unsigned int)> const&,computeNewBandwidthDimension,ComputeNewBandwidthDimension)
-    GENERATE_ChainOptions_SETTER(OptimizerMode const&,optimizer_mode,OptimizerMode)
-
-#undef GENERATE_ChainOptions_SETTER
-
 }; // }}}
 class Chain: boost::noncopyable, public ChainOptions { // {{{
 public:

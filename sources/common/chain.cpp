@@ -29,7 +29,6 @@ using std::max;
 using std::min;
 using std::numeric_limits;
 
-ChainOptions const ChainOptions::defaults;
 Chain::Chain(Operator const& operator_sites)
   : ChainOptions()
   , number_of_sites(operator_sites.size())

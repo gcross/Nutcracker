@@ -7,6 +7,7 @@ include_directories (${PROTO_INCLUDE})
 add_library(Nutcracker++ SHARED
     boundaries
     chain
+    chain_options
     compiler
     configuration
     core.f95
