@@ -25,7 +25,6 @@ public:
     boost::signal<void ()> signalSweepPerformed;
     boost::signal<void ()> signalSweepsConverged;
     boost::signal<void ()> signalChainOptimized;
-    boost::signal<void ()> signalChainReset;
 
     double getEnergy() const { return energy; }
 

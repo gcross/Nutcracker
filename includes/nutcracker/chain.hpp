@@ -149,6 +149,7 @@ public:
     Chain(Operator const& operator_sites);
     Chain(Operator const& operator_sites, ChainOptions const& options);
 
+    boost::signal<void ()> signalChainReset;
     function<void (BOOST_RV_REF(State) state)> storeState;
 
     void clear();
