@@ -192,6 +192,7 @@ public:
     State makeCopyOfState() const;
     State removeState();
 
+    // const_iterator {{{
     friend class const_iterator;
     class const_iterator :
         public iterator_facade<
@@ -235,6 +236,7 @@ public:
 
         size_t distance_to(const_iterator const& other) const { return other.index - index; }
     };
+    // }}}
 
     const_iterator begin() const { return const_iterator(this,0); }
     const_iterator end() const { return const_iterator(this,number_of_sites); }
