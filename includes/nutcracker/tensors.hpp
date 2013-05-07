@@ -24,6 +24,7 @@
 
 namespace Nutcracker {
 
+// Usings {{{
 using boost::container::vector;
 using boost::copy;
 using boost::Generator;
@@ -38,8 +39,10 @@ using boost::shared_ptr;
 using std::copy;
 using std::fill_n;
 using std::ostream;
+// }}}
 
-struct DimensionMismatch : public std::logic_error {
+// Exceptions {{{
+struct DimensionMismatch : public std::logic_error { // {{{
     DimensionMismatch(
           const char* n1
         , unsigned int const d1
@@ -47,11 +50,11 @@ struct DimensionMismatch : public std::logic_error {
         , unsigned int const d2
     ) : std::logic_error((format("%1% dimension (%2%) does not match %3% dimension (%4%)") % n1 % d1 % n2 % d2).str())
     { }
-};
-struct InvalidTensorException : public std::logic_error {
+}; // }}}
+struct InvalidTensorException : public std::logic_error { // {{{
     InvalidTensorException() : std::logic_error("Attempt to dereference an invalid tensor") {}
-};
-struct NotEnoughDegreesOfFreedomToNormalizeError : public std::logic_error {
+}; // }}}
+struct NotEnoughDegreesOfFreedomToNormalizeError : public std::logic_error { // {{{
     string n1, n2, n3;
     unsigned int d1, d2, d3;
     NotEnoughDegreesOfFreedomToNormalizeError(
@@ -78,8 +81,8 @@ struct NotEnoughDegreesOfFreedomToNormalizeError : public std::logic_error {
       , d3(d3)
     { }
     virtual ~NotEnoughDegreesOfFreedomToNormalizeError() throw() {}
-};
-struct WrongTensorNormalizationException : public std::runtime_error {
+}; // }}}
+struct WrongTensorNormalizationException : public std::runtime_error { // {{{
     WrongTensorNormalizationException(optional<string> const& expected_normalization, optional<string> const& actual_normalization)
         : std::runtime_error(
             (boost::format("Expected a tensor with %1% normalization but encountered a tensor with %2% normalization.")
@@ -87,16 +90,23 @@ struct WrongTensorNormalizationException : public std::runtime_error {
                 % (actual_normalization   ? *actual_normalization    : "unspecified")
             ).str())
     {}
-};
+};// }}}
+
+// Definition of Operator
 class OperatorSite;
 typedef vector<shared_ptr<OperatorSite const> > Operator;
+// }}}
+
+// Tensor kind dummy types {{{
 class Left;
 class Middle;
 class Overlap;
 class Physical;
 class Right;
 class State;
-template<typename Side> struct normalizationOf {};
+// }}}
+
+template<typename Side> struct normalizationOf {}; // {{{
 
 template<> struct normalizationOf<Left> {
     static optional<string> const value;
@@ -113,6 +123,9 @@ template<> struct normalizationOf<Right> {
 template<> struct normalizationOf<None> {
     static optional<string> const value;
 };
+// }}}
+
+// Constructor parameters{{{
 /*! \defgroup ConstructorParameters Constructor parameter wrappers
 
 C++ constructors can only take the name of the class itself, so it is impossible
@@ -277,7 +290,10 @@ DEFINE_TEMPLATIZED_PARAMETER(FillWithRange,fillWithRange)
 */
 
 // @}
-template<typename label> class Dimension {
+
+// }}}
+
+template<typename label> class Dimension { // {{{
 private:
     BOOST_COPYABLE_AND_MOVABLE(Dimension)
     unsigned int dimension;
@@ -344,7 +360,9 @@ DECLARE_DUMMY_PARAMETER(MakeTrivial,make_trivial)
 //!< The singleton instance of MakeTrivial.
 
 //! @}
-template<typename other_side> struct Other { };
+// }}}
+
+template<typename other_side> struct Other { }; // {{{
 template<> struct Other<Left> { typedef Right value; };
 template<> struct Other<Right> { typedef Left value; };
 template<typename side> void assertNormalizationIs(boost::optional<std::string> const& observed_normalization) {
@@ -352,7 +370,9 @@ template<typename side> void assertNormalizationIs(boost::optional<std::string> 
         throw WrongTensorNormalizationException(normalizationOf<side>::value,observed_normalization);
     }
 }
-inline unsigned int connectDimensions(
+// }}}
+
+inline unsigned int connectDimensions( // {{{
       const char* n1
     , unsigned int const d1
     , const char* n2
@@ -360,7 +380,9 @@ inline unsigned int connectDimensions(
 ) {
     if(d1 != d2) throw DimensionMismatch(n1,d1,n2,d2);
     return d1;
-}
+} // }}}
+
+// definition of serializeNormalization {{{
 template<typename side, typename Archive>
 typename boost::enable_if<typename Archive::is_saving>::type
 serializeNormalization(Archive& ar) {
@@ -374,9 +396,13 @@ serializeNormalization(Archive& ar) {
     ar >> observed_normalization;
     assertNormalizationIs<side>(observed_normalization);
 }
+// }}}
+
+// Tensors {{{
 //! \defgroup Tensors Tensors
 //! @{
 
+// class BaseTensor {{{
 /*! The base class of all tensors.
 
 All tensors in Nutcracker share in common the trait that they are either invalid or they contain a pointer to a chunk of contiguous \c complex<double> data of known size.  This base class implements some natural functionality that follows from this trait (such as the ability to query the size of the data, or to get a pointer to it) that is shared amongst all of the tensors classes.
@@ -579,7 +605,10 @@ class BaseTensor : boost::noncopyable {
         ar & boost::serialization::make_array(data,data_size);
     }
 };
-/*! The base class of all tensors.
+// }}}
+
+// class SiteBaseTensor {{{
+/*! The base class of all site tensors.
 
 All tensors in Nutcracker that are associated with sites share in common the trait that they have tensor connected to their left and therefore a \a left dimension, a tensor connected to their right and therfore a \a right dimension, and a tensor connected above and/or below them and therefore one or two indices with the \a physical dimension (that is, the dimension of the qudit) associated with the site.  This base class implements the common functionality following from this shared trait by maintaining fields for these three dimesions.
 
@@ -739,7 +768,9 @@ class SiteBaseTensor : public BaseTensor {
         ar & left_dimension;
         ar & right_dimension;
     }
-};
+}; // }}}
+
+// class ExpectationBoundary {{{
 /*! Boundaries for expectation tensor network chains.
 
 \image html expectation_boundary_tensors.png
@@ -879,6 +910,9 @@ template<typename side> class ExpectationBoundary : public BaseTensor {
 };
 
 template<typename side> ExpectationBoundary<side> const ExpectationBoundary<side>::trivial(make_trivial);
+// }}}
+
+// class OverlapBoundary {{{
 /*! Boundaries for overlap tensor network chains.
 
 \image html overlap_boundary_tensors.png
@@ -1018,6 +1052,9 @@ template<typename side> class OverlapBoundary : public BaseTensor {
 };
 
 template<typename side> OverlapBoundary<side> const OverlapBoundary<side>::trivial(make_trivial);
+// }}}
+
+// class StateSiteAny {{{
 /*! Base class for state site tensors.
 
 \image html state_site_tensor.png
@@ -1195,6 +1232,9 @@ class StateSiteAny : public SiteBaseTensor {
 
     //! @}
 };
+// }}}
+
+// class StateSite {{{
 /*! State site tensors.
 
 \image html state_site_tensor.png
@@ -1327,6 +1367,9 @@ template<typename side> class StateSite : public StateSiteAny {
 };
 
 template<typename side> StateSite<side> const StateSite<side>::trivial(make_trivial);
+// }}}
+
+// class OverlapSiteAny {{{
 /*! Base class for overlap site tensors.
 
 \image html overlap_site_tensor.png
@@ -1437,7 +1480,9 @@ class OverlapSiteAny : public SiteBaseTensor {
     OverlapSiteAny(MakeTrivial const make_trivial) : SiteBaseTensor(make_trivial) {}
 
     //! @}
-};
+};// }}}
+
+// class OverlapSite {{{
 /*! Overlap site tensors.
 
 \image html overlap_site_tensor.png
@@ -1557,6 +1602,9 @@ template<typename side> class OverlapSite : public OverlapSiteAny {
 };
 
 template<typename side> OverlapSite<side> const OverlapSite<side>::trivial(make_trivial);
+// }}}
+
+// class OperatorSite {{{
 /*! Operator site tensor.
 
 \image html operator_site_tensor.png
@@ -1784,8 +1832,9 @@ class OperatorSite : public SiteBaseTensor {
         }
         ar & boost::serialization::make_array(index_data,2*number_of_matrices);
     }
-};
+}; // }}}
 
+// Tensor connectors {{{
 /*!
 \defgroup TensorConnectors Tensor connectors
 
@@ -1798,186 +1847,188 @@ The tensor connectors provide a set of operator functions that allow one to dete
 inline unsigned int operator|(
       Nutcracker::ExpectationBoundary<Left> const& expectation_boundary
     , Nutcracker::OperatorSite const& operator_site
-) {
+) { // {{{
     return connectDimensions(
          "left expectation boundary state"
         ,expectation_boundary.operatorDimension()
         ,"operator site left"
         ,operator_site.leftDimension()
     );
-}
+} // }}}
 //! Connects the operator dimension of a left expectation boundary to the left dimension of an state site.
 inline unsigned int operator|(
       Nutcracker::ExpectationBoundary<Left> const& expectation_boundary
     , Nutcracker::StateSiteAny const& state_site
-) {
+) { // {{{
     return connectDimensions(
          "left expectation boundary state"
         ,expectation_boundary.stateDimension()
         ,"state site left"
         ,state_site.leftDimension()
     );
-}
+} // }}}
 //! Connects the right dimension of an operator site to the operator dimension of a right expectation boundary.
 inline unsigned int operator|(
       Nutcracker::OperatorSite const& operator_site
     , Nutcracker::ExpectationBoundary<Right> const& expectation_boundary
-) {
+) { // {{{
     return connectDimensions(
          "operator site right"
         ,operator_site.rightDimension()
         ,"right expectation boundary state"
         ,expectation_boundary.operatorDimension()
     );
-}
+} // }}}
 //! Connects the physical dimension of an operator site to the physical dimension of a state site.
 inline unsigned int operator|(
       Nutcracker::OperatorSite const& operator_site
     , Nutcracker::StateSiteAny const& state_site
-) {
+) { // {{{
     return connectDimensions(
          "operator site physical"
         ,operator_site.physicalDimension()
         ,"middle state site physical"
         ,state_site.physicalDimension()
     );
-}
+} // }}}
 //! Connects the operator dimension of a left overlap boundary to the left dimension of an overlap site.
 inline unsigned int operator|(
       Nutcracker::OverlapBoundary<Left> const& overlap_boundary
     , Nutcracker::OverlapSiteAny const& overlap_site
-) {
+) { // {{{
     return connectDimensions(
          "left overlap boundary overlap"
         ,overlap_boundary.overlapDimension()
         ,"overlap site left"
         ,overlap_site.leftDimension()
     );
-}
+} // }}}
 //! Connects the operator dimension of a left overlap boundary to the left dimension of a state site.
 inline unsigned int operator|(
       Nutcracker::OverlapBoundary<Left> const& overlap_boundary
     , Nutcracker::StateSiteAny const& state_site
-) {
+) { // {{{
     return connectDimensions(
          "left overlap boundary state"
         ,overlap_boundary.stateDimension()
         ,"state site left"
         ,state_site.leftDimension()
     );
-}
+} // }}}
 //! Connects the right dimension of a middle overlap site to the overlap dimension of a right overlap boundary.
 inline unsigned int operator|(
       Nutcracker::OverlapSite<Middle> const& overlap_site
     , Nutcracker::OverlapBoundary<Right> const& overlap_boundary
-) {
+) { // {{{
     return connectDimensions(
          "middle overlap site right"
         ,overlap_site.rightDimension()
         ,"right overlap boundary overlap"
         ,overlap_boundary.overlapDimension()
     );
-}
+} // }}}
 //! Connects the right dimension of a right overlap site to the overlap dimension of a right overlap boundary.
 inline unsigned int operator|(
       Nutcracker::OverlapSite<Right> const& overlap_site
     , Nutcracker::OverlapBoundary<Right> const& overlap_boundary
-) {
+) { // {{{
     return connectDimensions(
          "right overlap site right"
         ,overlap_site.rightDimension()
         ,"right overlap boundary overlap"
         ,overlap_boundary.overlapDimension()
     );
-}
+} // }}}
 //! Connects the physical dimension of an overlap site to the physical dimension of a state site.
 inline unsigned int operator|(
       Nutcracker::OverlapSiteAny const& overlap_site
     , Nutcracker::StateSiteAny const& state_site
-) {
+) { // {{{
     return connectDimensions(
          "overlap site physical"
         ,overlap_site.physicalDimension()
         ,"state site physical"
         ,state_site.physicalDimension()
     );
-}
+} // }}}
 //! Connects the right dimension of a left state site to the left dimension of a middle state site.
 inline unsigned int operator|(
       Nutcracker::StateSite<Left> const& state_site_1
     , Nutcracker::StateSite<Middle> const& state_site_2
-) {
+) { // {{{
     return connectDimensions(
          "left state site right"
         ,state_site_1.rightDimension()
         ,"middle state site left"
         ,state_site_2.leftDimension()
     );
-}
+} // }}}
 //! Connects the right dimension of a middle state site to the operator dimension of a right expectation boundary.
 inline unsigned int operator|(
       Nutcracker::StateSite<Middle> const& state_site
     , Nutcracker::ExpectationBoundary<Right> const& expectation_boundary
-) {
+) { // {{{
     return connectDimensions(
          "middle state site right"
         ,state_site.rightDimension()
         ,"right expectation boundary state"
         ,expectation_boundary.stateDimension()
     );
-}
+} // }}}
 //! Connects the right dimension of a middle state site to the operator dimension of a right overlap boundary.
 inline unsigned int operator|(
       Nutcracker::StateSite<Middle> const& state_site
     , Nutcracker::OverlapBoundary<Right> const& overlap_boundary
-) {
+) { // {{{
     return connectDimensions(
          "middle state site right"
         ,state_site.rightDimension()
         ,"right overlap boundary state"
         ,overlap_boundary.stateDimension()
     );
-}
+} // }}}
 //! Connects the right dimension of a middle state site to the left dimension of a right state site.
 inline unsigned int operator|(
       Nutcracker::StateSite<Middle> const& state_site_1
     , Nutcracker::StateSite<Right> const& state_site_2
-) {
+) { // {{{
     return connectDimensions(
          "middle state site right"
         ,state_site_1.rightDimension()
         ,"right state site left"
         ,state_site_2.leftDimension()
     );
-}
+} // }}}
 //! Connects the right dimension of a right state site to the operator dimension of a right expectation boundary.
 inline unsigned int operator|(
       Nutcracker::StateSite<Right> const& state_site
     , Nutcracker::ExpectationBoundary<Right> const& expectation_boundary
-) {
+) { // {{{
     return connectDimensions(
          "right state site right"
         ,state_site.rightDimension()
         ,"right overlap boundary state"
         ,expectation_boundary.stateDimension()
     );
-}
+} // }}}
 //! Connects the right dimension of a right state site to the operator dimension of a right overlap boundary.
 inline unsigned int operator|(
       Nutcracker::StateSite<Right> const& state_site
     , Nutcracker::OverlapBoundary<Right> const& overlap_boundary
-) {
+) { // {{{
     return connectDimensions(
          "right state site right"
         ,state_site.rightDimension()
         ,"right overlap boundary state"
         ,overlap_boundary.stateDimension()
     );
-}
+} // }}}
 
 //! @}
+// }}}
 
 //! @}
+// }}}
 
 }
  
