@@ -1,6 +1,7 @@
 #ifndef NUTCRACKER_PROJECTORS_HPP
 #define NUTCRACKER_PROJECTORS_HPP
 
+// Includes {{{
 #include <boost/concept_check.hpp>
 #include <boost/range/concepts.hpp>
 #include <boost/tuple/tuple.hpp>
@@ -10,17 +11,20 @@
 #include "nutcracker/core.hpp"
 #include "nutcracker/states.hpp"
 #include "nutcracker/tensors.hpp"
+// }}}
 
 namespace Nutcracker {
 
+// Usings {{{
 using boost::make_tuple;
 using boost::RandomAccessRangeConcept;
 using boost::SinglePassRangeConcept;
 using boost::tuple;
 
 using std::make_pair;
+// }}}
 
-class OverlapSitesFromStateSitesAndNormalizeResult {
+class OverlapSitesFromStateSitesAndNormalizeResult { // {{{
 private:
     BOOST_MOVABLE_BUT_NOT_COPYABLE(OverlapSitesFromStateSitesAndNormalizeResult)
 public:
@@ -47,7 +51,9 @@ public:
       , middle_state_site_from_right_state_site(middle_state_site_from_right_state_site)
       , right_overlap_site_from_right_state_site(right_overlap_site_from_right_state_site)
     {}
-};
+}; // }}}
+
+// struct Projector {{{
 //! Vector of projector sites
 /*!
 This class subclasses boost::container::vector, so it implements move semantics but not copy semantics.
@@ -82,8 +88,9 @@ struct Projector : vector<ProjectorSite> {
     Projector(BOOST_RV_REF(Projector) other)
       : Base(boost::move(static_cast<Base&>(other)))
     {}
-};
-class ProjectorMatrix {
+}; // }}}
+
+class ProjectorMatrix { // {{{
 private:
     BOOST_MOVABLE_BUT_NOT_COPYABLE(ProjectorMatrix)
     unsigned int
@@ -96,7 +103,7 @@ private:
     uint32_t* swap_data;
 
 public:
-    ProjectorMatrix()
+    ProjectorMatrix() // {{{
       : number_of_projectors(0)
       , projector_length(0)
       , number_of_reflectors(0)
@@ -104,17 +111,17 @@ public:
       , reflector_data(NULL)
       , coefficient_data(NULL)
       , swap_data(NULL)
-    { }
+    { } // }}}
 
-    ~ProjectorMatrix() {
+    ~ProjectorMatrix() { // {{{
         if(valid()) {
             delete[] reflector_data;
             delete[] coefficient_data;
             delete[] swap_data;
         }
-    }
+    } // }}}
 
-    ProjectorMatrix(BOOST_RV_REF(ProjectorMatrix) other)
+    ProjectorMatrix(BOOST_RV_REF(ProjectorMatrix) other) // {{{
       : number_of_projectors(copyAndReset(other.number_of_projectors))
       , projector_length(copyAndReset(other.projector_length))
       , number_of_reflectors(copyAndReset(other.number_of_reflectors))
@@ -122,9 +129,9 @@ public:
       , reflector_data(copyAndReset(other.reflector_data))
       , coefficient_data(copyAndReset(other.coefficient_data))
       , swap_data(copyAndReset(other.swap_data))
-    { }
+    { } // }}}
 
-    ProjectorMatrix(
+    ProjectorMatrix( // {{{
           unsigned int const number_of_projectors
         , unsigned int const projector_length
         , unsigned int const number_of_reflectors
@@ -139,9 +146,9 @@ public:
       , reflector_data(reflector_data)
       , coefficient_data(coefficient_data)
       , swap_data(swap_data)
-    { }
+    { } // }}}
 
-    ProjectorMatrix& operator=(BOOST_RV_REF(ProjectorMatrix) other) {
+    ProjectorMatrix& operator=(BOOST_RV_REF(ProjectorMatrix) other) { // {{{
         if(this == &other) return *this;
         number_of_projectors = copyAndReset(other.number_of_projectors);
         projector_length = copyAndReset(other.projector_length);
@@ -151,9 +158,9 @@ public:
         moveArrayToFrom(coefficient_data,other.coefficient_data);
         moveArrayToFrom(swap_data,other.swap_data);
         return *this;
-    }
+    } // }}}
 
-    void swap(ProjectorMatrix& other) {
+    void swap(ProjectorMatrix& other) { // {{{
         if(this == &other) return;
         std::swap(number_of_projectors,other.number_of_projectors);
         std::swap(projector_length,other.projector_length);
@@ -162,7 +169,7 @@ public:
         std::swap(reflector_data,other.reflector_data);
         std::swap(coefficient_data,other.coefficient_data);
         std::swap(swap_data,other.swap_data);
-    }
+    } // }}}
 
     unsigned int numberOfProjectors() const { return number_of_projectors; }
     unsigned int projectorLength() const { return projector_length; }
@@ -183,15 +190,18 @@ public:
 
     operator bool() const { return valid(); }
 
-    unsigned int operator|(StateSiteAny const& state_site) const {
+    unsigned int operator|(StateSiteAny const& state_site) const { // {{{
         return connectDimensions(
              "state site size"
             ,state_site.size()
             ,"projector length"
             ,projectorLength()
         );
-    }
-};
+    } // }}}
+
+}; // }}}
+
+// class ProjectorSite {{{
 //! A projector site contains a left-, middle-, and right- normalized version of the same overlap site.
 /*!
 This class is meant to be used when one is sweeping left and right through a chain, so that it makes sense to compute all normalizations of the overlap sites at once rather than to recompute tham at each sweep.
@@ -269,11 +279,16 @@ class ProjectorSite {
         throw BadLabelException("OverlapSite::get",typeid(side));
     }
 };
+
+// External methods {{{
 //! \cond
 template<> inline OverlapSite<Left> const& ProjectorSite::get<Left>() const { return left; }
 template<> inline OverlapSite<Middle> const& ProjectorSite::get<Middle>() const { return middle; }
 template<> inline OverlapSite<Right> const& ProjectorSite::get<Right>() const { return right; }
 //! \endcond
+// }}}
+// }}}
+
 StateSite<Middle> applyProjectorMatrix(
       ProjectorMatrix const& projector_matrix
     , StateSite<Middle> const& old_state_site
@@ -309,7 +324,7 @@ template<typename StateSiteRightRange>
 Projector computeProjectorFromStateSites(
       StateSite<Middle> const& first_state_site
     , StateSiteRightRange const& rest_state_sites
-) {
+) {{{
     BOOST_CONCEPT_ASSERT((SinglePassRangeConcept<StateSiteRightRange const>));
     Projector projector;
     StateSite<Middle> current_state_site(copyFrom(first_state_site));
@@ -340,13 +355,14 @@ Projector computeProjectorFromStateSites(
         ,boost::move(current_right_overlap_site)
     );
     return boost::move(projector);
-}
+}}}
+
 template<typename StateSiteRange>
 complex<double> computeProjectorOverlap(
       Projector const& projector
     , StateSiteRange const& state_sites
     , unsigned int const active_site_number=0
-) {
+) {{{
     BOOST_CONCEPT_ASSERT((SinglePassRangeConcept<StateSiteRange const>));
     OverlapBoundary<Left> left_boundary(make_trivial);
     unsigned int i = 0;
@@ -380,7 +396,8 @@ complex<double> computeProjectorOverlap(
     }
     assert(left_boundary.size() == 1);
     return left_boundary[0];
-}
+}}}
+
 template<
      typename OverlapBoundaryLeftRange
     ,typename OverlapBoundaryRightRange
@@ -389,7 +406,7 @@ template<
      OverlapBoundaryLeftRange const& left_boundaries
     ,OverlapBoundaryRightRange const& right_boundaries
     ,OverlapSiteMiddleRange const& overlap_sites
-) {
+) {{{
     BOOST_CONCEPT_ASSERT((RandomAccessRangeConcept<OverlapBoundaryLeftRange const>));
     BOOST_CONCEPT_ASSERT((RandomAccessRangeConcept<OverlapBoundaryRightRange const>));
     BOOST_CONCEPT_ASSERT((RandomAccessRangeConcept<OverlapSiteMiddleRange const>));
@@ -464,7 +481,7 @@ template<
             ,coefficients
             ,swaps
     );
-}
+}}}
 
 }
 
