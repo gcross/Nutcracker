@@ -1725,7 +1725,6 @@ class non_hermitian_matrix_detection(TestCase): # {{{
 # }}}
 # }}}
 
-
 set_printoptions(linewidth=132)
 
 tests = [ # {{{
