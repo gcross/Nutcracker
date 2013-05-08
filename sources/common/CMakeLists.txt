@@ -14,6 +14,7 @@ add_library(Nutcracker++ SHARED
     core.cpp
     flat
     hdf
+    infinite_chain
     io
     operators
     optimizer

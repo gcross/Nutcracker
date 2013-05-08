@@ -157,7 +157,7 @@ public:
 
     unsigned int bandwidthDimension() const { return bandwidth_dimension; }
 
-    complex<double> computeExpectationValueAtCurrentSite() const;
+    complex<double> computeExpectationValue() const;
     double computeProjectorOverlapAtCurrentSite() const;
     double computeStateNorm() const;
 

@@ -56,7 +56,7 @@ void Chain::clear() {{{
     reset();
 }}}
 
-complex<double> Chain::computeExpectationValueAtCurrentSite() const {{{
+complex<double> Chain::computeExpectationValue() const {{{
     return 
         Nutcracker::computeExpectationValueAtSite(
              left_expectation_boundary
@@ -279,7 +279,7 @@ void Chain::reset() {{{
         moveTo(0);
     }
 
-    complex<double> const expectation_value = computeExpectationValueAtCurrentSite();
+    complex<double> const expectation_value = computeExpectationValue();
     if(abs(expectation_value.imag())/abs(expectation_value) > 1e-10) throw InitialChainEnergyNotRealError(expectation_value);
     energy = expectation_value.real();
 

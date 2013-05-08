@@ -143,7 +143,7 @@ TEST_CASE(moveLeftAndRight) {
         #define VALIDATE_CHAIN_PROPERTIES \
             { \
                 ASSERT_NEAR_REL(1,chain.computeStateNorm(),1e-14); \
-                complex<double> const expectation_value = chain.computeExpectationValueAtCurrentSite(); \
+                complex<double> const expectation_value = chain.computeExpectationValue(); \
                 ASSERT_NEAR_REL(0,expectation_value.imag(),1e-10); \
                 ASSERT_NEAR_REL(chain.getEnergy(),expectation_value.real(),1e-10); \
             }
@@ -250,7 +250,7 @@ TEST_CASE(increaseBandwidthDimension) {
         #define VALIDATE_CHAIN_PROPERTIES \
             { \
                 ASSERT_NEAR_REL(1,chain.computeStateNorm(),1e-9); \
-                complex<double> const expectation_value = chain.computeExpectationValueAtCurrentSite(); \
+                complex<double> const expectation_value = chain.computeExpectationValue(); \
                 ASSERT_NEAR_REL(0,expectation_value.imag(),1e-9); \
                 ASSERT_NEAR_REL(chain.getEnergy(),expectation_value.real(),1e-7); \
             }
