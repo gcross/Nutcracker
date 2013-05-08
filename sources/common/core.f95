@@ -1,4 +1,4 @@
-function mysvd ( &
+function mysvd ( & ! {{{
   m, n, rank, &
   matrix, &
   u, s, vt &
@@ -50,12 +50,13 @@ function mysvd ( &
 
   deallocate(work)
 
-end function
-subroutine compute_orthogonal_basis( &
+end function ! }}}
+
+subroutine compute_orthogonal_basis( & ! {{{
   m, n, k, &
   vectors, &
   rank, &
-  basis &
+   basis &
 )
   integer, intent(in) :: n, m
   integer, intent(in) :: k
@@ -156,8 +157,9 @@ subroutine compute_orthogonal_basis( &
 
   deallocate(work)
 
-end subroutine
-subroutine compute_orthogonal_subspace(n,number_of_projectors,projectors,orthogonal_basis)
+end subroutine ! }}}
+
+subroutine compute_orthogonal_subspace(n,number_of_projectors,projectors,orthogonal_basis) ! {{{
   integer, intent(in) :: n, number_of_projectors
   double complex, intent(in) :: projectors(n,number_of_projectors)
   double complex, intent(out) :: orthogonal_basis(n,n-number_of_projectors)
@@ -183,8 +185,9 @@ subroutine compute_orthogonal_subspace(n,number_of_projectors,projectors,orthogo
 
   orthogonal_basis(:,:) = full_basis(:,number_of_projectors+1:)
 
-end subroutine
-subroutine orthogonalize_matrix_in_place( &
+end subroutine ! }}}
+
+subroutine orthogonalize_matrix_in_place( & ! {{{
   m, n, &
   matrix, &
   rank &
@@ -195,8 +198,9 @@ subroutine orthogonalize_matrix_in_place( &
 
   call compute_orthogonal_basis(m,n,n,matrix,rank,matrix)
 
-end subroutine
-subroutine lapack_eigenvalue_real_optimizer(n,matrix,which,eigenvalue,eigenvector)
+end subroutine ! }}}
+
+subroutine lapack_eigenvalue_real_optimizer(n,matrix,which,eigenvalue,eigenvector) ! {{{
   integer, intent(in) :: n
   double complex, intent(in) :: matrix(n,n)
   character, intent(in) :: which*2
@@ -308,8 +312,9 @@ subroutine lapack_eigenvalue_real_optimizer(n,matrix,which,eigenvalue,eigenvecto
 
   eigenvalue = w(1)*(1d0,0d0)
 
-end subroutine
-subroutine lapack_eigenvalue_mag_maximizer(n,matrix,eigenvalue,eigenvector)
+end subroutine ! }}}
+
+subroutine lapack_eigenvalue_mag_maximizer(n,matrix,eigenvalue,eigenvector) ! {{{
   integer, intent(in) :: n
   double complex, intent(in) :: matrix(n,n)
 
@@ -442,8 +447,9 @@ subroutine lapack_eigenvalue_mag_maximizer(n,matrix,eigenvalue,eigenvector)
     eigenvector = eigenvector2
   end if
 
-end subroutine
-subroutine swap_inplace(n, swaps, vector)
+end subroutine ! }}}
+
+subroutine swap_inplace(n, swaps, vector) ! {{{
   implicit none
   integer, intent(in) :: n, swaps(n)
   double complex, intent(inout) :: vector(n)
@@ -462,8 +468,9 @@ subroutine swap_inplace(n, swaps, vector)
       vector(swaps(i)) = shelf
     end if
   end do
-end subroutine
-subroutine unswap_inplace(n, swaps, vector)
+end subroutine ! }}}
+
+subroutine unswap_inplace(n, swaps, vector) ! {{{
   implicit none
   integer, intent(in) :: n, swaps(n)
   double complex, intent(inout) :: vector(n)
@@ -482,8 +489,9 @@ subroutine unswap_inplace(n, swaps, vector)
       vector(swaps(i)) = shelf
     end if
   end do
-end subroutine
-subroutine swap_matrix_inplace(n, swaps, matrix, leading_dimension)
+end subroutine ! }}}
+
+subroutine swap_matrix_inplace(n, swaps, matrix, leading_dimension) ! {{{
   implicit none
   integer, intent(in) :: n, swaps(n), leading_dimension
   double complex, intent(inout) :: matrix(leading_dimension,n)
@@ -507,8 +515,9 @@ subroutine swap_matrix_inplace(n, swaps, matrix, leading_dimension)
       call zswap(n,matrix(i,1),n,matrix(swaps(i),1),leading_dimension)
     end if
   end do
-end subroutine
-subroutine iteration_stage_1( &
+end subroutine ! }}}
+
+subroutine iteration_stage_1( & ! {{{
   bl, & ! state bandwidth dimension
   cl, & ! operator left  bandwidth dimension
   cr, & ! operator right bandwidth dimension
@@ -537,8 +546,9 @@ subroutine iteration_stage_1( &
     end do
   end do
 
-end subroutine
-subroutine iteration_stage_2( &
+end subroutine ! }}}
+
+subroutine iteration_stage_2( & ! {{{
   bl, & ! state left bandwidth dimension
   br, & ! state right bandwidth dimension
   cr, &  ! operator right bandwidth dimension
@@ -563,8 +573,9 @@ subroutine iteration_stage_2( &
       iteration_stage_2_tensor, br &
   )
 
-end subroutine
-subroutine iteration_stage_3( &
+end subroutine ! }}}
+
+subroutine iteration_stage_3( & ! {{{
   bl, & ! state left bandwidth dimension
   br, & ! state right bandwidth dimension
   cr, &  ! operator right bandwidth dimension
@@ -589,8 +600,9 @@ subroutine iteration_stage_3( &
       output_state_site_tensor, br &
   )
 
-end subroutine
-subroutine contract_sos_left( &
+end subroutine ! }}}
+
+subroutine contract_sos_left( & ! {{{
   bl, & ! state left bandwidth dimension
   br, & ! state right bandwidth dimension
   cl, & ! operator left  bandwidth dimension
@@ -642,8 +654,9 @@ subroutine contract_sos_left( &
   ! Stage 4
   new_left_environment = reshape(iteration_stage_3_tensor,shape(new_left_environment),order=(/1,3,2/))
 
-end subroutine
-subroutine contract_sos_right_stage_1( &
+end subroutine ! }}}
+
+subroutine contract_sos_right_stage_1( & ! {{{
   bl, & ! state left bandwidth dimension
   br, & ! state right bandwidth dimension
   cr, & ! operator right bandwidth dimension
@@ -669,8 +682,9 @@ subroutine contract_sos_right_stage_1( &
       (0d0,0d0), &
       sos_right_stage_1_tensor, bl*d &
   )
-end subroutine
-subroutine contract_sos_right_stage_2a( &
+end subroutine ! }}}
+
+subroutine contract_sos_right_stage_2a( & ! {{{
   bl, & ! state left bandwidth dimension
   br, & ! state right bandwidth dimension
   d, &  ! physical dimension
@@ -694,8 +708,9 @@ subroutine contract_sos_right_stage_2a( &
   end do
   end do
 
-end subroutine
-subroutine contract_sos_right_stage_2b( &
+end subroutine ! }}}
+
+subroutine contract_sos_right_stage_2b( & ! {{{
   bl, & ! state left bandwidth dimension
   br, & ! state right bandwidth dimension
   d, &  ! physical dimension
@@ -721,8 +736,9 @@ subroutine contract_sos_right_stage_2b( &
       new_right_environment_slice(1,1), bl &
   )
 
-end subroutine
-subroutine contract_sos_right_stage_2( &
+end subroutine ! }}}
+
+subroutine contract_sos_right_stage_2( & ! {{{
   bl, & ! state left bandwidth dimension
   br, & ! state right bandwidth dimension
   cl, & ! operator left  bandwidth dimension
@@ -761,8 +777,9 @@ subroutine contract_sos_right_stage_2( &
     )
   end do
 
-end subroutine
-subroutine contract_sos_right( &
+end subroutine ! }}}
+
+subroutine contract_sos_right( & ! {{{
   bl, & ! state left bandwidth dimension
   br, & ! state right bandwidth dimension
   cl, & ! operator left  bandwidth dimension
@@ -798,8 +815,9 @@ subroutine contract_sos_right( &
     new_right_environment &
   )
 
-end subroutine
-subroutine contract_vs_left( &
+end subroutine ! }}}
+
+subroutine contract_vs_left( & ! {{{
   b_left_old, b_right_old, &
   b_left_new, b_right_new, &
   d, &
@@ -844,8 +862,9 @@ subroutine contract_vs_left( &
       new_left_environment, b_right_new &
   )
 
-end subroutine
-subroutine contract_vs_right( &
+end subroutine ! }}}
+
+subroutine contract_vs_right( & ! {{{
   b_left_old, b_right_old, &
   b_left_new, b_right_new, &
   d, &
@@ -898,8 +917,9 @@ subroutine contract_vs_right( &
       new_right_environment, b_left_old &
   )
 
-end subroutine
-subroutine form_overlap_vector( &
+end subroutine ! }}}
+
+subroutine form_overlap_vector( & ! {{{
   b_left_old, b_right_old, &
   b_left_new, b_right_new, &
   d, &
@@ -949,8 +969,9 @@ subroutine form_overlap_vector( &
     order=(/2,3,1/) &
   )
 
-end subroutine
-subroutine contract_operator_random_left( &
+end subroutine ! }}}
+
+subroutine contract_operator_random_left( & ! {{{
   cl, cr, d, &
   left_boundary_1, left_boundary_2, &
   number_of_matrices,sparse_operator_indices,sparse_operator_matrices, &
@@ -984,8 +1005,9 @@ subroutine contract_operator_random_left( &
     new_left_boundary_2(right_index) = new_left_boundary_2(right_index) &
       + dot_product(vector_2,sparse_operator_matrices(:,matrix_number)*left_boundary_2(left_index))
   end do
-end subroutine
-subroutine compute_expectation( &
+end subroutine ! }}}
+
+subroutine compute_expectation( & ! {{{
   bl, & ! state left bandwidth dimension
   br, & ! state right bandwidth dimension
   cl, & ! operator left  bandwidth dimension
@@ -1027,8 +1049,9 @@ subroutine compute_expectation( &
   end do
   end do
 
-end subroutine
-subroutine compute_optimization_matrix( &
+end subroutine ! }}}
+
+subroutine compute_optimization_matrix( & ! {{{
   bl, br, & ! state bandwidth dimension
   cl, & ! operator left  bandwidth dimension
   cr, & ! operator right bandwidth dimension
@@ -1076,8 +1099,9 @@ subroutine compute_optimization_matrix( &
     end do
   end do
 
-end subroutine
-subroutine contract_expectation_boundaries( &
+end subroutine ! }}}
+
+subroutine contract_expectation_boundaries( & ! {{{
   b, & ! state bandwidth dimension
   c, & ! operator bandwidth dimension
   left_environment, &
@@ -1094,8 +1118,9 @@ subroutine contract_expectation_boundaries( &
 
   expectation = sum(transposed_left_environment(:,:,:)*right_environment(:,:,:))
 
-end subroutine
-subroutine extend_state_vector_fragment( &
+end subroutine ! }}}
+
+subroutine extend_state_vector_fragment( & ! {{{
   bm,br, &
   dl,dr, &
   old_state_vector_fragment, &
@@ -1123,8 +1148,9 @@ subroutine extend_state_vector_fragment( &
     new_state_vector_fragment, br*dr &
   )
 
-end subroutine
-subroutine contract_matrix_left( &
+end subroutine ! }}}
+
+subroutine contract_matrix_left( & ! {{{
   bl,br, &
   left_environment, &
   matrix, &
@@ -1161,8 +1187,9 @@ subroutine contract_matrix_left( &
       new_left_environment, br &
   )
 
-end subroutine
-subroutine apply_single_site_operator( &
+end subroutine ! }}}
+
+subroutine apply_single_site_operator( & ! {{{
   bl, & ! state left bandwidth dimension
   br, & ! state right bandwidth dimension
   d, &  ! physical dimension
@@ -1188,8 +1215,9 @@ subroutine apply_single_site_operator( &
       new_state_site_tensor, br*bl &
   )
 
-end subroutine
-subroutine compute_overlap_with_projectors( &
+end subroutine ! }}}
+
+subroutine compute_overlap_with_projectors( & ! {{{
   number_of_projectors, number_of_reflectors, reflectors, coefficients, swaps, &
   vector_size, vector, &
   overlap &
@@ -1261,8 +1289,9 @@ subroutine compute_overlap_with_projectors( &
 
   overlap = dznrm2(number_of_projectors,weight_vector,1)
 
-end subroutine
-subroutine convert_vectors_to_reflectors( &
+end subroutine ! }}}
+
+subroutine convert_vectors_to_reflectors( & ! {{{
   m, n, &
   vectors, &
   rank, &
@@ -1355,8 +1384,9 @@ subroutine convert_vectors_to_reflectors( &
 
   rank = i-1
 
-end subroutine
-subroutine compute_q_from_reflectors( &
+end subroutine ! }}}
+
+subroutine compute_q_from_reflectors( & ! {{{
   full_space_dimension, &
   number_of_projectors, number_of_reflectors, reflectors, coefficients, swaps, &
   q &
@@ -1429,8 +1459,9 @@ subroutine compute_q_from_reflectors( &
       call zswap(full_space_dimension,q(1,i),1,q(1,swaps(i)),1)
     end if
   end do
-end subroutine
-subroutine project_into_orthogonal_space( &
+end subroutine ! }}}
+
+subroutine project_into_orthogonal_space( & ! {{{
   full_space_dimension, &
   number_of_projectors, number_of_reflectors, orthogonal_subspace_dimension, reflectors, coefficients, swaps, &
   vector_in_full_space, &
@@ -1505,8 +1536,9 @@ subroutine project_into_orthogonal_space( &
   vector_in_orthogonal_space = &
     intermediate_vector(start_of_orthogonal_subspace:full_space_dimension)
 
-end subroutine
-subroutine unproject_from_orthogonal_space( &
+end subroutine ! }}}
+
+subroutine unproject_from_orthogonal_space( & ! {{{
   full_space_dimension, &
   number_of_projectors, number_of_reflectors, orthogonal_subspace_dimension, reflectors, coefficients, swaps, &
   vector_in_orthogonal_space, &
@@ -1578,8 +1610,9 @@ subroutine unproject_from_orthogonal_space( &
     stop
   end if
 
-end subroutine
-subroutine project_matrix_into_orthog_space( &
+end subroutine ! }}}
+
+subroutine project_matrix_into_orthog_space( & ! {{{
   full_space_dimension, &
   number_of_projectors, number_of_reflectors, orthogonal_subspace_dimension, reflectors, coefficients, swaps, &
   matrix_in_full_space, &
@@ -1674,8 +1707,9 @@ subroutine project_matrix_into_orthog_space( &
   matrix_in_orthogonal_space = &
     conjg(intermediate_matrix(start_of_orthogonal_subspace:full_space_dimension,start_of_orthogonal_subspace:full_space_dimension))
 
-end subroutine
-subroutine compute_opt_mat_in_orthog_space( &
+end subroutine ! }}}
+
+subroutine compute_opt_mat_in_orthog_space( & ! {{{
   bl, br, & ! state bandwidth dimension
   cl, & ! operator left  bandwidth dimension
   cr, & ! operator right bandwidth dimension
@@ -1718,8 +1752,9 @@ subroutine compute_opt_mat_in_orthog_space( &
     optimization_matrix &
   )
 
-end subroutine
-subroutine compute_opt_matrix_all_cases( &
+end subroutine ! }}}
+
+subroutine compute_opt_matrix_all_cases( & ! {{{
   bl, br, & ! state bandwidth dimension
   cl, & ! operator left  bandwidth dimension
   cr, & ! operator right bandwidth dimension
@@ -1772,8 +1807,9 @@ subroutine compute_opt_matrix_all_cases( &
       optimization_matrix &
     )
   end if
-end subroutine
-subroutine filter_components_outside_orthog( &
+end subroutine ! }}}
+
+subroutine filter_components_outside_orthog( & ! {{{
   full_space_dimension, &
   number_of_projectors, number_of_reflectors, orthogonal_subspace_dimension, reflectors, coefficients, swaps, &
   input, &
@@ -1815,8 +1851,9 @@ subroutine filter_components_outside_orthog( &
     output &
   )
 
-end subroutine
-function optimize( &
+end subroutine ! }}}
+
+function optimize( & ! {{{
   bl, br, & ! state bandwidth dimension
   cl, & ! operator left  bandwidth dimension
   cr, & ! operator right bandwidth dimension
@@ -1951,8 +1988,9 @@ function optimize( &
     return
   end if
 
-end function
-subroutine optimize_strategy_1( &
+end function ! }}}
+
+subroutine optimize_strategy_1( & ! {{{
   bl, br, & ! state bandwidth dimension
   cl, & ! operator left  bandwidth dimension
   cr, & ! operator right bandwidth dimension
@@ -2031,8 +2069,9 @@ subroutine optimize_strategy_1( &
   info = 0
   number_of_iterations = 0
 
-end subroutine
-subroutine optimize_strategy_2( &
+end subroutine ! }}}
+
+subroutine optimize_strategy_2( & ! {{{
   bl, br, & ! state bandwidth dimension
   cl, & ! operator left  bandwidth dimension
   cr, & ! operator right bandwidth dimension
@@ -2262,8 +2301,9 @@ contains
 
   end subroutine
 
-end subroutine
-subroutine optimize_strategy_3( &
+end subroutine ! }}}
+
+subroutine optimize_strategy_3( & ! {{{
   bl, br, & ! state bandwidth dimension
   cl, & ! operator left  bandwidth dimension
   cr, & ! operator right bandwidth dimension
@@ -2511,12 +2551,14 @@ contains
 
   end subroutine
 
-end subroutine
-subroutine seed_randomizer(seed)
+end subroutine ! }}}
+
+subroutine seed_randomizer(seed) ! {{{
   integer, intent(in) :: seed
   call srand(seed)
-end subroutine
-subroutine randomize_state_site_tensor(br, bl, d, state_site_tensor)
+end subroutine ! }}}
+
+subroutine randomize_state_site_tensor(br, bl, d, state_site_tensor) ! {{{
   integer, intent(in) :: br, bl, d
   double complex, intent(out) :: state_site_tensor(br,bl,d)
 
@@ -2529,8 +2571,9 @@ subroutine randomize_state_site_tensor(br, bl, d, state_site_tensor)
   end do
   end do
   end do
-end subroutine
-subroutine rand_norm_state_site_tensor(br, bl, d, state_site_tensor)
+end subroutine ! }}}
+
+subroutine rand_norm_state_site_tensor(br, bl, d, state_site_tensor) ! {{{
   integer, intent(in) :: br, bl, d
   double complex, intent(out) :: state_site_tensor(br,bl,d)
 
@@ -2553,8 +2596,9 @@ subroutine rand_norm_state_site_tensor(br, bl, d, state_site_tensor)
 
   state_site_tensor = reshape(workspace,shape(state_site_tensor),order=(/1,3,2/))
 
-end subroutine
-subroutine rand_unnorm_state_site_tensor(br, bl, d, state_site_tensor)
+end subroutine ! }}}
+
+subroutine rand_unnorm_state_site_tensor(br, bl, d, state_site_tensor) ! {{{
   integer, intent(in) :: br, bl, d
   double complex, intent(out) :: state_site_tensor(br,bl,d)
 
@@ -2562,8 +2606,9 @@ subroutine rand_unnorm_state_site_tensor(br, bl, d, state_site_tensor)
 
   state_site_tensor = state_site_tensor / sqrt(dble(real(sum(conjg(state_site_tensor(:,:,:))*state_site_tensor(:,:,:)))))
 
-end subroutine
-subroutine random_projector_matrix( &
+end subroutine ! }}}
+
+subroutine random_projector_matrix( & ! {{{
   projector_length, number_of_projectors, &
   rank, &
   reflectors, coefficients, swaps &
@@ -2594,8 +2639,9 @@ subroutine random_projector_matrix( &
     rank, &
     coefficients, swaps &
   )
-end subroutine
-function norm_denorm_going_left( &
+end subroutine ! }}}
+
+function norm_denorm_going_left( & ! {{{
   bl,bm,br, &
   dl,dr, &
   site_tensor_to_denormalize, &
@@ -2673,8 +2719,9 @@ function norm_denorm_going_left( &
     denormalized_site_tensor, bm &
   )
 
-end function
-function norm_denorm_going_right( &
+end function ! }}}
+
+function norm_denorm_going_right( & ! {{{
   bl,bm,br, &
   dl,dr, &
   site_tensor_to_normalize, &
@@ -2760,8 +2807,9 @@ function norm_denorm_going_right( &
     order=(/2,1,3/) &
   )
 
-end function
-subroutine create_bandwidth_increase_matrix(old_bandwidth,new_bandwidth,matrix)
+end function ! }}}
+
+subroutine create_bandwidth_increase_matrix(old_bandwidth,new_bandwidth,matrix) ! {{{
   integer, intent(in) :: old_bandwidth, new_bandwidth
   double complex, intent(out) :: matrix(new_bandwidth,old_bandwidth)
 
@@ -2780,8 +2828,9 @@ subroutine create_bandwidth_increase_matrix(old_bandwidth,new_bandwidth,matrix)
     stop
   end if
 
-end subroutine
-subroutine absorb_bi_matrix_from_left( &
+end subroutine ! }}}
+
+subroutine absorb_bi_matrix_from_left( & ! {{{
   br,bl,d, &
   new_bl, &
   old_state_site_tensor, &
@@ -2814,8 +2863,9 @@ subroutine absorb_bi_matrix_from_left( &
 
   new_state_site_tensor = reshape(intermediate_tensor_2,shape(new_state_site_tensor),order=(/1,3,2/))
 
-end subroutine
-subroutine absorb_bi_matrix_from_right( &
+end subroutine ! }}}
+
+subroutine absorb_bi_matrix_from_right( & ! {{{
   br,bl,d, &
   new_br, &
   old_state_site_tensor, &
@@ -2840,8 +2890,9 @@ subroutine absorb_bi_matrix_from_right( &
     new_state_site_tensor, new_br &
   )
 
-end subroutine
-function increase_bandwidth_between( &
+end subroutine ! }}}
+
+function increase_bandwidth_between( & ! {{{
   bl,bm,br, &
   dl,dr, &
   new_bm, &
@@ -2892,8 +2943,10 @@ function increase_bandwidth_between( &
       output_normalized_tensor &
     )
 
-end function
-subroutine form_overlap_site_tensor(br, bl, d, state_site_tensor, overlap_site_tensor)
+
+end function ! }}}
+
+subroutine form_overlap_site_tensor(br, bl, d, state_site_tensor, overlap_site_tensor) ! {{{
   integer, intent(in) :: br, bl, d
   double complex, intent(in) :: state_site_tensor(br,bl,d)
   double complex, intent(out) :: overlap_site_tensor(bl,d,br)
@@ -2905,8 +2958,9 @@ subroutine form_overlap_site_tensor(br, bl, d, state_site_tensor, overlap_site_t
       order=(/3,1,2/) &
     ))
 
-end subroutine
-subroutine form_norm_overlap_tensors( &
+end subroutine ! }}}
+
+subroutine form_norm_overlap_tensors( & ! {{{
   bl, bm, br, &
   dl, dr, &
   unnormalized_state_tensor_1, &
@@ -2962,4 +3016,4 @@ subroutine form_norm_overlap_tensors( &
     right_norm_overlap_tensor_2 &
   )
 
-end subroutine
+end subroutine ! }}}
