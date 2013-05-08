@@ -1,17 +1,21 @@
+// Includes {{{
 #include <boost/lambda/lambda.hpp>
 #include <boost/numeric/ublas/vector.hpp>
 #include <boost/range/algorithm/for_each.hpp>
 
 #include "nutcracker/core.hpp"
 #include "nutcracker/projectors.hpp"
+// }}}
 
 namespace Nutcracker {
 
+// Usings {{{
 namespace lambda = boost::lambda;
 
 using boost::for_each;
+// }}}
 
-StateSite<Middle> applyProjectorMatrix(
+StateSite<Middle> applyProjectorMatrix( // {{{
       ProjectorMatrix const& projector_matrix
     , StateSite<Middle> const& old_state_site
 ) {
@@ -31,9 +35,9 @@ StateSite<Middle> applyProjectorMatrix(
     assert(new_state_site.norm() > 1e-7);
     for_each(new_state_site,lambda::_1 /= new_state_site.norm());
     return boost::move(new_state_site);
-}
-template<typename side>
-static OverlapSite<side> implComputeOverlapSiteFromStateSite(StateSiteAny const& state_site) {
+} // }}}
+
+template<typename side> static OverlapSite<side> implComputeOverlapSiteFromStateSite(StateSiteAny const& state_site) {{{
     OverlapSite<side> overlap_site(dimensionsOf(state_site));
     Core::form_overlap_site_tensor(
          state_site.rightDimension()
@@ -43,16 +47,17 @@ static OverlapSite<side> implComputeOverlapSiteFromStateSite(StateSiteAny const&
         ,overlap_site
     );
     return boost::move(overlap_site);
-}
+}}}
 
-OverlapSite<Middle> computeOverlapSiteFromStateSite(StateSite<Middle> const& state_site) {
+OverlapSite<Middle> computeOverlapSiteFromStateSite(StateSite<Middle> const& state_site) {{{
     return implComputeOverlapSiteFromStateSite<Middle>(state_site);
-}
+}}}
 
-OverlapSite<None> computeOverlapSiteFromStateSite(StateSiteAny const& state_site) {
+OverlapSite<None> computeOverlapSiteFromStateSite(StateSiteAny const& state_site) {{{
     return implComputeOverlapSiteFromStateSite<None>(state_site);
-}
-OverlapSitesFromStateSitesAndNormalizeResult computeOverlapSitesFromStateSitesAndNormalize(
+}}}
+
+OverlapSitesFromStateSitesAndNormalizeResult computeOverlapSitesFromStateSitesAndNormalize( // {{{
       StateSite<Middle> const& middle_state_site
      ,StateSite<Right> const& right_state_site
 ) {
@@ -81,8 +86,9 @@ OverlapSitesFromStateSitesAndNormalizeResult computeOverlapSitesFromStateSitesAn
             ,boost::move(middle_state_site_from_right_state_site)
             ,boost::move(right_overlap_site_from_right_state_site)
         );
-}
-double computeOverlapWithProjectors(
+} // }}}
+
+double computeOverlapWithProjectors( // {{{
      ProjectorMatrix const& projector_matrix
     ,StateSiteAny const& state_site
 ) {
@@ -97,11 +103,13 @@ double computeOverlapWithProjectors(
         ,projector_matrix | state_site
         ,state_site
     ));
-}
-Projector computeProjectorFromState(State const& state) {
+} // }}}
+
+Projector computeProjectorFromState(State const& state) {{{
     return computeProjectorFromStateSites(state.getFirstSite(),state.getRestSites());
-}
-unsigned int minimumBandwidthDimensionForProjectorCount(
+}}}
+
+unsigned int minimumBandwidthDimensionForProjectorCount( // {{{
       vector<unsigned int> const& physical_dimensions
     , unsigned int const number_of_projectors
 ) {
@@ -124,8 +132,9 @@ unsigned int minimumBandwidthDimensionForProjectorCount(
             }
         }
     }
-}
-ProjectorMatrix randomProjectorMatrix(
+} // }}}
+
+ProjectorMatrix randomProjectorMatrix( // {{{
      unsigned int const vector_length
     ,unsigned int const number_of_projectors
 ) {
@@ -153,6 +162,6 @@ ProjectorMatrix randomProjectorMatrix(
             ,coefficients
             ,swaps
     );
-}
+} // }}}
 
 }
