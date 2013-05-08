@@ -17,4 +17,4 @@ build*
 .directory
 *.swp
 quarantine
-
+*.swo
