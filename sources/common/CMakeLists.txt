@@ -5,6 +5,7 @@ set(PROTO_INCLUDE ${PROTO_INCLUDE} PARENT_SCOPE)
 include_directories (${PROTO_INCLUDE})
 
 add_library(Nutcracker++ SHARED
+    base_chain
     boundaries
     chain
     chain_options

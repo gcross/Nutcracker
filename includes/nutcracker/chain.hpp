@@ -156,10 +156,11 @@ public:
     void reset();
 
     unsigned int bandwidthDimension() const { return bandwidth_dimension; }
+    OperatorSite const& getCurrentOperatorSite() const { return *operator_sites[current_site_number]; }
 
-    complex<double> computeExpectationValue() const;
+    using BaseChain::computeExpectationValue;
     double computeProjectorOverlapAtCurrentSite() const;
-    double computeStateNorm() const;
+    using BaseChain::computeStateNorm;
 
     template<typename side> void absorb(BOOST_RV_REF(StateSite<side>) state_site, unsigned int operator_number);
     template<typename side> void move();

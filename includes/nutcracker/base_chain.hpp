@@ -43,6 +43,11 @@ public:
     template<typename side> ExpectationBoundary<side>& expectationBoundary() {
         throw BadLabelException("Chain::expectationBoundary()",typeid(side));
     }
+
+    std::complex<double> computeExpectationValue() const;
+    double computeStateNorm() const;
+
+    virtual OperatorSite const& getCurrentOperatorSite() const = 0;
 };
 
 template<> inline ExpectationBoundary<Left>& BaseChain::expectationBoundary<Left>() { return left_expectation_boundary; }

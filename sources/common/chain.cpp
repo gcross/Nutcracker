@@ -56,22 +56,8 @@ void Chain::clear() {{{
     reset();
 }}}
 
-complex<double> Chain::computeExpectationValue() const {{{
-    return 
-        Nutcracker::computeExpectationValueAtSite(
-             left_expectation_boundary
-            ,state_site
-            ,*operator_sites[current_site_number]
-            ,right_expectation_boundary
-        );
-}}}
-
 double Chain::computeProjectorOverlapAtCurrentSite() const {{{
     return computeOverlapWithProjectors(projector_matrix,state_site);
-}}}
-
-double Chain::computeStateNorm() const {{{
-    return state_site.norm();
 }}}
 
 void Chain::constructAndAddProjectorFromState() {{{
