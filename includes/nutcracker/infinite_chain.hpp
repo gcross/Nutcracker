@@ -41,7 +41,8 @@ public:
     // }}}
 
     unsigned int bandwidthDimension() const { return state_site.leftDimension(); }
-    OperatorSite const& getCurrentOperatorSite() const { return operator_site; }
+    virtual OperatorSite const& getCurrentOperatorSite() const { return operator_site; }
+    virtual ProjectorMatrix const& getCurrentProjectorMatrix() const { return ProjectorMatrix::getNull(); }
 
 }; // }}}
 

@@ -156,7 +156,8 @@ public:
     void reset();
 
     unsigned int bandwidthDimension() const { return bandwidth_dimension; }
-    OperatorSite const& getCurrentOperatorSite() const { return *operator_sites[current_site_number]; }
+    virtual OperatorSite const& getCurrentOperatorSite() const { return *operator_sites[current_site_number]; }
+    virtual ProjectorMatrix const& getCurrentProjectorMatrix() const { return projector_matrix; }
 
     using BaseChain::computeExpectationValue;
     double computeProjectorOverlapAtCurrentSite() const;
@@ -168,7 +169,7 @@ public:
     void increaseBandwidthDimension(unsigned int const new_bandwidth_dimension);
     void constructAndAddProjectorFromState();
 
-    void optimizeSite();
+    using BaseChain::optimizeSite;
     void performOptimizationSweep();
     void sweepUntilConverged();
     void optimizeChain();

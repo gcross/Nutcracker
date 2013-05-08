@@ -48,6 +48,9 @@ public:
     double computeStateNorm() const;
 
     virtual OperatorSite const& getCurrentOperatorSite() const = 0;
+    virtual ProjectorMatrix const& getCurrentProjectorMatrix() const = 0;
+
+    void optimizeSite();
 };
 
 template<> inline ExpectationBoundary<Left>& BaseChain::expectationBoundary<Left>() { return left_expectation_boundary; }

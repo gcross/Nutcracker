@@ -199,6 +199,7 @@ public:
         );
     } // }}}
 
+    static ProjectorMatrix const& getNull();
 }; // }}}
 
 // class ProjectorSite {{{
