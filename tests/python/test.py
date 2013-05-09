@@ -1647,6 +1647,34 @@ class increase_bandwidth_between(TestCase): # {{{
             tensordot(new_left_tensor,new_right_tensor,(0,1)),
         )
 # }}}
+class absorb_bi_mat_into_left_exp_env(TestCase): # {{{
+
+    @with_checker
+    def testCorrectness(self,sb=irange(1,4),ob=irange(2,8),new_sb=irange(9,32)):
+        old_left_exp_environment = crand(sb,sb,ob)
+        matrix = vmps.create_bandwidth_increase_matrix(sb,new_sb)
+        new_left_exp_environment = vmps.absorb_bi_mat_into_left_exp_env(old_left_exp_environment,matrix)
+        self.assertAllClose(
+            tensordot(matrix,tensordot(old_left_exp_environment.transpose(0,2,1),matrix.transpose().conj(),(2,0)),(1,0)).transpose(0,2,1),
+            new_left_exp_environment
+        )
+        new_left_exp_environment = vmps.absorb_bi_mat_into_left_exp_env(new_left_exp_environment,matrix.transpose().conj())
+        self.assertAllClose(old_left_exp_environment,new_left_exp_environment)
+# }}}
+class absorb_bi_mat_into_right_exp_env(TestCase): # {{{
+
+    @with_checker
+    def testCorrectness(self,sb=irange(1,4),ob=irange(2,8),new_sb=irange(9,32)):
+        old_right_exp_environment = crand(sb,sb,ob)
+        matrix = vmps.create_bandwidth_increase_matrix(sb,new_sb)
+        new_right_exp_environment = vmps.absorb_bi_mat_into_right_exp_env(old_right_exp_environment,matrix)
+        self.assertAllClose(
+            tensordot(matrix.conj(),tensordot(old_right_exp_environment.transpose(0,2,1),matrix.transpose(),(2,0)),(1,0)).transpose(0,2,1),
+            new_right_exp_environment
+        )
+        new_right_exp_environment = vmps.absorb_bi_mat_into_right_exp_env(new_right_exp_environment,matrix.transpose().conj())
+        self.assertAllClose(old_right_exp_environment,new_right_exp_environment)
+# }}}
 # }}}
 # Overlap Tensor Formation {{{
 class form_overlap_site_tensor(TestCase): # {{{
@@ -1771,6 +1799,8 @@ tests = [ # {{{
     non_hermitian_matrix_detection,
     extend_state_vector_fragment,
     contract_matrix_left,
+    absorb_bi_mat_into_left_exp_env,
+    absorb_bi_mat_into_right_exp_env,
 ] # }}}
 
 unittest.TextTestRunner(verbosity=2).run(unittest.TestSuite(map(unittest.defaultTestLoader.loadTestsFromTestCase, tests)))
