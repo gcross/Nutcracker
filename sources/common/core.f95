@@ -2892,6 +2892,43 @@ subroutine absorb_bi_matrix_from_right( & ! {{{
 
 end subroutine ! }}}
 
+subroutine absorb_bi_conjg_matrix_from_both( & ! {{{
+  b,d, &
+  new_b, &
+  old_state_site_tensor, &
+  matrix, &
+  new_state_site_tensor &
+)
+  integer, intent(in) :: b, d, new_b
+  double complex, intent(in) :: &
+    old_state_site_tensor(b,b,d), &
+    matrix(new_b,b)
+  double complex, intent(out) :: &
+    new_state_site_tensor(new_b,new_b,d)
+  double complex :: &
+    conjugated_matrix(new_b,b), &
+    intermediate_state_site_tensor(new_b,b,d)
+
+  conjugated_matrix = conjg(matrix)
+
+  call absorb_bi_matrix_from_right( &
+    b,b,d, &
+    new_b, &
+    old_state_site_tensor, &
+    conjugated_matrix, &
+    intermediate_state_site_tensor &
+  )
+
+  call absorb_bi_matrix_from_left( &
+    new_b,b,d, &
+    new_b, &
+    intermediate_state_site_tensor, &
+    matrix, &
+    new_state_site_tensor &
+  )
+
+end subroutine ! }}}
+
 function increase_bandwidth_between( & ! {{{
   bl,bm,br, &
   dl,dr, &
@@ -3039,6 +3076,57 @@ subroutine absorb_bi_mat_into_right_exp_env( & ! {{{
   )
 
   new_right_exp_environment = reshape(intermediate_tensor_3,shape(new_right_exp_environment),order=(/2,3,1/))
+
+end subroutine ! }}}
+
+subroutine increase_bandwidth_with_environment( & ! {{{
+  b, & ! state bandwidth dimension
+  c, & ! operator bandwidth dimension
+  d, & ! state physical dimension
+  new_b, & ! new state bandwidth dimension
+  old_state_site_tensor, &
+  old_left_exp_environment, &
+  old_right_exp_environment, &
+  new_state_site_tensor, &
+  new_left_exp_environment, &
+  new_right_exp_environment &
+)
+  integer, intent(in) :: b, c, d, new_b
+  double complex, intent(in) :: &
+    old_state_site_tensor(b,b,d), &
+    old_left_exp_environment(b,b,c), &
+    old_right_exp_environment(b,b,c)
+  double complex, intent(out) :: &
+    new_state_site_tensor(new_b,new_b,d), &
+    new_left_exp_environment(new_b,new_b,c), &
+    new_right_exp_environment(new_b,new_b,c)
+
+  double complex :: &
+    bandwidth_increase_matrix(new_b,b)
+
+  call create_bandwidth_increase_matrix(b,new_b,bandwidth_increase_matrix)
+
+  call absorb_bi_conjg_matrix_from_both( &
+    b,d, &
+    new_b, &
+    old_state_site_tensor, &
+    bandwidth_increase_matrix, &
+    new_state_site_tensor &
+  )
+
+  call absorb_bi_mat_into_left_exp_env( &
+    c,b,new_b, &
+    old_left_exp_environment, &
+    bandwidth_increase_matrix, &
+    new_left_exp_environment &
+  )
+
+  call absorb_bi_mat_into_right_exp_env( &
+    c,b,new_b, &
+    old_right_exp_environment, &
+    bandwidth_increase_matrix, &
+    new_right_exp_environment &
+  )
 
 end subroutine ! }}}
 

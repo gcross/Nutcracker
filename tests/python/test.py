@@ -1625,6 +1625,20 @@ class absorb_bi_matrix_from_right(TestCase): # {{{
         new_state_site_tensor = vmps.absorb_bi_matrix_from_right(new_state_site_tensor,matrix.transpose().conj())
         self.assertAllClose(old_state_site_tensor,new_state_site_tensor)
 # }}}
+class absorb_bi_conjg_matrix_from_both(TestCase): # {{{
+
+    @with_checker
+    def testCorrectness(self,b=irange(2,8),new_b=irange(9,32),d=irange(2,4)):
+        old_state_site_tensor = crand(b,b,d)
+        matrix = vmps.create_bandwidth_increase_matrix(b,new_b)
+        new_state_site_tensor = vmps.absorb_bi_conjg_matrix_from_both(old_state_site_tensor,matrix)
+        self.assertAllClose(
+            tensordot(matrix.conj(),tensordot(old_state_site_tensor.transpose(0,2,1),matrix.conj(),(2,1)),(1,0)).transpose(0,2,1),
+            new_state_site_tensor
+        )
+        new_state_site_tensor = vmps.absorb_bi_conjg_matrix_from_both(new_state_site_tensor,matrix.transpose().conj())
+        self.assertAllClose(old_state_site_tensor,new_state_site_tensor)
+# }}}
 class increase_bandwidth_between(TestCase): # {{{
 
     @with_checker
@@ -1674,6 +1688,39 @@ class absorb_bi_mat_into_right_exp_env(TestCase): # {{{
         )
         new_right_exp_environment = vmps.absorb_bi_mat_into_right_exp_env(new_right_exp_environment,matrix.transpose().conj())
         self.assertAllClose(old_right_exp_environment,new_right_exp_environment)
+# }}}
+class increase_bandwidth_with_environment(TestCase): # {{{
+
+    @with_checker
+    def testCorrectness(self,
+        b=irange(2,4),
+        c=irange(2,4),
+        d=irange(2,4),
+        new_b=irange(5,8),
+    ):
+        old_state_site_tensor = crand(b,b,d)
+        old_left_exp_environment = crand(b,b,c)
+        old_right_exp_environment = crand(b,b,c)
+        sparse_operator_indices, sparse_operator_matrices, operator_site_tensor = generate_random_sparse_matrices(c,c,d)
+
+        new_state_site_tensor, new_left_exp_environment, new_right_exp_environment = vmps.increase_bandwidth_with_environment(new_b,old_state_site_tensor,old_left_exp_environment,old_right_exp_environment)
+
+        self.assertAlmostEqual(
+            vmps.compute_expectation(
+                old_left_exp_environment,
+                old_state_site_tensor,
+                sparse_operator_indices,
+                sparse_operator_matrices,
+                old_right_exp_environment,
+            ),
+            vmps.compute_expectation(
+                new_left_exp_environment,
+                new_state_site_tensor,
+                sparse_operator_indices,
+                sparse_operator_matrices,
+                new_right_exp_environment,
+            ),
+        )
 # }}}
 # }}}
 # Overlap Tensor Formation {{{
@@ -1801,6 +1848,8 @@ tests = [ # {{{
     contract_matrix_left,
     absorb_bi_mat_into_left_exp_env,
     absorb_bi_mat_into_right_exp_env,
+    absorb_bi_conjg_matrix_from_both,
+    increase_bandwidth_with_environment,
 ] # }}}
 
 unittest.TextTestRunner(verbosity=2).run(unittest.TestSuite(map(unittest.defaultTestLoader.loadTestsFromTestCase, tests)))
