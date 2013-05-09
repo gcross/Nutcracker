@@ -27,6 +27,8 @@ namespace Nutcracker { namespace Core {
 // ) {
 //     return apply_single_site_operator_(&br,&bl,&d,state_site_tensor,local_operator,new_state_site_tensor);
 // }
+
+// compute_expectation {{{
 extern "C" void compute_expectation_(
     uint32_t const*,
     uint32_t const*,
@@ -66,6 +68,9 @@ complex<double> compute_expectation(
     );
     return expectation;
 }
+// }}}
+
+// compute_overlap_with_projectors {{{
 extern "C" void compute_overlap_with_projectors_(
       uint32_t const* number_of_projectors
     , uint32_t const* number_of_reflectors
@@ -76,7 +81,6 @@ extern "C" void compute_overlap_with_projectors_(
     , complex<double> const* vector
     , complex<double> const* overlap
 );
-
 complex<double> compute_overlap_with_projectors(
     uint32_t const number_of_projectors
   , uint32_t const number_of_reflectors
@@ -94,6 +98,9 @@ complex<double> compute_overlap_with_projectors(
     );
     return overlap;
 }
+// }}}
+
+// {{{ contract_expectation_boundaries
 extern "C" void contract_expectation_boundaries_(
       uint32_t const* b
     , uint32_t const* c
@@ -118,6 +125,9 @@ complex<double> contract_expectation_boundaries(
     );
     return expectation;
 }
+// }}}
+
+// contract_matrix_left {{{
 extern "C" void contract_matrix_left_(
     uint32_t const* bl
   , uint32_t const* br
@@ -125,7 +135,6 @@ extern "C" void contract_matrix_left_(
   , complex<double> const* matrix
   , complex<double>* new_left_environment
 );
-
 void contract_matrix_left(
     uint32_t bl
   , uint32_t br
@@ -141,6 +150,9 @@ void contract_matrix_left(
         ,new_left_environment
     );
 }
+// }}}
+
+// contract_sos_left {{{
 extern "C" void contract_sos_left_(
     uint32_t const* bl,
     uint32_t const* br,
@@ -152,7 +164,6 @@ extern "C" void contract_sos_left_(
     complex<double> const* state_site_tensor,
     complex<double>* new_left_environment
 );
-
 void contract_sos_left(
     uint32_t const bl,
     uint32_t const br,
@@ -176,6 +187,9 @@ void contract_sos_left(
         new_left_environment
     );
 }
+// }}}
+
+// contract_sos_right {{{
 extern "C" void contract_sos_right_(
     uint32_t const* bl,
     uint32_t const* br,
@@ -187,7 +201,6 @@ extern "C" void contract_sos_right_(
     complex<double> const* state_site_tensor,
     complex<double>* new_right_environment
 );
-
 void contract_sos_right(
     uint32_t const bl,
     uint32_t const br,
@@ -211,6 +224,9 @@ void contract_sos_right(
         new_right_environment
     );
 }
+// }}}
+
+// contract_vs_left
 extern "C" void contract_vs_left_(
     uint32_t const* b_left_old, uint32_t const* b_right_old,
     uint32_t const* b_left_new, uint32_t const* b_right_new,
@@ -220,7 +236,6 @@ extern "C" void contract_vs_left_(
     complex<double> const* normalized_state_site_tensor,
     complex<double>* new_left_environment
 );
-
 void contract_vs_left(
     uint32_t const b_left_old, uint32_t const b_right_old,
     uint32_t const b_left_new, uint32_t const b_right_new,
@@ -240,6 +255,9 @@ void contract_vs_left(
         new_left_environment
     );
 }
+// }}}
+
+// contract_vs_right {{{
 extern "C" void contract_vs_right_(
     uint32_t const* b_left_old, uint32_t const* b_right_old,
     uint32_t const* b_left_new, uint32_t const* b_right_new,
@@ -249,7 +267,6 @@ extern "C" void contract_vs_right_(
     complex<double> const* normalized_state_site_tensor,
     complex<double>* new_right_environment
 );
-
 void contract_vs_right(
     uint32_t const b_left_old, uint32_t const b_right_old,
     uint32_t const b_left_new, uint32_t const b_right_new,
@@ -269,6 +286,8 @@ void contract_vs_right(
         new_right_environment
     );
 }
+// }}}
+
 extern "C" uint32_t convert_vectors_to_reflectors_(
     uint32_t const* n,
     uint32_t const* m,
