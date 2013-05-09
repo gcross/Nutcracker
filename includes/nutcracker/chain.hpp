@@ -282,6 +282,8 @@ template<typename Callback> void Chain::callWithStateSites(Callback& callback) c
     callback(state_site,right_neighbors | reversed | transformed(boost::bind(&Neighbor<Right>::state_site,_1)));
 }
 template<typename side> void Chain::move() {
+    optimized = false;
+
     unsigned int const operator_number = current_site_number;
 
     moveSiteNumber<side>();

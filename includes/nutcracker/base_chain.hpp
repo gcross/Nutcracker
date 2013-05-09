@@ -14,10 +14,25 @@ protected:
     ExpectationBoundary<Left> left_expectation_boundary;
     ExpectationBoundary<Right> right_expectation_boundary;
     StateSite<Middle> state_site;
+    bool optimized;
     double energy;
 
-    BaseChain() : ChainOptions() {}
-    explicit BaseChain(boost::optional<ChainOptions const&> maybe_options) : ChainOptions(maybe_options) {}
+    explicit BaseChain(boost::optional<ChainOptions const&> maybe_options)
+      : ChainOptions(maybe_options)
+      , optimized(false)
+    {}
+
+    explicit BaseChain(
+        BOOST_RV_REF(ExpectationBoundary<Left>) left_expectation_boundary,
+        BOOST_RV_REF(ExpectationBoundary<Right>) right_expectation_boundary,
+        BOOST_RV_REF(StateSite<Middle>) state_site,
+        boost::optional<ChainOptions const&> maybe_options
+    ) : ChainOptions(maybe_options)
+      , left_expectation_boundary(left_expectation_boundary)
+      , right_expectation_boundary(right_expectation_boundary)
+      , state_site(state_site)
+      , optimized(false)
+    {}
 
 public:
     boost::signal<void (unsigned int)> signalOptimizeSiteSuccess;
