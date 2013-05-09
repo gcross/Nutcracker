@@ -1,7 +1,7 @@
 test: vmps.so
 
 vmps.so: ../../sources/common/core.f95 Makefile
-	f2py -m vmps $< -c -lgfortran -lblas -llapack -larpack --f90flags="-fbounds-check -fimplicit-none -Wall"
+	f2py -m vmps $< -c -lgfortran -lblas -llapack -larpack --f90flags="-fbounds-check -fimplicit-none -Wall -g"
 
 clean:
 	rm -f vmps.so
