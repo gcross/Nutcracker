@@ -2946,6 +2946,102 @@ function increase_bandwidth_between( & ! {{{
 
 end function ! }}}
 
+subroutine absorb_bi_mat_into_left_exp_env( & ! {{{
+  ob, &     ! operator bandwidth dimension
+  sb, &     ! old state bandwidth dimension
+  new_sb, & ! new state bandwidth dimension
+  old_left_exp_environment, &
+  matrix, &
+  new_left_exp_environment &
+)
+  integer, intent(in) :: ob, sb, new_sb
+  double complex, intent(in) :: &
+    old_left_exp_environment(sb,sb,ob), &
+    matrix(new_sb,sb)
+  double complex, intent(out) :: &
+    new_left_exp_environment(new_sb,new_sb,ob)
+
+  double complex :: &
+    intermediate_tensor_1(sb,ob,sb), &
+    intermediate_tensor_2(sb,ob,new_sb), &
+    intermediate_tensor_3(new_sb,ob,new_sb)
+
+  intermediate_tensor_1 = reshape(old_left_exp_environment,shape(intermediate_tensor_1),order=(/1,3,2/))
+  intermediate_tensor_2 = 0
+  intermediate_tensor_3 = 0
+
+  call zgemm( &
+    'N','C', &
+    sb*ob,new_sb,sb, &
+    (1d0,0d0), &
+    intermediate_tensor_1, sb*ob, &
+    matrix, new_sb, &
+    (0d0,0d0), &
+    intermediate_tensor_2, sb*ob &
+  )
+
+  call zgemm( &
+    'N','N', &
+    new_sb,ob*new_sb,sb, &
+    (1d0,0d0), &
+    matrix, new_sb, &
+    intermediate_tensor_2, sb, &
+    (0d0,0d0), &
+    intermediate_tensor_3, new_sb &
+  )
+
+  new_left_exp_environment = reshape(intermediate_tensor_3,shape(new_left_exp_environment),order=(/1,3,2/))
+
+end subroutine ! }}}
+
+subroutine absorb_bi_mat_into_right_exp_env( & ! {{{
+  ob, &     ! operator bandwidth dimension
+  sb, &     ! old state bandwidth dimension
+  new_sb, & ! new state bandwidth dimension
+  old_right_exp_environment, &
+  matrix, &
+  new_right_exp_environment &
+)
+  integer, intent(in) :: ob, sb, new_sb
+  double complex, intent(in) :: &
+    old_right_exp_environment(sb,sb,ob), &
+    matrix(new_sb,sb)
+  double complex, intent(out) :: &
+    new_right_exp_environment(new_sb,new_sb,ob)
+
+  double complex :: &
+    intermediate_tensor_1(sb,ob,sb), &
+    intermediate_tensor_2(sb,ob,new_sb), &
+    intermediate_tensor_3(new_sb,ob,new_sb)
+
+  intermediate_tensor_1 = reshape(old_right_exp_environment,shape(intermediate_tensor_1),order=(/3,1,2/))
+  intermediate_tensor_2 = 0
+  intermediate_tensor_3 = 0
+
+  call zgemm( &
+    'N','C', &
+    sb*ob,new_sb,sb, &
+    (1d0,0d0), &
+    intermediate_tensor_1, sb*ob, &
+    matrix, new_sb, &
+    (0d0,0d0), &
+    intermediate_tensor_2, sb*ob &
+  )
+
+  call zgemm( &
+    'N','N', &
+    new_sb,ob*new_sb,sb, &
+    (1d0,0d0), &
+    matrix, new_sb, &
+    intermediate_tensor_2, sb, &
+    (0d0,0d0), &
+    intermediate_tensor_3, new_sb &
+  )
+
+  new_right_exp_environment = reshape(intermediate_tensor_3,shape(new_right_exp_environment),order=(/2,3,1/))
+
+end subroutine ! }}}
+
 subroutine form_overlap_site_tensor(br, bl, d, state_site_tensor, overlap_site_tensor) ! {{{
   integer, intent(in) :: br, bl, d
   double complex, intent(in) :: state_site_tensor(br,bl,d)
