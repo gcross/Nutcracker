@@ -40,6 +40,7 @@ void BaseChain::optimizeSite() {{{
             state_site = boost::move(result.state_site);
         }
         signalOptimizeSiteSuccess(result.number_of_iterations);
+        optimized = true;
     } catch(OptimizerFailure& failure) {
         signalOptimizeSiteFailure(failure);
     }

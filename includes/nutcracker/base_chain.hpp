@@ -14,10 +14,12 @@ protected:
     ExpectationBoundary<Left> left_expectation_boundary;
     ExpectationBoundary<Right> right_expectation_boundary;
     StateSite<Middle> state_site;
+    bool optimized;
     double energy;
 
     explicit BaseChain(boost::optional<ChainOptions const&> maybe_options)
       : ChainOptions(maybe_options)
+      , optimized(false)
     {}
 
     explicit BaseChain(
@@ -29,6 +31,7 @@ protected:
       , left_expectation_boundary(left_expectation_boundary)
       , right_expectation_boundary(right_expectation_boundary)
       , state_site(state_site)
+      , optimized(false)
     {}
 
 public:

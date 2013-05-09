@@ -61,6 +61,7 @@ double Chain::computeProjectorOverlapAtCurrentSite() const {{{
 }}}
 
 void Chain::constructAndAddProjectorFromState() {{{
+    optimized = false;
     using namespace boost;
     checkAtFirstSite();
     projectors.push_back(
@@ -72,6 +73,8 @@ void Chain::constructAndAddProjectorFromState() {{{
 }}}
 
 void Chain::increaseBandwidthDimension(unsigned int const new_bandwidth_dimension) {{{
+    optimized = false;
+
     if(bandwidth_dimension == new_bandwidth_dimension) return;
     assert(bandwidth_dimension < new_bandwidth_dimension);
     assert(new_bandwidth_dimension <= maximum_bandwidth_dimension);
@@ -156,7 +159,7 @@ void Chain::optimizeChain() {{{
 
 void Chain::performOptimizationSweep() {{{
     unsigned int const starting_site = current_site_number;
-    optimizeSite();
+    if(!optimized) optimizeSite();
     while(current_site_number+1 < number_of_sites) {
         move<Right>();
         optimizeSite();
@@ -183,6 +186,8 @@ State Chain::removeState() {{{
 }}}
 
 void Chain::reset() {{{
+    optimized = false;
+
     bandwidth_dimension =
         min(maximum_bandwidth_dimension
            ,max(initial_bandwidth_dimension
