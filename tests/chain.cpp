@@ -35,11 +35,11 @@ using std::conj;
 using std::ostringstream;
 using std::pair;
 
-TEST_SUITE(Chain) {
+TEST_SUITE(Chain) { // {{{
 
-TEST_SUITE(computeBandwidthDimensionSequence) {
+TEST_SUITE(computeBandwidthDimensionSequence) { // {{{
 
-TEST_CASE(correct_properties) {
+TEST_CASE(correct_properties) { // {{{
     RNG random;
 
     REPEAT(10) {
@@ -69,8 +69,9 @@ TEST_CASE(correct_properties) {
             ASSERT_LE(bandwidth_dimensions[i], bandwidth_dimensions[i+1]*physical_dimensions[i]);
         }
     }
-}
-TEST_CASE(complains_if_too_large) {
+} // }}}
+
+TEST_CASE(complains_if_too_large) { // {{{
     RNG random;
 
     REPEAT(10) {
@@ -94,10 +95,11 @@ TEST_CASE(complains_if_too_large) {
         }
         FATALLY_FAIL("Exception was not thrown!");
     }
-}
+} // }}}
 
-}
-TEST_CASE(maximumBandwidthDimension) {
+} // }}}
+
+TEST_CASE(maximumBandwidthDimension) { // {{{
     RNG random;
 
     REPEAT(10) {
@@ -132,8 +134,9 @@ TEST_CASE(maximumBandwidthDimension) {
         }
         FATALLY_FAIL(message.str())
     }
-}
-TEST_CASE(moveLeftAndRight) {
+} // }}}
+
+TEST_CASE(moveLeftAndRight) { // {{{
     RNG random;
 
     REPEAT(10) {
@@ -159,8 +162,9 @@ TEST_CASE(moveLeftAndRight) {
 
         #undef VALIDATE_CHAIN_PROPERTIES
     }
-}
-TEST_CASE(optimizeSite) {
+} // }}}
+
+TEST_CASE(optimizeSite) { // {{{
     RNG random;
 
     REPEAT(10) {
@@ -187,8 +191,9 @@ TEST_CASE(optimizeSite) {
 
         #undef TEST_OPTIMIZER
     }
-}
-TEST_SUITE(performOptimizationSweep) {
+} // }}}
+
+TEST_SUITE(performOptimizationSweep) { // {{{
 
     vector<pair<unsigned int,vector<unsigned int> > > system_parameters =
         list_of<pair<unsigned int,vector<unsigned int> > >
@@ -236,8 +241,9 @@ TEST_SUITE(performOptimizationSweep) {
     TEST_CASE(physical_dimension_2) { runTests(2); }
     TEST_CASE(physical_dimension_3) { runTests(3); }
     TEST_CASE(physical_dimension_4) { runTests(4); }
-}
-TEST_CASE(increaseBandwidthDimension) {
+} // }}}
+
+TEST_CASE(increaseBandwidthDimension) { // {{{
     RNG random;
 
     REPEAT(10) {
@@ -271,8 +277,9 @@ TEST_CASE(increaseBandwidthDimension) {
 
         #undef VALIDATE_CHAIN_PROPERTIES
     }
-}
-TEST_SUITE(sweepUntilConverged) {
+} // }}}
+
+TEST_SUITE(sweepUntilConverged) { // {{{
 
     void runTest(
           unsigned int const number_of_sites
@@ -293,12 +300,13 @@ TEST_SUITE(sweepUntilConverged) {
     TEST_CASE(10_sites_0p1) { runTest(10,0.1,2,-10.02251095); }
     TEST_CASE(10_sites_1p0) { runTest(10,1.0,6,-12.38148999); }
 
-}
-TEST_SUITE(optimizeChain) {
+} // }}}
 
-TEST_SUITE(external_field) {
+TEST_SUITE(optimizeChain) { // {{{
 
-    vector<pair<unsigned int,vector<unsigned int> > > system_parameters =
+TEST_SUITE(external_field) { // {{{
+
+    vector<pair<unsigned int,vector<unsigned int> > > system_parameters = // {{{
         list_of<pair<unsigned int,vector<unsigned int> > >
             (1,list_of(1))
             (2,list_of(1)(2))
@@ -306,9 +314,9 @@ TEST_SUITE(external_field) {
             (4,list_of(1)(2)(4))
             (5,list_of(1)(2)(4))
             (10,list_of(1)(2)(4)(8)(17))
-    ;
+    ; // }}}
 
-    void runTests(
+    void runTests( // {{{
           unsigned int const physical_dimension
         , OptimizerMode const& optimizer_mode
     ) {
@@ -353,30 +361,31 @@ TEST_SUITE(external_field) {
                 }
             }
         }
-    }
+    } // }}}
 
-    TEST_SUITE(least_value) {
+    TEST_SUITE(least_value) { // {{{
         OptimizerMode const& mode = OptimizerMode::least_value;
         TEST_CASE(physical_dimension_2) { runTests(2,mode); }
         TEST_CASE(physical_dimension_3) { runTests(3,mode); }
         TEST_CASE(physical_dimension_4) { runTests(4,mode); }
-    }
-    TEST_SUITE(greatest_value) {
+    } // }}}
+    TEST_SUITE(greatest_value) { // {{{
         OptimizerMode const& mode = OptimizerMode::greatest_value;
         TEST_CASE(physical_dimension_2) { runTests(2,mode); }
         TEST_CASE(physical_dimension_3) { runTests(3,mode); }
         TEST_CASE(physical_dimension_4) { runTests(4,mode); }
-    }
-    TEST_SUITE(largest_magnitude) {
+    } // }}}
+    TEST_SUITE(largest_magnitude) { // {{{
         OptimizerMode const& mode = OptimizerMode::largest_magnitude;
         TEST_CASE(physical_dimension_2) { runTests(2,mode); }
         TEST_CASE(physical_dimension_3) { runTests(3,mode); }
         TEST_CASE(physical_dimension_4) { runTests(4,mode); }
-    }
-}
-TEST_SUITE(transverse_Ising_model) {
+    } // }}}
+} // }}}
 
-    void runTest(
+TEST_SUITE(transverse_Ising_model) { // {{{
+
+    void runTest( // {{{
           unsigned int const number_of_sites
         , double const coupling_strength
         , double const correct_energy
@@ -398,27 +407,29 @@ TEST_SUITE(transverse_Ising_model) {
         } else {
             FATALLY_FAIL("Bad optimizer mode.");
         }
-    }
+    } // }}}
 
-    TEST_SUITE(least_value) {
+    TEST_SUITE(least_value) { // {{{
         OptimizerMode const& mode = OptimizerMode::least_value;
         TEST_CASE(10_sites_0p1) { runTest(10,0.1,10.0225109571,mode); }
         TEST_CASE(10_sites_1p0) { runTest(10,1.0,12.3814899997,mode); }
-    }
-    TEST_SUITE(greatest_value) {
+    } // }}}
+    TEST_SUITE(greatest_value) { // {{{
         OptimizerMode const& mode = OptimizerMode::greatest_value;
         TEST_CASE(10_sites_0p1) { runTest(10,0.1,10.0225109571,mode); }
         TEST_CASE(10_sites_1p0) { runTest(10,1.0,12.3814899997,mode); }
-    }
-    TEST_SUITE(largest_magnitude) {
+    } // }}}
+    TEST_SUITE(largest_magnitude) { // {{{
         OptimizerMode const& mode = OptimizerMode::largest_magnitude;
         TEST_CASE(10_sites_0p1) { runTest(10,0.1,10.0225109571,mode); }
         TEST_CASE(10_sites_1p0) { runTest(10,1.0,12.3814899997,mode); }
-    }
-}
+    } // }}}
 
-}
-TEST_CASE(expectation_matches_computeExpectationValue) {
+} // }}}
+
+} // }}}
+
+TEST_CASE(expectation_matches_computeExpectationValue) { // {{{
     RNG random;
 
     REPEAT(10) {
@@ -428,86 +439,89 @@ TEST_CASE(expectation_matches_computeExpectationValue) {
         State state = chain.makeCopyOfState();
         ASSERT_NEAR_REL(chain.getEnergy(),computeExpectationValue(state,O),1e-10);
     }
-}
-TEST_SUITE(solveForMultipleLevels) {
+} // }}}
 
-struct checkEnergies_checkOverlap {
-    Chain const& chain;
-    checkEnergies_checkOverlap(Chain const& chain) : chain(chain) {}
-    void operator()(unsigned int const number_of_iterations=0) {
-        ASSERT_NEAR_REL(0,chain.computeProjectorOverlapAtCurrentSite(),1e-12);
-    }
-};
+TEST_SUITE(solveForMultipleLevels) { // {{{
 
-struct checkEnergies_postEnergy {
-    Chain const& chain; bool absolute; vector<double>& actual_energies;
-    checkEnergies_postEnergy(Chain const& chain, bool absolute, vector<double>& actual_energies)
-        : chain(chain), absolute(absolute), actual_energies(actual_energies) {}
-    void operator()() {
-        if(absolute) {
-            actual_energies.push_back(abs(chain.getEnergy()));
-        } else {
-            actual_energies.push_back(chain.getEnergy());
+    struct checkEnergies_checkOverlap { // {{{
+        Chain const& chain;
+        checkEnergies_checkOverlap(Chain const& chain) : chain(chain) {}
+        void operator()(unsigned int const number_of_iterations=0) {
+            ASSERT_NEAR_REL(0,chain.computeProjectorOverlapAtCurrentSite(),1e-12);
         }
-    }
-};
+    }; // }}}
 
-void checkEnergies(
-     Chain& chain
-    ,vector<double> const& correct_energies
-    ,double tolerance
-    ,bool absolute = false
-) {
-    unsigned int const number_of_levels = correct_energies.size();
-    chain.signalOptimizeSiteFailure.connect(rethrow<OptimizerFailure>);
-    checkEnergies_checkOverlap checkOverlap(chain);
-    chain.signalOptimizeSiteSuccess.connect(checkOverlap);
-    chain.signalChainReset.connect(checkOverlap);
-    vector<double> actual_energies; actual_energies.reserve(number_of_levels);
-    checkEnergies_postEnergy postEnergy(chain,absolute,actual_energies);
-    chain.signalChainOptimized.connect(postEnergy);
-    chain.solveForMultipleLevels(number_of_levels);
-    BOOST_FOREACH(unsigned int const i, irange(0u,number_of_levels)) {
-        if(abs(correct_energies[i]-actual_energies[i])>tolerance) {
-            ostringstream message;
-            message << format("Wrong energies [#%||: %|.15| != %|.15|]: ") % (i+1) % correct_energies[i] % actual_energies[i];
-            BOOST_FOREACH(unsigned int const i, irange(0u,number_of_levels)) {
-                message << format("%1% (%2%); ") % actual_energies[i] % correct_energies[i];
+    struct checkEnergies_postEnergy { // {{{
+        Chain const& chain; bool absolute; vector<double>& actual_energies;
+        checkEnergies_postEnergy(Chain const& chain, bool absolute, vector<double>& actual_energies)
+            : chain(chain), absolute(absolute), actual_energies(actual_energies) {}
+        void operator()() {
+            if(absolute) {
+                actual_energies.push_back(abs(chain.getEnergy()));
+            } else {
+                actual_energies.push_back(chain.getEnergy());
             }
-            FATALLY_FAIL(message.str());
         }
-    }
-}
-TEST_SUITE(external_field) {
+    }; // }}}
 
-    void runTest(
-          unsigned int const physical_dimension
-        , unsigned int const number_of_sites
-        , vector<double> const& correct_energies
+    void checkEnergies( // {{{
+         Chain& chain
+        ,vector<double> const& correct_energies
+        ,double tolerance
+        ,bool absolute = false
     ) {
-        Chain chain(constructExternalFieldOperator(number_of_sites,diagonalMatrix(irange(0u,physical_dimension))));
-	double tolerance = 1e-12;
-	if(physical_dimension == 3 && number_of_sites == 3) {
-	  chain.sanity_check_threshold *= 10;
-	}
-        checkEnergies(chain,correct_energies,tolerance);
-    }
+        unsigned int const number_of_levels = correct_energies.size();
+        chain.signalOptimizeSiteFailure.connect(rethrow<OptimizerFailure>);
+        checkEnergies_checkOverlap checkOverlap(chain);
+        chain.signalOptimizeSiteSuccess.connect(checkOverlap);
+        chain.signalChainReset.connect(checkOverlap);
+        vector<double> actual_energies; actual_energies.reserve(number_of_levels);
+        checkEnergies_postEnergy postEnergy(chain,absolute,actual_energies);
+        chain.signalChainOptimized.connect(postEnergy);
+        chain.solveForMultipleLevels(number_of_levels);
+        BOOST_FOREACH(unsigned int const i, irange(0u,number_of_levels)) {
+            if(abs(correct_energies[i]-actual_energies[i])>tolerance) {
+                ostringstream message;
+                message << format("Wrong energies [#%||: %|.15| != %|.15|]: ") % (i+1) % correct_energies[i] % actual_energies[i];
+                BOOST_FOREACH(unsigned int const i, irange(0u,number_of_levels)) {
+                    message << format("%1% (%2%); ") % actual_energies[i] % correct_energies[i];
+                }
+                FATALLY_FAIL(message.str());
+            }
+        }
+    } // }}}
 
-    TEST_SUITE(physical_dimension_2) {
-        TEST_CASE(1_site) { runTest(2,1,list_of(0)(1)); }
-        TEST_CASE(2_sites) { runTest(2,2,list_of(0)(1)(1)(2)); }
-        TEST_CASE(4_sites) { runTest(2,4,list_of(0)(1)(1)(1)); }
-    }
-    TEST_SUITE(physical_dimension_3) {
-        TEST_CASE(1_site) { runTest(3,1,list_of(0)(1)(2)); }
-        TEST_CASE(2_sites) { runTest(3,2,list_of(0)(1)(1)(2)(2)); }
-        TEST_CASE(3_sites) { runTest(3,3,list_of(0)(1)(1)(1)(2)); }
-    }
+    TEST_SUITE(external_field) { // {{{
 
-}
+        void runTest( // {{{
+              unsigned int const physical_dimension
+            , unsigned int const number_of_sites
+            , vector<double> const& correct_energies
+        ) {
+            Chain chain(constructExternalFieldOperator(number_of_sites,diagonalMatrix(irange(0u,physical_dimension))));
+        double tolerance = 1e-12;
+        if(physical_dimension == 3 && number_of_sites == 3) {
+          chain.sanity_check_threshold *= 10;
+        }
+            checkEnergies(chain,correct_energies,tolerance);
+        } // }}}
 
-}
-TEST_CASE(solveForEigenvalues) {
+        TEST_SUITE(physical_dimension_2) {
+            TEST_CASE(1_site) { runTest(2,1,list_of(0)(1)); }
+            TEST_CASE(2_sites) { runTest(2,2,list_of(0)(1)(1)(2)); }
+            TEST_CASE(4_sites) { runTest(2,4,list_of(0)(1)(1)(1)); }
+        }
+        TEST_SUITE(physical_dimension_3) {
+            TEST_CASE(1_site) { runTest(3,1,list_of(0)(1)(2)); }
+            TEST_CASE(2_sites) { runTest(3,2,list_of(0)(1)(1)(2)(2)); }
+            TEST_CASE(3_sites) { runTest(3,3,list_of(0)(1)(1)(1)(2)); }
+        }
+
+    } // }}}
+
+} // }}}
+
+TEST_CASE(solveForEigenvalues) { // {{{
     RNG random;
     BOOST_FOREACH(unsigned int const number_of_sites, irange(3u,6u)) {
         OperatorBuilder builder(number_of_sites,PhysicalDimension(2));
@@ -522,8 +536,9 @@ TEST_CASE(solveForEigenvalues) {
             ASSERT_NEAR_ABS(eigenvalues[i],(double)1,1e-13);
         }
     }
-}
-TEST_CASE(solveForMultipleLevelsAndThenClearChain) {
+} // }}}
+
+TEST_CASE(solveForMultipleLevelsAndThenClearChain) { // {{{
     RNG random;
     BOOST_FOREACH(unsigned int const number_of_sites, irange(3u,6u)) {
         OperatorBuilder builder(number_of_sites,PhysicalDimension(2));
@@ -549,6 +564,6 @@ TEST_CASE(solveForMultipleLevelsAndThenClearChain) {
             }
         }
     }
-}
+} // }}}
 
 }
