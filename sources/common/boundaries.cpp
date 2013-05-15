@@ -8,8 +8,7 @@
 
 namespace Nutcracker {
 
-
-complex<double> computeExpectationValueAtSite(
+complex<double> computeExpectationValueAtSite( // {{{
       ExpectationBoundary<Left> const& left_boundary
     , StateSite<Middle> const& state_site
     , OperatorSite const& operator_site
@@ -26,8 +25,9 @@ complex<double> computeExpectationValueAtSite(
         ,operator_site.numberOfMatrices(),operator_site,operator_site
         ,right_boundary
     );
-}
-complex<double> contractExpectationBoundaries(
+} // }}}
+
+complex<double> contractExpectationBoundaries( // {{{
       ExpectationBoundary<Left> const& left_boundary
     , ExpectationBoundary<Right> const& right_boundary
 ) {
@@ -47,15 +47,17 @@ complex<double> contractExpectationBoundaries(
         ,left_boundary
         ,right_boundary
     );
-}
-ExpectationBoundary<Left> contractSOSLeft(
+} // }}}
+
+ExpectationBoundary<Left> contractSOSLeft( // {{{
       ExpectationBoundary<Left> const& old_boundary
     , StateSite<Left> const& state_site
     , OperatorSite const& operator_site
 ) {
     return Unsafe::contractSOSLeft(old_boundary,state_site,operator_site);
-}
-ExpectationBoundary<Right> contractSOSRight(
+} // }}}
+
+ExpectationBoundary<Right> contractSOSRight( // {{{
       ExpectationBoundary<Right> const& old_boundary
     , StateSite<Right> const& state_site
     , OperatorSite const& operator_site
@@ -76,15 +78,17 @@ ExpectationBoundary<Right> contractSOSRight(
         ,new_boundary
     );
     return boost::move(new_boundary);
-}
-OverlapBoundary<Left> contractVSLeft(
+} // }}}
+
+OverlapBoundary<Left> contractVSLeft( // {{{
       OverlapBoundary<Left> const& old_boundary
     , OverlapSite<Left> const& overlap_site
     , StateSite<Left> const& state_site
 ) {
     return Unsafe::contractVSLeft(old_boundary,overlap_site,state_site);
-}
-OverlapBoundary<Right> contractVSRight(
+} // }}}
+
+OverlapBoundary<Right> contractVSRight( // {{{
       OverlapBoundary<Right> const& old_boundary
     , OverlapSite<Right> const& overlap_site
     , StateSite<Right> const& state_site
@@ -105,10 +109,11 @@ OverlapBoundary<Right> contractVSRight(
         ,new_boundary
     );
     return boost::move(new_boundary);
-}
-namespace Unsafe {
+} // }}}
 
-OverlapBoundary<Left> contractVSLeft(
+namespace Unsafe { // {{{
+
+OverlapBoundary<Left> contractVSLeft( // {{{
       OverlapBoundary<Left> const& old_boundary
     , OverlapSiteAny const& overlap_site
     , StateSiteAny const& state_site
@@ -129,8 +134,9 @@ OverlapBoundary<Left> contractVSLeft(
         ,new_boundary
     );
     return boost::move(new_boundary);
-}
-ExpectationBoundary<Left> contractSOSLeft(
+} // }}}
+
+ExpectationBoundary<Left> contractSOSLeft( // {{{
       ExpectationBoundary<Left> const& old_boundary
     , StateSiteAny const& state_site
     , OperatorSite const& operator_site
@@ -151,8 +157,8 @@ ExpectationBoundary<Left> contractSOSLeft(
         ,new_boundary
     );
     return boost::move(new_boundary);
-}
+} // }}}
 
-}
+} // }}}
 
 }
