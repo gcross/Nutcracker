@@ -1,5 +1,6 @@
 // Includes {{{
 #include <boost/assign/list_of.hpp>
+#include <boost/make_shared.hpp>
 
 #include "nutcracker/infinite_operators.hpp"
 #include "nutcracker/operators.hpp"
@@ -9,6 +10,8 @@ namespace Nutcracker {
 
 // Usings {{{
 using boost::assign::list_of;
+
+using boost::make_shared;
 // }}}
 
 InfiniteOperator constructExternalFieldInfiniteOperator(MatrixConstPtr const& matrix) { // {{{
@@ -27,6 +30,31 @@ InfiniteOperator constructExternalFieldInfiniteOperator(MatrixConstPtr const& ma
                 (OperatorSiteLink(2,2,I))
         ),
         OperatorBoundary<Right>(fillWithRange(list_of(0)(1)))
+    );
+} // }}}
+
+InfiniteOperator constructTransverseIsingModelInfiniteOperator( // {{{
+    double spin_coupling_strength
+) {
+    using namespace Pauli;
+    MatrixConstPtr const
+          &X1 = X
+        ,  X2 = make_shared<Matrix const>(spin_coupling_strength*(*X))
+        ;
+    return InfiniteOperator(
+        OperatorBoundary<Left>(fillWithRange(list_of(1)(0)(0))),
+        constructOperatorSite(
+            PhysicalDimension(2),
+            LeftDimension(3),
+            RightDimension(3),
+            list_of
+                (OperatorSiteLink(1,1,I ))
+                (OperatorSiteLink(1,2,X1))
+                (OperatorSiteLink(2,3,X2))
+                (OperatorSiteLink(1,3,Z ))
+                (OperatorSiteLink(3,3,I ))
+        ),
+        OperatorBoundary<Right>(fillWithRange(list_of(0)(0)(1)))
     );
 } // }}}
 
