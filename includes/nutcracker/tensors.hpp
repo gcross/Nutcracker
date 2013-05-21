@@ -785,6 +785,7 @@ See the documentation in BaseTensor for a description of the policy of how data 
 
 \see StateSiteAny BaseTensor
 */
+template<typename side> class OperatorBoundary; // forward definition
 template<typename side> class ExpectationBoundary : public BaseTensor {
     private:
 
@@ -1851,6 +1852,130 @@ class OperatorSite : public SiteBaseTensor {
         ar & boost::serialization::make_array(index_data,2*number_of_matrices);
     }
 }; // }}}
+
+// class OperatorBoundary {{{
+/*!\see BaseTensor
+*/
+template<typename side> class OperatorBoundary : public BaseTensor {
+    private:
+
+    BOOST_MOVABLE_BUT_NOT_COPYABLE(OperatorBoundary)
+
+    // Assignment {{{
+    //! \name Assignment
+    //! @{
+
+    public:
+
+    //! Moves the data (and dimensions) from \c other to \c this and invalidates \c other.
+    OperatorBoundary& operator=(BOOST_RV_REF(OperatorBoundary) other) {
+        if(this == &other) return *this;
+        BaseTensor::operator=(static_cast<BOOST_RV_REF(BaseTensor)>(other));
+        operator_dimension = copyAndReset(other.operator_dimension);
+        return *this;
+    }
+
+    //! Swaps the data (and dimensions) in \c other and \c this.
+    void swap(OperatorBoundary& other) {
+        if(this == &other) return;
+        BaseTensor::swap(other);
+        std::swap(operator_dimension,other.operator_dimension);
+    }
+
+    //! @}
+    // }}}
+
+    // Constructors {{{
+    //! \name Constructors
+    //! @{
+
+    public:
+
+    //! Construct an invalid tensor (presumably into which you will eventually move data from elsewhere).
+    OperatorBoundary()
+      : operator_dimension(0u)
+    {}
+
+    //! Move the data (and dimensions) from \c other into \c this and invalidate \c other.
+    OperatorBoundary(BOOST_RV_REF(OperatorBoundary) other)
+      : BaseTensor(static_cast<BOOST_RV_REF(BaseTensor)>(other))
+      , operator_dimension(copyAndReset(other.operator_dimension))
+    { }
+
+    //! Initialize the dimensions with the given values and allocate memory for an array of the appropriate size.
+    OperatorBoundary(
+          OperatorDimension const operator_dimension
+    ) : BaseTensor(*operator_dimension)
+      , operator_dimension(*operator_dimension)
+    { }
+
+    //! Construct \c this by making a copy of \c other.
+    /*! \see BaseTensor(CopyFrom<Tensor> const other) */
+    template<typename other_side> OperatorBoundary(
+          CopyFrom<OperatorBoundary<other_side> const> const other
+    ) : BaseTensor(other)
+      , operator_dimension(other->operator_dimension)
+    { }
+
+    //! Constructs a tensor using data supplied from a generator.
+    /*! \see BaseTensor( unsigned int const size, FillWithGenerator<G> const generator) */
+    template<typename G> OperatorBoundary(
+          OperatorDimension const operator_dimension
+        , FillWithGenerator<G> const generator
+    ) : BaseTensor(*operator_dimension,generator)
+      , operator_dimension(*operator_dimension)
+    { }
+
+    //! Constructs a tensor using data supplied from a range.
+    /*!
+    \note The state dimension is inferred automatically from the size of the range and the operator dimension.
+    \see BaseTensor(FillWithRange<Range> const init)
+    */
+    template<typename Range> OperatorBoundary(
+          FillWithRange<Range> const init
+    ) : BaseTensor(init)
+      , operator_dimension(size())
+    { }
+
+    //! Sets all dimensions to 1, and then allocates an array of size one and fills it with the value 1.
+    OperatorBoundary(
+          MakeTrivial const make_trivial
+    ) : BaseTensor(make_trivial)
+      , operator_dimension(1)
+    { }
+
+    //! @}
+    // }}}
+
+    // Dimension information {{{
+    //! \name Dimension information
+    //! @{
+
+    private:
+
+    //! The operator dimension.
+    unsigned int operator_dimension;
+
+    public:
+
+    //! Returns the operator dimension of this tensor.
+    unsigned int operatorDimension() const { return operator_dimension; }
+    //! Returns the operator dimension of this tensor wrapped in an instance of OperatorDimension.
+    OperatorDimension operatorDimension(AsDimension const _) const { return OperatorDimension(operator_dimension); }
+
+    //! @}
+    // }}}
+
+    public:
+
+    //! The trivial state site tensor with all dimensions one and containing the single value 1.
+    static OperatorBoundary const trivial;
+
+    friend class ExpectationBoundary<side>;
+};
+
+template<typename side> OperatorBoundary<side> const OperatorBoundary<side>::trivial(make_trivial);
+// }}}
 
 // Tensor connectors {{{
 /*!
