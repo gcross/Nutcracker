@@ -1,3 +1,4 @@
+// Includes {{{
 #include <boost/make_shared.hpp>
 #include <boost/range/algorithm/copy.hpp>
 #include <boost/tuple/tuple.hpp>
@@ -7,9 +8,11 @@
 #include <utility>
 
 #include "nutcracker/operators.hpp"
+// Includes }}}
 
 namespace Nutcracker {
 
+// Usings {{{
 using boost::irange;
 using boost::make_shared;
 using boost::make_tuple;
@@ -17,8 +20,9 @@ using boost::tuple;
 
 using std::make_pair;
 using std::ostream_iterator;
+// }}}
 
-Operator constructExternalFieldOperator(
+Operator constructExternalFieldOperator( // {{{
       unsigned int const number_of_sites
     , MatrixConstPtr const& matrix
 ) {
@@ -74,8 +78,9 @@ Operator constructExternalFieldOperator(
         ));
     }
     return boost::move(operator_sites);
-}
-OperatorSite constructOperatorSite(
+} // }}}
+
+OperatorSite constructOperatorSite( // {{{
       PhysicalDimension const physical_dimension
     , LeftDimension const left_dimension
     , RightDimension const right_dimension
@@ -104,8 +109,9 @@ OperatorSite constructOperatorSite(
     }
 
     return boost::move(operator_site);
-}
-Operator constructTransverseIsingModelOperator(
+} // }}}
+
+Operator constructTransverseIsingModelOperator( // {{{
       unsigned int const number_of_sites
     , double spin_coupling_strength
 ) {
@@ -156,14 +162,15 @@ Operator constructTransverseIsingModelOperator(
         )
     ));
     return boost::move(operator_sites);
-}
-vector<unsigned int> extractPhysicalDimensions(Operator const& operator_sites) {
+} // }}}
+
+vector<unsigned int> extractPhysicalDimensions(Operator const& operator_sites) { // {{{
     vector<unsigned int> physical_dimensions;
     physical_dimensions.reserve(operator_sites.size()+1);
     BOOST_FOREACH(shared_ptr<OperatorSite const> const& operator_site, operator_sites) {
         physical_dimensions.push_back(operator_site->physicalDimension());
     }
     return boost::move(physical_dimensions);
-}
+} // }}}
 
 }
