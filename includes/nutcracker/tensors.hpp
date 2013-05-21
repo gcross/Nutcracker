@@ -789,6 +789,8 @@ template<typename side> class ExpectationBoundary : public BaseTensor {
     private:
 
     BOOST_MOVABLE_BUT_NOT_COPYABLE(ExpectationBoundary)
+
+    // Assignment {{{
     //! \name Assignment
     //! @{
 
@@ -812,6 +814,9 @@ template<typename side> class ExpectationBoundary : public BaseTensor {
     }
 
     //! @}
+    // }}}
+
+    // Constructors {{{
     //! \name Constructors
     //! @{
 
@@ -880,9 +885,26 @@ template<typename side> class ExpectationBoundary : public BaseTensor {
       , state_dimension(1)
     { }
 
+    //! Moves the data (and dimensions) from an \c OperatorBoundary into \c this and invalidates \c other.
+    ExpectationBoundary(BOOST_RV_REF(OperatorBoundary<side>) other)
+      : BaseTensor(static_cast<BOOST_RV_REF(BaseTensor)>(other))
+      , operator_dimension(copyAndReset(other.operator_dimension))
+      , state_dimension(1)
+    { }
+
     //! @}
+    // }}}
+
+    // Dimension information {{{
     //! \name Dimension information
     //! @{
+
+    private:
+
+    //! The operator dimension.
+    unsigned int operator_dimension;
+    //! The state dimension.
+    unsigned int state_dimension;
 
     public:
 
@@ -897,12 +919,8 @@ template<typename side> class ExpectationBoundary : public BaseTensor {
     StateDimension stateDimension(AsDimension const _) const { return StateDimension(state_dimension); }
 
     //! @}
-    private:
+    // }}}
 
-    //! The operator dimension.
-    unsigned int operator_dimension;
-    //! The state dimension.
-    unsigned int state_dimension;
     public:
 
     //! The trivial state site tensor with all dimensions one and containing the single value 1.
