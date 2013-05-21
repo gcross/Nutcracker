@@ -97,11 +97,10 @@ public:
       , overlap_boundaries(boost::move(other.overlap_boundaries))
     { } // }}}
 
-    Neighbor(
+    Neighbor( // BOOST_RV_REF(all fields) {{{
           BOOST_RV_REF(ExpectationBoundary<side>) expectation_boundary
         , BOOST_RV_REF(StateSite<side>) state_site
         , BOOST_RV_REF(vector<OverlapBoundary<side> >) overlap_boundaries
-    // {{{
     ) : expectation_boundary(expectation_boundary)
       , state_site(state_site)
       , overlap_boundaries(overlap_boundaries)
