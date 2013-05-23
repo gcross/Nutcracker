@@ -1,3 +1,4 @@
+// Includes {{{
 #include <boost/filesystem.hpp>
 #include <boost/function.hpp>
 #include <boost/make_shared.hpp>
@@ -5,11 +6,14 @@
 #include <boost/random.hpp>
 #include <complex>
 
+#include "nutcracker/infinite_operators.hpp"
 #include "nutcracker/operators.hpp"
 #include "nutcracker/states.hpp"
+// }}}
 
 using namespace Nutcracker;
 
+// Usings {{{
 using boost::filesystem::path;
 using boost::function;
 using boost::make_shared;
@@ -18,8 +22,9 @@ using boost::optional;
 using boost::taus88;
 
 using std::abs;
+// }}}
 
-class TemporaryFilepath {
+class TemporaryFilepath { // {{{
 private:
     BOOST_MOVABLE_BUT_NOT_COPYABLE(TemporaryFilepath)
 protected:
@@ -38,8 +43,9 @@ public:
 
     path const& operator*() const;
     path const* operator->() const;
-};
-class RNG {
+}; // }}}
+
+class RNG { // {{{
     friend class ComplexDoubleGenerator;
     friend class IndexGenerator;
     friend class IntegerGenerator;
@@ -55,17 +61,20 @@ public:
     RNG();
 
     unsigned int operator()(unsigned int lo, unsigned int hi);
+
     OperatorSite randomOperatorSite(
           PhysicalDimension const physical_dimension
         , LeftDimension const left_dimension
         , RightDimension const right_dimension
     );
     OperatorSite randomOperatorSite();
+
     Operator randomOperator(
           optional<unsigned int> maybe_number_of_sites=none
         , unsigned int const maximum_physical_dimension=10
         , unsigned int const maximum_bandwidth_dimension=10
     );
+
     MatrixPtr randomMatrix(unsigned int rows, unsigned int cols);
     MatrixPtr randomSquareMatrix(unsigned int dimension);
     VectorPtr randomVector();
@@ -88,14 +97,22 @@ public:
 
     operator unsigned int() { return randomInteger(); }
     operator complex<double>() { return randomComplexDouble(); }
-};
+}; // }}}
+
+// Functions {{{
 void checkOperatorsEqual(Operator const& operator_1,Operator const& operator_2);
+
 void checkOperatorsEquivalent(Operator const& operator_1,Operator const& operator_2,RNG& random,unsigned int number_of_samples=20);
+
 void checkOperatorSitesEqual(OperatorSite const& operator_site_1,OperatorSite const& operator_site_2);
+
 void checkSiteTensorsEqual(SiteBaseTensor const& site_1,SiteBaseTensor const& site_2);
+
 void checkStatesEqual(State const& state_1,State const& state_2);
-template<typename Range> VectorPtr vectorFromRange(Range const& range) {
+
+template<typename Range> VectorPtr vectorFromRange(Range const& range) { // {{{
     VectorPtr vector = make_shared<Vector>(range.size());
     copy(range,vector->begin());
     return vector;
-}
+} // }}}
+// }}}
