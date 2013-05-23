@@ -771,6 +771,7 @@ class SiteBaseTensor : public BaseTensor {
 }; // }}}
 
 // class ExpectationBoundary {{{
+template<typename side> class OperatorBoundary; // forward definition
 /*! Boundaries for expectation tensor network chains.
 
 \image html expectation_boundary_tensors.png
@@ -785,7 +786,6 @@ See the documentation in BaseTensor for a description of the policy of how data 
 
 \see StateSiteAny BaseTensor
 */
-template<typename side> class OperatorBoundary; // forward definition
 template<typename side> class ExpectationBoundary : public BaseTensor {
     private:
 
