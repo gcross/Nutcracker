@@ -3201,3 +3201,28 @@ subroutine form_norm_overlap_tensors( & ! {{{
   )
 
 end subroutine ! }}}
+
+subroutine construct_inf_exp_boundaries( &
+    b, c, &
+    state_boundary, &
+    operator_boundary, &
+    left_expectation_boundary, &
+    right_expectation_boundary &
+)
+    integer, intent(in) :: b, c
+    double complex, intent(in) :: state_boundary(b), operator_boundary(c)
+    double complex, intent(out), dimension(b,b,c) :: &
+        left_expectation_boundary, &
+        right_expectation_boundary
+    integer :: i, j, k
+
+    forall ( i=1:b, j=1:b, k=1:c ) &
+        left_expectation_boundary(i,j,k) = state_boundary(i) * conjg(state_boundary(j)) * operator_boundary(k)
+
+    right_expectation_boundary = &
+        reshape( &
+            left_expectation_boundary, &
+            order=(/2,1,3/), &
+            shape=shape(right_expectation_boundary) &
+        )
+end subroutine

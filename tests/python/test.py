@@ -9,6 +9,7 @@ from random import randint, choice
 import random
 import builtins
 import vmps
+from functools import reduce
 # }}}
 
 # Helper Functions {{{
@@ -830,6 +831,23 @@ class contract_matrix_left(TestCase):
         )
         self.assertEqual(actual_output_tensor.shape,correct_output_tensor.shape)
         self.assertAllClose(actual_output_tensor,correct_output_tensor)
+# }}}
+# construct_inf_exp_boundaries {{{
+class construct_inf_exp_boundaries(TestCase):
+    @with_checker(number_of_calls=100)
+    def test_correctness(self, b = irange(1,20), c = irange(2,20)):
+        state_boundary = crand(b)
+        operator_boundary = crand(c)
+        left_expectation_boundary, right_expectation_boundary = \
+            vmps.construct_inf_exp_boundaries(state_boundary,operator_boundary)
+        self.assertAllClose(
+            left_expectation_boundary,
+            reduce(multiply.outer,[operator_boundary,state_boundary.conj(),state_boundary]).transpose()
+        )
+        self.assertAllClose(
+            right_expectation_boundary,
+            reduce(multiply.outer,[operator_boundary,state_boundary,state_boundary.conj()]).transpose()
+        )
 # }}}
 # }}}
 # Optimization {{{
@@ -1850,6 +1868,7 @@ tests = [ # {{{
     absorb_bi_mat_into_right_exp_env,
     absorb_bi_conjg_matrix_from_both,
     increase_bandwidth_with_environment,
+    construct_inf_exp_boundaries,
 ] # }}}
 
 unittest.TextTestRunner(verbosity=2).run(unittest.TestSuite(map(unittest.defaultTestLoader.loadTestsFromTestCase, tests)))
