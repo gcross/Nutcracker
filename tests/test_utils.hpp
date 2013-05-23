@@ -75,6 +75,11 @@ public:
         , unsigned int const maximum_bandwidth_dimension=10
     );
 
+    InfiniteOperator randomInfiniteOperator(
+          unsigned int const maximum_physical_dimension
+        , unsigned int const maximum_state_bandwidth_dimension
+    );
+
     MatrixPtr randomMatrix(unsigned int rows, unsigned int cols);
     MatrixPtr randomSquareMatrix(unsigned int dimension);
     VectorPtr randomVector();

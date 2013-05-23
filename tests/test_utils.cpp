@@ -153,6 +153,24 @@ unsigned int RNG::operator()(unsigned int lo, unsigned int hi) { // {{{
     return generateRandomIntegers(lo,hi)();
 } // }}}
 
+InfiniteOperator RNG::randomInfiniteOperator( // {{{
+      unsigned int const maximum_physical_dimension
+    , unsigned int const maximum_bandwidth_dimension
+
+) {
+    PhysicalDimension const physical_dimension((*this)(1,maximum_physical_dimension));
+    unsigned int const bandwidth_dimension = (*this)(1,maximum_bandwidth_dimension);
+    LeftDimension const left_dimension(bandwidth_dimension);
+    RightDimension const right_dimension(bandwidth_dimension);
+    OperatorDimension const operator_dimension(bandwidth_dimension);
+
+    return InfiniteOperator(
+        OperatorBoundary<Left>(operator_dimension,fillWithGenerator(randomComplexDouble)),
+        randomOperatorSite(physical_dimension,left_dimension,right_dimension),
+        OperatorBoundary<Right>(operator_dimension,fillWithGenerator(randomComplexDouble))
+    );
+} // }}}
+
 MatrixPtr RNG::randomMatrix(unsigned int rows, unsigned int cols) { // {{{
     MatrixPtr const matrix(new Matrix(rows,cols));
     boost::generate(matrix->data(),randomComplexDouble);
