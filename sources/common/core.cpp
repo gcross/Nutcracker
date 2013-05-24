@@ -101,6 +101,50 @@ complex<double> compute_overlap_with_projectors(
 }
 // }}}
 
+// construct_left_exp_boundary {{{
+extern "C" void construct_left_exp_boundary_(
+    uint32_t const* b, uint32_t const* c,
+    complex<double> const* state_boundary,
+    complex<double> const* operator_boundary,
+    complex<double>* left_expectation_boundary
+);
+void construct_left_exp_boundary(
+    uint32_t const b, uint32_t const c,
+    complex<double> const* state_boundary,
+    complex<double> const* operator_boundary,
+    complex<double>* left_expectation_boundary
+) {
+    construct_left_exp_boundary_(
+        &b,&c,
+        state_boundary,
+        operator_boundary,
+        left_expectation_boundary
+    );
+}
+// }}}
+
+// construct_right_exp_boundary {{{
+extern "C" void construct_right_exp_boundary_(
+    uint32_t const* b, uint32_t const* c,
+    complex<double> const* state_boundary,
+    complex<double> const* operator_boundary,
+    complex<double>* right_expectation_boundary
+);
+void construct_right_exp_boundary(
+    uint32_t const b, uint32_t const c,
+    complex<double> const* state_boundary,
+    complex<double> const* operator_boundary,
+    complex<double>* right_expectation_boundary
+) {
+    construct_right_exp_boundary_(
+        &b,&c,
+        state_boundary,
+        operator_boundary,
+        right_expectation_boundary
+    );
+}
+// }}}
+
 // {{{ contract_expectation_boundaries
 extern "C" void contract_expectation_boundaries_(
       uint32_t const* b
