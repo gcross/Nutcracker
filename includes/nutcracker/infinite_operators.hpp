@@ -37,6 +37,12 @@ public:
         operator_site = boost::move(other.operator_site);
         right_operator_boundary = boost::move(other.right_operator_boundary);
     } // }}}
+
+    unsigned int physicalDimension() const { return operator_site.physicalDimension(); }
+    PhysicalDimension physicalDimension(AsDimension const _) const { return operator_site.physicalDimension(as_dimension); }
+
+    unsigned int operatorDimension() const { return left_operator_boundary.operatorDimension(); }
+    OperatorDimension operatorDimension(AsDimension const _) const { return left_operator_boundary.operatorDimension(as_dimension); }
 }; // }}}
 
 }

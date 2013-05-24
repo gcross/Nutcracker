@@ -3,6 +3,56 @@
 
 namespace Nutcracker {
 
+// Constructors {{{
+InfiniteChain::InfiniteChain(
+    BOOST_RV_REF(InfiniteChain) other
+) : BaseChain(
+        boost::move(other.left_expectation_boundary),
+        boost::move(other.right_expectation_boundary),
+        boost::move(other.state_site),
+        other
+    )
+  , operator_site(boost::move(other.operator_site))
+{ }
+
+InfiniteChain::InfiniteChain(
+    BOOST_RV_REF(InfiniteOperator) op,
+    boost::optional<ChainOptions const&> maybe_options
+) : BaseChain(
+        ExpectationBoundary<Left>(boost::move(op.left_operator_boundary)),
+        ExpectationBoundary<Right>(boost::move(op.right_operator_boundary)),
+        randomStateSiteMiddle(
+            op.operator_site.physicalDimension(as_dimension),
+            LeftDimension(1),
+            RightDimension(1)
+        ),
+        maybe_options
+    )
+  , operator_site(boost::move(op.operator_site))
+{ }
+
+InfiniteChain::InfiniteChain(
+    BOOST_RV_REF(InfiniteOperator) op,
+    BOOST_RV_REF(StateBoundary<Left>) left_state_boundary,
+    BOOST_RV_REF(StateSite<Middle>) state_site,
+    BOOST_RV_REF(StateBoundary<Right>) right_state_boundary,
+    boost::optional<ChainOptions const&> maybe_options
+) : BaseChain(
+        constructExpectationBoundary(
+            left_state_boundary,
+            op.left_operator_boundary
+        ),
+        constructExpectationBoundary(
+            right_state_boundary,
+            op.right_operator_boundary
+        ),
+        state_site,
+        maybe_options
+    )
+  , operator_site(boost::move(op.operator_site))
+{ }
+// }}}
+
 void InfiniteChain::increaseBandwidthDimension(unsigned int const new_bandwidth_dimension) {{{
     optimized = false;
     StateDimension const

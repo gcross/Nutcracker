@@ -6,6 +6,7 @@
 #include <boost/random.hpp>
 #include <complex>
 
+#include "nutcracker/infinite_chain.hpp"
 #include "nutcracker/infinite_operators.hpp"
 #include "nutcracker/operators.hpp"
 #include "nutcracker/states.hpp"
@@ -78,6 +79,12 @@ public:
     InfiniteOperator randomInfiniteOperator(
           unsigned int const maximum_physical_dimension
         , unsigned int const maximum_state_bandwidth_dimension
+    );
+
+    InfiniteChain randomInfiniteChain( // {{{
+          unsigned int const maximum_physical_dimension
+        , unsigned int const maximum_state_bandwidth_dimension
+        , unsigned int const maximum_operator_bandwidth_dimension
     );
 
     MatrixPtr randomMatrix(unsigned int rows, unsigned int cols);

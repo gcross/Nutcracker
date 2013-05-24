@@ -354,11 +354,10 @@ template<
         ++state_site_1, ++state_site_2
     ) {
         // Note:  Don't merge these two lines;  it makes some compilers unhappy.
-        OverlapSite<None> overlap_site(computeOverlapSiteFromStateSite(*state_site_1));
         left_boundary =
             Unsafe::contractVSLeft(
                  left_boundary
-                ,overlap_site
+                ,computeOverlapSiteFromStateSite(*state_site_1)
                 ,*state_site_2
             );
     }

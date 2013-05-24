@@ -6,11 +6,13 @@
 #ifndef NUTCRACKER_BOUNDARIES_HPP
 #define NUTCRACKER_BOUNDARIES_HPP
 
+#include "nutcracker/core.hpp"
 #include "nutcracker/tensors.hpp"
 
 namespace Nutcracker {
 
 
+// Boundary contractors {{{
 //! \defgroup BoundaryContractors Boundary contractors
 
 //! @{
@@ -214,6 +216,66 @@ template<> struct contract<Right> { // {{{
 // }}}
 
 //! @}
+// }}}
+
+// Boundary constructors {{{
+//! \defgroup BoundaryConstructors Boundary constructors
+//! {@
+
+// constructExpectationBoundary {{{
+// Helper template function {{{
+template<typename side> struct construct_exp_boundary {};
+template<> struct construct_exp_boundary<Left> { // {{{
+    static void call(
+        uint32_t const b, uint32_t const c,
+        complex<double> const* state_boundary,
+        complex<double> const* operator_boundary,
+        complex<double>* left_expectation_boundary
+    ) {
+        return Core::construct_left_exp_boundary(
+            b,c,
+            state_boundary,
+            operator_boundary,
+            left_expectation_boundary
+        );
+    }
+}; // }}}
+template<> struct construct_exp_boundary<Right> { // {{{
+    static void call(
+        uint32_t const b, uint32_t const c,
+        complex<double> const* state_boundary,
+        complex<double> const* operator_boundary,
+        complex<double>* right_expectation_boundary
+    ) {
+        return Core::construct_right_exp_boundary(
+            b,c,
+            state_boundary,
+            operator_boundary,
+            right_expectation_boundary
+        );
+    }
+}; // }}}
+// }}}
+template<typename side> ExpectationBoundary<side> constructExpectationBoundary( // {{{
+    StateBoundary<side> const& state_boundary,
+    OperatorBoundary<side> const& operator_boundary
+) {
+    ExpectationBoundary<side> expectation_boundary(
+        operator_boundary.operatorDimension(as_dimension),
+        state_boundary.stateDimension(as_dimension)
+    );
+
+    construct_exp_boundary<side>::call(
+        state_boundary.stateDimension(),operator_boundary.operatorDimension(),
+        state_boundary,
+        operator_boundary,
+        expectation_boundary
+    );
+
+    return boost::move(expectation_boundary);
+} // }}}
+//! @}
+// }}}
 
 }
 

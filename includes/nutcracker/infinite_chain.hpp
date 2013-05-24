@@ -13,24 +13,25 @@ namespace Nutcracker {
 
 class InfiniteChain: public BaseChain { // {{{
 protected:
+    BOOST_MOVABLE_BUT_NOT_COPYABLE(InfiniteChain)
     OperatorSite const& operator_site;
 public:
-    InfiniteChain( // {{{
+    InfiniteChain(
+        BOOST_RV_REF(InfiniteChain) other
+    );
+
+    InfiniteChain(
         BOOST_RV_REF(InfiniteOperator) op,
         boost::optional<ChainOptions const&> maybe_options = boost::none
-    ) : BaseChain(
-            ExpectationBoundary<Left>(boost::move(op.left_operator_boundary)),
-            ExpectationBoundary<Right>(boost::move(op.right_operator_boundary)),
-            randomStateSiteMiddle(
-                op.operator_site.physicalDimension(as_dimension),
-                LeftDimension(1),
-                RightDimension(1)
-            ),
-            maybe_options
-        )
-      , operator_site(boost::move(op.operator_site))
-    { }
-    // }}}
+    );
+
+    InfiniteChain(
+        BOOST_RV_REF(InfiniteOperator) op,
+        BOOST_RV_REF(StateBoundary<Left>) left_state_boundary,
+        BOOST_RV_REF(StateSite<Middle>) state_site,
+        BOOST_RV_REF(StateBoundary<Right>) right_state_boundary,
+        boost::optional<ChainOptions const&> maybe_options = boost::none
+    );
 
     template<typename side> void move();
     unsigned int bandwidthDimension() const { return state_site.leftDimension(); }

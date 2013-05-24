@@ -1977,6 +1977,130 @@ template<typename side> class OperatorBoundary : public BaseTensor {
 template<typename side> OperatorBoundary<side> const OperatorBoundary<side>::trivial(make_trivial);
 // }}}
 
+// class StateBoundary {{{
+/*!\see BaseTensor
+*/
+template<typename side> class StateBoundary : public BaseTensor {
+    private:
+
+    BOOST_MOVABLE_BUT_NOT_COPYABLE(StateBoundary)
+
+    // Assignment {{{
+    //! \name Assignment
+    //! @{
+
+    public:
+
+    //! Moves the data (and dimensions) from \c other to \c this and invalidates \c other.
+    StateBoundary& operator=(BOOST_RV_REF(StateBoundary) other) {
+        if(this == &other) return *this;
+        BaseTensor::operator=(static_cast<BOOST_RV_REF(BaseTensor)>(other));
+        state_dimension = copyAndReset(other.state_dimension);
+        return *this;
+    }
+
+    //! Swaps the data (and dimensions) in \c other and \c this.
+    void swap(StateBoundary& other) {
+        if(this == &other) return;
+        BaseTensor::swap(other);
+        std::swap(state_dimension,other.state_dimension);
+    }
+
+    //! @}
+    // }}}
+
+    // Constructors {{{
+    //! \name Constructors
+    //! @{
+
+    public:
+
+    //! Construct an invalid tensor (presumably into which you will eventually move data from elsewhere).
+    StateBoundary()
+      : state_dimension(0u)
+    {}
+
+    //! Move the data (and dimensions) from \c other into \c this and invalidate \c other.
+    StateBoundary(BOOST_RV_REF(StateBoundary) other)
+      : BaseTensor(static_cast<BOOST_RV_REF(BaseTensor)>(other))
+      , state_dimension(copyAndReset(other.state_dimension))
+    { }
+
+    //! Initialize the dimensions with the given values and allocate memory for an array of the appropriate size.
+    StateBoundary(
+          StateDimension const state_dimension
+    ) : BaseTensor(*state_dimension)
+      , state_dimension(*state_dimension)
+    { }
+
+    //! Construct \c this by making a copy of \c other.
+    /*! \see BaseTensor(CopyFrom<Tensor> const other) */
+    template<typename other_side> StateBoundary(
+          CopyFrom<StateBoundary<other_side> const> const other
+    ) : BaseTensor(other)
+      , state_dimension(other->state_dimension)
+    { }
+
+    //! Constructs a tensor using data supplied from a generator.
+    /*! \see BaseTensor( unsigned int const size, FillWithGenerator<G> const generator) */
+    template<typename G> StateBoundary(
+          StateDimension const state_dimension
+        , FillWithGenerator<G> const generator
+    ) : BaseTensor(*state_dimension,generator)
+      , state_dimension(*state_dimension)
+    { }
+
+    //! Constructs a tensor using data supplied from a range.
+    /*!
+    \note The state dimension is inferred automatically from the size of the range and the state dimension.
+    \see BaseTensor(FillWithRange<Range> const init)
+    */
+    template<typename Range> StateBoundary(
+          FillWithRange<Range> const init
+    ) : BaseTensor(init)
+      , state_dimension(size())
+    { }
+
+    //! Sets all dimensions to 1, and then allocates an array of size one and fills it with the value 1.
+    StateBoundary(
+          MakeTrivial const make_trivial
+    ) : BaseTensor(make_trivial)
+      , state_dimension(1)
+    { }
+
+    //! @}
+    // }}}
+
+    // Dimension information {{{
+    //! \name Dimension information
+    //! @{
+
+    private:
+
+    //! The state dimension.
+    unsigned int state_dimension;
+
+    public:
+
+    //! Returns the state dimension of this tensor.
+    unsigned int stateDimension() const { return state_dimension; }
+    //! Returns the state dimension of this tensor wrapped in an instance of StateDimension.
+    StateDimension stateDimension(AsDimension const _) const { return StateDimension(state_dimension); }
+
+    //! @}
+    // }}}
+
+    public:
+
+    //! The trivial state site tensor with all dimensions one and containing the single value 1.
+    static StateBoundary const trivial;
+
+    friend class ExpectationBoundary<side>;
+};
+
+template<typename side> StateBoundary<side> const StateBoundary<side>::trivial(make_trivial);
+// }}}
+
 // Tensor connectors {{{
 /*!
 \defgroup TensorConnectors Tensor connectors
