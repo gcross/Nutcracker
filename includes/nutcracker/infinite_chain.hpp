@@ -48,6 +48,7 @@ public:
 
 template<typename side> void InfiniteChain::move() {{{
     optimized = false;
+    energy_computed = false;
 
     ExpectationBoundary<side>& expectation_boundary = expectationBoundary<side>();
     ExpectationBoundary<side> new_expectation_boundary(

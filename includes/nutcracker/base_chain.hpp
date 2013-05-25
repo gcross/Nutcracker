@@ -14,12 +14,14 @@ protected:
     ExpectationBoundary<Left> left_expectation_boundary;
     ExpectationBoundary<Right> right_expectation_boundary;
     StateSite<Middle> state_site;
-    bool optimized;
+    bool optimized, energy_computed;
     double energy;
 
     explicit BaseChain(boost::optional<ChainOptions const&> maybe_options)
       : ChainOptions(maybe_options)
       , optimized(false)
+      , energy_computed(false)
+      , energy(0)
     {}
 
     explicit BaseChain(
@@ -32,7 +34,11 @@ protected:
       , right_expectation_boundary(right_expectation_boundary)
       , state_site(state_site)
       , optimized(false)
+      , energy_computed(false)
+      , energy(0)
     {}
+
+    void ensureEnergyComputed();
 
 public:
     boost::signal<void (unsigned int)> signalOptimizeSiteSuccess;
@@ -41,7 +47,7 @@ public:
     boost::signal<void ()> signalSweepsConverged;
     boost::signal<void ()> signalChainOptimized;
 
-    double getEnergy() const { return energy; }
+    void setOptimizerSiteFailureToThrow() { signalOptimizeSiteFailure.connect(rethrow<OptimizerFailure&>); }
 
     template<typename side> ExpectationBoundary<side>& expectationBoundary() {
         throw BadLabelException("Chain::expectationBoundary()",typeid(side));
@@ -49,6 +55,7 @@ public:
 
     std::complex<double> computeExpectationValue() const;
     double computeStateNorm() const;
+    double getEnergy() const;
 
     virtual OperatorSite const& getCurrentOperatorSite() const = 0;
     virtual ProjectorMatrix const& getCurrentProjectorMatrix() const = 0;

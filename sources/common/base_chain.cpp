@@ -4,7 +4,7 @@
 namespace Nutcracker {
 
 complex<double> BaseChain::computeExpectationValue() const {{{
-    return 
+    return
         Nutcracker::computeExpectationValueAtSite(
              left_expectation_boundary
             ,state_site
@@ -15,6 +15,18 @@ complex<double> BaseChain::computeExpectationValue() const {{{
 
 double BaseChain::computeStateNorm() const {{{
     return state_site.norm();
+}}}
+
+void BaseChain::ensureEnergyComputed() {{{
+    if(!energy_computed) {
+        energy = computeExpectationValue().real();
+        energy_computed = true;
+    }
+}}}
+
+double BaseChain::getEnergy() const {{{
+    const_cast<BaseChain*>(this)->ensureEnergyComputed();
+    return energy;
 }}}
 
 void BaseChain::optimizeChain() {{{
@@ -31,6 +43,7 @@ void BaseChain::optimizeChain() {{{
 }}}
 
 void BaseChain::optimizeSite() {{{
+    ensureEnergyComputed();
     try {
         OptimizerResult result(
             optimizeStateSite(
@@ -52,6 +65,8 @@ void BaseChain::optimizeSite() {{{
             energy = result.eigenvalue;
             state_site = boost::move(result.state_site);
         }
+        optimized = true;
+        energy_computed = true;
         signalOptimizeSiteSuccess(result.number_of_iterations);
     } catch(OptimizerFailure& failure) {
         signalOptimizeSiteFailure(failure);
