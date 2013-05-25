@@ -77,14 +77,14 @@ public:
     );
 
     InfiniteOperator randomInfiniteOperator(
-          unsigned int const maximum_physical_dimension
-        , unsigned int const maximum_state_bandwidth_dimension
+          unsigned int const maximum_physical_dimension=10
+        , unsigned int const maximum_state_bandwidth_dimension=10
     );
 
     InfiniteChain randomInfiniteChain( // {{{
-          unsigned int const maximum_physical_dimension
-        , unsigned int const maximum_state_bandwidth_dimension
-        , unsigned int const maximum_operator_bandwidth_dimension
+          unsigned int const maximum_physical_dimension=10
+        , unsigned int const maximum_state_bandwidth_dimension=10
+        , unsigned int const maximum_operator_bandwidth_dimension=10
     );
 
     MatrixPtr randomMatrix(unsigned int rows, unsigned int cols);
