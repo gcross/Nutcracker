@@ -18,6 +18,7 @@ TEST_SUITE(InfiniteChain) { // {{{
 
         REPEAT(10) {
             InfiniteChain chain(random.randomInfiniteChain());
+            chain.setOptimizerSiteFailureToThrow();
 
             double energy = chain.getEnergy();
 
