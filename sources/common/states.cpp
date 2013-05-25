@@ -1,3 +1,4 @@
+// Includes {{{
 #include <boost/lambda/lambda.hpp>
 #include <boost/range/adaptor/sliced.hpp>
 #include <boost/range/adaptor/strided.hpp>
@@ -7,23 +8,27 @@
 
 #include "nutcracker/core.hpp"
 #include "nutcracker/states.hpp"
+// }}}
 
 namespace Nutcracker {
 
+// Usings {{{
 using boost::adaptors::sliced;
 using boost::adaptors::strided;
 
 namespace lambda = boost::lambda;
+// }}}
 
-NormalizationError::NormalizationError(int info)
+NormalizationError::NormalizationError(int info) // {{{
     : std::runtime_error(
         (format("Numerical error encountered when normalizing a state site (info = %1%)")
             % info
         ).str()
       )
     , info(info)
-{ }
-StateSite<None> constructStateSite(
+{ } // }}}
+
+StateSite<None> constructStateSite( // {{{
       PhysicalDimension const physical_dimension
     , LeftDimension const left_dimension
     , RightDimension const right_dimension
@@ -55,14 +60,15 @@ StateSite<None> constructStateSite(
     }
 
     return boost::move(state_site);
-}
-IncreaseDimensionBetweenResult<Right,Right> increaseDimensionBetweenRightRight(
+} // }}}
+
+IncreaseDimensionBetweenResult<Right,Right> increaseDimensionBetweenRightRight( // {{{
       unsigned int new_dimension
     , StateSite<Right> const& old_site_1
     , StateSite<Right> const& old_site_2
-) { return Unsafe::increaseDimensionBetween<Right,Right>(new_dimension,old_site_1,old_site_2); }
+) { return Unsafe::increaseDimensionBetween<Right,Right>(new_dimension,old_site_1,old_site_2); } // }}}
 
-IncreaseDimensionBetweenResult<Middle,Right>increaseDimensionBetweenMiddleRight(
+IncreaseDimensionBetweenResult<Middle,Right>increaseDimensionBetweenMiddleRight( // {{{
       unsigned int new_dimension
     , StateSite<Middle> const& old_site_1
     , StateSite<Right> const& old_site_2
@@ -72,11 +78,11 @@ MoveSiteCursorResult<Left> moveSiteCursorLeft(
     , StateSite<Left> const& old_state_site_1
 ) {
     return Unsafe::moveSiteCursorLeft(old_state_site_1,old_state_site_2);
-}
+} // }}}
 
-namespace Unsafe {
+namespace Unsafe { // {{{
 
-MoveSiteCursorResult<Left> moveSiteCursorLeft(
+MoveSiteCursorResult<Left> moveSiteCursorLeft( // {{{
       StateSiteAny const& old_state_site_1
     , StateSiteAny const& old_state_site_2
 ) {
@@ -110,10 +116,11 @@ MoveSiteCursorResult<Left> moveSiteCursorLeft(
             (boost::move(new_state_site_1)
             ,boost::move(new_state_site_2)
             );
-}
+} // }}}
 
-}
-MoveSiteCursorResult<Right> moveSiteCursorRight(
+} // }}}
+
+MoveSiteCursorResult<Right> moveSiteCursorRight( // {{{
       StateSite<Middle> const& old_state_site_1
     , StateSite<Right> const& old_state_site_2
 ) {
@@ -142,8 +149,9 @@ MoveSiteCursorResult<Right> moveSiteCursorRight(
             (boost::move(new_state_site_2)
             ,boost::move(new_state_site_1)
             );
-}
-StateSite<Middle> randomStateSiteMiddle(
+} // }}}
+
+StateSite<Middle> randomStateSiteMiddle( // {{{
       const PhysicalDimension physical_dimension
     , const LeftDimension left_dimension
     , const RightDimension right_dimension
@@ -161,8 +169,9 @@ StateSite<Middle> randomStateSiteMiddle(
         ,state_site
     );  
     return boost::move(state_site);
-}
-StateSite<Right> randomStateSiteRight(
+} // }}}
+
+StateSite<Right> randomStateSiteRight( // {{{
       const PhysicalDimension physical_dimension
     , const LeftDimension left_dimension
     , const RightDimension right_dimension
@@ -180,6 +189,6 @@ StateSite<Right> randomStateSiteRight(
         ,state_site
     );
     return boost::move(state_site);
-}
+} // }}}
 
 }
