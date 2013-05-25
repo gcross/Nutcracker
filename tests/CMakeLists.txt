@@ -11,6 +11,7 @@ set(test-SOURCES
     configuration
     flat
     hdf
+    infinite_chain
     io
     optimizer
     projectors
