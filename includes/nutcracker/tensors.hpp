@@ -1678,7 +1678,7 @@ class OperatorSite : public SiteBaseTensor {
 
     //! Move the data (and dimensions) from \c other into \c this and invalidate \c other.
     OperatorSite(BOOST_RV_REF(OperatorSite) other)
-      : SiteBaseTensor(boost::move(static_cast<SiteBaseTensor&>(other)))
+      : SiteBaseTensor(static_cast<BOOST_RV_REF(SiteBaseTensor)>(other))
       , number_of_matrices(copyAndReset(other.number_of_matrices))
       , index_data(copyAndReset(other.index_data))
     { }
