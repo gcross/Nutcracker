@@ -1,3 +1,4 @@
+// Includes {{{
 #include <boost/assign.hpp>
 #include <boost/container/vector.hpp>
 #include <boost/foreach.hpp>
@@ -20,7 +21,9 @@
 #include "nutcracker/utilities.hpp"
 
 #include "test_utils.hpp"
+// }}}
 
+// Usings {{{
 using namespace Nutcracker;
 
 using boost::accumulate;
@@ -34,6 +37,7 @@ using std::abs;
 using std::conj;
 using std::ostringstream;
 using std::pair;
+// }}}
 
 TEST_SUITE(Chain) { // {{{
 
