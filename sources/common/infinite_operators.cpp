@@ -33,9 +33,7 @@ InfiniteOperator constructExternalFieldInfiniteOperator(MatrixConstPtr const& ma
     );
 } // }}}
 
-InfiniteOperator constructTransverseIsingModelInfiniteOperator( // {{{
-    double spin_coupling_strength
-) {
+InfiniteOperator constructTransverseIsingModelInfiniteOperator(double spin_coupling_strength) {{{
     using namespace Pauli;
     MatrixConstPtr const
           &X1 = X
@@ -56,6 +54,6 @@ InfiniteOperator constructTransverseIsingModelInfiniteOperator( // {{{
         ),
         OperatorBoundary<Right>(fillWithRange(list_of(0)(0)(1)))
     );
-} // }}}
+}}}
 
 }
