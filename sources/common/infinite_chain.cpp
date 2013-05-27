@@ -19,16 +19,16 @@ InfiniteChain::InfiniteChain(
     BOOST_RV_REF(InfiniteOperator) op,
     boost::optional<ChainOptions const&> maybe_options
 ) : BaseChain(
-        ExpectationBoundary<Left>(boost::move(op.left_operator_boundary)),
-        ExpectationBoundary<Right>(boost::move(op.right_operator_boundary)),
+        ExpectationBoundary<Left>(boost::move(op.left_boundary)),
+        ExpectationBoundary<Right>(boost::move(op.right_boundary)),
         randomStateSiteMiddle(
-            op.operator_site.physicalDimension(as_dimension),
+            op.middle_site.physicalDimension(as_dimension),
             LeftDimension(1),
             RightDimension(1)
         ),
         maybe_options
     )
-  , operator_site(boost::move(op.operator_site))
+  , operator_site(boost::move(op.middle_site))
 { }
 
 InfiniteChain::InfiniteChain(
@@ -37,17 +37,17 @@ InfiniteChain::InfiniteChain(
     boost::optional<ChainOptions const&> maybe_options
 ) : BaseChain(
         constructExpectationBoundary(
-            state.left_state_boundary,
-            op.left_operator_boundary
+            state.left_boundary,
+            op.left_boundary
         ),
         constructExpectationBoundary(
-            state.right_state_boundary,
-            op.right_operator_boundary
+            state.right_boundary,
+            op.right_boundary
         ),
-        state.middle_state_site,
+        state.middle_site,
         maybe_options
     )
-  , operator_site(boost::move(op.operator_site))
+  , operator_site(boost::move(op.middle_site))
 { }
 // }}}
 

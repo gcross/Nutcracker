@@ -13,36 +13,36 @@ struct InfiniteOperator { // {{{
 private:
     BOOST_MOVABLE_BUT_NOT_COPYABLE(InfiniteOperator)
 public:
-    OperatorBoundary<Left> left_operator_boundary;
-    OperatorSite operator_site;
-    OperatorBoundary<Right> right_operator_boundary;
+    OperatorBoundary<Left> left_boundary;
+    OperatorSite middle_site;
+    OperatorBoundary<Right> right_boundary;
 
     InfiniteOperator(BOOST_RV_REF(InfiniteOperator) other) // {{{
-      : left_operator_boundary(boost::move(other.left_operator_boundary))
-      , operator_site(boost::move(other.operator_site))
-      , right_operator_boundary(boost::move(other.right_operator_boundary))
+      : left_boundary(boost::move(other.left_boundary))
+      , middle_site(boost::move(other.middle_site))
+      , right_boundary(boost::move(other.right_boundary))
     { } // }}}
 
     InfiniteOperator( // BOOST_RV_REF(all fields) {{{
-          BOOST_RV_REF(OperatorBoundary<Left>) left_operator_boundary
-        , BOOST_RV_REF(OperatorSite) operator_site
-        , BOOST_RV_REF(OperatorBoundary<Right>) right_operator_boundary
-    ) : left_operator_boundary(left_operator_boundary)
-      , operator_site(operator_site)
-      , right_operator_boundary(right_operator_boundary)
+          BOOST_RV_REF(OperatorBoundary<Left>) left_boundary
+        , BOOST_RV_REF(OperatorSite) middle_site
+        , BOOST_RV_REF(OperatorBoundary<Right>) right_boundary
+    ) : left_boundary(left_boundary)
+      , middle_site(middle_site)
+      , right_boundary(right_boundary)
     { } // }}}
 
     void operator=(BOOST_RV_REF(InfiniteOperator) other) { // {{{
-        left_operator_boundary = boost::move(other.left_operator_boundary);
-        operator_site = boost::move(other.operator_site);
-        right_operator_boundary = boost::move(other.right_operator_boundary);
+        left_boundary = boost::move(other.left_boundary);
+        middle_site = boost::move(other.middle_site);
+        right_boundary = boost::move(other.right_boundary);
     } // }}}
 
-    unsigned int physicalDimension() const { return operator_site.physicalDimension(); }
-    PhysicalDimension physicalDimension(AsDimension const _) const { return operator_site.physicalDimension(as_dimension); }
+    unsigned int physicalDimension() const { return middle_site.physicalDimension(); }
+    PhysicalDimension physicalDimension(AsDimension const _) const { return middle_site.physicalDimension(as_dimension); }
 
-    unsigned int operatorDimension() const { return left_operator_boundary.operatorDimension(); }
-    OperatorDimension operatorDimension(AsDimension const _) const { return left_operator_boundary.operatorDimension(as_dimension); }
+    unsigned int operatorDimension() const { return left_boundary.operatorDimension(); }
+    OperatorDimension operatorDimension(AsDimension const _) const { return left_boundary.operatorDimension(as_dimension); }
 }; // }}}
 
 InfiniteOperator constructExternalFieldInfiniteOperator(MatrixConstPtr const& matrix);
