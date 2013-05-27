@@ -39,7 +39,7 @@ using std::ostringstream;
 using std::pair;
 // }}}
 
-TEST_SUITE(Chain) { // {{{
+TEST_SUITE(Chain) {
 
 TEST_SUITE(computeBandwidthDimensionSequence) { // {{{
 
