@@ -164,9 +164,9 @@ InfiniteOperator RNG::randomInfiniteOperator( // {{{
     OperatorDimension const operator_dimension(bandwidth_dimension);
 
     return InfiniteOperator(
-        OperatorBoundary<Left>(operator_dimension,fillWithGenerator(randomComplexDouble)),
+        OperatorBoundary<Left>(operator_dimension,fillWithGenerator(randomDouble)),
         randomOperatorSite(physical_dimension,left_dimension,right_dimension),
-        OperatorBoundary<Right>(operator_dimension,fillWithGenerator(randomComplexDouble))
+        OperatorBoundary<Right>(operator_dimension,fillWithGenerator(randomDouble))
     );
 } // }}}
 
