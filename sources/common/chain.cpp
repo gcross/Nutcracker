@@ -144,7 +144,6 @@ void Chain::moveTo(unsigned int new_site_number) {{{
     }
 }}}
 
-
 void Chain::performOptimizationSweep() {{{
     unsigned int const starting_site = current_site_number;
     if(!optimized) optimizeSite();
