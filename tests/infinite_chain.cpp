@@ -14,7 +14,7 @@ using namespace Nutcracker;
 
 TEST_SUITE(InfiniteChain) { // {{{
 
-    TEST_CASE(optimizeSite) {
+    TEST_CASE(optimizeSite) { // {{{
         RNG random;
 
         REPEAT(10) {
@@ -40,9 +40,9 @@ TEST_SUITE(InfiniteChain) { // {{{
 
             #undef TEST_OPTIMIZER
         }
-    }
+    } // }}}
 
-    TEST_CASE(linear_energy_growth) {
+    TEST_CASE(linear_energy_growth) { // {{{
         RNG random;
 
         InfiniteChain chain(constructExternalFieldInfiniteOperator(random.randomHermitianMatrix(random(1,10))));
@@ -55,6 +55,23 @@ TEST_SUITE(InfiniteChain) { // {{{
             ASSERT_NEAR_REL(chain.getEnergy(),expected_energy,1e-6);
             chain.move<Right>(); expected_energy += energy_multiple;
         }
-    }
+    } // }}}
+
+    TEST_CASE(correct_external_Z_field_solution) { // {{{
+        RNG random;
+
+        REPEAT(10) {
+            InfiniteChain chain(
+                constructExternalFieldInfiniteOperator(Pauli::Z),
+                random.randomInfiniteState(PhysicalDimension(2))
+            );
+            chain.optimizeSite();
+            StateSite<Middle> const& state_site = chain.getStateSite();
+            unsigned int const non_physical_dimension = chain.bandwidthDimension()*chain.bandwidthDimension();
+            for(size_t i = 0; i < non_physical_dimension; ++i) {
+                ASSERT_NEAR_ABS_VAL(state_site[i],complex<double>(0),1e-6);
+            }
+        }
+    } // }}}
 
 } // }}}

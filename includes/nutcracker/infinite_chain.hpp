@@ -40,6 +40,7 @@ public:
     virtual unsigned int getMaximumBandwidthDimension() const { return std::numeric_limits<unsigned int>::max(); }
     virtual void performOptimizationSweep();
     virtual void increaseBandwidthDimension(unsigned int const new_bandwidth_dimension);
+    StateSite<Middle> const& getStateSite() const { return state_site; }
 
 }; // }}}
 
