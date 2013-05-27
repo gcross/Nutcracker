@@ -81,7 +81,7 @@ public:
         , unsigned int const maximum_state_bandwidth_dimension=10
     );
 
-    InfiniteChain randomInfiniteChain( // {{{
+    InfiniteChain randomInfiniteChain(
           unsigned int const maximum_physical_dimension=10
         , unsigned int const maximum_state_bandwidth_dimension=10
         , unsigned int const maximum_operator_bandwidth_dimension=10
