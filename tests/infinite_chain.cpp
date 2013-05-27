@@ -2,6 +2,7 @@
 #include <illuminate.hpp>
 
 #include "nutcracker/infinite_chain.hpp"
+#include "nutcracker/infinite_operators.hpp"
 #include "nutcracker/utilities.hpp"
 
 #include "test_utils.hpp"
