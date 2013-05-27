@@ -170,29 +170,31 @@ InfiniteOperator RNG::randomInfiniteOperator( // {{{
     );
 } // }}}
 
+InfiniteState RNG::randomInfiniteState( // {{{
+      PhysicalDimension const physical_dimension
+    , unsigned int const maximum_bandwidth_dimension
+) {
+    unsigned int const bandwidth_dimension = (*this)(1,maximum_bandwidth_dimension);
+    LeftDimension const left_dimension(bandwidth_dimension);
+    RightDimension const right_dimension(bandwidth_dimension);
+    StateDimension const state_dimension(bandwidth_dimension);
+
+    return InfiniteState(
+        StateBoundary<Left>(state_dimension,fillWithGenerator(randomComplexDouble)),
+        randomStateSiteMiddle(physical_dimension,left_dimension,right_dimension),
+        StateBoundary<Right>(state_dimension,fillWithGenerator(randomComplexDouble))
+    );
+} // }}}
+
 InfiniteChain RNG::randomInfiniteChain( // {{{
       unsigned int const maximum_physical_dimension
     , unsigned int const maximum_state_bandwidth_dimension
     , unsigned int const maximum_operator_bandwidth_dimension
 ) {
     InfiniteOperator op(randomInfiniteOperator(maximum_physical_dimension,maximum_operator_bandwidth_dimension));
+    InfiniteState state(randomInfiniteState(op.physicalDimension(as_dimension),maximum_state_bandwidth_dimension));
 
-    PhysicalDimension const physical_dimension(op.physicalDimension(as_dimension));
-    OperatorDimension const operator_dimension(op.operatorDimension(as_dimension));
-
-    unsigned int const state_bandwidth_dimension = (*this)(1,maximum_state_bandwidth_dimension);
-    LeftDimension const left_dimension(state_bandwidth_dimension);
-    RightDimension const right_dimension(state_bandwidth_dimension);
-    StateDimension const state_dimension(state_bandwidth_dimension);
-
-    InfiniteChain infinite_chain(
-        boost::move(op),
-        StateBoundary<Left>(state_dimension,fillWithGenerator(randomComplexDouble)),
-        randomStateSiteMiddle(physical_dimension,left_dimension,right_dimension),
-        StateBoundary<Right>(state_dimension,fillWithGenerator(randomComplexDouble))
-    );
-
-    return boost::move(infinite_chain);
+    return InfiniteChain(boost::move(op),boost::move(state));
 } // }}}
 
 MatrixPtr RNG::randomMatrix(unsigned int rows, unsigned int cols) { // {{{

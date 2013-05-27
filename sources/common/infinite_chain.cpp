@@ -33,20 +33,18 @@ InfiniteChain::InfiniteChain(
 
 InfiniteChain::InfiniteChain(
     BOOST_RV_REF(InfiniteOperator) op,
-    BOOST_RV_REF(StateBoundary<Left>) left_state_boundary,
-    BOOST_RV_REF(StateSite<Middle>) state_site,
-    BOOST_RV_REF(StateBoundary<Right>) right_state_boundary,
+    BOOST_RV_REF(InfiniteState) state,
     boost::optional<ChainOptions const&> maybe_options
 ) : BaseChain(
         constructExpectationBoundary(
-            left_state_boundary,
+            state.left_state_boundary,
             op.left_operator_boundary
         ),
         constructExpectationBoundary(
-            right_state_boundary,
+            state.right_state_boundary,
             op.right_operator_boundary
         ),
-        state_site,
+        state.middle_state_site,
         maybe_options
     )
   , operator_site(boost::move(op.operator_site))

@@ -7,6 +7,7 @@
 
 #include "nutcracker/base_chain.hpp"
 #include "nutcracker/boundaries.hpp"
+#include "nutcracker/infinite_state.hpp"
 #include "nutcracker/infinite_operators.hpp"
 
 namespace Nutcracker {
@@ -27,9 +28,7 @@ public:
 
     InfiniteChain(
         BOOST_RV_REF(InfiniteOperator) op,
-        BOOST_RV_REF(StateBoundary<Left>) left_state_boundary,
-        BOOST_RV_REF(StateSite<Middle>) state_site,
-        BOOST_RV_REF(StateBoundary<Right>) right_state_boundary,
+        BOOST_RV_REF(InfiniteState) state,
         boost::optional<ChainOptions const&> maybe_options = boost::none
     );
 
