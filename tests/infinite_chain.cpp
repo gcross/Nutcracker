@@ -20,12 +20,13 @@ TEST_SUITE(InfiniteChain) { // {{{
             InfiniteChain chain(random.randomInfiniteChain());
             chain.setOptimizerSiteFailureToThrow();
 
-            double energy = chain.getEnergy();
+            double previous_energy;
 
             #define TEST_OPTIMIZER \
+                previous_energy = chain.getEnergy(); \
                 chain.optimizeSite(); \
-                ASSERT_TRUE((chain.getEnergy() - energy) / (abs(chain.getEnergy())+abs(energy)) < 1e-7); \
-                energy = chain.getEnergy();
+                std::cerr << chain.getEnergy() << ' ' << previous_energy << std::endl; \
+                ASSERT_TRUE((chain.getEnergy() - previous_energy) / (abs(chain.getEnergy())+abs(previous_energy)) < 1e-7); \
 
             TEST_OPTIMIZER
 
