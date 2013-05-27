@@ -41,4 +41,19 @@ TEST_SUITE(InfiniteChain) { // {{{
         }
     }
 
+    TEST_CASE(linear_energy_growth) {
+        RNG random;
+
+        InfiniteChain chain(constructExternalFieldInfiniteOperator(random.randomHermitianMatrix(random(1,10))));
+        double energy_multiple = chain.getEnergy();
+        double expected_energy = energy_multiple;
+
+        REPEAT(10) {
+            ASSERT_NEAR_REL(chain.getEnergy(),expected_energy,1e-6);
+            chain.move<Left>(); expected_energy += energy_multiple;
+            ASSERT_NEAR_REL(chain.getEnergy(),expected_energy,1e-6);
+            chain.move<Right>(); expected_energy += energy_multiple;
+        }
+    }
+
 } // }}}

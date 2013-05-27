@@ -201,6 +201,18 @@ MatrixPtr RNG::randomMatrix(unsigned int rows, unsigned int cols) { // {{{
     return matrix;
 } // }}}
 
+MatrixPtr RNG::randomHermitianMatrix(unsigned int dimension) { // {{{
+    MatrixPtr const matrix(new Matrix(dimension,dimension));
+    for(unsigned int i = 0; i < dimension; ++i) {
+        (*matrix)(i,i) = randomDouble();
+        for(unsigned int j = i+1; j < dimension; ++j) {
+            (*matrix)(i,j) = randomComplexDouble();
+            (*matrix)(j,i) = conj((*matrix)(i,j));
+        }
+    }
+    return matrix;
+} // }}}
+
 Operator RNG::randomOperator( // {{{
       optional<unsigned int> maybe_number_of_sites
     , unsigned int const maximum_physical_dimension

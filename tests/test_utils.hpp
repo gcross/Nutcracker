@@ -89,6 +89,7 @@ public:
 
     MatrixPtr randomMatrix(unsigned int rows, unsigned int cols);
     MatrixPtr randomSquareMatrix(unsigned int dimension);
+    MatrixPtr randomHermitianMatrix(unsigned int dimension);
     VectorPtr randomVector();
     VectorPtr randomVector(unsigned int size);
  
