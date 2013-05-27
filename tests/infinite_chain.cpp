@@ -74,4 +74,16 @@ TEST_SUITE(InfiniteChain) { // {{{
         }
     } // }}}
 
+    TEST_CASE(increaseBandwidthDimension) { // {{{
+        RNG random;
+
+        REPEAT(10) {
+            InfiniteChain chain(random.randomInfiniteChain());
+            double energy = chain.getEnergy();
+            unsigned int const new_bandwidth = random(0,10) + chain.bandwidthDimension();
+            chain.increaseBandwidthDimension(new_bandwidth);
+            ASSERT_NEAR_REL(energy,chain.getEnergy(),1e-6);
+        }
+    } // }}}
+
 } // }}}
