@@ -45,6 +45,9 @@ public:
     OperatorDimension operatorDimension(AsDimension const _) const { return left_operator_boundary.operatorDimension(as_dimension); }
 }; // }}}
 
+InfiniteOperator constructExternalFieldInfiniteOperator(MatrixConstPtr const& matrix);
+InfiniteOperator constructTransverseIsingModelInfiniteOperator(double spin_coupling_strength);
+
 }
 
 #endif
