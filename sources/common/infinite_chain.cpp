@@ -10,12 +10,7 @@ using boost::none;
 // Constructors {{{
 InfiniteChain::InfiniteChain(
     BOOST_RV_REF(InfiniteChain) other
-) : BaseChain(
-        boost::move(other.left_expectation_boundary),
-        boost::move(other.right_expectation_boundary),
-        boost::move(other.state_site),
-        other
-    )
+) : BaseChain(static_cast<BOOST_RV_REF(BaseChain)>(other))
   , operator_site(boost::move(other.operator_site))
 { }
 
