@@ -9,7 +9,9 @@
 
 namespace Nutcracker {
 
-class BaseChain: boost::noncopyable, public ChainOptions { // {{{
+class BaseChain: public ChainOptions { // {{{
+private:
+    BOOST_MOVABLE_BUT_NOT_COPYABLE(BaseChain)
 protected:
     ExpectationBoundary<Left> left_expectation_boundary;
     ExpectationBoundary<Right> right_expectation_boundary;
