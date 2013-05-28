@@ -50,6 +50,12 @@ InfiniteChain::InfiniteChain(
 { }
 // }}}
 
+void InfiniteChain::dump() const {{{
+    BaseChain::dump();
+    std::cerr << "OSM:";  BOOST_FOREACH(complex<double> const& x, operator_site) { std::cerr << ' ' << x; } std::cerr << std::endl;
+    std::cerr << "OSI:";  uint32_t const* p = operator_site; for(size_t i = 0; i < 2*operator_site.numberOfMatrices(); ++i, ++p) { std::cerr << ' ' << (*p); }  std::cerr << std::endl;
+}}}
+
 void InfiniteChain::increaseBandwidthDimension(unsigned int const new_bandwidth_dimension) {{{
     optimized = false;
     maybe_convergence_energy = none;

@@ -122,4 +122,11 @@ void BaseChain::sweepUntilConverged() {{{
     signalSweepsConverged();
 }}}
 
+void BaseChain::dump() const {{{
+    std::cerr << std::endl << std::endl;
+    std::cerr << "LE:";  BOOST_FOREACH(complex<double> const& x, left_expectation_boundary) { std::cerr << ' ' << x; } std::cerr << std::endl;
+    std::cerr << "RE:";  BOOST_FOREACH(complex<double> const& x, right_expectation_boundary) { std::cerr << ' ' << x; } std::cerr << std::endl;
+    std::cerr << "MS:";  BOOST_FOREACH(complex<double> const& x, state_site) { std::cerr << ' ' << x; } std::cerr << std::endl;
+}}}
+
 }
