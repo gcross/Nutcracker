@@ -13,8 +13,9 @@
 namespace Nutcracker {
 
 class InfiniteChain: public BaseChain { // {{{
-protected:
+private:
     BOOST_MOVABLE_BUT_NOT_COPYABLE(InfiniteChain)
+protected:
     OperatorSite operator_site;
     optional<double> maybe_convergence_energy;
 public:
