@@ -16,6 +16,7 @@ class InfiniteChain: public BaseChain { // {{{
 protected:
     BOOST_MOVABLE_BUT_NOT_COPYABLE(InfiniteChain)
     OperatorSite operator_site;
+    optional<double> maybe_convergence_energy;
 public:
     InfiniteChain(
         BOOST_RV_REF(InfiniteChain) other
@@ -42,7 +43,7 @@ public:
     virtual void increaseBandwidthDimension(unsigned int const new_bandwidth_dimension);
     StateSite<Middle> const& getStateSite() const { return state_site; }
 
-    virtual double getConvergenceEnergy() const { return getEnergy(); }
+    virtual double getConvergenceEnergy() const { return *maybe_convergence_energy; }
 
 }; // }}}
 

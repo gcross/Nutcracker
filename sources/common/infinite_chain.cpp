@@ -3,6 +3,10 @@
 
 namespace Nutcracker {
 
+// Usings {{{
+using boost::none;
+// }}}
+
 // Constructors {{{
 InfiniteChain::InfiniteChain(
     BOOST_RV_REF(InfiniteChain) other
@@ -53,6 +57,7 @@ InfiniteChain::InfiniteChain(
 
 void InfiniteChain::increaseBandwidthDimension(unsigned int const new_bandwidth_dimension) {{{
     optimized = false;
+    maybe_convergence_energy = none;
     StateDimension const
         old_state_dimension = left_expectation_boundary.stateDimension(as_dimension),
         new_state_dimension(new_bandwidth_dimension);
@@ -86,8 +91,11 @@ void InfiniteChain::performOptimizationSweep() {{{
     if(!optimized) optimizeSite();
     move<Right>();
     optimizeSite();
+    double const old_energy = getEnergy();
     move<Left>();
     optimizeSite();
+    double const new_energy = getEnergy();
+    maybe_convergence_energy = new_energy - old_energy;
     signalSweepPerformed();
 }}}
 
