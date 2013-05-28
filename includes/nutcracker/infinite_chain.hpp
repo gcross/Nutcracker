@@ -46,6 +46,8 @@ public:
 
     virtual boost::optional<double> getConvergenceEnergy() const { return maybe_convergence_energy; }
 
+    virtual void dump() const;
+
 }; // }}}
 
 // External methods {{{

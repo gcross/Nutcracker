@@ -60,6 +60,8 @@ public:
     virtual void increaseBandwidthDimension(unsigned int const new_bandwidth_dimension) = 0;
     void sweepUntilConverged();
     void optimizeChain();
+
+    virtual void dump() const;
 };
 
 template<> inline ExpectationBoundary<Left>& BaseChain::expectationBoundary<Left>() { return left_expectation_boundary; }
