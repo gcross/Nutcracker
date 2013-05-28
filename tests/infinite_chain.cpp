@@ -79,10 +79,11 @@ TEST_SUITE(InfiniteChain) { // {{{
 
         REPEAT(10) {
             InfiniteChain chain(random.randomInfiniteChain());
-            double energy = chain.getEnergy();
+            complex<double> exp = chain.computeExpectationValue();
             unsigned int const new_bandwidth = random(0,10) + chain.bandwidthDimension();
             chain.increaseBandwidthDimension(new_bandwidth);
-            ASSERT_NEAR_REL(energy,chain.getEnergy(),1e-6);
+            ASSERT_EQ(chain.bandwidthDimension(),new_bandwidth)
+            ASSERT_NEAR_REL(chain.computeExpectationValue(),exp,1e-6);
         }
     } // }}}
 

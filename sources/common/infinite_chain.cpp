@@ -84,8 +84,8 @@ void InfiniteChain::increaseBandwidthDimension(unsigned int const new_bandwidth_
     );
 
     state_site = boost::move(new_state_site);
-    left_expectation_boundary = boost::move(left_expectation_boundary);
-    right_expectation_boundary = boost::move(right_expectation_boundary);
+    left_expectation_boundary = boost::move(new_left_expectation_boundary);
+    right_expectation_boundary = boost::move(new_right_expectation_boundary);
 }}}
 
 void InfiniteChain::performOptimizationSweep() {{{
