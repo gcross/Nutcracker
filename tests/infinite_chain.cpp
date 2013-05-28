@@ -88,6 +88,7 @@ TEST_SUITE(InfiniteChain) { // {{{
     } // }}}
 
 TEST_SUITE(sweepUntilConverged) { // {{{
+    struct S { InfiniteChain& chain; S(InfiniteChain&chain):chain(chain){} void operator()() const { std::cerr << chain.getEnergy() << std::endl; } };
 
     void runTest(
           double const coupling_strength
@@ -95,6 +96,8 @@ TEST_SUITE(sweepUntilConverged) { // {{{
         , double const correct_energy
     ) {
         InfiniteChain chain(constructTransverseIsingModelInfiniteOperator(coupling_strength),ChainOptions().setInitialBandwidthDimension(bandwidth_dimension));
+        // S s(chain);
+        // chain.signalSweepPerformed.connect(s);
         chain.signalOptimizeSiteFailure.connect(rethrow<OptimizerFailure>);
         chain.sweepUntilConverged();
         ASSERT_NEAR_REL(correct_energy,*chain.getConvergenceEnergy(),1e-7);
