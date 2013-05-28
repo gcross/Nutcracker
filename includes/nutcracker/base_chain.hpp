@@ -56,7 +56,7 @@ public:
     std::complex<double> computeExpectationValue() const;
     double computeStateNorm() const;
     double getEnergy() const;
-    virtual double getConvergenceEnergy() const = 0;
+    virtual boost::optional<double> getConvergenceEnergy() const = 0;
 
     virtual OperatorSite const& getCurrentOperatorSite() const = 0;
     virtual ProjectorMatrix const& getCurrentProjectorMatrix() const = 0;

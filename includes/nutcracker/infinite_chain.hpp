@@ -43,7 +43,7 @@ public:
     virtual void increaseBandwidthDimension(unsigned int const new_bandwidth_dimension);
     StateSite<Middle> const& getStateSite() const { return state_site; }
 
-    virtual double getConvergenceEnergy() const { return *maybe_convergence_energy; }
+    virtual boost::optional<double> getConvergenceEnergy() const { return maybe_convergence_energy; }
 
 }; // }}}
 

@@ -30,16 +30,17 @@ double BaseChain::getEnergy() const {{{
 }}}
 
 void BaseChain::optimizeChain() {{{
-    double previous_convergence_energy = getConvergenceEnergy();
+    if(!getConvergenceEnergy()) sweepUntilConverged();
+    double previous_convergence_energy = *getConvergenceEnergy();
     sweepUntilConverged();
-    double current_convergence_energy = getConvergenceEnergy();
+    double current_convergence_energy = *getConvergenceEnergy();
     while(outsideTolerance(previous_convergence_energy,current_convergence_energy,chain_convergence_threshold)
        && getCurrentBandwidthDimension() < getMaximumBandwidthDimension()
     ) {
         increaseBandwidthDimension(min(computeNewBandwidthDimension(getCurrentBandwidthDimension()),getMaximumBandwidthDimension()));
         sweepUntilConverged();
         previous_convergence_energy = current_convergence_energy;
-        current_convergence_energy = getConvergenceEnergy();
+        current_convergence_energy = *getConvergenceEnergy();
     }
     signalChainOptimized();
 }}}
@@ -76,13 +77,14 @@ void BaseChain::optimizeSite() {{{
 }}}
 
 void BaseChain::sweepUntilConverged() {{{
-    double previous_convergence_energy = getConvergenceEnergy();
+    if(!getConvergenceEnergy()) performOptimizationSweep();
+    double previous_convergence_energy = *getConvergenceEnergy();
     performOptimizationSweep();
-    double current_convergence_energy = getConvergenceEnergy();
+    double current_convergence_energy = *getConvergenceEnergy();
     while(outsideTolerance(previous_convergence_energy,current_convergence_energy,sweep_convergence_threshold)) {
         performOptimizationSweep();
         previous_convergence_energy = current_convergence_energy;
-        current_convergence_energy = getConvergenceEnergy();
+        current_convergence_energy = *getConvergenceEnergy();
     }
     signalSweepsConverged();
 }}}

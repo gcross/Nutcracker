@@ -176,7 +176,7 @@ public:
     vector<Solution> solveForMultipleLevelsAndThenClearChain(unsigned int number_of_levels);
     vector<double> solveForEigenvalues(unsigned int number_of_levels);
 
-    virtual double getConvergenceEnergy() const { return getEnergy(); }
+    virtual boost::optional<double> getConvergenceEnergy() const { return getEnergy(); }
 
     State makeCopyOfState() const;
     State removeState();
