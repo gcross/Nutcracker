@@ -99,6 +99,17 @@ TEST_SUITE(InfiniteChain) { // {{{
             S s(chain);
             chain.signalSweepPerformed.connect(s);
             chain.signalOptimizeSiteFailure.connect(rethrow<OptimizerFailure>);
+            {
+                MatrixConstPtr matrix_ptr = chain.computeOptimizationMatrix();
+                Matrix const& matrix = *matrix_ptr;
+                std::cout << matrix.size1() << ' ' << matrix.size2() << std::endl;
+                for(unsigned int i = 0; i < matrix.size1(); ++i) {
+                    std::cerr << std::endl;
+                    for(unsigned int j = 0; j < matrix.size2(); ++j) {
+                        std::cerr << matrix(i,j) << ' ';
+                    }
+                }
+            }
             REPEAT(10) { chain.performOptimizationSweep(); }
             chain.increaseBandwidthDimension(chain.bandwidthDimension()+1);
             REPEAT(10) { chain.performOptimizationSweep(); }
