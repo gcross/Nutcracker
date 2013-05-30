@@ -19,7 +19,15 @@ protected:
     bool optimized, energy_computed;
     double energy;
 
-    explicit BaseChain(BOOST_RV_REF(BaseChain) other);
+    explicit BaseChain(BOOST_RV_REF(BaseChain) other)
+      : ChainOptions(other)
+      , left_expectation_boundary(boost::move(other.left_expectation_boundary))
+      , right_expectation_boundary(boost::move(other.right_expectation_boundary))
+      , state_site(boost::move(other.state_site))
+      , optimized(other.optimized)
+      , energy_computed(other.energy_computed)
+      , energy(other.energy)
+    {}
 
     explicit BaseChain(boost::optional<ChainOptions const&> maybe_options);
 

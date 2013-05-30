@@ -19,9 +19,11 @@ protected:
     OperatorSite operator_site;
     optional<double> maybe_convergence_energy;
 public:
-    InfiniteChain(
+    inline InfiniteChain(
         BOOST_RV_REF(InfiniteChain) other
-    );
+    ) : BaseChain(static_cast<BOOST_RV_REF(BaseChain)>(other))
+      , operator_site(boost::move(other.operator_site))
+    { }
 
     InfiniteChain(
         BOOST_RV_REF(InfiniteOperator) op,
