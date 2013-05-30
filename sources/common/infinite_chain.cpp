@@ -22,7 +22,9 @@ InfiniteChain::InfiniteChain(
         maybe_options
     )
   , operator_site(boost::move(op.middle_site))
-{ }
+{
+    increaseBandwidthDimension(initial_bandwidth_dimension);
+}
 
 InfiniteChain::InfiniteChain(
     BOOST_RV_REF(InfiniteOperator) op,
@@ -51,6 +53,9 @@ void InfiniteChain::dump() const {{{
 }}}
 
 void InfiniteChain::increaseBandwidthDimension(unsigned int const new_bandwidth_dimension) {{{
+    assert(new_bandwidth_dimension >= bandwidthDimension());
+    if(new_bandwidth_dimension == bandwidthDimension()) return;
+
     optimized = false;
     maybe_convergence_energy = none;
     StateDimension const

@@ -3,6 +3,7 @@
 \brief Utility classes and functions
 */
 
+// Includes {{{
 #include <boost/range/numeric.hpp>
 #include <boost/range/irange.hpp>
 #include <numeric>
@@ -10,9 +11,11 @@
 
 #include "nutcracker/operators.hpp"
 #include "nutcracker/utilities.hpp"
+// }}}
 
 namespace Nutcracker {
 
+// Usings {{{
 using boost::accumulate;
 using boost::irange;
 
@@ -20,6 +23,7 @@ using std::ceil;
 using std::make_pair;
 using std::multiplies;
 using std::runtime_error;
+// }}}
 
 unsigned long long choose(unsigned int const n, unsigned int const k) {
     assert(k <= n);

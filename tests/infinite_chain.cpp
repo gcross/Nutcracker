@@ -87,24 +87,37 @@ TEST_SUITE(InfiniteChain) { // {{{
         }
     } // }}}
 
-TEST_SUITE(sweepUntilConverged) { // {{{
-    struct S { InfiniteChain& chain; S(InfiniteChain&chain):chain(chain){} void operator()() const { std::cerr << chain.getEnergy() << std::endl; } };
+    TEST_SUITE(sweepUntilConverged) { // {{{
+        struct S { InfiniteChain& chain; S(InfiniteChain&chain):chain(chain){} void operator()() const { std::cerr << chain.getEnergy() << std::endl; } };
 
-    void runTest(
-          double const coupling_strength
-        , unsigned int const bandwidth_dimension
-        , double const correct_energy
-    ) {
-        InfiniteChain chain(constructTransverseIsingModelInfiniteOperator(coupling_strength),ChainOptions().setInitialBandwidthDimension(bandwidth_dimension));
-        // S s(chain);
-        // chain.signalSweepPerformed.connect(s);
-        chain.signalOptimizeSiteFailure.connect(rethrow<OptimizerFailure>);
-        chain.sweepUntilConverged();
-        ASSERT_NEAR_REL(correct_energy,*chain.getConvergenceEnergy(),1e-7);
-    }
+        void runTest(
+              double const coupling_strength
+            , unsigned int const bandwidth_dimension
+            , double const correct_energy
+        ) {
+            InfiniteChain chain(constructTransverseIsingModelInfiniteOperator(coupling_strength),ChainOptions().setInitialBandwidthDimension(bandwidth_dimension));
+            S s(chain);
+            chain.signalSweepPerformed.connect(s);
+            chain.signalOptimizeSiteFailure.connect(rethrow<OptimizerFailure>);
+            REPEAT(10) { chain.performOptimizationSweep(); }
+            chain.increaseBandwidthDimension(chain.bandwidthDimension()+1);
+            REPEAT(10) { chain.performOptimizationSweep(); }
+            chain.increaseBandwidthDimension(chain.bandwidthDimension()+1);
+            REPEAT(10) { chain.performOptimizationSweep(); }
+            chain.increaseBandwidthDimension(chain.bandwidthDimension()+1);
+            REPEAT(10) { chain.performOptimizationSweep(); }
+            double e1 = chain.getEnergy();
+            chain.move<Left>();
+            chain.optimizeSite();
+            double e2 = chain.getEnergy();
+            std::cerr << e1 << ' ' << e2 << std::endl;
+            std::cerr << *chain.getConvergenceEnergy() << ::std::endl;
+            chain.dump();
+            ASSERT_NEAR_REL(correct_energy,*chain.getConvergenceEnergy(),1e-7);
+        }
 
-    TEST_CASE(0p1_b10)  { runTest(0.1,10,-1.0317908325); }
+        TEST_CASE(0p1_b10)  { runTest(100,1,-1.0317908325); }
 
-} // }}}
+    } // }}}
 
 } // }}}

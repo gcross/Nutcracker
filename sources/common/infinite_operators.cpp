@@ -37,7 +37,7 @@ InfiniteOperator constructTransverseIsingModelInfiniteOperator(double spin_coupl
     using namespace Pauli;
     MatrixConstPtr const
           &X1 = X
-        ,  X2 = make_shared<Matrix const>(spin_coupling_strength*(*X))
+        ,  X2 = make_shared<Matrix const>(-spin_coupling_strength*(*X))
         ;
     return InfiniteOperator(
         OperatorBoundary<Left>(fillWithRange(list_of(1)(0)(0))),
