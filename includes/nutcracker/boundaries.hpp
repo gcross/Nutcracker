@@ -36,6 +36,13 @@ std::complex<double> computeExpectationValueAtSite(
     , Nutcracker::ExpectationBoundary<Right> const& right_boundary
 );
 // }}}
+// computeOptimizationMatrix {{{
+MatrixConstPtr computeOptimizationMatrix(
+      Nutcracker::ExpectationBoundary<Left> const& left_boundary
+    , Nutcracker::OperatorSite const& operator_site
+    , Nutcracker::ExpectationBoundary<Right> const& right_boundary
+);
+// }}}
 // contractExpectationBoundaries {{{
 //! Contracts the left and right expectation boundaries to form the final expecation value.
 /*!

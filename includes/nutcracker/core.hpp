@@ -43,6 +43,17 @@ complex<double> compute_expectation(
     complex<double> const* right_environment
 );
 
+void compute_optimization_matrix(
+    uint32_t const bl, uint32_t const br,
+    uint32_t const cl,
+    uint32_t const cr,
+    uint32_t const d,
+    complex<double> const* left_environment,
+    uint32_t const number_of_matrices, uint32_t const* sparse_operator_indices, complex<double> const* sparse_operator_matrices,
+    complex<double> const* right_environment,
+    complex<double>* optimization_matrix
+);
+
 complex<double> compute_overlap_with_projectors(
     uint32_t const number_of_projectors
   , uint32_t const number_of_reflectors
