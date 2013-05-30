@@ -1,6 +1,7 @@
 #ifndef NUTCRACKER_STATES_HPP
 #define NUTCRACKER_STATES_HPP
 
+// Includes {{{
 #include <boost/concept_check.hpp>
 #include <boost/container/vector.hpp>
 #include <boost/iterator/zip_iterator.hpp>
@@ -12,9 +13,11 @@
 #include "nutcracker/core.hpp"
 #include "nutcracker/flat.hpp"
 #include "nutcracker/tensors.hpp"
+// }}}
 
 namespace Nutcracker {
 
+// Usings {{{
 using boost::container::vector;
 using boost::make_tuple;
 using boost::make_zip_iterator;
@@ -22,13 +25,17 @@ using boost::SinglePassRangeConcept;
 using boost::tuple;
 
 using std::make_pair;
+// }}}
 
 typedef Link<VectorConstPtr> StateSiteLink;
-struct NormalizationError : public std::runtime_error {
+
+struct NormalizationError : public std::runtime_error { // {{{
     int const info;
     NormalizationError(int info);
-};
-template<typename side1,typename side2> class IncreaseDimensionBetweenResult {
+}; // }}}
+
+// Result classes // {{{
+template<typename side1,typename side2> class IncreaseDimensionBetweenResult { // {{{
 private:
     BOOST_MOVABLE_BUT_NOT_COPYABLE(IncreaseDimensionBetweenResult)
 public:
@@ -46,8 +53,8 @@ public:
     ) : state_site_1(state_site_1)
       , state_site_2(state_site_2)
     {}
-};
-template<typename side> class MoveSiteCursorResult {
+}; // }}}
+template<typename side> class MoveSiteCursorResult { // {{{
 private:
     BOOST_MOVABLE_BUT_NOT_COPYABLE(MoveSiteCursorResult)
     typedef typename Other<side>::value other_side;
@@ -66,7 +73,10 @@ public:
     ) : middle_state_site(middle_state_site)
       , other_side_state_site(other_side_state_site)
     {}
-};
+}; // }}}
+// }}}
+
+// class State {{{
 //! Matrix product state in canonical form.
 /*!
 Specifically, this class contains an immutable matrix product state such that the first site is unnormalized and all sites after it are right-normalized.
@@ -188,6 +198,7 @@ class State : boost::noncopyable {
 
     public:
 
+    // const_iterator {{{
     //! Support class used for iteration over the sites in State.
     /*!
     \note The value type is StateSiteAny since the left-most site has a different normalization from the rest of the sites.
@@ -234,7 +245,7 @@ class State : boost::noncopyable {
 
         //! Compute the distance in indices between \c other and \c this.
         size_t distance_to(const_iterator const& other) const { return other.index - index; }
-    };
+    }; // }}}
 
     typedef const_iterator iterator;
 
@@ -270,48 +281,52 @@ class State : boost::noncopyable {
     }
 
     //! @}
-};
-StateSite<None> constructStateSite(
+}; // }}}
+
+// Functions {{{
+
+StateSite<None> constructStateSite( // {{{
       PhysicalDimension const physical_dimension
     , LeftDimension const left_dimension
     , RightDimension const right_dimension
     , vector<StateSiteLink> const& links
-);
+); // }}}
 
-IncreaseDimensionBetweenResult<Right,Right> increaseDimensionBetweenRightRight(
+IncreaseDimensionBetweenResult<Right,Right> increaseDimensionBetweenRightRight( // {{{
       unsigned int new_dimension
     , StateSite<Right> const& old_site_1
     , StateSite<Right> const& old_site_2
-);
+); // }}}
 
-IncreaseDimensionBetweenResult<Middle,Right> increaseDimensionBetweenMiddleRight(
+IncreaseDimensionBetweenResult<Middle,Right> increaseDimensionBetweenMiddleRight( // {{{
       unsigned int new_dimension
     , StateSite<Middle> const& old_site_1
     , StateSite<Right> const& old_site_2
-);
+); // }}}
 
-MoveSiteCursorResult<Left> moveSiteCursorLeft(
+MoveSiteCursorResult<Left> moveSiteCursorLeft( // {{{
       StateSite<Middle> const& old_state_site_2
     , StateSite<Left> const& old_state_site_1
-);
+); // }}}
 
-MoveSiteCursorResult<Right> moveSiteCursorRight(
+MoveSiteCursorResult<Right> moveSiteCursorRight( // {{{
       StateSite<Middle> const& old_state_site_1
     , StateSite<Right> const& old_state_site_2
-);
+); // }}}
 
-StateSite<Middle> randomStateSiteMiddle(
+StateSite<Middle> randomStateSiteMiddle( // {{{
       const PhysicalDimension physical_dimension
     , const LeftDimension left_dimension
     , const RightDimension right_dimension
-);
+); // }}}
 
-StateSite<Right> randomStateSiteRight(
+StateSite<Right> randomStateSiteRight( // {{{
       const PhysicalDimension physical_dimension
     , const LeftDimension left_dimension
     , const RightDimension right_dimension
-);
-template<typename StateSiteRange> complex<double> computeExpectationValue(
+); // }}}
+
+template<typename StateSiteRange> complex<double> computeExpectationValue( // {{{
       StateSiteRange const& state_sites
     , Operator const& operator_sites
 ) {
@@ -329,9 +344,10 @@ template<typename StateSiteRange> complex<double> computeExpectationValue(
     assert(i == operator_sites.size() && "the number of state sites is greater than the number of operator sites");
     assert(left_boundary.size() == 1);
     return left_boundary[0];
-}
-OverlapSite<None> computeOverlapSiteFromStateSite(StateSiteAny const& state_site);
+} // }}}
 
+// computeStateOverlap {{{
+OverlapSite<None> computeOverlapSiteFromStateSite(StateSiteAny const& state_site);
 template<
      typename StateSiteRange1
     ,typename StateSiteRange2
@@ -363,9 +379,11 @@ template<
     }
     assert(left_boundary.size() == 1);
     return left_boundary[0];
-}
-namespace Unsafe {
+} // }}}
 
+namespace Unsafe { // {{{
+
+// increaseDimensionBetween {{{
 template<typename side1,typename side2>
 IncreaseDimensionBetweenResult<side1,side2> increaseDimensionBetween(
       unsigned int const new_dimension
@@ -422,31 +440,32 @@ IncreaseDimensionBetweenResult<side1,side2> increaseDimensionBetween(
         (boost::move(new_site_1)
         ,boost::move(new_site_2)
         );
-}
+} // }}}
 
-MoveSiteCursorResult<Left> moveSiteCursorLeft(
+MoveSiteCursorResult<Left> moveSiteCursorLeft( // {{{
       StateSiteAny const& left_state_site
     , StateSiteAny const& right_state_site
-);
+); // }}}
 
-}
+} // }}}
+
+// moveSiteCursor {{{
 template<typename side> struct moveSiteCursor { };
-
-template<> struct moveSiteCursor<Left> {
+template<> struct moveSiteCursor<Left> { // {{{
     static MoveSiteCursorResult<Left> from(
           StateSite<Middle> const& old_middle_state_site
 	   , StateSite<Left> const& old_left_state_site
     ) { return moveSiteCursorLeft(old_middle_state_site,old_left_state_site); }
-};
-
-template<> struct moveSiteCursor<Right> {
+}; // }}}
+template<> struct moveSiteCursor<Right> { // {{{
     static MoveSiteCursorResult<Right> from(
           StateSite<Middle> const& old_middle_state_site
 	   , StateSite<Right> const& old_right_state_site
     ) { return moveSiteCursorRight(old_middle_state_site,old_right_state_site); }
-};
+}; // }}}
+// }}}
 
-template<typename StateSiteRange> State::State(CopyFrom<StateSiteRange> sites) {
+template<typename StateSiteRange> State::State(CopyFrom<StateSiteRange> sites) { // {{{
     BOOST_CONCEPT_ASSERT((boost::BidirectionalRangeConcept<StateSiteRange>));
     typedef typename boost::range_reverse_iterator<StateSiteRange const>::type iterator;
     iterator next_site_iter = boost::rbegin(*sites);
@@ -461,7 +480,9 @@ template<typename StateSiteRange> State::State(CopyFrom<StateSiteRange> sites) {
         rest_sites[i].swap(rest_sites[rest_sites.size()-i-1]);
     }
     first_site = boost::move(current_site);
-}
+} // }}}
+
+// }}}
 
 }
 
