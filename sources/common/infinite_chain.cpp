@@ -9,12 +9,6 @@ using boost::none;
 
 // Constructors {{{
 InfiniteChain::InfiniteChain(
-    BOOST_RV_REF(InfiniteChain) other
-) : BaseChain(static_cast<BOOST_RV_REF(BaseChain)>(other))
-  , operator_site(boost::move(other.operator_site))
-{ }
-
-InfiniteChain::InfiniteChain(
     BOOST_RV_REF(InfiniteOperator) op,
     boost::optional<ChainOptions const&> maybe_options
 ) : BaseChain(
