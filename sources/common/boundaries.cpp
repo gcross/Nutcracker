@@ -27,6 +27,27 @@ complex<double> computeExpectationValueAtSite( // {{{
     );
 } // }}}
 
+MatrixConstPtr computeOptimizationMatrix( // {{{
+      ExpectationBoundary<Left> const& left_boundary
+    , OperatorSite const& operator_site
+    , ExpectationBoundary<Right> const& right_boundary
+) {
+    size_t const dimension = operator_site.physicalDimension() * left_boundary.stateDimension() * right_boundary.stateDimension();
+    MatrixPtr matrix(new Matrix(dimension,dimension));
+    Core::compute_optimization_matrix(
+         left_boundary.stateDimension()
+        ,right_boundary.stateDimension()
+        ,left_boundary | operator_site
+        ,operator_site | right_boundary
+        ,operator_site.physicalDimension()
+        ,left_boundary
+        ,operator_site.numberOfMatrices(),operator_site,operator_site
+        ,right_boundary
+        ,matrix->data().begin()
+    );
+    return matrix;
+} // }}}
+
 complex<double> contractExpectationBoundaries( // {{{
       ExpectationBoundary<Left> const& left_boundary
     , ExpectationBoundary<Right> const& right_boundary

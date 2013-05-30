@@ -71,6 +71,40 @@ complex<double> compute_expectation(
 }
 // }}}
 
+// compute_optimization_matrix {{{
+extern "C" void compute_optimization_matrix_(
+    uint32_t const* bl, uint32_t const* br,
+    uint32_t const* cl,
+    uint32_t const* cr,
+    uint32_t const* d,
+    complex<double> const* left_environment,
+    uint32_t const* number_of_matrices, uint32_t const* sparse_operator_indices, complex<double> const* spare_operator_matrices,
+    complex<double> const* right_environment,
+    complex<double>* optimization_matrix
+);
+void compute_optimization_matrix(
+    uint32_t const bl, uint32_t const br,
+    uint32_t const cl,
+    uint32_t const cr,
+    uint32_t const d,
+    complex<double> const* left_environment,
+    uint32_t const number_of_matrices, uint32_t const* sparse_operator_indices, complex<double> const* sparse_operator_matrices,
+    complex<double> const* right_environment,
+    complex<double>* optimization_matrix
+) {
+    compute_optimization_matrix_(
+        &bl, &br,
+        &cl,
+        &cr,
+        &d,
+        left_environment,
+        &number_of_matrices, sparse_operator_indices, sparse_operator_matrices,
+        right_environment,
+        optimization_matrix
+    );
+}
+// }}}
+
 // compute_overlap_with_projectors {{{
 extern "C" void compute_overlap_with_projectors_(
       uint32_t const* number_of_projectors
