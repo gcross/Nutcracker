@@ -36,6 +36,15 @@ complex<double> BaseChain::computeExpectationValue() const {{{
         );
 }}}
 
+MatrixConstPtr BaseChain::computeOptimizationMatrix() const {{{
+    return
+        Nutcracker::computeOptimizationMatrix(
+             left_expectation_boundary
+            ,getCurrentOperatorSite()
+            ,right_expectation_boundary
+        );
+}}}
+
 double BaseChain::computeStateNorm() const {{{
     return state_site.norm();
 }}}
