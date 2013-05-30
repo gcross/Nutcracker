@@ -63,6 +63,8 @@ public:
     virtual unsigned int getCurrentBandwidthDimension() const = 0;
     virtual unsigned int getMaximumBandwidthDimension() const = 0;
 
+    MatrixConstPtr computeOptimizationMatrix() const;
+
     void optimizeSite();
     virtual void performOptimizationSweep() = 0;
     virtual void increaseBandwidthDimension(unsigned int const new_bandwidth_dimension) = 0;
