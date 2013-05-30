@@ -128,4 +128,17 @@ void BaseChain::dump() const {{{
     std::cerr << "MS:";  BOOST_FOREACH(complex<double> const& x, state_site) { std::cerr << ' ' << x; } std::cerr << std::endl;
 }}}
 
+void BaseChain::dumpOptimizationMatrix() const {{{
+    MatrixConstPtr matrix_ptr = computeOptimizationMatrix();
+    Matrix const& matrix = *matrix_ptr;
+    std::cout << matrix.size1() << ' ' << matrix.size2();
+    for(unsigned int i = 0; i < matrix.size1(); ++i) {
+        std::cerr << std::endl;
+        for(unsigned int j = 0; j < matrix.size2(); ++j) {
+            std::cerr << matrix(i,j) << ' ';
+        }
+    }
+    std::cerr << std::endl;
+}}}
+
 }

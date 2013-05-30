@@ -72,6 +72,7 @@ public:
     void optimizeChain();
 
     virtual void dump() const;
+    void dumpOptimizationMatrix() const;
 };
 
 template<> inline ExpectationBoundary<Left>& BaseChain::expectationBoundary<Left>() { return left_expectation_boundary; }
