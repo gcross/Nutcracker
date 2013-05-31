@@ -3,6 +3,8 @@ function mysvd ( & ! {{{
   matrix, &
   u, s, vt &
 ) result (info)
+  implicit none
+
   integer, intent(in) :: m, n, rank
   double complex, intent(in) :: matrix(m,n)
   double complex, intent(out) :: u(m,rank), vt(rank,n)
@@ -58,6 +60,8 @@ subroutine compute_orthogonal_basis( & ! {{{
   rank, &
    basis &
 )
+  implicit none
+
   integer, intent(in) :: n, m
   integer, intent(in) :: k
   integer, intent(out) :: rank
@@ -160,6 +164,8 @@ subroutine compute_orthogonal_basis( & ! {{{
 end subroutine ! }}}
 
 subroutine compute_orthogonal_subspace(n,number_of_projectors,projectors,orthogonal_basis) ! {{{
+  implicit none
+
   integer, intent(in) :: n, number_of_projectors
   double complex, intent(in) :: projectors(n,number_of_projectors)
   double complex, intent(out) :: orthogonal_basis(n,n-number_of_projectors)
@@ -192,6 +198,8 @@ subroutine orthogonalize_matrix_in_place( & ! {{{
   matrix, &
   rank &
 )
+  implicit none
+
   integer, intent(in) :: n, m
   double complex, intent(inout) :: matrix(m,n)
   integer, intent(out) :: rank
@@ -201,6 +209,8 @@ subroutine orthogonalize_matrix_in_place( & ! {{{
 end subroutine ! }}}
 
 subroutine lapack_eigenvalue_real_optimizer(n,matrix,which,eigenvalue,eigenvector) ! {{{
+  implicit none
+
   integer, intent(in) :: n
   double complex, intent(in) :: matrix(n,n)
   character, intent(in) :: which*2
@@ -315,6 +325,8 @@ subroutine lapack_eigenvalue_real_optimizer(n,matrix,which,eigenvalue,eigenvecto
 end subroutine ! }}}
 
 subroutine lapack_eigenvalue_mag_maximizer(n,matrix,eigenvalue,eigenvector) ! {{{
+  implicit none
+
   integer, intent(in) :: n
   double complex, intent(in) :: matrix(n,n)
 
@@ -526,6 +538,8 @@ subroutine iteration_stage_1( & ! {{{
   number_of_matrices,sparse_operator_indices,sparse_operator_matrices, &
   iteration_stage_1_tensor &
 )
+  implicit none
+
   integer, intent(in) :: bl, cl, cr, d, number_of_matrices, sparse_operator_indices(2,number_of_matrices)
   double complex, intent(in) :: left_environment(bl,bl,cl), sparse_operator_matrices(d,d,number_of_matrices)
   double complex, intent(out) :: iteration_stage_1_tensor(bl,d,cr,bl,d)
@@ -557,6 +571,8 @@ subroutine iteration_stage_2( & ! {{{
   state_site_tensor, &
   iteration_stage_2_tensor &
 )
+  implicit none
+
   integer, intent(in) :: bl, br, cr, d
   double complex, intent(in) :: state_site_tensor(br,bl,d), iteration_stage_1_tensor(bl,d,cr,bl,d)
   double complex, intent(out) :: iteration_stage_2_tensor(br,cr,bl,d)
@@ -584,6 +600,8 @@ subroutine iteration_stage_3( & ! {{{
   right_environment, &
   output_state_site_tensor &
 )
+  implicit none
+
   integer, intent(in) :: bl, br, cr, d
   double complex, intent(in) :: right_environment(br,br,cr), iteration_stage_2_tensor(br,cr,bl,d)
   double complex, intent(out) :: output_state_site_tensor(br,bl,d)
@@ -613,6 +631,8 @@ subroutine contract_sos_left( & ! {{{
   state_site_tensor, &
   new_left_environment &
 )
+  implicit none
+
   integer, intent(in) :: bl, br, cl, cr, d, number_of_matrices, sparse_operator_indices(2,number_of_matrices)
   double complex, intent(in) :: &
     left_environment(bl,bl,cl), &
@@ -665,6 +685,8 @@ subroutine contract_sos_right_stage_1( & ! {{{
   state_site_tensor, &
   sos_right_stage_1_tensor &
 )
+  implicit none
+
   integer, intent(in) :: bl, br, cr, d
   double complex, intent(in) :: &
     right_environment(br,br,cr), &
@@ -692,6 +714,8 @@ subroutine contract_sos_right_stage_2a( & ! {{{
   state_site_tensor, &
   sos_right_stage_2a_tensor &
 )
+  implicit none
+
   integer, intent(in) :: bl, br, d
   double complex, intent(in) :: &
     matrix(d,d), &
@@ -718,6 +742,8 @@ subroutine contract_sos_right_stage_2b( & ! {{{
   sos_right_stage_2a_tensor, &
   new_right_environment_slice &
 )
+  implicit none
+
   integer, intent(in) :: bl, br, d
   double complex, intent(in) :: &
     sos_right_stage_1_tensor_slice(bl,d,br), &
@@ -749,6 +775,8 @@ subroutine contract_sos_right_stage_2( & ! {{{
   state_site_tensor, &
   new_right_environment &
 )
+  implicit none
+
   integer, intent(in) :: bl, br, cl, cr, d, number_of_matrices, sparse_operator_indices(2,number_of_matrices)
   double complex, intent(in) :: &
     sos_right_stage_1_tensor(bl,d,br,cr), &
@@ -790,6 +818,8 @@ subroutine contract_sos_right( & ! {{{
   state_site_tensor, &
   new_right_environment &
 )
+  implicit none
+
   integer, intent(in) :: bl, br, cl, cr, d, number_of_matrices, sparse_operator_indices(2,number_of_matrices)
   double complex, intent(in) :: &
     right_environment(br,br,cr), &
@@ -826,6 +856,7 @@ subroutine contract_vs_left( & ! {{{
   normalized_state_site_tensor, &
   new_left_environment &
 )
+  implicit none
 
   integer, intent(in) :: &
     b_left_old, b_right_old, &
@@ -873,6 +904,7 @@ subroutine contract_vs_right( & ! {{{
   normalized_state_site_tensor, &
   new_right_environment &
 )
+  implicit none
 
   integer, intent(in) :: &
     b_left_old, b_right_old, &
@@ -928,6 +960,7 @@ subroutine form_overlap_vector( & ! {{{
   unnormalized_projector_site_tensor, &
   overlap_vector &
 )
+  implicit none
 
   integer, intent(in) :: &
     b_left_old, b_right_old, &
@@ -977,6 +1010,8 @@ subroutine contract_operator_random_left( & ! {{{
   number_of_matrices,sparse_operator_indices,sparse_operator_matrices, &
   new_left_boundary_1, new_left_boundary_2 &
 )
+  implicit none
+
   integer, intent(in) :: cl, cr, d, number_of_matrices, sparse_operator_indices(2,number_of_matrices)
   double complex, intent(in) :: &
     left_boundary_1(cl), left_boundary_2(cl), &
@@ -1019,6 +1054,7 @@ subroutine compute_expectation( & ! {{{
   right_environment, &
   expectation &
 )
+  implicit none
 
   integer, intent(in) :: bl, br, cl, cr, d, number_of_matrices, sparse_operator_indices(2,number_of_matrices)
   double complex, intent(in) :: &
@@ -1061,6 +1097,8 @@ subroutine compute_optimization_matrix( & ! {{{
   right_environment, &
   optimization_matrix &
 )
+  implicit none
+
   integer, intent(in) :: &
     bl, br, cl, cr, d, &
     number_of_matrices, sparse_operator_indices(2,number_of_matrices)
@@ -1108,6 +1146,8 @@ subroutine contract_expectation_boundaries( & ! {{{
   right_environment, &
   expectation &
 )
+  implicit none
+
   integer, intent(in) :: b,c
   double complex, intent(in) :: &
     left_environment(b,b,c), &
@@ -1127,6 +1167,8 @@ subroutine extend_state_vector_fragment( & ! {{{
   site_tensor, &
   new_state_vector_fragment &
 )
+  implicit none
+
   integer, intent(in) :: bm, br, dl, dr
   double complex, intent(in) :: &
     old_state_vector_fragment(bm,dl), &
@@ -1156,6 +1198,8 @@ subroutine contract_matrix_left( & ! {{{
   matrix, &
   new_left_environment &
 )
+  implicit none
+
   integer, intent(in) :: bl, br
   double complex, intent(in) :: &
     left_environment(bl,bl), &
@@ -1197,6 +1241,8 @@ subroutine apply_single_site_operator( & ! {{{
   operator, &
   new_state_site_tensor &
 )
+  implicit none
+
   integer, intent(in) :: bl, br, d
   double complex, intent(in) :: &
     state_site_tensor(br,bl,d), &
@@ -1223,6 +1269,7 @@ subroutine compute_overlap_with_projectors( & ! {{{
   overlap &
 )
   implicit none
+
   integer, intent(in) :: &
     vector_size, &
     number_of_projectors, &
@@ -1298,6 +1345,7 @@ subroutine convert_vectors_to_reflectors( & ! {{{
   coefficients, swaps &
 )
   implicit none
+
   integer, intent(in) :: m, n
   integer, intent(out) :: rank
   double complex, intent(inout) :: vectors(m,n)
@@ -1392,6 +1440,7 @@ subroutine compute_q_from_reflectors( & ! {{{
   q &
 )
   implicit none
+
   integer, intent(in) :: &
     full_space_dimension, &
     number_of_reflectors, &
@@ -1468,6 +1517,7 @@ subroutine project_into_orthogonal_space( & ! {{{
   vector_in_orthogonal_space &
 )
   implicit none
+
   integer, intent(in) :: &
     full_space_dimension, &
     number_of_reflectors, &
@@ -1545,6 +1595,7 @@ subroutine unproject_from_orthogonal_space( & ! {{{
   vector_in_full_space &
 )
   implicit none
+
   integer, intent(in) :: &
     full_space_dimension, &
     number_of_reflectors, &
@@ -1619,6 +1670,7 @@ subroutine project_matrix_into_orthog_space( & ! {{{
   matrix_in_orthogonal_space &
 )
   implicit none
+
   integer, intent(in) :: &
     full_space_dimension, &
     number_of_reflectors, &
@@ -1721,6 +1773,7 @@ subroutine compute_opt_mat_in_orthog_space( & ! {{{
   optimization_matrix &
 )
   implicit none
+
   integer, intent(in) :: &
     bl, br, cl, cr, d, &
     number_of_matrices, sparse_operator_indices(2,number_of_matrices), &
@@ -1766,6 +1819,7 @@ subroutine compute_opt_matrix_all_cases( & ! {{{
   optimization_matrix &
 )
   implicit none
+
   integer, intent(in) :: &
     bl, br, cl, cr, d, &
     number_of_matrices, sparse_operator_indices(2,number_of_matrices), &
@@ -1816,6 +1870,7 @@ subroutine filter_components_outside_orthog( & ! {{{
   output &
 )
   implicit none
+
   integer, intent(in) :: &
     full_space_dimension, &
     number_of_projectors, &
@@ -1871,6 +1926,7 @@ function optimize( & ! {{{
   normal &
 ) result (info)
   implicit none
+
   integer, intent(in) :: &
     bl, br, cl, cr, d, &
     number_of_matrices, sparse_operator_indices(2,number_of_matrices), &
@@ -2008,6 +2064,7 @@ subroutine optimize_strategy_1( & ! {{{
   eigenvalue &
 )
   implicit none
+
   integer, intent(in) :: &
     bl, br, cl, cr, d, &
     number_of_matrices, sparse_operator_indices(2,number_of_matrices), &
@@ -2554,11 +2611,14 @@ contains
 end subroutine ! }}}
 
 subroutine seed_randomizer(seed) ! {{{
+  implicit none
   integer, intent(in) :: seed
   call srand(seed)
 end subroutine ! }}}
 
 subroutine randomize_state_site_tensor(br, bl, d, state_site_tensor) ! {{{
+  implicit none
+
   integer, intent(in) :: br, bl, d
   double complex, intent(out) :: state_site_tensor(br,bl,d)
 
@@ -2574,6 +2634,8 @@ subroutine randomize_state_site_tensor(br, bl, d, state_site_tensor) ! {{{
 end subroutine ! }}}
 
 subroutine rand_norm_state_site_tensor(br, bl, d, state_site_tensor) ! {{{
+  implicit none
+
   integer, intent(in) :: br, bl, d
   double complex, intent(out) :: state_site_tensor(br,bl,d)
 
@@ -2599,6 +2661,8 @@ subroutine rand_norm_state_site_tensor(br, bl, d, state_site_tensor) ! {{{
 end subroutine ! }}}
 
 subroutine rand_unnorm_state_site_tensor(br, bl, d, state_site_tensor) ! {{{
+  implicit none
+
   integer, intent(in) :: br, bl, d
   double complex, intent(out) :: state_site_tensor(br,bl,d)
 
@@ -2613,6 +2677,8 @@ subroutine random_projector_matrix( & ! {{{
   rank, &
   reflectors, coefficients, swaps &
 )
+  implicit none
+
   integer, intent(in) :: projector_length, number_of_projectors
   double complex, intent(out) :: &
     reflectors(projector_length,number_of_projectors), &
@@ -2649,6 +2715,8 @@ function norm_denorm_going_left( & ! {{{
   denormalized_site_tensor, &
   normalized_site_tensor &
 ) result (info)
+  implicit none
+
   integer, intent(in) :: bl, bm, br, dl, dr
   double complex, intent(in) :: &
     site_tensor_to_denormalize(bm,bl,dl), &
@@ -2729,6 +2797,8 @@ function norm_denorm_going_right( & ! {{{
   normalized_site_tensor, &
   denormalized_site_tensor &
 ) result (info)
+  implicit none
+
   integer, intent(in) :: bl, bm, br, dl, dr
   double complex, intent(in) :: &
     site_tensor_to_normalize(bm,bl,dl), &
@@ -2810,6 +2880,8 @@ function norm_denorm_going_right( & ! {{{
 end function ! }}}
 
 subroutine create_bandwidth_increase_matrix(old_bandwidth,new_bandwidth,matrix) ! {{{
+  implicit none
+
   integer, intent(in) :: old_bandwidth, new_bandwidth
   double complex, intent(out) :: matrix(new_bandwidth,old_bandwidth)
 
@@ -2837,6 +2909,8 @@ subroutine absorb_bi_matrix_from_left( & ! {{{
   matrix, &
   new_state_site_tensor &
 )
+  implicit none
+
   integer, intent(in) :: br, bl, d, new_bl
   double complex, intent(in) :: &
     old_state_site_tensor(br,bl,d), &
@@ -2872,6 +2946,8 @@ subroutine absorb_bi_matrix_from_right( & ! {{{
   matrix, &
   new_state_site_tensor &
 )
+  implicit none
+
   integer, intent(in) :: br, bl, d, new_br
   double complex, intent(in) :: &
     old_state_site_tensor(br,bl,d), &
@@ -2899,6 +2975,8 @@ subroutine absorb_bi_conjg_matrix_from_both( & ! {{{
   matrix, &
   new_state_site_tensor &
 )
+  implicit none
+
   integer, intent(in) :: b, d, new_b
   double complex, intent(in) :: &
     old_state_site_tensor(b,b,d), &
@@ -2938,6 +3016,8 @@ function increase_bandwidth_between( & ! {{{
   output_denormalized_tensor, &
   output_normalized_tensor &
 ) result (info)
+  implicit none
+
   integer, intent(in) :: bl, bm, br, dl, dr, new_bm
   double complex, intent(in) :: &
     normalized_tensor(bm,bl,dl), &
@@ -2991,6 +3071,8 @@ subroutine absorb_bi_mat_into_left_exp_env( & ! {{{
   matrix, &
   new_left_exp_environment &
 )
+  implicit none
+
   integer, intent(in) :: ob, sb, new_sb
   double complex, intent(in) :: &
     old_left_exp_environment(sb,sb,ob), &
@@ -3039,6 +3121,8 @@ subroutine absorb_bi_mat_into_right_exp_env( & ! {{{
   matrix, &
   new_right_exp_environment &
 )
+  implicit none
+
   integer, intent(in) :: ob, sb, new_sb
   double complex, intent(in) :: &
     old_right_exp_environment(sb,sb,ob), &
@@ -3091,6 +3175,8 @@ subroutine increase_bandwidth_with_environment( & ! {{{
   new_left_exp_environment, &
   new_right_exp_environment &
 )
+  implicit none
+
   integer, intent(in) :: b, c, d, new_b
   double complex, intent(in) :: &
     old_state_site_tensor(b,b,d), &
@@ -3131,6 +3217,8 @@ subroutine increase_bandwidth_with_environment( & ! {{{
 end subroutine ! }}}
 
 subroutine form_overlap_site_tensor(br, bl, d, state_site_tensor, overlap_site_tensor) ! {{{
+  implicit none
+
   integer, intent(in) :: br, bl, d
   double complex, intent(in) :: state_site_tensor(br,bl,d)
   double complex, intent(out) :: overlap_site_tensor(bl,d,br)
@@ -3154,6 +3242,8 @@ subroutine form_norm_overlap_tensors( & ! {{{
   unnormalized_state_tensor_2, &
   right_norm_overlap_tensor_2 &
 )
+  implicit none
+
   integer, intent(in) :: br, bm, bl, dl, dr
   double complex, intent(in) :: &
     unnormalized_state_tensor_1(bm,bl,dl), &
@@ -3209,6 +3299,8 @@ subroutine construct_inf_exp_boundaries( & ! {{{
     left_expectation_boundary, &
     right_expectation_boundary &
 )
+    implicit none
+
     integer, intent(in) :: b, c
     double complex, intent(in) :: state_boundary(b), operator_boundary(c)
     double complex, intent(out), dimension(b,b,c) :: &
@@ -3233,6 +3325,8 @@ subroutine construct_left_exp_boundary( & ! {{{
     operator_boundary, &
     left_expectation_boundary &
 )
+    implicit none
+
     integer, intent(in) :: b, c
     double complex, intent(in) :: state_boundary(b), operator_boundary(c)
     double complex, intent(out) :: left_expectation_boundary(b,b,c)
@@ -3249,6 +3343,8 @@ subroutine construct_right_exp_boundary( & ! {{{
     operator_boundary, &
     right_expectation_boundary &
 )
+    implicit none
+
     integer, intent(in) :: b, c
     double complex, intent(in) :: state_boundary(b), operator_boundary(c)
     double complex, intent(out) :: right_expectation_boundary(b,b,c)
