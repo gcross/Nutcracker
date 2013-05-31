@@ -2877,6 +2877,88 @@ function norm_denorm_going_right( & ! {{{
 
 end function ! }}}
 
+function norm_for_left( & ! {{{
+  br,bl,d, &
+  site_tensor, &
+  normalized_site_tensor &
+) result(info)
+  implicit none
+
+  integer, intent(in) :: bl, br, d
+  double complex, intent(in) :: site_tensor(br,bl,d)
+
+  double complex, intent(out) :: normalized_site_tensor(br,bl,d)
+
+  double complex :: u(br,br), vt(br,bl*d)
+  double precision :: s(br)
+  integer :: info
+
+  integer :: mysvd
+  external :: zgemm
+
+  if (bl*d < br) then
+    print *, "Not enough degrees of freedom to normalize."
+    print *, bl*d, "<", br
+    stop
+  end if
+
+  info = mysvd(br,bl*d,br,site_tensor,u,s,vt)
+
+  call zgemm( &
+    'N','N', &
+    br,bl*d,br, &
+    (1d0,0d0), &
+    u, br, &
+    vt, br, &
+    (0d0,0d0), &
+    normalized_site_tensor, br &
+  )
+
+end function ! }}}
+
+function norm_for_right( & ! {{{
+  br,bl,d, &
+  site_tensor, &
+  normalized_site_tensor &
+) result(info)
+  implicit none
+
+  integer, intent(in) :: bl, br, d
+  double complex, intent(in) :: site_tensor(br,bl,d)
+
+  double complex, intent(out) :: normalized_site_tensor(br,bl,d)
+
+  double complex :: u(bl,bl), vt(bl,br*d), workspace(bl,br,d)
+  double precision :: s(bl)
+  integer :: info
+
+  integer :: mysvd
+  external :: zgemm
+
+  if (br*d < bl) then
+    print *, "Not enough degrees of freedom to normalize."
+    print *, br*d, "<", br
+    stop
+  end if
+
+  workspace = reshape(site_tensor,shape=shape(workspace),order=(/2,1,3/))
+
+  info = mysvd(bl,br*d,bl,workspace,u,s,vt)
+
+  call zgemm( &
+    'N','N', &
+    bl,br*d,bl, &
+    (1d0,0d0), &
+    u, bl, &
+    vt, bl, &
+    (0d0,0d0), &
+    workspace, bl &
+  )
+
+  normalized_site_tensor = reshape(workspace,shape=shape(normalized_site_tensor),order=(/2,1,3/))
+
+end function ! }}}
+
 subroutine create_bandwidth_increase_matrix(old_bandwidth,new_bandwidth,matrix) ! {{{
   implicit none
 

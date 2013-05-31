@@ -238,6 +238,18 @@ int norm_denorm_going_right(
     complex<double>* denormalized_site_tensor
 );
 
+int norm_for_left(
+    uint32_t const br, uint32_t const bl,uint32_t const d,
+    complex<double> const* site_tensor,
+    complex<double>* normalized_site_tensor
+);
+
+int norm_for_right(
+    uint32_t const br, uint32_t const bl,uint32_t const d,
+    complex<double> const* site_tensor,
+    complex<double>* normalized_site_tensor
+);
+
 uint32_t optimize(
     uint32_t const bl,
     uint32_t const br,

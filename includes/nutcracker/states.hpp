@@ -381,6 +381,9 @@ template<
     return left_boundary[0];
 } // }}}
 
+StateSite<Left> normalizeLeft(StateSite<Middle> const& state_site);
+StateSite<Right> normalizeRight(StateSite<Middle> const& state_site);
+
 namespace Unsafe { // {{{
 
 // increaseDimensionBetween {{{

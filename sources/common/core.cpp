@@ -634,6 +634,44 @@ int norm_denorm_going_right(
 }
 // }}}
 
+// norm_for_left {{{
+extern "C" int32_t norm_for_left_(
+    uint32_t const* br, uint32_t const* bl, uint32_t const* d,
+    complex<double> const* site_tensor,
+    complex<double>* normalized_site_tensor
+);
+int norm_for_left(
+    uint32_t const br, uint32_t const bl, uint32_t const d,
+    complex<double> const* site_tensor,
+    complex<double>* normalized_site_tensor
+) {
+    return norm_for_left_(
+        &br,&bl,&d,
+        site_tensor,
+        normalized_site_tensor
+    );
+}
+// }}}
+
+// norm_for_right {{{
+extern "C" int32_t norm_for_right_(
+    uint32_t const* br, uint32_t const* bl, uint32_t const* d,
+    complex<double> const* site_tensor,
+    complex<double>* normalized_site_tensor
+);
+int norm_for_right(
+    uint32_t const br, uint32_t const bl, uint32_t const d,
+    complex<double> const* site_tensor,
+    complex<double>* normalized_site_tensor
+) {
+    return norm_for_right_(
+        &br,&bl,&d,
+        site_tensor,
+        normalized_site_tensor
+    );
+}
+// }}}
+
 // optimize {{{
 extern "C" uint32_t optimize_(
     uint32_t const* bl,

@@ -1617,6 +1617,32 @@ class norm_denorm_going_right(TestCase): # {{{
         )
     # }}}
 # }}}
+class norm_for_left(TestCase): # {{{
+    @with_checker
+    def testCorrectness(self,bl=irange(1,10),d=irange(1,10)): # {{{
+        br = randint(1,bl*d)
+        site_tensor = crand(br,bl,d)
+        info, normalized_site_tensor = vmps.norm_for_left(site_tensor)
+        self.assertEqual(0,info)
+        self.assertAllClose(
+            tensordot(normalized_site_tensor.conj(),normalized_site_tensor,((1,2),(1,2))),
+            identity(br)
+        )
+    # }}}
+# }}}
+class norm_for_right(TestCase): # {{{
+    @with_checker
+    def testCorrectness(self,br=irange(1,10),d=irange(1,10)): # {{{
+        bl = randint(1,br*d)
+        site_tensor = crand(br,bl,d)
+        info, normalized_site_tensor = vmps.norm_for_right(site_tensor)
+        self.assertEqual(0,info)
+        self.assertAllClose(
+            tensordot(normalized_site_tensor.conj(),normalized_site_tensor,((0,2),(0,2))),
+            identity(bl)
+        )
+    # }}}
+# }}}
 # }}}
 # Bandwidth Increase {{{
 class create_bandwidth_increase_matrix(TestCase): # {{{
@@ -1850,6 +1876,8 @@ tests = [ # {{{
     rand_unnorm_state_site_tensor,
     norm_denorm_going_left,
     norm_denorm_going_right,
+    norm_for_left,
+    norm_for_right,
     create_bandwidth_increase_matrix,
     absorb_bi_matrix_from_left,
     absorb_bi_matrix_from_right,
