@@ -2145,7 +2145,6 @@ subroutine optimize_strategy_2( & ! {{{
   result, &
   eigenvalue &
 )
-
   implicit none
 
   integer, intent(in) :: &
@@ -2377,7 +2376,6 @@ subroutine optimize_strategy_3( & ! {{{
   result, &
   eigenvalue &
 )
-
   implicit none
 
   integer, intent(in) :: &
