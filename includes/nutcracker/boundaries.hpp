@@ -180,7 +180,7 @@ template<> struct contract<Left> { // {{{
           Nutcracker::ExpectationBoundary<Left> const& old_boundary
         , Nutcracker::StateSite<Middle> const& state_site
         , Nutcracker::OperatorSite const& operator_site
-    ) { return Unsafe::contractSOSLeft(old_boundary,state_site,operator_site); }
+    ) { return Unsafe::contractSOSLeft(old_boundary,normalizeLeft(state_site),operator_site); }
     // }}}
     // VS {{{
     //! Alias for contractVSLeft().
@@ -208,7 +208,7 @@ template<> struct contract<Right> { // {{{
           Nutcracker::ExpectationBoundary<Right> const& old_boundary
         , Nutcracker::StateSite<Middle> const& state_site
         , Nutcracker::OperatorSite const& operator_site
-    ) { return Unsafe::contractSOSRight(old_boundary,state_site,operator_site); }
+    ) { return Unsafe::contractSOSRight(old_boundary,normalizeRight(state_site),operator_site); }
     // }}}
     // VS {{{
     //! Alias for contractVSRight().
