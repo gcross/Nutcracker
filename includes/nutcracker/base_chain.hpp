@@ -29,6 +29,16 @@ protected:
       , energy(other.energy)
     {}
 
+    explicit BaseChain(CopyFrom<BaseChain const> const other)
+      : ChainOptions(*other)
+      , left_expectation_boundary(copyFrom(other->left_expectation_boundary))
+      , right_expectation_boundary(copyFrom(other->right_expectation_boundary))
+      , state_site(copyFrom(other->state_site))
+      , optimized(other->optimized)
+      , energy_computed(other->energy_computed)
+      , energy(other->energy)
+    {}
+
     explicit BaseChain(boost::optional<ChainOptions const&> maybe_options);
 
     explicit BaseChain(

@@ -25,6 +25,12 @@ public:
       , operator_site(boost::move(other.operator_site))
     { }
 
+    inline InfiniteChain(
+        CopyFrom<InfiniteChain const> const other
+    ) : BaseChain(other)
+      , operator_site(copyFrom(other->operator_site))
+    { }
+
     InfiniteChain(
         BOOST_RV_REF(InfiniteOperator) op,
         boost::optional<ChainOptions const&> maybe_options = boost::none
