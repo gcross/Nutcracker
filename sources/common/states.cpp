@@ -73,7 +73,9 @@ IncreaseDimensionBetweenResult<Middle,Right> increaseDimensionBetweenMiddleRight
     , StateSite<Middle> const& old_site_1
     , StateSite<Right> const& old_site_2
 ) { return Unsafe::increaseDimensionBetween<Middle,Right>(new_dimension,old_site_1,old_site_2); }
-MoveSiteCursorResult<Left> moveSiteCursorLeft(
+// }}}
+
+MoveSiteCursorResult<Left> moveSiteCursorLeft( // {{{
       StateSite<Middle> const& old_state_site_2
     , StateSite<Left> const& old_state_site_1
 ) {
