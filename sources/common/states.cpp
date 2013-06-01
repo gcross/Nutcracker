@@ -82,6 +82,13 @@ MoveSiteCursorResult<Left> moveSiteCursorLeft( // {{{
     return Unsafe::moveSiteCursorLeft(old_state_site_1,old_state_site_2);
 } // }}}
 
+MoveSiteCursorResult<Right> moveSiteCursorRight( // {{{
+      StateSite<Middle> const& old_state_site_1
+    , StateSite<Right> const& old_state_site_2
+) {
+    return Unsafe::moveSiteCursorRight(old_state_site_1,old_state_site_2);
+} // }}}
+
 namespace Unsafe { // {{{
 
 MoveSiteCursorResult<Left> moveSiteCursorLeft( // {{{
@@ -120,11 +127,9 @@ MoveSiteCursorResult<Left> moveSiteCursorLeft( // {{{
             );
 } // }}}
 
-} // }}}
-
 MoveSiteCursorResult<Right> moveSiteCursorRight( // {{{
-      StateSite<Middle> const& old_state_site_1
-    , StateSite<Right> const& old_state_site_2
+      StateSiteAny const& old_state_site_1
+    , StateSiteAny const& old_state_site_2
 ) {
     old_state_site_1.assertCanBeRightNormalized();
     StateSite<Left> new_state_site_1(dimensionsOf(old_state_site_1));
@@ -132,7 +137,12 @@ MoveSiteCursorResult<Right> moveSiteCursorRight( // {{{
     unsigned int const info =
     Core::norm_denorm_going_right(
          old_state_site_1.leftDimension()
-        ,old_state_site_1 | old_state_site_2
+        ,connectDimensions(
+            "left state site right",
+            old_state_site_1.rightDimension(),
+            "right state site left",
+            old_state_site_2.leftDimension()
+         )
         ,old_state_site_2.rightDimension()
         ,old_state_site_1.physicalDimension()
         ,old_state_site_2.physicalDimension()
@@ -152,6 +162,9 @@ MoveSiteCursorResult<Right> moveSiteCursorRight( // {{{
             ,boost::move(new_state_site_1)
             );
 } // }}}
+
+} // }}}
+
 
 StateSite<Middle> randomStateSiteMiddle( // {{{
       const PhysicalDimension physical_dimension

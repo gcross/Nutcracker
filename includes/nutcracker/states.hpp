@@ -450,6 +450,11 @@ MoveSiteCursorResult<Left> moveSiteCursorLeft( // {{{
     , StateSiteAny const& right_state_site
 ); // }}}
 
+MoveSiteCursorResult<Right> moveSiteCursorRight( // {{{
+      StateSiteAny const& left_state_site
+    , StateSiteAny const& right_state_site
+); // }}}
+
 } // }}}
 
 // moveSiteCursor {{{
