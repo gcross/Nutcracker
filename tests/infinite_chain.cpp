@@ -79,11 +79,13 @@ TEST_SUITE(InfiniteChain) { // {{{
 
         REPEAT(10) {
             InfiniteChain chain(random.randomInfiniteChain());
-            complex<double> exp = chain.computeExpectationValue();
+            InfiniteChain chain_copy(copyFrom(chain));
             unsigned int const new_bandwidth = random(0,10) + chain.bandwidthDimension();
             chain.increaseBandwidthDimension(new_bandwidth);
+            chain_copy.move<Left>();
+            chain_copy.move<Right>();
             ASSERT_EQ(chain.bandwidthDimension(),new_bandwidth)
-            ASSERT_NEAR_REL(chain.computeExpectationValue(),exp,1e-6);
+            ASSERT_NEAR_REL(chain.computeExpectationValue(),chain_copy.computeExpectationValue(),1e-6);
         }
     } // }}}
 

@@ -1,5 +1,6 @@
 #include "nutcracker/core.hpp"
 #include "nutcracker/infinite_chain.hpp"
+#include "nutcracker/states.hpp"
 
 namespace Nutcracker {
 
@@ -53,33 +54,72 @@ void InfiniteChain::dump() const {{{
 void InfiniteChain::increaseBandwidthDimension(unsigned int const new_bandwidth_dimension) {{{
     optimized = false;
     maybe_convergence_energy = none;
-    StateDimension const
-        old_state_dimension = left_expectation_boundary.stateDimension(as_dimension),
-        new_state_dimension(new_bandwidth_dimension);
-    assert(*new_state_dimension > *old_state_dimension);
-    OperatorDimension const operator_dimension = left_expectation_boundary.operatorDimension(as_dimension);
-    PhysicalDimension const physical_dimension = state_site.physicalDimension(as_dimension);
 
-    StateSite<Middle> new_state_site(physical_dimension,LeftDimension(*new_state_dimension),RightDimension(*new_state_dimension));
-    ExpectationBoundary<Left> new_left_expectation_boundary(operator_dimension,new_state_dimension);
-    ExpectationBoundary<Right> new_right_expectation_boundary(operator_dimension,new_state_dimension);
+    StateSite<Left> current_left_site(normalizeLeft(state_site));
+    StateSite<Middle> current_middle_site;
+    StateSite<Right> current_right_site(normalizeRight(state_site));
 
-    Core::increase_bandwidth_with_environment(
-        *old_state_dimension,
-        *operator_dimension,
-        state_site.physicalDimension(),
-        *new_state_dimension,
-        state_site,
-        left_expectation_boundary,
-        right_expectation_boundary,
-        new_state_site,
-        new_left_expectation_boundary,
-        new_right_expectation_boundary
-    );
+    {
+        IncreaseDimensionBetweenResult<Left,Middle> left_middle(
+            Unsafe::increaseDimensionBetween<Left,Middle>(
+                new_bandwidth_dimension,
+                current_left_site,
+                state_site
+            )
+        );
+        current_left_site = boost::move(left_middle.state_site_1);
+        current_middle_site = boost::move(left_middle.state_site_2);
+    }
 
-    state_site = boost::move(new_state_site);
-    left_expectation_boundary = boost::move(new_left_expectation_boundary);
-    right_expectation_boundary = boost::move(new_right_expectation_boundary);
+    {
+        IncreaseDimensionBetweenResult<Middle,Right> middle_right(
+            Unsafe::increaseDimensionBetween<Middle,Right>(
+                new_bandwidth_dimension,
+                current_middle_site,
+                normalizeRight(state_site)
+            )
+        );
+        current_middle_site = boost::move(middle_right.state_site_1);
+        current_right_site = boost::move(middle_right.state_site_2);
+    }
+
+    {
+        MoveSiteCursorResult<Right> left_result(
+            Unsafe::moveSiteCursorRight(
+                current_left_site,
+                current_middle_site
+            )
+        );
+        current_left_site = boost::move(left_result.other_side_state_site);
+        current_middle_site = boost::move(left_result.middle_state_site);
+    }
+
+    {
+        MoveSiteCursorResult<Left> right_result(
+            Unsafe::moveSiteCursorLeft(
+                current_middle_site,
+                current_right_site
+            )
+        );
+        current_middle_site = boost::move(right_result.middle_state_site);
+        current_right_site = boost::move(right_result.other_side_state_site);
+    }
+
+    left_expectation_boundary =
+        contract<Left>::SOS(
+            left_expectation_boundary,
+            current_left_site,
+            operator_site
+        );
+
+    right_expectation_boundary =
+        contract<Right>::SOS(
+            right_expectation_boundary,
+            current_right_site,
+            operator_site
+        );
+
+    state_site = boost::move(current_middle_site);
 }}}
 
 void InfiniteChain::performOptimizationSweep() {{{
