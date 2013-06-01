@@ -68,7 +68,7 @@ IncreaseDimensionBetweenResult<Right,Right> increaseDimensionBetweenRightRight( 
     , StateSite<Right> const& old_site_2
 ) { return Unsafe::increaseDimensionBetween<Right,Right>(new_dimension,old_site_1,old_site_2); } // }}}
 
-IncreaseDimensionBetweenResult<Middle,Right>increaseDimensionBetweenMiddleRight( // {{{
+IncreaseDimensionBetweenResult<Middle,Right> increaseDimensionBetweenMiddleRight( // {{{
       unsigned int new_dimension
     , StateSite<Middle> const& old_site_1
     , StateSite<Right> const& old_site_2
