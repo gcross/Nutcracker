@@ -545,7 +545,7 @@ void form_overlap_vector(
 // }}}
 
 // increase_bandwidth_between {{{
-extern "C" int increase_bandwidth_between_(
+extern "C" int32_t increase_bandwidth_between_(
     uint32_t const* bl, uint32_t const* bm, uint32_t const* br,
     uint32_t const* dl, uint32_t const* dr,
     uint32_t const* new_bm,
@@ -577,7 +577,7 @@ int increase_bandwidth_between(
 // }}}
 
 // norm_denorm_going_left {{{
-extern "C" int norm_denorm_going_left_(
+extern "C" int32_t norm_denorm_going_left_(
     uint32_t const* bll, uint32_t const* bl, uint32_t const* br,
     uint32_t const* dl, uint32_t const* d,
     complex<double> const* site_tensor_to_denormalize,
@@ -606,7 +606,7 @@ int norm_denorm_going_left(
 // }}}
 
 // norm_denorm_going_right {{{
-extern "C" int norm_denorm_going_right_(
+extern "C" int32_t norm_denorm_going_right_(
     uint32_t const* bl, uint32_t const* br, uint32_t const* brr,
     uint32_t const* d, uint32_t const* dr,
     complex<double> const* site_tensor_to_normalize,
