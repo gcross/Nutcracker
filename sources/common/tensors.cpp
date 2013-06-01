@@ -3,6 +3,7 @@
 #include <map>
 #include <yaml-cpp/yaml.h>
 
+#include "nutcracker/core.hpp"
 #include "nutcracker/tensors.hpp"
 #include "nutcracker/utilities.hpp"
 
@@ -38,5 +39,29 @@ StateSite<Middle> StateSiteAny::normalize() const {
         return boost::move(normalized_state_site);
     }
 }
+
+StateSite<Left> normalizeLeft(StateSite<Middle> const& state_site) {{{
+    StateSite<Left> normalized_state_site(dimensionsOf(state_site));
+    Core::norm_for_left(
+        state_site.rightDimension(),
+        state_site.leftDimension(),
+        state_site.physicalDimension(),
+        state_site,
+        normalized_state_site
+    );
+    return boost::move(normalized_state_site);
+}}}
+
+StateSite<Right> normalizeRight(StateSite<Middle> const& state_site) {{{
+    StateSite<Right> normalized_state_site(dimensionsOf(state_site));
+    Core::norm_for_right(
+        state_site.rightDimension(),
+        state_site.leftDimension(),
+        state_site.physicalDimension(),
+        state_site,
+        normalized_state_site
+    );
+    return boost::move(normalized_state_site);
+}}}
 
 }

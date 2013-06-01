@@ -2297,6 +2297,9 @@ inline unsigned int operator|(
 //! @}
 // }}}
 
+StateSite<Left> normalizeLeft(StateSite<Middle> const& state_site);
+StateSite<Right> normalizeRight(StateSite<Middle> const& state_site);
+
 }
  
 namespace boost { namespace foreach {
