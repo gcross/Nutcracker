@@ -56,6 +56,9 @@ void InfiniteChain::dump() const {{{
 }}}
 
 void InfiniteChain::increaseBandwidthDimension(unsigned int const new_bandwidth_dimension) {{{
+    assert(new_bandwidth_dimension >= bandwidthDimension());
+    if(new_bandwidth_dimension == bandwidthDimension()) return;
+
     optimized = false;
     maybe_convergence_energy = none;
 
