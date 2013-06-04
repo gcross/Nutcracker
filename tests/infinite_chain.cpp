@@ -89,4 +89,28 @@ TEST_SUITE(InfiniteChain) { // {{{
         }
     } // }}}
 
+    TEST_SUITE(sweepUntilConverged) { // {{{
+
+        void runTest(
+              double const coupling_strength
+            , unsigned int const bandwidth_dimension
+            , double const correct_energy
+            , double const precision
+        ) {
+            InfiniteChain chain(constructTransverseIsingModelInfiniteOperator(coupling_strength),ChainOptions().setInitialBandwidthDimension(bandwidth_dimension));
+            chain.signalOptimizeSiteFailure.connect(rethrow<OptimizerFailure>);
+            chain.sweepUntilConverged();
+            double e1 = chain.getEnergy();
+            chain.move<Left>();
+            chain.optimizeSite();
+            double e2 = chain.getEnergy();
+            ASSERT_NEAR_REL(correct_energy,*chain.getConvergenceEnergy(),precision);
+        }
+
+        TEST_CASE(0p01_b2)  { runTest(0.01,2,-1.0000250001562545,1e-12); }
+        TEST_CASE(0p1_b2)  { runTest(0.1,2,-1.00250156,1e-8); }
+        TEST_CASE(0p1_b4)  { runTest(0.1,4,-1.00250156,1e-8); }
+
+    } // }}}
+
 } // }}}
