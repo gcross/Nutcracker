@@ -23,7 +23,11 @@ InfiniteChain::InfiniteChain(
         maybe_options
     )
   , operator_site(boost::move(op.middle_site))
-{ }
+{
+    while(bandwidthDimension() < initial_bandwidth_dimension) {
+        increaseBandwidthDimension(min(state_site.physicalDimension()*bandwidthDimension(),initial_bandwidth_dimension));
+    }
+}
 
 InfiniteChain::InfiniteChain(
     BOOST_RV_REF(InfiniteOperator) op,
