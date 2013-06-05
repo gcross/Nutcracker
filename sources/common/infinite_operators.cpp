@@ -82,4 +82,67 @@ InfiniteOperator constructXYModelInfiniteOperator(double spin_coupling_strength)
     );
 }}}
 
+InfiniteOperator constructHaldaneShastryModelInfiniteOperator() {{{
+    using namespace Pauli;
+    /*
+    unsigned int const N = 6; // 100 terms
+    double const
+        A[N] = {0.50951664, -0.20231104,  0.20397574,  0.35912581,  0.01910218, 0.11059066},
+        B[N] = {0.06454575,  0.97028356,  0.97028357,  0.34784606,  0.87545221, 0.66781956};
+    */
+    /*
+    unsigned int const N = 6; // 1000 terms
+    double const
+        A[N] = {1.94645362e-04,   3.63208295e-01,   4.82332008e-01, 1.25279202e-01,   2.57554578e-02,   3.23038783e-03},
+        B[N] = {0.99024014,  0.32257894,  0.05925048,  0.63222797,  0.8459558 , 0.95118551};
+    */
+    /*
+    unsigned int const N = 9; // 100 terms
+    double const
+        A[N] = {-1.39798300e+01,   1.28034382e+01,   5.61535861e+00, -1.26781677e+01,   1.94601671e-04,  -5.61212883e+00, 4.82347734e-01,   1.40055820e+01,   3.63205362e-01},
+        B[N] = { 0.84596776,  0.63229175,  0.95118618,  0.6322922 ,  0.99024125, 0.95118618,  0.0592535 ,  0.84596776,  0.32259284};
+    */
+    /*
+    unsigned int const N = 9; // 1000 terms
+    double const
+        A[N] = {-9.73820003e+00,   9.60463447e+00,   2.50281627e-04, -6.69263635e+00,   9.07184922e+00,  -9.06757536e+00, 4.97380869e-01,   6.95763717e+00,   3.66659722e-01},
+        B[N] = {0.7328277 ,  0.73084504,  0.98893763,  0.77498963,  0.94435163, 0.94435164,  0.06205325,  0.775321  ,  0.33845366};
+    */
+    unsigned int const N = 9; // 10000 terms
+    double const
+        A[N] = {6.18505736e-04,   3.56927507e-01,   7.04055807e-05, 1.77859581e-02,   3.78493975e-03,   6.54917336e-02, 1.83235170e-01,   4.09930918e-06,   3.72081681e-01},
+        B[N] = {0.97613415,  0.22719877,  0.99279374,  0.85346561,  0.93626109, 0.70473391,  0.48229086,  0.99858369,  0.0402559};
+    unsigned int const last = 2+3*N, Xoff = 2+0*N, Yoff = 2+1*N, Zoff = 2+2*N;
+    vector<OperatorSiteLink> links;
+    links.push_back(OperatorSiteLink(1,1,I));
+    links.push_back(OperatorSiteLink(last,last,I));
+    for(unsigned int i = 0; i < N; ++i) {
+        links.push_back(OperatorSiteLink(1,Xoff+i,make_shared<Matrix const>(-A[i]*(*X))));
+        links.push_back(OperatorSiteLink(1,Yoff+i,make_shared<Matrix const>(-A[i]*(*Y))));
+        links.push_back(OperatorSiteLink(1,Zoff+i,make_shared<Matrix const>(-A[i]*(*Z))));
+
+        MatrixConstPtr IB = make_shared<Matrix const>(B[i]*(*I));
+        links.push_back(OperatorSiteLink(Xoff+i,Xoff+i,IB));
+        links.push_back(OperatorSiteLink(Yoff+i,Yoff+i,IB));
+        links.push_back(OperatorSiteLink(Zoff+i,Zoff+i,IB));
+
+        links.push_back(OperatorSiteLink(Xoff+i,last,X));
+        links.push_back(OperatorSiteLink(Yoff+i,last,Y));
+        links.push_back(OperatorSiteLink(Zoff+i,last,Z));
+    }
+    vector<complex<double> > left_boundary(last,0), right_boundary(last,0);
+    left_boundary[0] = 1;
+    right_boundary[last-1] = 1;
+    return InfiniteOperator(
+        OperatorBoundary<Left>(fillWithRange(left_boundary)),
+        constructOperatorSite(
+            PhysicalDimension(2),
+            LeftDimension(last),
+            RightDimension(last),
+            links
+        ),
+        OperatorBoundary<Right>(fillWithRange(right_boundary))
+    );
+}}}
+
 }

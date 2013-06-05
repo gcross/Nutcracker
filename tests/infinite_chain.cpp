@@ -146,4 +146,10 @@ TEST_SUITE(InfiniteChain) { // {{{
 
     } // }}}
 
+    TEST_CASE(Haldane_Shastry_model) { // {{{
+        InfiniteChain chain(constructHaldaneShastryModelInfiniteOperator(),ChainOptions().setSweepConvergenceThreshold(1e-7).setChainConvergenceThreshold(1e-6));
+        chain.signalOptimizeSiteFailure.connect(rethrow<OptimizerFailure>);
+        chain.optimizeChain();
+        ASSERT_NEAR_ABS_VAL(*chain.getConvergenceEnergy(),-1.6449340668482264,1e-3);
+    } // }}}
 } // }}}
