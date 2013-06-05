@@ -100,10 +100,6 @@ TEST_SUITE(InfiniteChain) { // {{{
             InfiniteChain chain(constructTransverseIsingModelInfiniteOperator(coupling_strength),ChainOptions().setInitialBandwidthDimension(bandwidth_dimension));
             chain.signalOptimizeSiteFailure.connect(rethrow<OptimizerFailure>);
             chain.sweepUntilConverged();
-            double e1 = chain.getEnergy();
-            chain.move<Left>();
-            chain.optimizeSite();
-            double e2 = chain.getEnergy();
             ASSERT_NEAR_REL(correct_energy,*chain.getConvergenceEnergy(),precision);
         }
 
@@ -123,10 +119,6 @@ TEST_SUITE(InfiniteChain) { // {{{
             InfiniteChain chain(constructTransverseIsingModelInfiniteOperator(coupling_strength));
             chain.signalOptimizeSiteFailure.connect(rethrow<OptimizerFailure>);
             chain.optimizeChain();
-            double e1 = chain.getEnergy();
-            chain.move<Left>();
-            chain.optimizeSite();
-            double e2 = chain.getEnergy();
             ASSERT_NEAR_REL(correct_energy,*chain.getConvergenceEnergy(),precision);
         }
 
@@ -145,10 +137,6 @@ TEST_SUITE(InfiniteChain) { // {{{
             InfiniteChain chain(constructXYModelInfiniteOperator(coupling_strength),ChainOptions().setChainConvergenceThreshold(precision/10));
             chain.signalOptimizeSiteFailure.connect(rethrow<OptimizerFailure>);
             chain.optimizeChain();
-            double e1 = chain.getEnergy();
-            chain.move<Left>();
-            chain.optimizeSite();
-            double e2 = chain.getEnergy();
             ASSERT_NEAR_REL(correct_energy,*chain.getConvergenceEnergy(),precision);
         }
 
