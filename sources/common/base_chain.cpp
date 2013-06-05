@@ -62,8 +62,9 @@ double BaseChain::getEnergy() const {{{
 }}}
 
 void BaseChain::optimizeChain() {{{
-    if(!getConvergenceEnergy()) sweepUntilConverged();
+    sweepUntilConverged();
     double previous_convergence_energy = *getConvergenceEnergy();
+    increaseBandwidthDimension(min(computeNewBandwidthDimension(getCurrentBandwidthDimension()),getMaximumBandwidthDimension()));
     sweepUntilConverged();
     double current_convergence_energy = *getConvergenceEnergy();
     while(outsideTolerance(previous_convergence_energy,current_convergence_energy,chain_convergence_threshold)
