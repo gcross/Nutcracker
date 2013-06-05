@@ -47,6 +47,7 @@ public:
 
 InfiniteOperator constructExternalFieldInfiniteOperator(MatrixConstPtr const& matrix);
 InfiniteOperator constructTransverseIsingModelInfiniteOperator(double spin_coupling_strength);
+InfiniteOperator constructXYModelInfiniteOperator(double spin_coupling_strength);
 
 }
 

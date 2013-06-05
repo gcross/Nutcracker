@@ -135,4 +135,27 @@ TEST_SUITE(InfiniteChain) { // {{{
 
     } // }}}
 
+    TEST_SUITE(XY_model) { // {{{
+
+        void runTest(
+              double const coupling_strength
+            , double const correct_energy
+            , double const precision
+        ) {
+            InfiniteChain chain(constructXYModelInfiniteOperator(coupling_strength),ChainOptions().setChainConvergenceThreshold(precision/10));
+            chain.signalOptimizeSiteFailure.connect(rethrow<OptimizerFailure>);
+            chain.optimizeChain();
+            double e1 = chain.getEnergy();
+            chain.move<Left>();
+            chain.optimizeSite();
+            double e2 = chain.getEnergy();
+            ASSERT_NEAR_REL(correct_energy,*chain.getConvergenceEnergy(),precision);
+        }
+
+        TEST_CASE(0p01)  { runTest(0.01,-1.000025,1e-6); }
+        TEST_CASE(0p1)  { runTest(0.1,-1.0025,1e-4); }
+        TEST_CASE(1p0)  { runTest(1,-1.27,1e-2); }
+
+    } // }}}
+
 } // }}}

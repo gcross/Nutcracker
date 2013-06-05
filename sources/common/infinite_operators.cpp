@@ -56,4 +56,30 @@ InfiniteOperator constructTransverseIsingModelInfiniteOperator(double spin_coupl
     );
 }}}
 
+InfiniteOperator constructXYModelInfiniteOperator(double spin_coupling_strength) {{{
+    using namespace Pauli;
+    MatrixConstPtr const
+          &X1 = X
+        ,  X2 = make_shared<Matrix const>(-(*X))
+        , &Y1 = Y
+        ,  Y2 = make_shared<Matrix const>(-spin_coupling_strength*(*Y))
+        ;
+    return InfiniteOperator(
+        OperatorBoundary<Left>(fillWithRange(list_of(1)(0)(0)(0))),
+        constructOperatorSite(
+            PhysicalDimension(2),
+            LeftDimension(4),
+            RightDimension(4),
+            list_of
+                (OperatorSiteLink(1,1,I ))
+                (OperatorSiteLink(1,2,X1))
+                (OperatorSiteLink(2,4,X2))
+                (OperatorSiteLink(1,3,Y1))
+                (OperatorSiteLink(3,4,Y2))
+                (OperatorSiteLink(4,4,I ))
+        ),
+        OperatorBoundary<Right>(fillWithRange(list_of(0)(0)(0)(1)))
+    );
+}}}
+
 }
