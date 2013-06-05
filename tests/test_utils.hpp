@@ -117,6 +117,22 @@ public:
     operator complex<double>() { return randomComplexDouble(); }
 }; // }}}
 
+struct PrintChainEnergy { // {{{
+    BaseChain const& chain;
+    PrintChainEnergy(BaseChain const& chain) : chain(chain) {}
+    void operator()() const { std::cerr << chain.getEnergy() << std::endl; }
+    template<typename T> void operator()(T const& x) const { std::cerr << chain.getEnergy() << std::endl; }
+};
+// }}}
+
+struct PrintChainConvergenceEnergy { // {{{
+    BaseChain const& chain;
+    PrintChainConvergenceEnergy(BaseChain const& chain) : chain(chain) {}
+    void operator()() const { std::cerr << chain.getEnergy() << std::endl; }
+    template<typename T> void operator()(T const& x) const { if(chain.getConvergenceEnergy()) std::cerr << *chain.getConvergenceEnergy() << std::endl; }
+};
+// }}}
+
 // Functions {{{
 void checkOperatorsEqual(Operator const& operator_1,Operator const& operator_2);
 
