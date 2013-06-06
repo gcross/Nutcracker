@@ -142,7 +142,7 @@ TEST_SUITE(InfiniteChain) { // {{{
 
         TEST_CASE(0p01)  { runTest(0.01,-1.000025,1e-6); }
         TEST_CASE(0p1)  { runTest(0.1,-1.0025,1e-4); }
-        TEST_CASE(1p0)  { runTest(1,-1.27,1e-2); }
+        TEST_CASE(1p0)  { runTest(1,-1.273,1e-3); }
 
     } // }}}
 
