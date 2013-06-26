@@ -3,7 +3,7 @@ from __future__ import print_function
 import sys
 
 if len(sys.argv) != 3:
-    print("USAGE:",sys.argv[0],"<Y coupling string> <number of sites>")
+    print("USAGE:",sys.argv[0],"<Y coupling strength> <number of sites>")
     sys.exit(1)
 
 spin_coupling = float(sys.argv[1])
