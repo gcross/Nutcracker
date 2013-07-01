@@ -83,6 +83,8 @@ public:
 
     virtual void dump() const;
     void dumpOptimizationMatrix() const;
+
+    StateSite<Middle> const& getStateSite() const { return state_site; }
 };
 
 template<> inline ExpectationBoundary<Left>& BaseChain::expectationBoundary<Left>() { return left_expectation_boundary; }
