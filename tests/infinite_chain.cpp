@@ -146,6 +146,24 @@ TEST_SUITE(InfiniteChain) { // {{{
 
     } // }}}
 
+    TEST_SUITE(Heisenberg_model) { // {{{
+
+        void runTest(
+              double const Y_coupling_strength
+            , double const Z_coupling_strength
+            , double const correct_energy
+            , double const precision
+        ) {
+            InfiniteChain chain(constructHeisenbergModelInfiniteOperator(Y_coupling_strength,Z_coupling_strength),ChainOptions().setChainConvergenceThreshold(precision/10));
+            chain.setOptimizerSiteFailureToThrow();
+            chain.optimizeChain();
+            ASSERT_NEAR_REL(correct_energy,*chain.getConvergenceEnergy(),precision);
+        }
+
+        TEST_CASE(1p0_1p0)  { runTest(1,1,-1,1e-2); }
+
+    } // }}}
+
     TEST_CASE(Haldane_Shastry_model) { // {{{
         InfiniteChain chain(constructHaldaneShastryModelInfiniteOperator(),ChainOptions().setSweepConvergenceThreshold(1e-7).setChainConvergenceThreshold(1e-6));
         chain.setOptimizerSiteFailureToThrow();

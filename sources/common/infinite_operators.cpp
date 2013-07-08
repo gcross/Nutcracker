@@ -82,6 +82,36 @@ InfiniteOperator constructXYModelInfiniteOperator(double spin_coupling_strength)
     );
 }}}
 
+InfiniteOperator constructHeisenbergModelInfiniteOperator(double Y_spin_coupling_strength, double Z_spin_coupling_strength) {{{
+    using namespace Pauli;
+    MatrixConstPtr const
+          &X1 = X
+        ,  X2 = make_shared<Matrix const>(-(*X))
+        , &Y1 = Y
+        ,  Y2 = make_shared<Matrix const>(-Y_spin_coupling_strength*(*Y))
+        , &Z1 = Z
+        ,  Z2 = make_shared<Matrix const>(-Z_spin_coupling_strength*(*Z))
+        ;
+    return InfiniteOperator(
+        OperatorBoundary<Left>(fillWithRange(list_of(1)(0)(0)(0)(0))),
+        constructOperatorSite(
+            PhysicalDimension(2),
+            LeftDimension(5),
+            RightDimension(5),
+            list_of
+                (OperatorSiteLink(1,1,I ))
+                (OperatorSiteLink(1,2,X1))
+                (OperatorSiteLink(2,5,X2))
+                (OperatorSiteLink(1,3,Y1))
+                (OperatorSiteLink(3,5,Y2))
+                (OperatorSiteLink(1,4,Z1))
+                (OperatorSiteLink(4,5,Z2))
+                (OperatorSiteLink(5,5,I ))
+        ),
+        OperatorBoundary<Right>(fillWithRange(list_of(0)(0)(0)(0)(1)))
+    );
+}}}
+
 InfiniteOperator constructHaldaneShastryModelInfiniteOperator() {{{
     using namespace Pauli;
     /*

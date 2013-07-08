@@ -48,6 +48,7 @@ public:
 InfiniteOperator constructExternalFieldInfiniteOperator(MatrixConstPtr const& matrix);
 InfiniteOperator constructTransverseIsingModelInfiniteOperator(double spin_coupling_strength);
 InfiniteOperator constructXYModelInfiniteOperator(double spin_coupling_strength);
+InfiniteOperator constructHeisenbergModelInfiniteOperator(double Y_spin_coupling_strength, double Z_spin_coupling_strength);
 InfiniteOperator constructHaldaneShastryModelInfiniteOperator();
 
 }
