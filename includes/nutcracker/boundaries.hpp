@@ -11,7 +11,6 @@
 
 namespace Nutcracker {
 
-
 // Boundary contractors {{{
 //! \defgroup BoundaryContractors Boundary contractors
 
@@ -282,6 +281,8 @@ template<typename side> ExpectationBoundary<side> constructExpectationBoundary( 
     return boost::move(expectation_boundary);
 } // }}}
 //! @}
+// }}}
+
 // }}}
 
 }
