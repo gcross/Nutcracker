@@ -5,6 +5,7 @@
 #include <boost/optional.hpp>
 #include <boost/program_options.hpp>
 #include <cstdlib>
+#include <exception>
 #include <iostream>
 #include <fstream>
 #include <numeric>
@@ -25,6 +26,7 @@ using boost::optional;
 using std::auto_ptr;
 using std::cerr;
 using std::endl;
+using std::exception;
 using std::ifstream;
 using std::string;
 
@@ -246,6 +248,8 @@ int main(int argc, char** argv) {
     } catch (OutputFormatDoesNotSupportStatesError const& e) {
         cerr << "Output format " << e.format_name << " does not support outputing states." << endl;
         return -1;
+    } catch (exception const& e) {
+        cerr << e.what() << endl;
     }
 
     return 0;
