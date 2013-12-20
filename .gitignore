@@ -18,3 +18,4 @@ build*
 *.swp
 quarantine
 *.swo
+Doxyfile.in
